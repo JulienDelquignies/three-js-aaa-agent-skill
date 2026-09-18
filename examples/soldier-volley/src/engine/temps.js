@@ -47,3 +47,16 @@ export function huitSecondes(st, gk, cfg, tenu, tempoWait) {
 
 /** L'axe gestionTemps de l'équipe (0,5 = l'identité). Pure. */
 export function gestionDe(st, team) { return team >= 0 ? (tac(st, team).gestionTemps ?? 0.5) : 0.5; }
+
+/** LA TOUCHE RAPIDE (284, cfg.toucheRapide — retour du 17/09 « les touches sont trop longues, le foot en joue vite ») : la bande Opta
+ *  du 270 est une MOYENNE, pas une durée — le réel a une queue basse (la touche jouée en 3-8 s quand le ballon est là, un coéquipier
+ *  libre et rien à gérer) et une queue haute. Rend { wait, rapide, p } : avec la probabilité p (K.p × decF du preneur × l'axe tempo,
+ *  nulle si la situation ne s'y prête pas — x.ok) l'attente est tirée dans [min ; max] ; sinon la bande, RELEVÉE du facteur qui garde
+ *  la moyenne ((bande − p × milieu) / ((1 − p) × bande)) : la loi déplace la forme, pas le total du temps mort. Pure. */
+export function attenteToucheDe(bande, K, x = {}) {
+  const p = x.ok ? Math.max(0, Math.min(0.9, (K.p ?? 0.45) * (x.decF ?? 1) * (x.tempoF ?? 1))) : 0;
+  const lo = K.min ?? 5, hi = K.max ?? 9, rapide = lo + (hi - lo) * (x.u2 ?? 0.5);
+  if (p > 0 && (x.u ?? 1) < p) return { wait: rapide, rapide: true, p };
+  const c = p > 0 && p < 1 && bande > 0 ? (bande - p * (lo + hi) / 2) / ((1 - p) * bande) : 1;
+  return { wait: bande * Math.max(1, c), rapide: false, p };
+}

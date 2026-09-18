@@ -35,6 +35,8 @@ export function ceremonieStep(st, cfg) {
   let tousPlaces = true;
   // LA FILE À SON PAS : chacun serre la main de l'homme d'en face À L'ARRIVÉE (tenue s), puis marche au suivant ; on ne double
   // pas l'homme de devant (on attend à un homme derrière lui) ; au bout de la rangée, trot vers la place d'engagement.
+  if (C.saut) { for (const q of st.players) { q._regard = null; q.yawWant = null; if (!aPlace(q, K?.trot ?? 2.4)) tousPlaces = false; } }   /* (284) sautée : chacun trotte à sa place, la fin naturelle suit */
+  else {
   C.file.forEach((id, k) => {
     const q = st.players[id]; q._walkF = null;
     const i = C.idx[k];
@@ -52,13 +54,27 @@ export function ceremonieStep(st, cfg) {
     if (C.idx[C.nFile - 1] < i) { if (!aPlace(q, K?.trot ?? 2.4)) tousPlaces = false; }                 // le dernier de la file est passé : à sa place
     else { q.job = 'walk'; q.target = [xR, 0, zR(i)]; q.yawWant = Math.atan2(0, -sR); tousPlaces = false; }   // en rangée, le regard vers l'adversaire
   });
+  }
   if (tousPlaces || t > (K?.patience ?? 60)) {
     C.actif = false; C.fin = st.t; st._ceremonieDone = true; r.at = st.t + (K?.avant ?? 1.2);
     for (const q of st.players) { q._walkF = null; q.yawWant = null; q._regard = null; }
-    st.events.push({ t: +st.t.toFixed(2), type: 'ceremonie', kind: 'places', duree: +t.toFixed(1), poignees: Object.keys(C.done).length });
+    st.events.push({ t: +st.t.toFixed(2), type: 'ceremonie', kind: 'places', duree: +t.toFixed(1), poignees: Object.keys(C.done).length, ...(C.saut ? { sautee: true } : {}) });
     return false;
   }
   r.at = st.t + 0.5;                                          // l'engagement attend la fin de la cérémonie
+  return true;
+}
+
+/** LE SAUT DE LA CÉRÉMONIE (284 — retour du 17/09 « la cérémonie empiète sur le match, il faudrait que ce soit skippable ») : une API
+ *  moteur, appelée par le produit (le bouton, la touche, le réglage) — la file s'arrête, chacun TROTTE à sa place d'engagement (la
+ *  cérémonie garde la remise jusqu'à ce que tous y soient : la Loi 8 et le rond vide tiennent), puis la fin naturelle (avant s) ; les
+ *  événements 'ceremonie' kind 'sautee' puis 'places' (sautee: true) la datent. Rend true si une cérémonie vivait et n'était pas déjà
+ *  sautée. Déterministe : le monde qui saute est le même à chaque saut au même instant. */
+export function skipCeremonie(st, cfg) {
+  const C = st._ceremonie;
+  if (!C || !C.actif || C.saut) return false;
+  C.saut = true; C.sautAt = st.t;
+  st.events.push({ t: +st.t.toFixed(2), type: 'ceremonie', kind: 'sautee', duree: +(st.t - C.t0).toFixed(1), poignees: Object.keys(C.done ?? {}).length });
   return true;
 }
 

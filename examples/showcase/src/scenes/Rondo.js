@@ -19,6 +19,7 @@ import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
+import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
@@ -326,6 +327,10 @@ export class Rondo {
     this._warpStats = { n: 0, mags: [], denied: {} };
 
     this._hud = document.getElementById('score');
+    // LE BOUTON « PASSER LA CÉRÉMONIE » (284, retour du 17/09) : visible tant que la cérémonie vit ; la touche C fait de même
+    this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
+    this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
+    window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
     // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
     // flash du sifflet, la présentation pure des événements nommés ; le paiement de la dette
     // de volumétrie, la scène avait crevé le plafond des 1250 lignes)
@@ -1198,6 +1203,7 @@ export class Rondo {
     }
     if (this._hud && this._t - this._lastEvent > 0.15) {
       this._lastEvent = this._t;
+      if (this._skipBtn) this._skipBtn.style.display = this.matchMode && this.state._ceremonie?.actif ? 'block' : 'none';
       const teamName = TEAMS[this.state.possession.team].name;
       // LE CHRONO SE LIT (cfg.chrono, plein format) : période + temps écoulé dans la période,
       // puis TERMINÉ au sifflet final — le cycle de match est un produit, il s'affiche

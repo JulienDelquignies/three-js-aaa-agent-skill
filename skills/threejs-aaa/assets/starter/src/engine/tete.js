@@ -125,8 +125,10 @@ export function teteStep(st, cfg, force = null) {
   }
   // LA REMISE DE LA TÊTE : le coéquipier proche, en cloche courte (balistique de la rentrée,
   // raccourcie — la tête part de 1,8 m, pas du sol)
-  const mate = st.players.filter((m) => m.team === joueur.team && m.id !== joueur.id && !m.keeper && m.down <= 0)
-    .map((m) => ({ m, d: d2(m.p, joueur.p) })).filter((x) => x.d > 3 && x.d < 14).sort((a, b) => a.d - b.d)[0];
+  const candsT = st.players.filter((m) => m.team === joueur.team && m.id !== joueur.id && !m.keeper && m.down <= 0)
+    .map((m) => ({ m, d: d2(m.p, joueur.p) })).filter((x) => x.d > 3 && x.d < 14).sort((a, b) => a.d - b.d);
+  const lanceur = st.full && cfg.toucheAuPied && st.pass?.style === 'touche' ? st.pass.from : null;   /* (284) la remise de tête sur une touche ne REVIENT au lanceur qu'avec la part remiseLanceur × (2 − decF) — le bon décideur cherche l'autre */
+  const mate = lanceur != null && candsT.length > 1 && candsT[0].m.id === lanceur && tirage(st, 'intention', joueur.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() >= (cfg.toucheAuPied.remiseLanceur ?? 0.35) * (2 - (joueur.skill?.decF ?? 1)) ? candsT[1] : candsT[0];
   const dir = mate ? Math.atan2(mate.m.p[2] - joueur.p[2], mate.m.p[0] - joueur.p[0]) : Math.atan2(0, -Math.sign(own.x));
   const theta = 0.4;
   const speed = Math.sqrt(Math.max(4, mate ? mate.d : 9) * 9.81 / Math.sin(2 * theta)) * 0.85;

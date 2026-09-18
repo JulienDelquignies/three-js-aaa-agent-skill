@@ -69,15 +69,15 @@ export function throwNow(st, c, cfg) {
   const tx = best ? best.p[0] : T.target[0], tz = best ? best.p[2] : T.target[1];
   const from = [st.ball.p[0], Math.max(BALL.radius, st.ball.p[1]), st.ball.p[2]];
   const d = hyp(tx - from[0], tz - from[2]);
-  const longue = T.longue && d > 19;
-  const sol = solvePass(from, [tx, 0, tz], { style: longue ? (K.elevLongue ?? TOUCHE_ELEV_LONGUE) : (K.elev ?? TOUCHE_ELEV) });
+  const longue = T.longue && d > 19, court = st.full && cfg.toucheAuPied && !longue && d <= (cfg.toucheAuPied.court ?? 12);   /* (284) le jet court est TENDU, au pied ou à la poitrine — pas une cloche à hauteur de tête */
+  const sol = solvePass(from, [tx, 0, tz], { style: court ? (cfg.toucheAuPied.elev ?? 0.12) : longue ? (K.elevLongue ?? TOUCHE_ELEV_LONGUE) : (K.elev ?? TOUCHE_ELEV) });
   st.ball.release('touche');                                      // la cause VRAIE au grand livre — le ballon quitte les mains
   const theta = sol ? sol.elevation : 0.45, speed = sol ? sol.speed : Math.sqrt(Math.max(4, d) * 9.81 / Math.sin(2 * 0.45));
   st.ball.strike({ speed, dirYaw: sol ? sol.dirYaw : Math.atan2(tz - from[2], tx - from[0]), elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
   st.phase = 'flight';
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   st.pass = { from: c.id, to: T.to, lead: [tx, 0, tz], style: 'touche', t: st.t, flight: sol ? sol.flightTime : 2 * speed * Math.sin(theta) / 9.81, origin: [from[0], from[2]] };
-  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: c.id, to: T.to, range: +Math.min(d, T.Rr ?? d).toFixed(1), genre: longue ? 'longue' : undefined, ballY: +from[1].toFixed(2), speed: +speed.toFixed(1),
+  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: c.id, to: T.to, range: +Math.min(d, T.Rr ?? d).toFixed(1), genre: longue ? 'longue' : court ? 'courte' : undefined, ballY: +from[1].toFixed(2), speed: +speed.toFixed(1),
     face: +(Math.abs(wrapPi(Math.atan2(tz - from[2], tx - from[0]) - c.yaw)) * 180 / Math.PI).toFixed(0) });   // l'écart corps-cible en degrés
 }
 

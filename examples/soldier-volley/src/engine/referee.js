@@ -1,4 +1,4 @@
-import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { semelleAvant, petitsGestesStep } from './petits-gestes.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
+import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { semelleAvant, petitsGestesStep } from './petits-gestes.js'; import { attenteToucheDe } from './temps.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -531,7 +531,7 @@ export function onOut(st, cfg) {
     deny(st, 'sortie-illisible');
     const x = Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0]));
     const z = Math.sign(st.ball.p[2] || 1) * (pitch.hz - 0.15);
-    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + tempoWait(st, cfg, 1 - st.lastTouch, 'touche') };
+    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + (st.full && cfg.toucheRapide ? attenteTouche(st, cfg, 1 - st.lastTouch, [x, z]) : tempoWait(st, cfg, 1 - st.lastTouch, 'touche')) };   /* (284) la touche rapide : la queue basse de la bande */
     // LA TOUCHE LONGUE SE POSE (165) : le lanceur essuie le ballon, les grands montent
     // (réel 15-30 s) — sans la tactique ou hors du tiers offensif, l'horloge d'hier au bit
     if (toucheLonguePrête(st, st.restart)) st.restart.at = st.t + (cfg.loi15?.pose ?? 12);
@@ -580,7 +580,7 @@ export function onOut(st, cfg) {
     }
   } else {
     st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: r.type, team: r.team, p: [+r.x.toFixed(1), +r.z.toFixed(1)] });
-    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + tempoWait(st, cfg, r.team, r.type) };
+    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + (st.full && cfg.toucheRapide && r.type === 'touche' ? attenteTouche(st, cfg, r.team, [r.x, r.z]) : tempoWait(st, cfg, r.team, r.type)) };   /* (284) la touche rapide : la queue basse de la bande */
     // LA POSE DU CORNER S'ALLONGE (lot 102, cfg.corner.pose — le vrai corner prend 20-40 s) :
     // les monteurs partent de 30-40 m, la marche de remise demande son temps (cornerSpots)
     if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + Math.max(cfg.corner.pose ?? 10, tempoWait(st, cfg, r.team, 'corner'));   // (217) la cérémonie du corner : le max de sa pose et du temps mort réel — sans tempsMort, tempoWait rend restartWait < pose : l'hier au bit
@@ -613,6 +613,22 @@ export function tempoWait(st, cfg, team, type = null) {
   const contexte = lead > 0 ? 1 + (TM.traine ?? 0.35) * tard : lead < 0 ? 1 - (TM.presse ?? 0.35) * tard : 1;
   const alea = 0.8 + 0.4 * tirage(st, 'arbitre', team >= 0 ? 30 + team : 99, st.rnd ?? (() => 0.5))();
   return base * tempoF * contexte * alea;
+}
+
+/** LA SITUATION DE LA TOUCHE RAPIDE (284, cfg.toucheRapide) : le ballon est là (un coéquipier à ≤ pres m du point), un receveur libre
+ *  (≤ libre m, aucun adversaire à < marque m), rien à gérer (l'axe gestionTemps ≤ gestion, pas en tête tard dans le match) ; p × decF
+ *  du preneur probable × axe(tempo) ; la bande du 270 garde sa moyenne (temps.attenteToucheDe). L'événement 'touche-rapide' la nomme. */
+export function attenteTouche(st, cfg, team, spot) {
+  const K = cfg.toucheRapide, bande = tempoWait(st, cfg, team, 'touche');
+  const mates = st.players.filter((m) => m.team === team && !m.keeper && m.down <= 0 && !m.expulse && !m._sub), foes = st.players.filter((m) => m.team !== team && m.down <= 0);
+  const dS = (m) => hyp(m.p[0] - spot[0], m.p[2] - spot[1]);
+  const preneur = mates.slice().sort((a, b) => dS(a) - dS(b))[0];
+  const libre = mates.some((m) => m !== preneur && dS(m) <= (K.libre ?? 12) && !foes.some((f) => hyp(f.p[0] - m.p[0], f.p[2] - m.p[2]) < (K.marque ?? 3)));
+  const lead = st.score ? (st.score[team] ?? 0) - (st.score[1 - team] ?? 0) : 0, tard = st.chrono ? Math.min(1, Math.max(0, (st.chrono.t ?? st.t) / (st.chrono.total ?? 5400))) : Math.min(1, st.t / 5400);
+  const ok = !!preneur && dS(preneur) <= (K.pres ?? 7) && libre && gestionDe(st, team) <= (K.gestion ?? 0.65) && !(lead > 0 && tard > (K.tard ?? 0.6));
+  const r = attenteToucheDe(bande, K, { ok, decF: preneur?.skill?.decF ?? 1, tempoF: st.full ? axeT(tacT(st, team).tempo, 0.7, 1.3) : 1, u: tirage(st, 'arbitre', 40 + team, st.rnd ?? (() => 0.5))(), u2: tirage(st, 'arbitre', 42 + team, st.rnd ?? (() => 0.5))() });
+  st.events.push({ t: +st.t.toFixed(2), type: 'touche-situation', team, pres: +(preneur ? dS(preneur) : 99).toFixed(1), libre, gestion: +gestionDe(st, team).toFixed(2), ok, p: +r.p.toFixed(2), rapide: r.rapide, wait: +r.wait.toFixed(1) });   /* la situation nommée au journal : la sonde et le banc la lisent */
+  return r.wait;
 }
 
 export function canTake(st, takerId, cfg) {

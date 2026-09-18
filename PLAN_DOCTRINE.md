@@ -698,6 +698,12 @@ angulées / mal ciblées / ratées, le rythme, les percussions rectilignes finie
 se jeter), la caméra (le zoom trop tard, une caméra rapprochée), le produit FM (90 vraies minutes, pause / lecture / avance rapide,
 moments clés, résumés court et long, match complet). Sonde avant loi, un lot par point ; la carte du book reprend ensuite (OBSO).
 
+**284 — LE TEMPS DE JEU : SCELLÉ (407).** Le saut de la cérémonie (skipCeremonie : la file s'arrête, chacun trotte à sa place, la fin
+naturelle suit ; le bouton et la touche C au showcase — 38 → 15,5 s), la touche rapide (temps.attenteToucheDe : la bande Opta garde sa
+moyenne, la queue basse à 5-9 s quand le ballon est là, un receveur libre et rien à gérer — decF, tempo, gestionTemps), la touche au
+pied (le jet court tendu à 0,55 m ; la remise de tête qui ne revient au lanceur qu'à 0,35 × (2 − decF) : 95 → 0 %). Nommé : l'attente
+vivante (91 % des joueurs de champ figés pendant les attentes) — le lot suivant.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

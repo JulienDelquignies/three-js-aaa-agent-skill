@@ -129,7 +129,7 @@ const etau = (seed, nBloc) => {
       let ax = 0, nn = 0;
       for (const seed of [1, 3, 5, 7]) {
         const st = makeMatch({ full: true, seed });
-        const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, ecarte: false, conduiteCouloir: false, ...over });
+        const cfg = matchCfg({ toucheRapide: null, toucheAuPied: null /* toucheRapide et toucheAuPied null DATÉ 284 : vert à HEAD~ (worktree 695d340), le couloir ouvert remangé (sabotage 46 % c. ≥ vif 43 + 4 : les touches au pied changent le jeu de l'aile) — la clause mesure sa loi, pas la touche rapide ni la touche au pied */, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, ecarte: false, conduiteCouloir: false, ...over });
         for (let i = 0; i < 180 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (!st.restart && i % 30 === 0) { nn++; if (Math.abs(st.ball.p[2]) < 8) ax++; }

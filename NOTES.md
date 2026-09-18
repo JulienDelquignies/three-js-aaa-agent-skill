@@ -13291,6 +13291,51 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      MDC A|profondeur, MDC C|profondeur, AV A|largeurR ; aucune gagnée) ; hérités : loi12 (le mur), loi15, moments, renversement.
      Réexécutions isolées toutes vertes. Bloc 1 seul : 0,59 ms/step (≤ 1,6). Sceau : commit 2a6a5e7, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk
      Rondo-Dyr98qYk — la grille xT y est, 0,2575 au coin de l'axe).
+- 407: LE TEMPS DE JEU (284 — les retours du 17/09, point 1 : « la cérémonie empiète sur le match, il faudrait que ce soit
+     sautable ; les touches sont trop longues, le foot en joue vite, et le receveur remet de la tête au lanceur en permanence ;
+     aux coups de pied arrêtés tout le monde est à l'arrêt »). LA SONDE (sonde-284, 4 × 90 min, graines 3/7/11/13) confirme
+     point par point : la cérémonie 37 s avant l'engagement ; les touches 17,5 s de moyenne [p10 12,8 ; p90 22,5] — la bande
+     Opta du 270 est tenue mais elle est une MOYENNE posée comme durée : 0 touche jouée en ≤ 8 s sur 112 (le réel a une queue
+     basse à 3-8 s) ; la réception de la touche : 95 % des 113 touches sont remises DE LA TÊTE AU LANCEUR (le jet court montait
+     en cloche à 0,55 rad et arrivait à 1,73 m — la tête, puis « le coéquipier proche » de tete.js, c'est-à-dire le lanceur à
+     3 m) ; le corps pendant l'attente : 0,19 m/s de vitesse moyenne des joueurs de champ au milieu des attentes, 91 % figés
+     (< 0,25 m/s ; coup franc 0,04, sortie de but 0,21, corner 0,21, touche 0,32). TROIS LOIS ET UNE API. (a) LE SAUT DE LA
+     CÉRÉMONIE (ceremonie.js skipCeremonie(st, cfg) : la file s'arrête, chacun TROTTE à sa place d'engagement — la cérémonie
+     garde la remise jusqu'à ce que tous y soient, la Loi 8 et le rond vide tiennent, puis la fin naturelle ; événements
+     'sautee' puis 'places' sautee: true ; idempotente, déterministe) ; le showcase l'appelle par le bouton « Passer la
+     cérémonie (C) » visible tant que la file vit, et par la touche C. Un premier jet clôturait sur-le-champ : l'engagement ne
+     venait jamais — le flux d'engagement tient chacun où il est (Loi 8) et le rond restait plein ; la phase de retour est la
+     bonne forme. Sautée à 2 s, l'engagement est pris à 15,5 s (38,1 sans saut). (b) LA TOUCHE RAPIDE (temps.js
+     attenteToucheDe, pure ; referee.attenteTouche pose la situation au journal, 'touche-situation') : la bande garde sa
+     MOYENNE, la touche rapide est sa queue basse — quand le ballon est là (un coéquipier à ≤ 7 m du point), un receveur libre
+     (≤ 18 m, aucun adversaire à < 2,5 m ; à 12 m le libre était rare à l'instant de la sortie) et rien à gérer (gestionTemps
+     ≤ 0,65, pas en tête après 60 % du match), la part p = 0,45 × decF du preneur probable × axe(tempo, 0,7, 1,3) tire
+     l'attente dans [5 ; 9] s (3-8 au premier jet : à 3 s le lanceur pressé prenait avant d'être posé — le bassin 4 cm dans
+     la marge de la Loi 15, la clause des remises l'a attrapé) ; sinon la bande relevée du facteur (bande − p × milieu) / ((1 − p) × bande) : sur 1000 tirages
+     la moyenne est la bande à 2 % près. Attributs : decisions (le bon décideur joue vite) ; tactiques : tempo et
+     gestionTemps ; le contexte du 217 reste. (c) LA TOUCHE AU PIED (cfg.toucheAuPied) : le jet court (≤ 12 m, hors jet long)
+     est TENDU (0,12 rad : au pied ou à la poitrine, 0,55 m à la première action c. 1,73) ; et la remise de tête sur une touche
+     ne REVIENT au lanceur qu'avec la part remiseLanceur 0,35 × (2 − decF) quand un autre coéquipier est à portée. Clés
+     absentes : l'horloge et le jet d'hier au bit — jumeau prouvé (toucheRapide + toucheAuPied nuls = le défaut 283 695d340
+     326ae7bb803ff4f9 / fffdfa37645b241d ; la loi est inerte à 90 s : la cérémonie dure 37 s, la première touche vient après).
+     APRÈS (4 × 90 min) : touches 17,6 s de moyenne (la bande tenue) mais p10 12,8 → 9,2 et 10 % jouées en ≤ 8 s (0 avant) ;
+     20 touches par match (28 : le jet contrôlé garde le ballon en jeu) ; la réception 100 % contrôle, 0 % de tête au lanceur (95),
+     le ballon à 0,56 m (1,73) ; les autres remises inchangées (corner 40, coup franc 35, six mètres 34 s) ; le corps pendant
+     l'attente 89 % figés (91). Ce que le lot nomme : l'ATTENTE VIVANTE (91 % figés — le prochain lot : les petits
+     déplacements, les appels dans les deux dernières secondes, le mur qui se pose) et le jouer-au-bon-moment des autres
+     remises. Banc : verify-match11 bloc 284 (index 182 : lois pures de la touche rapide — p 0 hors situation, la queue basse,
+     la moyenne gardée, le bon décideur et le direct ; la fixture du saut — sautée à 2 s, engagement à 15,5 s, idempotente ;
+     le monde 3 × 600 s — 2 touches en ≤ 8 s sur 7 c. 0 sans, moyenne 15,1 s, 0 % de remise de tête au lanceur c. 100 %,
+     ballon à 0,55 m c. 1,71). Banc complet (final288 : 8 shards puis 49 annexes) : 1249 ✓ / 18 ✗ au premier passage — match11 327 ✓ / 10 ✗ :
+     huit blocs verts à HEAD~ (worktree 695d340) et épinglés toucheRapide + toucheAuPied null DATÉ 284 [95 le presseur, 135 les
+     cibles, 280 la ligne accrochée, 279 les têtes (12,1 c. ≈ 13 : les touches au pied ôtent les têtes de remise), 131 le
+     dégagement qui cherche une tête, le démis qui trotte (35), les contres à l'entrée (139), le presseur en surface (134)],
+     hérités : 246d, le FLUX des couloirs ; annexes 922 ✓ / 8 ✗ : contact (la marche dans un corps couché — 39/0), remises (le
+     lanceur derrière la ligne : 0,06 m hors du terrain pour 0,1 attendu, sur la ligne — 53/0), renversement (le couloir ouvert,
+     lot 99 — 7/1, l'orientation héritée) épinglés après preuve à HEAD~ ; identification REGELÉE 10 → 15 signatures (perdues
+     MO A|press, MDC B|press ; gagnées LAT A|largeurR, DC B|appel, LAT B|largeurR, LAT C|profondeur, LAT D|profondeur,
+     MDC C|appel, MDC C|tenue) ; hérités : loi12 (le mur), loi15, renversement (l'orientation). Réexécutions isolées toutes
+     vertes. Bloc 1 seul : 0,57 ms/step (≤ 1,6). SCEAU_284
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

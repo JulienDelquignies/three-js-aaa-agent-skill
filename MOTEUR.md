@@ -534,6 +534,30 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### Le temps de jeu (lot 284, `skipCeremonie`, `cfg.toucheRapide`, `cfg.toucheAuPied`)
+
+Les retours du 17/09, point 1. Mesuré avant (`scripts/book/sonde-284.mjs`, 4 × 90 min) : cérémonie 37 s, touches 17,5 s sans aucune
+en moins de 8 s, 95 % des touches remises de la tête au lanceur (le jet court arrivait à 1,73 m), 91 % des joueurs de champ figés
+pendant les attentes.
+
+- **`skipCeremonie(st, cfg)`** (`ceremonie.js`) : l'API produit — la file s'arrête, chacun trotte à sa place d'engagement, la cérémonie
+  garde la remise jusqu'à ce que tous y soient (Loi 8, rond vide), puis la fin naturelle ; événements `sautee` puis `places`
+  (`sautee: true`) ; idempotente, déterministe. Le showcase : le bouton « Passer la cérémonie (C) » et la touche C (`scenes/Rondo.js`).
+- **`attenteToucheDe(bande, K, { ok, decF, tempoF, u, u2 })`** (`temps.js`, pure) : la bande Opta du 270 garde sa MOYENNE, la touche
+  rapide est sa queue basse — avec la part p = K.p × decF × tempoF (nulle hors situation) l'attente est tirée dans [min ; max], sinon
+  la bande relevée de (bande − p × milieu) / ((1 − p) × bande). `attenteTouche(st, cfg, team, spot)` (`referee.js`) pose la situation :
+  le ballon est là (un coéquipier à ≤ pres m), un receveur libre (≤ libre m, aucun adversaire à < marque m), rien à gérer
+  (gestionTemps ≤ gestion, pas en tête après tard) ; l'événement `touche-situation` la nomme au journal.
+- **La touche au pied** (`strike-sim.throwNow`, `tete.js`) : le jet court (≤ court m, hors jet long) est tendu (elev rad) ; la remise
+  de tête sur une touche ne revient au lanceur qu'à remiseLanceur × (2 − decF) quand un autre coéquipier est à portée.
+- **Attributs, tactiques** : `decF` (decisions) sur la part rapide et sur le retour au lanceur ; l'axe `tempo` (0,7 ↔ 1,3) et l'axe
+  `gestionTemps` ; 50 et 0,5 sont l'identité. Les rôles gardent leurs appuis de touche (226).
+- **Config** `toucheRapide: { p: 0.45, min: 5, max: 9, pres: 7, libre: 18, marque: 2.5, gestion: 0.65, tard: 0.6 }` (min 3 au premier
+  jet : le lanceur pressé prenait avant d'être posé),
+  `toucheAuPied: { court: 12, elev: 0.12, remiseLanceur: 0.35 }` ; clés absentes : l'horloge et le jet d'hier au bit.
+- **Mesuré après** : touches 17,6 s de moyenne (la bande tenue), p10 12,8 → 9,2 s, 10 % jouées en moins de 8 s (0 avant) ; la
+  réception 100 % contrôle et 0 % de tête au lanceur (95 %), le ballon à 0,56 m (1,73) ; le corps pendant l'attente 89 % figés (91). Nommé : l'attente vivante (le lot suivant).
+
 ### La valeur de position xT (lot 283, `cfg.xt` — `xt.js`)
 
 Le Modèle 06 §3 : « embarquer la grille 12 × 8 publiée, lue par interpolation bilinéaire » ; §8.1 : l'utilité d'une passe est
