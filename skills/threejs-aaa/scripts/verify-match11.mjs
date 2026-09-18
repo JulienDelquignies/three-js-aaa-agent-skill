@@ -46,7 +46,7 @@ import { specialisteF, glissePermis, fauteGlisse } from '../assets/starter/src/e
 import { BANDES_OPTA, bandeDe, addDe, huitSecondes, gestionDe } from '../assets/starter/src/engine/temps.js';
 import { sigmaFou, qualiteDe as qualiteFou, sortieFolle, appliquerFou } from '../assets/starter/src/engine/fou.js';
 import { xgGeo, logitGeo, sig as sigXg, angleVisible, coneDe, xgDe, thetaDe, porteDe, evContDe } from '../assets/starter/src/engine/xg.js';
-import { retardDe, referenceDe, ligneStep, accrocheDe } from '../assets/starter/src/engine/ligne.js'; import { prefiltreDe } from '../assets/starter/src/engine/prefiltre.js'; import { xtAt, xtDe, versBook, termeXt } from '../assets/starter/src/engine/xt.js'; import { attenteToucheDe } from '../assets/starter/src/engine/temps.js'; import { skipCeremonie } from '../assets/starter/src/engine/ceremonie.js'; import { hashDe, microDe, attenteVivanteStep } from '../assets/starter/src/engine/attente-vivante.js'; import { rendezVousDe } from '../assets/starter/src/engine/rendezvous.js'; import { porteeDe, cibleDe, integriteDe, interligneStep } from '../assets/starter/src/engine/interligne.js'; import { latenceDe, kxDe, anchorPercu, decalageDe } from '../assets/starter/src/engine/bloc-percu.js'; import { tempsDeVol, porteeDe as porteeEnv, tDispDe, rhoDe, pSaveDe, decisionEnveloppe } from '../assets/starter/src/engine/enveloppe.js'; import { MODES, poidsDe, viseeDe } from '../assets/starter/src/engine/visee.js'; import { mapPostes as mapPostesL, formationPour as formationPourL, LIGNES as LIGNES_L } from '../assets/starter/src/engine/formation.js';
+import { retardDe, referenceDe, ligneStep, accrocheDe } from '../assets/starter/src/engine/ligne.js'; import { prefiltreDe } from '../assets/starter/src/engine/prefiltre.js'; import { xtAt, xtDe, versBook, termeXt } from '../assets/starter/src/engine/xt.js'; import { attenteToucheDe } from '../assets/starter/src/engine/temps.js'; import { skipCeremonie } from '../assets/starter/src/engine/ceremonie.js'; import { hashDe, microDe, attenteVivanteStep } from '../assets/starter/src/engine/attente-vivante.js'; import { fenetreDe, engageDe, ecartDe as ecartEngage, malusDe, rabatDe } from '../assets/starter/src/engine/engage.js'; import { rendezVousDe } from '../assets/starter/src/engine/rendezvous.js'; import { porteeDe, cibleDe, integriteDe, interligneStep } from '../assets/starter/src/engine/interligne.js'; import { latenceDe, kxDe, anchorPercu, decalageDe } from '../assets/starter/src/engine/bloc-percu.js'; import { tempsDeVol, porteeDe as porteeEnv, tDispDe, rhoDe, pSaveDe, decisionEnveloppe } from '../assets/starter/src/engine/enveloppe.js'; import { MODES, poidsDe, viseeDe } from '../assets/starter/src/engine/visee.js'; import { mapPostes as mapPostesL, formationPour as formationPourL, LIGNES as LIGNES_L } from '../assets/starter/src/engine/formation.js';
 import { tempoWait } from '../assets/starter/src/engine/referee.js';
 import { pasDecision, hzDecision, ticksDecision } from '../assets/starter/src/engine/cadence.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
@@ -7132,6 +7132,50 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, attenteVivante: null }));
   ok(`lot 285 — …et LE MONDE : 3 × 600 s, ${mA.att} attentes : vitesse moyenne des joueurs de champ à mi-attente ${mA.v.toFixed(2)} m/s (≥ 0,45 ; sans ${mN.v.toFixed(2)}), figés ${mA.fige.toFixed(0)} % (≤ 60 ; sans ${mN.fige.toFixed(0)} ≥ 85) ; le preneur (exclu par construction) va au ballon : ${mA.preneur.toFixed(2)} m/s à mi-attente, informatif (sans ${mN.preneur.toFixed(2)}) ; le décrochage : receveurs à ${mA.dFin.toFixed(2)} m de leur adversaire aux dernières secondes c. ${mA.dMi.toFixed(2)} à mi-attente (+ ≥ 0,3 ; sans ${mN.dFin.toFixed(2)} c. ${mN.dMi.toFixed(2)})`,
     mA.att >= 10 && mA.v >= 0.45 && mA.fige <= 60 && mN.fige >= 85 &&  mA.dFin >= mA.dMi + 0.3);
+}
+
+if (__bloc()) {
+  // LA TOUCHE QUI ENGAGE (286, retour du 17/09) — (a) lois pures : la fenêtre vaut commit (0,5 s) à l'identité (decF 1, tempo 0,5), plus
+  // courte pour le bon décideur (× 0,85) et le jeu direct (× 0,8), plus longue pour le mauvais (× 1,15) et la possession (× 1,2) ;
+  // l'engagement est actif dans la fenêtre et sans presseur, inactif passé la fenêtre ou pressé (< 2,5 m) ; l'écart au regard est
+  // symétrique ; une passe à 120° du regard coûte le malus, à 80° rien ; la poussée à 150° du regard se rabat à ± 100°, celle à 60°
+  // ne bouge pas.
+  const K = { commit: 0.5, angle: 100, malus: 8, presse: 2.5, lent: 1.2, vif: 0.8 }, f0 = fenetreDe(K, {}), fBon = fenetreDe(K, { decF: 1.15 }), fMauvais = fenetreDe(K, { decF: 0.85 }), fDirect = fenetreDe(K, { tempo: 1 }), fPoss = fenetreDe(K, { tempo: 0 });
+  const eOn = engageDe(K, { dt: 0.2, foe: 9 }), eTard = engageDe(K, { dt: 0.6, foe: 9 }), ePresse = engageDe(K, { dt: 0.2, foe: 2 });
+  const rad = (d) => d * Math.PI / 180, pousse = rabatDe([Math.cos(rad(150)), Math.sin(rad(150))], 0, 100), reste = rabatDe([Math.cos(rad(60)), Math.sin(rad(60))], 0, 100);
+  ok(`lot 286 — LA TOUCHE QUI ENGAGE, lois pures : fenêtre ${f0.toFixed(2)} s à l'identité, ${fBon.toFixed(3)} pour le bon décideur < ${fMauvais.toFixed(3)} pour le mauvais, ${fDirect.toFixed(2)} en direct < ${fPoss.toFixed(2)} en possession ; actif à 0,2 s libre ${eOn.actif}, passé la fenêtre ${eTard.actif} = false, pressé ${ePresse.actif} = false ; écart symétrique ${(ecartEngage(Math.cos(rad(-70)), Math.sin(rad(-70)), 0) * 180 / Math.PI).toFixed(0)}° ; malus à 120° ${malusDe(K, true, rad(120))} (= ${K.malus}), à 80° ${malusDe(K, true, rad(80))} ; la poussée à 150° rabattue à ${(Math.atan2(pousse[1], pousse[0]) * 180 / Math.PI).toFixed(0)}°, celle à 60° gardée ${(Math.atan2(reste[1], reste[0]) * 180 / Math.PI).toFixed(0)}°`,
+    Math.abs(f0 - 0.5) < 1e-9 && Math.abs(fBon - 0.425) < 1e-9 && Math.abs(fMauvais - 0.575) < 1e-9 && Math.abs(fDirect - 0.4) < 1e-9 && Math.abs(fPoss - 0.6) < 1e-9 && eOn.actif && !eTard.actif && !ePresse.actif
+    && Math.abs(ecartEngage(Math.cos(rad(-70)), Math.sin(rad(-70)), 0) - rad(70)) < 1e-9 && malusDe(K, true, rad(120)) === (K.malus ?? 4) && malusDe(K, true, rad(80)) === 0 && Math.abs(Math.atan2(pousse[1], pousse[0]) - rad(100)) < 1e-9 && Math.abs(Math.atan2(reste[1], reste[0]) - rad(60)) < 1e-9);
+  // (b) la fixture : un porteur qui vient de contrôler (regard vers le but), libre, deux coéquipiers — l'un DANS SON DOS à 10 m (le point
+  // doux du barème, libre), l'autre devant à 13 m avec un adversaire à 3,5 m ; sans la clé le barème d'hier sert le dos, sous la clé la passe dans le dos coûte le
+  // malus et le devant gagne ; pressé (un adversaire à 2 m), la clé laisse le dos : le pressé a le droit de se retourner.
+  const fixture = (over, presse) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ shotRange: 20, ...over }); for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    const goal = st.pitch.attackGoal(0), s = Math.sign(goal.x || 1), team0 = st.players.filter((q) => q.team === 0 && !q.keeper), c0 = team0[6], dos = team0[5], devant = team0[7];
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = q.keeper ? goal.x : goal.x - s * 12; q.p[2] = q.keeper ? 0 : (q.post ?? 0) * 3 - 15; q.v = [0, 0]; }
+    for (const q of team0) { q.p[0] = -s * 30; q.p[2] = (q.post ?? 0) * 4 - 20; q.v = [0, 0]; }
+    c0.p[0] = s * 20; c0.p[2] = 0; dos.p[0] = s * 10; dos.p[2] = 0; devant.p[0] = s * 33; devant.p[2] = 0;   /* dans la moitié adverse : la sortie au gardien n'existe pas ici */ for (const q of [c0, dos, devant]) { q.v = [0, 0]; q.yaw = Math.atan2(0, s); q.yawWant = null; }
+    { const g = st.players.filter((q) => q.team === 1 && !q.keeper)[1]; g.p[0] = s * 33; g.p[2] = 3.5; }   /* un adversaire à 3,5 m du coéquipier de devant : sans la clé, le dos libre au point doux gagne */
+    if (presse) { const f = st.players.find((q) => q.team === 1 && !q.keeper); f.p[0] = s * 20; f.p[2] = 2.2; }   /* le presseur à 2,2 m sur le côté : hors des deux lignes de passe */
+    st.ball.restart([c0.p[0], 0.11, c0.p[2]], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c0.id); st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 0.2; st.lastTouch = 0; c0._controleAt = st.t - 0.1;
+    const b = choosePass(st, cfg); return { to: b?.to?.id, dos: dos.id, devant: devant.id }; };
+  const fA = fixture({ toucheEngage: K }, false), fN = fixture({}, false), fP = fixture({ toucheEngage: K }, true);
+  ok(`lot 286 — …la FIXTURE : après le contrôle, libre, la clé sert DEVANT (élu #${fA.to} = #${fA.devant}) ; sans la clé, le dos (élu #${fN.to} = #${fN.dos}) ; pressé, la clé laisse le dos (élu #${fP.to} = #${fP.dos})`,
+    fA.to === fA.devant && fN.to === fN.dos && fP.to === fP.dos);
+  // (c) le monde, la loi ALLUMÉE contre le défaut ÉTEINT : 3 × 600 s — la RÉFUTATION se mesure : les pertes montent (> 1,05 × le défaut : mesuré 248-252 c. 222) ;
+  // c'est pourquoi la clé est nulle par défaut ; les passes vivent (≥ 0,9) ; les
+  // demi-tours (> 120° dans les 2 s après un contrôle) et ceux qui tournent vers son propre but sont INFORMATIFS à cette échelle (la sonde
+  // 4 × 90 min : vers son but −19 %, le ballon soudé pendant le demi-tour −21 %, le total 30 → 29 % en course et 38 → 33 % posé — la
+  // fixture prouve le mécanisme, le monde le compte).
+  const monde = (cfg) => { const o = { ctrl: 0, demi: 0, versSoi: 0, pertes: 0, passes: 0 }; const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+    for (const seed of [3, 7, 11]) { const st = makeMatch({ full: true, seed }); let seen = 0; const suivis = [];
+      for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass') o.passes++; if (e.type === 'turnover' || e.type === 'perte') o.pertes++; if (e.type !== 'control' || e.miss) continue; const p = st.players[e.by]; if (!p || p.keeper || st.ball.owner !== p.id) continue; o.ctrl++; suivis.push({ p, t0: st.t, yaw0: p.yaw, max: 0, yawT: p.yaw, gS: Math.sign(st.pitch.attackGoal(p.team).x || 1) }); }
+        for (let k = suivis.length - 1; k >= 0; k--) { const sv = suivis[k], tr = Math.abs(wrap(sv.p.yaw - sv.yaw0)); if (tr > sv.max) { sv.max = tr; sv.yawT = sv.p.yaw; } if (st.t - sv.t0 >= 2) { if (sv.max > 2 * Math.PI / 3) { o.demi++; if (Math.cos(sv.yawT) * sv.gS < -0.3) o.versSoi++; } suivis.splice(k, 1); } } }
+      o.pertes += st.turnovers ?? 0; }
+    return o; };
+  const mA = monde(matchCfg({ shotRange: 20, toucheEngage: K })), mN = monde(matchCfg({ shotRange: 20 }));
+  ok(`lot 286 — …et LE MONDE (la loi ALLUMÉE contre le défaut éteint) : 3 × 600 s, pertes ${mA.pertes} > 1,05 × ${mN.pertes} — la réfutation mesurée, la clé est nulle par défaut ; passes ${mA.passes} ≥ 0,9 × ${mN.passes} ; informatif : demi-tours > 120° dans les 2 s après un contrôle ${mA.demi} / ${mA.ctrl} c. ${mN.demi} / ${mN.ctrl} sans la clé, dont vers son propre but ${mA.versSoi} c. ${mN.versSoi}`,
+    mA.ctrl >= 100 && mA.pertes > 1.05 * mN.pertes && mA.passes >= 0.9 * mN.passes && matchCfg({}).toucheEngage === null);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

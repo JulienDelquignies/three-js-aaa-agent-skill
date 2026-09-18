@@ -534,6 +534,22 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La touche qui engage (lot 286, `cfg.toucheEngage` — `engage.js`, éteinte par défaut)
+
+Les retours du 17/09, point 2 (les contrôles). Sondé (`scripts/book/sonde-286.mjs`, 4 × 90 min) : après un contrôle, un demi-tour de
+plus de 120° dans les 2 s suit 30 % des contrôles en course et 38 % des contrôles posés — un tiers vers son propre but, un tiers avec
+le ballon soudé au pied, un tiers après une perte.
+
+- **`fenetreDe`, `engageDe`, `ecartDe`, `malusDe`, `rabatDe`** (pures) : la fenêtre d'engagement commit × (2 − decF) × axe(tempo), active
+  sans presseur ; le malus d'une passe à plus de `angle`° du regard ; la poussée rabattue à ± angle. `choosePass` et la conduite de
+  `match-sim` les lisent quand la clé est posée ; `p._controleAt` date le contrôle (`rondo-sim`).
+- **Réfutée par la mesure** : demi-tours 30 → 29 % en course et 38 → 33 % posé, mais pertes + 12 % (la conduite forcée vers l'avant
+  se perd dans les jambes). La clé est `null` par défaut — le pivot d'hier au bit ; un projet l'allume avec
+  `{ commit: 0.5, angle: 100, malus: 8, presse: 2.5, lent: 1.2, vif: 0.8 }`. Le corps ouvert plus tôt (170, part 0,8-1,0) n'a aucun
+  effet sur les demi-tours.
+- **Ce que le lot nomme** : le demi-tour après contrôle exécute une passe arrière élue (le barème de la passe en une touche) ; le
+  pivot avec le ballon soudé est un geste à animer.
+
 ### L'attente vivante (lot 285, `cfg.attenteVivante` — `attente-vivante.js`)
 
 Les retours du 17/09, point 1, la suite. Mesuré avant (`sonde-284`, 4 × 90 min) : 89 % des joueurs de champ figés au milieu des

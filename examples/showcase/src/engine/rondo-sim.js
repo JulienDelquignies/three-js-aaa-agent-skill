@@ -339,7 +339,7 @@ function receive(st, id, cfg = RONDO) {
       // La note au contrôle vit à pMiss (le manqué) — le « 4 m de première touche » du 179 s'instruira au FILM, pas à ce site.)
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
       if (!toucheOrientee(st, p, cfg, RC)) st.ball.possess(id); if (RC) { p._protege = st.t + RC.protege; p._issue = RC.issue; }   /* (399) LA TOUCHE ORIENTÉE (cfg.toucheOrientee) : le receveur libre en course ou dos au jeu EMMÈNE le ballon du côté ouvert au lieu de le capturer */   // (265) la touche propre est SIENNE pendant le budget du contrôle
-      st._settling = { ev: st.events.length, id, at: st.t + T, ...(st._pousse ? { pousse: true } : {}) };
+      p._controleAt = st.t; st._settling = { ev: st.events.length, id, at: st.t + T, ...(st._pousse ? { pousse: true } : {}) };   /* (286) la date du contrôle : la touche qui engage la lit */
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),

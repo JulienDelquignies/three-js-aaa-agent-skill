@@ -6,7 +6,7 @@ import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
-import { xtDe, termeXt } from './xt.js';
+import { xtDe, termeXt } from './xt.js'; import { engageDe, ecartDe, malusDe } from './engage.js';
 import { pSuccDe, termeDe } from './selection.js';
 import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
@@ -144,7 +144,8 @@ export function choosePass(st, cfg = RONDO) {
   const _SEL = st.full && cfg.selection ? cfg.selection : null, _selPc = _SEL ? pressionDe(st, c, cfg.passe ?? {}, cfg).P : 0;   // LA SÉLECTION CALIBRÉE (267) : la pression du porteur, une fois
   const _force = st.full && cfg.passeSure && st.hold >= (cfg.holdMax ?? 3) - (cfg.passeSure.avant ?? 0.4);   // (215) la fenêtre de la passe forcée
   const _gSL = Math.sign(st.pitch?.attackGoal?.(c.team)?.x || 1);
-  const _xtG = st.full && cfg.xt && st.pitch?.attackGoal ? st.pitch.attackGoal(c.team) : null, _xtC = _xtG ? xtDe(st.pitch, _xtG, c.p) : 0;   /* (283) la valeur de position xT du porteur — le terme ΔV au barème (Modèle 06 §8.1) */
+  const _xtG = st.full && cfg.xt && st.pitch?.attackGoal ? st.pitch.attackGoal(c.team) : null, _xtC = _xtG ? xtDe(st.pitch, _xtG, c.p) : 0;
+  const _eng = st.full && cfg.toucheEngage && c._controleAt != null ? engageDe(cfg.toucheEngage, { dt: st.t - c._controleAt, foe: Math.min(...foesL.filter((q) => q.down <= 0).map((q) => d2(q.p, c.p)), 99), decF: c.skill?.decF ?? 1, tempo: st.full ? tac(st, c.team).tempo : 0.5 }) : null;   /* (286) la touche qui engage : la passe dans le dos attend une touche */   /* (283) la valeur de position xT du porteur — le terme ΔV au barème (Modèle 06 §8.1) */
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
   // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
   // photo légale, elle, se prend au DÉPART du ballon (strikeNow) — entre les deux vit l'armé,
@@ -486,6 +487,7 @@ export function choosePass(st, cfg = RONDO) {
       // …ET LE BON DÉCIDEUR REFUSE LA LIGNE FERMÉE (243) : sous seuil m de marge, malus × (1 − marge/seuil) × decF (la note décisions : 1 à 50, le bon refuse plus, le mauvais tente)
       - (st.full && cfg.ligneFermee && !bascule && lane.margin < (cfg.ligneFermee.seuil ?? 1) ? (cfg.ligneFermee.malus ?? 5) * (1 - lane.margin / (cfg.ligneFermee.seuil ?? 1)) * (c.skill?.decF ?? 1) : 0)
       - malusMarque                                         // LE MARQUÉ NE SE JOUE QU'EN REMISE (240a)
+      - (_eng?.actif ? malusDe(cfg.toucheEngage, true, ecartDe(lead[0] - origin[0], lead[2] - origin[2], c.yaw)) : 0)   /* (286) pendant l'engagement, une passe à plus de angle° du regard coûte malus */
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       // L'HOMME LIBRE (233, cfg.hommeLibre && st.full — Xavi/Lillo : trouver l'homme libre, pas le marqué. Mesuré avant :
       // 18 % des passes vers un receveur à < 3 m d'un adversaire, interceptées à 27-36 % (libre ≥ 3 m : 9 %) — le terme

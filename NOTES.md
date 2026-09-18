@@ -13374,6 +13374,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pertes 124 c. 107 ≤ +15 %) — rouge à HEAD~ 3d79d38 AUSSI : la borne min 3 → 5 du 284 a été posée après son banc, les annexes
      n'ont pas été rejouées, nommé ici. Réexécutions isolées toutes vertes. Bloc 1 seul : 0,65 ms/step (≤ 1,6). Sceau : commit 45a43bd, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo-91ZWpKs5 — l'attente vivante y est).
+- 409: LE CONTRÔLE ET CE QUI SUIT — LA TOUCHE QUI ENGAGE, RÉFUTÉE (286 — les retours du 17/09, point 2 : « trop de mauvais
+     contrôles où le ballon reste dans les pieds du joueur qui s'emmêle et doit faire demi-tour pour le récupérer »). LA SONDE
+     (sonde-286, 4 × 90 min, graines 3/7/11/13 — à chaque contrôle réussi, le ballon 0,3 s après relativement au corps, le plus
+     grand virage dans les 2 s, la perte-reprise, le ballon dans le dos puis repris, la vitesse à 1 s, le sens du demi-tour et la
+     décision qui suit) : 1050 contrôles / match, 7,5 % manqués (le 265 : propre 1278, lourde 289, contesté 423, manqué 60 sur 4
+     matchs). EN COURSE (366 / match) : le ballon à 0,3 s aux pieds 84 %, devant 9 %, DERRIÈRE 7 % ; DEMI-TOUR > 120° dans les 2 s :
+     30 % — un tiers vers son propre but (140 / 445), un tiers le ballon SOUDÉ au pied pendant le pivot (96 — ce que l'œil lit « il
+     s'emmêle »), un tiers sans action ensuite (153 : le ballon parti) ; la décision qui suit est une passe 209 fois ; le ballon dans
+     le dos puis repris 5 % seulement. POSÉ (136 / match) : demi-tour 38 %, ballon soudé 43 / 157, vers son but 72. Le symptôme est
+     donc le PIVOT APRÈS LE CONTRÔLE, pas le ballon qui fuit derrière. DEUX LEVIERS ESSAYÉS, DEUX MESURES. (a) LA TOUCHE QUI ENGAGE
+     (engage.js, cfg.toucheEngage — ch. 8 §6 l'engagement T_commit, Modèle 09 §6.2) : après un contrôle, sans presseur à < 2,5 m,
+     pendant commit 0,5 s × (2 − decF) × axe(tempo, 1,2, 0,8), une passe à plus de 100° du regard coûte malus (4 puis 8) au barème et
+     la conduite garde son cap (la poussée rabattue à ± 100°) — lois pures, fixture (libre : la passe de devant bat celle du dos ;
+     pressé : le dos reste permis) ; MESURÉ 4 × 90 min à malus 4 : demi-tours 30 → 29 % en course, 38 → 33 % posé, vers son but
+     −19 %, le ballon soudé pendant −21 %, MAIS les pertes montent (3 × 600 s : 222 → 250-252, + 12-13 % ; à malus 0, la conduite
+     seule : 248 — la conduite forcée vers l'avant se perd dans les jambes, le demi-tour était le repli). RÉFUTÉE : la clé est
+     NULLE par défaut (le pivot d'hier au bit), la loi reste nommée pour un projet qui la voudrait. (b) LE CORPS OUVERT PLUS TÔT
+     (170, part 0,55 → 0,8 / max 1,2 → 1,6 rad, puis 1,0 / 2,0) : demi-tours 30 / 32 % en course, 32-33 % posé — AUCUN effet : le
+     pivot ne vient pas de l'orientation avant la réception. CE QUE LE LOT NOMME : le demi-tour après le contrôle est l'exécution
+     d'une DÉCISION (une passe vers l'arrière élue dans 34 % des cas : le levier est le barème de la passe en une touche — le point
+     suivant du retour), et le PIVOT SOUDÉ est un fait de port (le ballon tourne avec le corps au point du pied : le pivot avec ballon
+     est un geste à animer — la branche animations). Banc : verify-match11 bloc 286 (index 184 : lois pures — la fenêtre à
+     l'identité et par decF / tempo, actif / passé / pressé, l'écart, le malus, le rabat ; la fixture avec la clé allumée ; le monde :
+     la réfutation MESURÉE — pertes > 1,05 × le défaut, la clé nulle par défaut). Jumeau trivial : le défaut 286 = le défaut 285 corrigé
+     (326ae7bb803ff4f9 / f5c289f166f54abc — l'empreinte notée au 408 (fb5442ad…) était celle d'AVANT les deux corrections du
+     285, la vraie est celle-ci). Banc complet (final292 : 8 shards puis 49 annexes) : 1265 ✓ / 7 ✗ au premier passage, AUCUNE épingle
+     (le monde par défaut est celui du 285 au bit) — match11 341 ✓ / 1 ✗ (246d, hérité) ; annexes 924 ✓ / 6 ✗ : loi12 (le mur),
+     loi15, renversement (l'orientation — et le lot 99, rouge à HEAD~ 81be7bf aussi : hérité du 285, nommé ici), signes (le
+     garde-fou, hérité du 284) — tous hérités. Bloc 1 seul : 0,61 ms/step (≤ 1,6). SCEAU_286
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

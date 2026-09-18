@@ -708,6 +708,12 @@ vivante (91 % des joueurs de champ figés pendant les attentes) — le lot suiva
 déplacement seedé et lissé × workRate × tempo), le camp qui remet décroche aux deux dernières secondes (× offTheBall), le camp qui défend
 serre son homme ; 89 → 25 % de figés, 0,21 → 1,09 m/s. Reste : le jouer-au-bon-moment.
 
+**286 — LE CONTRÔLE ET CE QUI SUIT : LA TOUCHE QUI ENGAGE, RÉFUTÉE (409).** Sondé : 30 % des contrôles en course et 38 % des contrôles
+posés sont suivis d'un demi-tour > 120° — un tiers vers son but, un tiers le ballon soudé au pied, un tiers après une perte. La touche
+qui engage (engage.js : T_commit du ch. 8 §6) baisse peu les demi-tours et monte les pertes de 12 % → nommée, éteinte par défaut ; le
+corps ouvert plus tôt (170) n'y change rien. Nommé : le demi-tour est l'exécution d'une passe arrière élue (le barème de la passe en
+une touche, le point suivant), le pivot soudé est un geste à animer.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
