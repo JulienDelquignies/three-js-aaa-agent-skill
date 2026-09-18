@@ -13337,6 +13337,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      MDC C|appel, MDC C|tenue) ; hérités : loi12 (le mur), loi15, renversement (l'orientation). Réexécutions isolées toutes
      vertes. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau : commit da19c29, poussé ; déploiement showcase-pi-mocha au troisième essai (cmp du chunk
      Rondo-Bh7DB0Ki — le bouton « Passer la cérémonie » et la touche rapide y sont).
+- 408: L'ATTENTE VIVANTE (285 — les retours du 17/09, point 1, la suite : « aux coups de pied arrêtés tout le monde est à
+     l'arrêt en attendant que ça joue, il faut rendre ça vivant »). LA SONDE (sonde-284 après le 284, 4 × 90 min) : au milieu des
+     attentes de remise, 89 % des joueurs de champ figés (< 0,25 m/s), 0,21 m/s de moyenne (coup franc 0,09, sortie de but 0,16,
+     corner 0,21, touche 0,44) — chacun marchait à son poste puis s'y plantait. LA LOI (attente-vivante.js, cfg.attenteVivante &&
+     st.full) : pendant l'attente d'une remise (hors engagement — la Loi 8 pose chacun — et hors penalty), chaque joueur de champ qui
+     n'est ni le preneur, ni au mur, ni en fête, ni en marche vers un poste lointain (> 5 m) reçoit un MICRO-DÉPLACEMENT continu
+     autour de son poste : deux images-clés seedées par joueur et par remise (hashDe, un hash entier stable — aucun tirage global,
+     le déterminisme tient), interpolées en smoothstep sur 3 s, amplitude 1,2 m × workF (workRate) × axe(tempo, 0,8, 1,2) ; dans
+     les 2 dernières secondes, le camp qui remet DÉCROCHE (les receveurs à ≤ 18 m du point s'écartent de leur adversaire le plus
+     proche de 2,5 m × otbF) et le camp qui défend SERRE son homme (0,6 m vers l'adversaire à < 4 m). Greffée dans match-sim après
+     l'élection du preneur (il n'en est pas). Le camp qui défend n'entre JAMAIS dans le rayon du règlement de la remise (Loi 15 :
+     2,3 m du lanceur ; 9,45 m ailleurs) — le banc l'a attrapé au premier jet (171d : un défenseur serré à 1,16 m du lanceur pour
+     ≥ 1,7), la loi a été corrigée avant le sceau ; au deuxième jet le 207 a attrapé une cible de micro-déplacement hors du terrain — les cibles
+     sont bornées aux limites (bord 0,5 m). Attributs : workRate, offTheBall ; tactique : tempo ; le 50 et 0,5 sont l'identité.
+     Clé absente : l'attente plantée d'hier au bit — jumeau prouvé (attenteVivante null = le défaut 284 3d79d38 326ae7bb803ff4f9 /
+     fffdfa37645b241d ; le défaut 285 bouge dès la première touche de la graine 7 : fb5442ad2f954b13). APRÈS (4 × 90 min) : 1,09 m/s
+     de moyenne à mi-attente, 25 % figés (89) — coup franc 0,96, touche 1,41, sortie de but 1,15, corner 0,72, penalty 0,02 ; le
+     temps de jeu du 284 inchangé (touches 17,4 s, 11 % jouées vite, 90 % de contrôles). Banc : verify-match11 bloc 285 (index 183 :
+     lois pures — le hash stable dans [0 ; 1[, le micro-déplacement borné par amp et continu (saut max 1,4 cm à 1/60 s), différent
+     par joueur et par remise, × 1,15 pour le travailleur, 0 sur engagement et penalty ; le monde 3 × 600 s — 0,94 m/s c. 0,23,
+     figés 27 % c. 90, le preneur pas plus pressé qu'hier, les receveurs à 10,7 m de leur adversaire aux dernières secondes c. 9,0
+     à mi-attente). Ce que le lot nomme : le jouer-au-bon-moment des remises (la remise part quand un receveur s'est ouvert, pas
+     à l'horloge seule) — avec les autres retours du 17/09. Banc complet (final291, la troisième passe — les deux premières ont attrapé la Loi 15 et la cible hors
+     terrain : 8 shards puis 49 annexes) : 1237 ✓ / 32 ✗ au premier passage — match11 320 ✓ / 19 ✗ : seize blocs verts à HEAD~
+     (worktree 3d79d38, les huit shards prouvés) et épinglés attenteVivante null DATÉ 285 [le coin d'hier (32), 141 la pousse, 177
+     l'ancre, 112 le ciel, 224 la montée sur coup franc (marqués à 2,1 m : le décrochage écarte le marqueur), le troisième homme
+     (137), 279 l'instep, 135 les cibles, 280 la ligne accrochée, 114 la croqueta, les contres à l'entrée (139), la gâchette, 267
+     la sélection, 283 la valeur des réceptions, la patate chaude, 212 le through, 284 les touches jouées vite (0 / 8 en 3 × 600 s,
+     11 % à 4 × 90 min), le pivot en relance basse (135)], hérités : 246d, le FLUX des couloirs ; annexes 917 ✓ / 13 ✗ :
+     attributes 157 (l'horloge du pique — 27/0 à HEAD~), decalage (les pertes par passe), porte (le porté qui anticipe, 2 clauses),
+     signes (la pausa sans la clé, les receveurs qui attendent), tactics (la hauteur de bloc) épinglés après preuve à HEAD~ ;
+     identification REGELÉE 15 → 21 signatures (perdues LAT A|largeurR, DC B|appel, MDC B|tenue, MDC C|appel, MDC C|tenue ; gagnées
+     LAT A|profondeur, LAT A|appel, LAT C|appel, LAT D|largeurR, MDC A|largeurR, MO A|press, MDC B|profondeur, MDC C|largeurR,
+     MDC C|profondeur, AV A|largeurR, AIL D|largeurR) ; hérités : loi12 (le mur), et le garde-fou des signes (passes 340 c. 346,
+     pertes 124 c. 107 ≤ +15 %) — rouge à HEAD~ 3d79d38 AUSSI : la borne min 3 → 5 du 284 a été posée après son banc, les annexes
+     n'ont pas été rejouées, nommé ici. Réexécutions isolées toutes vertes. Bloc 1 seul : 0,65 ms/step (≤ 1,6). SCEAU_285
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

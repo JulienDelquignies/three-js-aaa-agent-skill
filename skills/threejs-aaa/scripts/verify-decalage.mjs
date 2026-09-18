@@ -19,7 +19,7 @@ console.log('— (a) le match : des crochets, des passements en course —');
 const match = (over, seeds = [3, 7], secs = 300) => {
   const R = { crochets: 0, passCourse: 0, passPoses: 0, pertes: 0, passes: 0 };
   for (const seed of seeds) {
-    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ xt: null /* xt null DATÉ 283 : vert à HEAD~ (worktree bd3322e), les crochets remangés (1 avec la clé c. ≥ 2 sur 2 × 300 s : la valeur de position change les conduites) — la clause mesure sa loi, pas la valeur de position xT */, ...PINS, ...over });
+    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ attenteVivante: null /* attenteVivante null DATÉ 285 : vert à HEAD~ (worktree 3d79d38), les pertes par passe remangées (0,57 c. 0,38 × 1,2 + 0,02 : le duel attaqué se perd aussi) — la clause mesure sa loi, pas l'attente vivante */, xt: null /* xt null DATÉ 283 : vert à HEAD~ (worktree bd3322e), les crochets remangés (1 avec la clé c. ≥ 2 sur 2 × 300 s : la valeur de position change les conduites) — la clause mesure sa loi, pas la valeur de position xT */, ...PINS, ...over });
     for (let i = 0; i < 60 * secs; i++) matchStep(st, 1 / 60, cfg);
     for (const e of st.events) { if (e.type === 'skill' && e.kind === 'crochet') R.crochets++; if (e.type === 'skill' && e.kind === 'passement') { if (e.enCourse) R.passCourse++; else R.passPoses++; } if (e.type === 'pass') R.passes++; }
     R.pertes += st.turnovers ?? 0;

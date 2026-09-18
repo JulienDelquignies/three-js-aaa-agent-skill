@@ -534,6 +534,23 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### L'attente vivante (lot 285, `cfg.attenteVivante` — `attente-vivante.js`)
+
+Les retours du 17/09, point 1, la suite. Mesuré avant (`sonde-284`, 4 × 90 min) : 89 % des joueurs de champ figés au milieu des
+attentes de remise, 0,21 m/s de moyenne.
+
+- **`hashDe(a, b, c)`** : un hash entier stable dans [0 ; 1[ (aucun tirage global : le déterminisme tient). **`microDe(id, seed, t, K,
+  ampF)`** : le micro-déplacement — deux images-clés (angle, rayon ≤ amp) interpolées en smoothstep sur la période ; borné, continu.
+- **`attenteVivanteStep(st, r, cfg, taker)`** : pendant l'attente d'une remise (hors engagement et penalty), déplace la cible des joueurs
+  de champ éligibles (ni le preneur, ni le mur, ni la fête, ni la marche lointaine) autour de leur poste ; aux `appel` dernières
+  secondes le camp qui remet décroche (× otbF) et le camp qui défend serre. Greffée dans `match-sim` après l'élection du preneur.
+- **Attributs, tactiques** : `workF` (workRate) sur l'amplitude, `otbF` (offTheBall) sur le décrochage, l'axe `tempo` (0,8 ↔ 1,2) ;
+  50 et 0,5 sont l'identité.
+- **Config** `attenteVivante: { amp: 1.2, periode: 3, loin: 5, appel: 2, rayon: 18, decroche: 2.5, serre: 4, colle: 0.6, lent: 0.8, vif: 1.2 }` ;
+  clé absente : l'attente plantée d'hier au bit.
+- **Mesuré après** : 1,09 m/s à mi-attente, 25 % de figés (89) ; touche 1,41, sortie de but 1,15, coup franc 0,96, corner 0,72.
+  Réutilisation : la marche aléatoire seedée sert à toute attente (mur, cérémonie, banc).
+
 ### Le temps de jeu (lot 284, `skipCeremonie`, `cfg.toucheRapide`, `cfg.toucheAuPied`)
 
 Les retours du 17/09, point 1. Mesuré avant (`scripts/book/sonde-284.mjs`, 4 × 90 min) : cérémonie 37 s, touches 17,5 s sans aucune

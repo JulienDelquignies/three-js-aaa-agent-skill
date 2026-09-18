@@ -704,6 +704,10 @@ moyenne, la queue basse à 5-9 s quand le ballon est là, un receveur libre et r
 pied (le jet court tendu à 0,55 m ; la remise de tête qui ne revient au lanceur qu'à 0,35 × (2 − decF) : 95 → 0 %). Nommé : l'attente
 vivante (91 % des joueurs de champ figés pendant les attentes) — le lot suivant.
 
+**285 — L'ATTENTE VIVANTE : SCELLÉ (408).** Pendant l'attente d'une remise, chaque joueur de champ bouge autour de son poste (le micro-
+déplacement seedé et lissé × workRate × tempo), le camp qui remet décroche aux deux dernières secondes (× offTheBall), le camp qui défend
+serre son homme ; 89 → 25 % de figés, 0,21 → 1,09 m/s. Reste : le jouer-au-bon-moment.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
