@@ -13335,7 +13335,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      lot 99 — 7/1, l'orientation héritée) épinglés après preuve à HEAD~ ; identification REGELÉE 10 → 15 signatures (perdues
      MO A|press, MDC B|press ; gagnées LAT A|largeurR, DC B|appel, LAT B|largeurR, LAT C|profondeur, LAT D|profondeur,
      MDC C|appel, MDC C|tenue) ; hérités : loi12 (le mur), loi15, renversement (l'orientation). Réexécutions isolées toutes
-     vertes. Bloc 1 seul : 0,57 ms/step (≤ 1,6). SCEAU_284
+     vertes. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau : commit da19c29, poussé ; déploiement showcase-pi-mocha au troisième essai (cmp du chunk
+     Rondo-Bh7DB0Ki — le bouton « Passer la cérémonie » et la touche rapide y sont).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
