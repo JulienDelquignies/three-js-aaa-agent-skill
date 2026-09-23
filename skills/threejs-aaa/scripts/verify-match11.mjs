@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { writeFileSync } from 'node:fs';
 // verify-match11.mjs — LE 11C11 EST UNE CONFIGURATION, ET ÇA SE PROUVE (la promesse de
 // MOTEUR.md « greffer le 11c11 : le chemin balisé », tenue).
 //
@@ -126,7 +127,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // l'identique. Le partage round-robin équilibre les blocs lourds naturellement.
 const __NS = +(process.env.BANC_SHARDS ?? 1), __ID = +(process.env.BANC_SHARD ?? 0);
 let __nb = -1;
-const __bloc = () => (++__nb % __NS) === __ID;
+// LE BANC CIBLÉ ET CHRONOMÉTRÉ (lot 296, la demande « les bancs sont beaucoup trop longs ») : BANC_BLOCS=1,190,191 ne joue que ces
+// indices (le banc rapide d'un lot) ; BANC_TEMPS=fichier écrit à la sortie la durée de chaque bloc joué (le profil qui choisit les
+// sentinelles et désigne les blocs à alléger). Sans elles : le round-robin d'hier, au bit.
+const __SEL = process.env.BANC_BLOCS ? new Set(process.env.BANC_BLOCS.split(',').map(Number)) : null, __TF = process.env.BANC_TEMPS ?? null, __TT = [];
+let __tCur = -1, __t0 = 0;
+const __bloc = () => { const k = ++__nb, now = Date.now(); if (__TF && __tCur >= 0) { __TT.push([__tCur, now - __t0]); __tCur = -1; }
+  const on = __SEL ? __SEL.has(k) : (k % __NS) === __ID; if (on && __TF) { __tCur = k; __t0 = now; } return on; };
+if (__TF) process.on('exit', () => { if (__tCur >= 0) __TT.push([__tCur, Date.now() - __t0]); try { writeFileSync(__TF, JSON.stringify(__TT)); } catch {} });
 
 // ---------- 1. la formation est une donnée saine — TOUT le catalogue (lot 17)
 if (__bloc()) {

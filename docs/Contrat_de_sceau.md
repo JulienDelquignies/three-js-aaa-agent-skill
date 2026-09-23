@@ -74,6 +74,15 @@ Une preuve à HEAD~ ne vaut que si son journal se ferme par la ligne de bilan «
 (leçon du 288 — six épingles posées sur des preuves tronquées, rejouées avant le sceau). Certaines annexes préfixent leur bilan de leur nom
 (« verticalite : 6 ✓ / 0 ✗ ») : l'expression de contrôle est `^([^:]+ : )?[0-9]+ ✓ / [0-9]+ ✗$` (leçon du 289 ; au 290, les préfixes accentués ou à espace — « sortie aérienne : » — l'ont élargie).
 
+## La cadence des bancs (23/09 — « les bancs sont beaucoup trop longs »)
+
+Le banc complet (verify-match11 en 8 shards + ~45 annexes) coûte ~6 h de CPU sur 4 cœurs. Il ne se joue plus à chaque lot mais
+PAR GROUPE de 3-4 lots : ses rouges se prouvent à la base du groupe (worktree) et s'épinglent en une fois, lot par lot (la clé du
+lot qui les a rougis). Chaque lot joue le BANC RAPIDE (`skills/threejs-aaa/scripts/banc-rapide.sh '<clés nulles>' <blocs>`) : le
+jumeau à 90 s, le budget (bloc 1), les blocs du lot, les sentinelles (`banc-sentinelles.txt`) et la synchronisation des copies —
+quelques minutes. Le déploiement suit le banc complet du groupe. Outils : `BANC_BLOCS=i,j,k` joue ces blocs seuls, `BANC_TEMPS=f`
+écrit la durée de chaque bloc (le profil qui choisit les sentinelles et désigne les blocs à alléger).
+
 ## L'ordre après le 295 (PLAN_DOCTRINE, la carte du book)
 
 Le 263 (cadence.js), le 264 (rng.js), le 265 (reception.js), le 266 (interception.js), le 267 (selection.js), le 268
