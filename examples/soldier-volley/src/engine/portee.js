@@ -9,6 +9,6 @@
  *  se LÈVE (le ballon long du vrai football vole ; la ligne au sol ouverte à 40 m n'existe presque pas). Les portes nommées gardent
  *  leurs bonus. Attributs : vision et passe (visionF, la portée) ; la précision (passSigma) joue à l'exécution. Tactique : le style direct la favorise déjà au barème.
  *  Clé absente : la portée de 13 m d'hier au bit. */
-export function porteeDe(rMax, m, c, K) {
+export function porteePasseDe(rMax, m, c, K) {
   return Math.max(rMax, (K.max ?? 45) * (c.skill?.visionF ?? 1));
 }

@@ -36,6 +36,7 @@ import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-
 import { serreDe } from '../assets/starter/src/engine/serre.js';
 import { piqueTenteDe, piqueReussiteDe } from '../assets/starter/src/engine/tacle-debout.js';
 import { toucheCorpsDe } from '../assets/starter/src/engine/touche-corps.js';
+import { porteePasseDe } from '../assets/starter/src/engine/portee.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
@@ -7414,6 +7415,31 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20, toucheCorps: K })), mN = monde(matchCfg({ shotRange: 20 }));
   ok(`lot 292 — …et LA RÉFUTATION : 4 × 900 s, clé allumée contre éteinte — échappées de conduite ${mA.ech} ≤ 0,8 × ${mN.ech} (la loi fait ce qu'elle dit) ; changements de possession par passe ${(mA.turn / mA.passes).toFixed(3)} ≥ 0,97 × ${(mN.turn / mN.passes).toFixed(3)} (le total ne baisse pas) ; passes ${mA.passes} c. ${mN.passes}, complétion ${mA.taux.toFixed(1)} c. ${mN.taux.toFixed(1)} % — la loi reste éteinte`,
     mA.ech <= 0.8 * mN.ech && mA.turn / mA.passes >= 0.97 * mN.turn / mN.passes);
+}
+
+if (__bloc()) {
+  // LA PORTÉE EST CELLE D'UN PIED (296 — Référentiel 02 : ballons longs ≥ 32 m 45-50 par équipe, la passe moyenne 20-22 m ; le moteur
+  // héritait du rondo une portée de 13 m, toute passe plus longue exigeait une porte nommée : 15-18 ballons longs, passe moyenne 14,3 m)
+  // — (a) lois pures : la portée à l'identité 45 m, le visionnaire (visionF 1,15) 51,75, le myope (0,85) 38,25 ; une porte plus longue
+  // (le renversement à 60) garde la sienne ; la clé par défaut lève au-delà de 32 m.
+  const K = matchCfg({}).porteePasse, m0 = {}, cS = (v) => ({ skill: { visionF: v } });
+  const r1 = porteePasseDe(13, m0, cS(1), K), rH = porteePasseDe(13, m0, cS(1.15), K), rL = porteePasseDe(13, m0, cS(0.85), K), rB = porteePasseDe(60, m0, cS(1), K);
+  ok(`lot 296 — LA PORTÉE EST CELLE D'UN PIED, lois pures : à l'identité ${r1} m, visionnaire ${rH.toFixed(2)}, myope ${rL.toFixed(2)}, une porte à 60 m garde ${rB} ; levée au-delà de ${K.leve} m`,
+    r1 === 45 && Math.abs(rH - 51.75) < 1e-9 && Math.abs(rL - 38.25) < 1e-9 && rB === 60 && K.leve === 32);
+  // (b) le monde : 4 × 900 s, clé par défaut contre éteinte — les ballons longs (≥ 32 m) au moins doublent, la passe moyenne s'allonge
+  // d'au moins 2 m, les passes ne baissent pas (≥ 0,98 × sans), la complétion tient (≥ sans − 2 pts).
+  const monde = (cfg) => { const o = { longs: 0, lsum: 0, passes: 0, ok: 0, n: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, pend = null;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null;
+          if (e.type === 'turnover' && pend) { o.n++; pend = null; }
+          if ((e.type === 'control' || e.type === 'receive' || e.type === 'loose-kept') && pend && p && p.team === pend.team) { o.n++; o.ok++; pend = null; }
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && p) { o.passes++; const q2 = st.players[e.to], L = q2 ? Math.hypot(q2.p[0] - p.p[0], q2.p[2] - p.p[2]) : 0; o.lsum += L; if (L >= 32) o.longs++;
+            if (pend) { o.n++; if (p.team === pend.team) o.ok++; } pend = { team: p.team, t: st.t }; } }
+        if (pend && st.t - pend.t > 6) pend = null; } }
+    return { ...o, moy: o.lsum / Math.max(1, o.passes), taux: 100 * o.ok / Math.max(1, o.n) }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, porteePasse: null }));
+  ok(`lot 296 — …et LE MONDE : 4 × 900 s, ballons longs ${mA.longs} ≥ 2 × ${mN.longs} ; passe moyenne ${mA.moy.toFixed(1)} m ≥ ${mN.moy.toFixed(1)} + 2 ; passes ${mA.passes} ≥ 0,98 × ${mN.passes} ; complétion ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} − 2`,
+    mA.longs >= 2 * mN.longs && mA.moy >= mN.moy + 2 && mA.passes >= 0.98 * mN.passes && mA.taux >= mN.taux - 2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
