@@ -53,3 +53,8 @@ stagger ; le volume de contests (Bible 15 D1-D2).
    le 269 en tentait 28-39, dont 17-20 take-ons) ; le spécialiste (la fréquence de tentative × e^{k·flair}, l'espérance à 1),
    le glissé de dernier recours (battu, au taux imposé) et sa faute au taux du book. Mesuré : T15bis 7-11 (≥ 5), glissés 4,6 / match (6,7), P(faute | glissé) 19 % (24), gestes 35-39 (≈ 40).
 3. **La tromperie dans le dribble** (Bible 14 lot 2, Modèle 04 lot 4) : le défenseur qui part du mauvais côté.
+4. **Le tacle debout** (§ 4.1-4.2) : le pied balaie ± 55° devant le buste, le ballon touché une fois sur deux, le défenseur battu 49 %.
+   → **SCELLÉ 291** (`tacle-debout.js`, `cfg.tacleDebout`, NOTES 414) : sondé (sonde-291) 77,5 % des tentatives de pique réussies, 15-17 %
+   hors du cône ; le cône du pied, la réussite à la note × 0,56 esquivée par le dribbleur (~52 % des tentatives), le battu assis 0,22 s.
+   Piques réussies 33 → ~17 par équipe, pertes 228 → ~215. Nommés : la récupération propre contre la déviation (issue déjà juste,
+   35-40 % récupérées), la faute du tacle debout (§ 4.3, le logit), le ballon libre hors passe (Modèle 09 § 7.1).

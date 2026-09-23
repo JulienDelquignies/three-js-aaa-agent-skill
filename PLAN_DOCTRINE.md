@@ -737,6 +737,11 @@ La loi (serre.js) serre la touche sous la pression lue ; la touche se serre (1,0
 (33 → 39-44 au monde de 90 min) : ils tombent sur des touches prises avant l'arrivée du presseur, et une conduite serrée multiplie
 les touches. Nommée, éteinte par défaut ; le levier est la pique elle-même (Modèle 11).
 
+**291 — LE TACLE DEBOUT (414).** Sondé : 77,5 % des tentatives de pique réussies (le book : le ballon touché une fois sur deux, le
+défenseur battu 49 %), 15-17 % hors du cône du pied. La loi (tacle-debout.js) : le cône de ± 55° devant le buste, la réussite à la
+note × 0,56 esquivée par le dribbleur, le battu assis 0,22 s. Piques 33 → 17 par équipe, pertes 228 → ~215. Reste nommé : le ballon
+libre hors passe (~95 pertes par équipe), le lot suivant.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

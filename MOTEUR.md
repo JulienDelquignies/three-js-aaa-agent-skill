@@ -534,6 +534,18 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### Le tacle debout (lot 291, `cfg.tacleDebout` — `tacle-debout.js`)
+
+Sondé (`scripts/book/sonde-291.mjs`, 4 × 90 min) : 77,5 % des tentatives de pique réussies, 15-17 % hors du cône du pied ; le book
+(Modèle 11 § 4.2, tacle debout) : le ballon touché ~50 %, le défenseur battu 49 %.
+
+- **`piqueTenteDe(q, ball, K)`** : le ballon dans ± cone° (55) devant le buste du défenseur — sinon, pas de tentative.
+- **`piqueReussiteDe(pokeSkill, c, K)`** : la note d'hier × k (0,56) × (1 − esq·esquiveF/0,08) — tackling contre dribbling.
+- **Le battu** : le pied manqué pose `q._bite` pendant battu s (0,22) : la pointe × biteSlow (movement.js).
+- **Attributs** : tackling (portée, note), dribbling (esquive). Tactique, rôles : rien.
+- **Config** `tacleDebout: { cone: 55, k: 0.56, esq: 0.15, battu: 0.22 }` ; clé nulle : le pique d'hier au bit.
+- **Mesuré** : piques réussies 33 → ~17 par équipe, réussite ~52 % des tentatives, pertes 228 → 209-220, complétion tenue.
+
 ### La conduite se serre sous pression (lot 290, `cfg.conduiteSerree` — `serre.js`) — RÉFUTÉE, éteinte par défaut
 
 Sondé (`scripts/book/sonde-290.mjs`, 4 × 90 min) : ~1 100 touches de conduite par équipe, l'écart pied-ballon ~1 m dans toutes les

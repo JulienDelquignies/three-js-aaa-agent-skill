@@ -13555,6 +13555,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (« cérémonie : », « retournée : », « sortie aérienne : ») échappaient à l'expression du bilan — vertes à la lecture. SCEAU 290 :
      commit 7f2f6e0 poussé ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-CSUHVj9A.js identique au bit
      (cmp, 625 661 octets).
+- 414: LE TACLE DEBOUT (291 — le levier nommé au 290 : la pique elle-même, Modèle 11 § 4). LA SONDE (sonde-291, 4 × 90 min, chaque
+     TENTATIVE : réussie = l'événement 'tacle-pique', manquée = le cooldown court posé à l'image) : ~42 tentatives par équipe et par
+     match, RÉUSSIES 77,5 % (le book, tacle debout n = 51 242 : le ballon touché ~50 % — récupération 21, déviation neutre 29 —, le
+     défenseur BATTU 49 %) ; 15-17 % des tentatives hors du cône de ± 55° devant le buste (le pied ne balaie pas là) ; aucune de dos ;
+     l'issue des réussies déjà juste (récupérée 35-40 % à 2 s, le book 42 % des touchées). LA LOI (tacle-debout.js, `cfg.tacleDebout`) :
+     (1) le cône — hors de ± 55° devant le buste, pas de tentative ; (2) la réussite = la note d'hier × k, esquivée par le dribbleur
+     (× (1 − 0,15·esquiveF/0,08), 0 exact à 50 : tackling CONTRE dribbling) ; (3) le battu — le pied manqué assoit le défenseur 0,22 s
+     (la morsure native _bite, pointe × biteSlow ; le book : staggerTimer 0,15-0,30). k CALÉ SUR LE MONDE : × 0,70 (0,51 à
+     l'identité) laissait 62-66 % de réussies (les défenseurs du monde sont notés au-dessus de 50) ; × 0,56 en rend 46-58 %. MESURÉ
+     (4 × 90 min) : piques réussies 33 → ~17 par équipe, hors cône 2,5-5 % (la rotation de l'image), pertes 228 → 209-220, passes
+     361-365 par équipe, complétion 82-84 %, 1,44-1,50 passe par séquence. CE QUI RESTE : les pertes sont encore ~215 (110-140) —
+     le BALLON LIBRE hors passe (conduite, rebond, dégagement) en fait 44-46 %, ~95 par équipe : le lot suivant. Bloc 291 (index 189) :
+     lois pures (30° tenté, 80° non ; réussite 0,406 à l'identité, 0,345 / 0,467 contre un dribbleur fort / faible ; battu 0,22 s) et
+     4 × 900 s contre la clé éteinte (réussies 53 % c. 72 ; piques 24 c. 33 ; changements de possession par passe 0,511 c. 0,534 —
+     en valeur absolue 900 s est trop court, 245 c. 229 pour 479 c. 429 passes ; complétion 85,1 c. 86,8). Empreinte à 90 s : celle
+     du 289 (aucune pique avant 90 s, la cérémonie en prend 37).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
