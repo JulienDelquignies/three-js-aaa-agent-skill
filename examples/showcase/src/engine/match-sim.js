@@ -6,7 +6,7 @@ export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
-import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js'; import { contourneDe } from './contourne.js';
+import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -502,7 +502,7 @@ function assignMatchJobs(st, cfg) {
       if (aimR && p.push) { const cur = Math.atan2(p.push[1], p.push[0]); let dA = Math.atan2(pz, px) - cur; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const step = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) / hzDecision(cfg); const ang = cur + Math.sign(dA) * Math.min(Math.abs(dA), step); px = Math.cos(ang); pz = Math.sin(ang); }
       const pl = hyp(px, pz) || 1;
       // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion 60 Hz zigzaguait — l'intention d'abord.
-      const raw = [px / pl, pz / pl]; if (st.full && cfg.contourne) { const CT = contourneDe(st, p, raw, cfg.contourne); if (CT) { raw[0] = CT[0]; raw[1] = CT[1]; } }   // (295) LA CONDUITE CONTOURNE LE PRESSEUR (contourne.js) : la poussée et la place du corps tournent ensemble
+      const raw = [px / pl, pz / pl];
       const a = 1 - Math.exp(-(1 / hzDecision(cfg)) / 0.35);   // (263) τ en secondes quelle que soit la cadence du cerveau (10 Hz sous cfg.cadence, 60 hier)
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = hyp(p._pushS[0], p._pushS[1]) || 1;

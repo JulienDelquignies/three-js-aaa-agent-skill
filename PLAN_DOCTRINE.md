@@ -758,6 +758,11 @@ les contacts de 71 à 58, pas les pertes : retirée. La comptabilité (sonde-295
 au sens du book ~150-165 (110-140). Passes et take-ons justes ; l'excès (~30) est chez le porteur qui conduit (conduite, pique et
 charge subies ~45 c. ~15). Le lot suivant : le porteur tient.
 
+**295 — LA CONDUITE CONTOURNE LE PRESSEUR : RÉFUTÉE ; LA PERTE EST DIFFUSE (418).** Le porteur qui perd conduisait vers le défenseur
+(42-46 % c. 15-18) ; la loi qui le détourne augmente les passes (391 c. 360) sans bouger les pertes : retirée. La réception perdue ne
+se distingue pas nettement de la gardée. Six lois locales, une scellée : la perte en conduite est diffuse. Suite : le mélange des
+passes (ballons longs × 3, passes arrière, sol) et le contrôle orienté loin de la pression.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

@@ -13640,6 +13640,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      sans signal n'est pas la cause) — c'est LE PORTEUR QUI CONDUIT qui perd trois fois trop, et la possession individuelle deux fois
      trop courte (1,08 s c. 2,14). Le lot suivant : le porteur tient (la protection — le bouclier A10 ter —, la conduite qui se pose
      au lieu de pousser devant un presseur). Moteur inchangé : pas de banc, le bundle du 292 reste en ligne.
+- 418: LA CONDUITE CONTOURNE LE PRESSEUR — RÉFUTÉE ; LA PERTE EST DIFFUSE (295). LA SONDE (sonde-296, 4 × 90 min, au monde du 294) :
+     ~50-63 pertes en conduite par équipe ; dans la demi-seconde d'avant, le porteur conduisait VERS le défenseur 42-46 % (le pressé qui
+     ne perd pas 15-18 %), défenseur DEVANT 47-51 % (24 %), bouclier ≈ 0, tenue p50 0,42-0,45 s (un quart dans les 0,02 s). LA LOI
+     (contourne.js, cfg.contourne : la direction de conduite voulue à < 45° d'un défenseur à < 3 m × anticipF tourne de 80° vers le
+     côté libre, poussée et place du corps ensemble) — PIÈGE : posée d'abord dans rondo.js (assignJobs du rondo) elle ne vivait pas
+     en match (le match a son assignMatchJobs, match-sim) : empreinte inchangée, déplacée sur la direction brute du porteur de
+     match-sim avant le lissage. MESURÉ : passes 391-392 par équipe (c. ~360), 1,50-1,55 passe par séquence, complétion 83 % — mais
+     pertes en conduite 58 (inchangées), « conduit vers » 44,5 % (inchangé), pertes au sens du book 212 (c. 194-208) : RÉFUTÉE, retirée
+     (le moteur = le 294 au bit). LA RÉCEPTION (sonde-297) : 50-62 réceptions perdues dans les 1,5 s par équipe ; elles ne se
+     distinguent des gardées que faiblement (défenseur 4,1-4,4 c. 5,1-5,4 m ; première touche VERS lui 46-49 c. 36-40 %) — aucun
+     discriminant fort ; et même gardée, la première touche va vers le défenseur 36-40 % (à l'opposé ~35 %) : le contrôle orienté
+     loin de la pression est un défaut de comportement nommé. LA LEÇON DES LOTS 290-295 : six lois locales (conduite serrée, tacle
+     debout, touche qui suit le corps, contact à déclencheur, régime de marquage, conduite qui contourne), une seule scellée (291) :
+     la perte en conduite est DIFFUSE — ni un geste, ni une porte, ni une distance ne la porte seule ; l'excès (~30 par équipe) est
+     l'effet de sommes. Le chantier se déplace vers ce qui est mesurable et VISIBLE : le mélange des passes (15-18 ballons longs c.
+     45-50, 45 % de passes arrière c. 36,5, le sol 81-85 % c. 90-95) et le contrôle orienté loin de la pression.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
