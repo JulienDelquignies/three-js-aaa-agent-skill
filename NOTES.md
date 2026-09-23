@@ -13550,6 +13550,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      prouve la réfutation clé allumée : lois pures (P 0,2 → k 1 ; 0,65 → 0,55 ; 1 → 0,45 ; la clé nulle par défaut) et 4 × 600 s,
      franche contre éteinte — l'écart sous forte pression (P ≥ 0,75) 0,72 c. 1,01 m, les piqués 22 c. 23. Monde par défaut = le 289
      au bit (53e08475e3d8175c / ebfd994770a4b0c6).
+     BANC COMPLET (8 shards, 189 blocs) : tout vert sauf les hérités du 289 (246d ; loi12 le mur ×2 ; loi15 la cloche) — le monde par
+     défaut est celui du 289, aucune épingle ; bloc 290 seul 2 ✓ ; bloc 1 seul 0,47 ms/step. Les annexes à préfixe accentué
+     (« cérémonie : », « retournée : », « sortie aérienne : ») échappaient à l'expression du bilan — vertes à la lecture. SCEAU 290 :
+     commit 7f2f6e0 poussé ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-CSUHVj9A.js identique au bit
+     (cmp, 625 661 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
