@@ -56,7 +56,7 @@ const AXES = [['largeurR', 'larg', +1], ['profondeur', 'prof', +1], ['appel', 'a
 // CE QUE LE MOTEUR EXPRIME (consommateurs prouvés : largeurR → la craie 177/249b et les courses d'aile 125 ; repli → 251 ; press → 229/pression ; appel → 41/125/144 ; tenue → 211 ; profondeur → le poste nuancé 200)
 const PROUVES = new Set(['largeurR', 'repli', 'press', 'appel', 'tenue', 'profondeur', 'garde']);   // garde → keeper.js (le gardien libéro)
 // CE QUE LE MOTEUR EXPRIMAIT AU 249 (gelé : rôle|axe à ≥ 5/6 sur ces graines — la garde de non-régression ; vide = la première passe informative)
-const EXPRIMES_249 = ['GK A|garde', 'DC A|profondeur', 'GK B|garde', 'LAT B|largeurR', 'DC C|profondeur', 'LAT D|largeurR', 'MDC A|profondeur', 'MO A|press', 'MDC B|profondeur', 'AV A|largeurR', 'AV A|profondeur', 'AV A|repli', 'AV A|tenue', 'AV B|repli', 'AIL C|repli', 'AV C|repli'];   // REGELÉ DATÉ 288 (11 → 16 ; la plage des lots 280-287 est 10-24 : 6 × 240 s ne tiennent pas 5/6 de concordance quand le monde bouge)
+const EXPRIMES_249 = ['GK A|garde', 'DC A|largeurR', 'DC A|profondeur', 'LAT A|profondeur', 'GK B|garde', 'LAT B|repli', 'LAT C|appel', 'LAT D|profondeur', 'MDC A|largeurR', 'MDC A|profondeur', 'MO A|press', 'MO A|tenue', 'MDC B|tenue', 'MIL B|tenue', 'MDC C|profondeur', 'AV A|profondeur', 'AV A|repli', 'AV B|repli', 'AV C|repli'];   // REGELÉ DATÉ 289 (16 → 19 ; la plage des lots 280-288 est 10-24 : 6 × 240 s ne tiennent pas 5/6 de concordance quand le monde bouge)
 const base = {}; for (const seed of SEEDS) base[seed] = mesure(seed, null);
 const table = [];   // { doc, id, axe, k, n, sens }
 for (const run of RUNS) {
