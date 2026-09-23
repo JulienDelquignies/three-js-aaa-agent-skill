@@ -977,7 +977,7 @@ export const MATCH = {
                           // touche hors du cône (plus large que priseCone : semelle/extérieur
                           // vivent à ±120°) ; le talent l'élargit (× 2−dribbleLeadF : ±7°).
                           // Hors cône : release 'porte-dos', le corps CONTOURNE. false : hier.
-  sePresente: true,       // LE RECEVEUR SE PRÉSENTE (lot 70, st.full) : quasi statique (< 2,2
+  sePresente: true, ouverture: { double: 0.5, h: 0.9, lateral: 0.8, tMax: 0.6, cone: 100, marge: 10, dOuvre: 6 },   /* (288) LE BALLON QUI DOUBLE SE PREND DEVANT + L'OUVERTURE EN COURSE (ouverture.js) : hors du cône mais en train de doubler à ≤ lateral × controlF, devant dans ≤ tMax s → la prise attend (controle-attend) ; sinon, à ≤ dOuvre m, le receveur en course tourne le corps au ballon ; null : l'hier au bit */ // LE RECEVEUR SE PRÉSENTE (lot 70, st.full) : quasi statique (< 2,2
                           // m/s) avec un vol pour lui → yawWant vers le ballon (slew borné de
                           // movePlayers — le corps s'ouvre AVANT l'arrivée). Mesuré avant :
                           // 23 % des vols dans le dos à 4 m de l'arrivée, 51/80 sur des

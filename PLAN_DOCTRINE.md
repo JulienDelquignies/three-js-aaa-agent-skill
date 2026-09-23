@@ -719,6 +719,12 @@ d'arrivée (÷ technique / control), la cible se choisit sur la marge plafonnée
 contrôle (layoff.js) ; la queue des renvois à 160° disparaît (p90 166 → 109°, 11 → 8 par match). Nommé : les passes rapides après contrôle (45 / match,
 49 % de réussite, l'angle du ballon reçu ignoré par le barème) — avec la leçon du 286.
 
+**288 — LA PASSE QUI N'ARRIVE À PERSONNE : SCELLÉ (411).** La prémisse du 287 (l'angle du ballon reçu) est RÉFUTÉE à la sonde : les passes
+rapides après contrôle sont des passes pressées. Le vrai défaut : 33 % des passes au sol se perdent sans la touche du receveur — le ballon
+à portée dans son dos, refusé par le cône à l'entrée du rayon. La loi (ouverture.js) : le ballon qui double se prend devant (la prise
+attend), le receveur en course s'ouvre au ballon qui croise (le cap au ballon, la course continue). Le pas d'arrêt tenté et réfuté. Monde :
+perdues sans touche 32 → 24 %, réussite 61 → 72 %.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

@@ -71,3 +71,7 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
    → **287** (`layoff.js`, `cfg.layoff`, `layoffF` technique / control, NOTES 410) : la une-touche jugée par son angle. Reste nommé :
    la passe RAPIDE après contrôle (45 / match, 49 % de réussite, le barème de `choosePass` ignore l'angle du ballon reçu) — la
    leçon du 286 tient (préférer le contrôle, ne pas interdire la passe).
+   → **288** (`ouverture.js`, `cfg.ouverture`, NOTES 411) : la passe rapide après contrôle RÉFUTÉE comme levier (sa réussite ne dépend pas
+   de l'angle ; elle est pressée). Le vrai défaut de la réception : 33 % des passes au sol perdues sans la touche du receveur, le ballon
+   à portée dans son dos refusé par le cône — le ballon qui double se prend devant, le receveur en course s'ouvre (§ 6.3 recevoir en
+   mouvement) : perdues sans touche 32 → 24 %, réussite 61 → 72 % (3 × 600 s).

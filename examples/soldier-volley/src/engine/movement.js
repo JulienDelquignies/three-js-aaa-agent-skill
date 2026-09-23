@@ -6,6 +6,7 @@ import { winding } from './gesture.js';
 import { momentDuJeu } from './phases.js';
 import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
+import { ouvreDe } from './ouverture.js';
 import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
 import { intentionDe, appelPertinent } from './effort.js';
 import { feinteAppelAt } from './petits-gestes.js';
@@ -438,7 +439,8 @@ export function movePlayers(st, dt, cfg) {
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
     // v1 de la loi (p90 156° au contact).
-    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && p.speed < 2.2;
+    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && (p.speed < 2.2
+      || !!(cfg.ouverture && !p.keeper && (p._ouvre === st.pass || (ouvreDe(p, st.ball, cfg.ouverture, p.skill?.controlF ?? 1).ouvre && (p._ouvre = st.pass)))));   /* (288) L'OUVERTURE EN COURSE (ouverture.js) : le ballon derrière qui ne double pas devant — l'autorité du cap est le ballon, la course continue ; ouverte une fois, elle tient jusqu'à la prise (p._ouvre = la passe : pas d'oscillation au seuil) */
     // LE GARDIEN NE QUITTE PAS LE BALLON DES YEUX (lot 132, cfg.regardGardien && st.full —
     // mesuré : 3/20 plongeons déclenchés sur un regard > 60° du ballon, p90 107° — le côté
     // du clip se calculait sur la dérive de COURSE, le corps « se retournait ») : le yaw du

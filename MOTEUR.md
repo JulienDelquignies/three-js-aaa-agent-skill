@@ -534,6 +534,22 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La passe qui n'arrive à personne (lot 288, `cfg.ouverture` — `ouverture.js`)
+
+Les retours du 17/09, point 2, suite. Sondé (`scripts/book/sonde-288*.mjs`, 4 × 45 min) : la prémisse du 287 (l'angle du ballon reçu) est
+réfutée ; 33 % des passes au sol se perdent sans la touche du receveur, le ballon à portée dans son dos, refusé par le cône de prise (lot 70)
+à l'entrée du rayon ; 122 refus par match du receveur visé.
+
+- **`attendDe(r, b, K, controlF)`** : hors cône, le ballon qui double le corps dans le sens du regard, à ≤ lateral × controlF de sa ligne,
+  devant dans ≤ tMax s → la prise attend (`controle-attend`, rondo-sim `receive`) : la passe reste une passe.
+- **`ouvreDe(r, b, K, controlF)`** : le ballon derrière (au-delà de cone − marge), qui ne double pas devant, à ≤ dOuvre m → le receveur en
+  course tourne le corps au ballon (`movement.js`, l'autorité du cap ; hystérésis `p._ouvre` par passe). La course continue : le pas
+  d'arrêt a été tenté et réfuté (perdues sans touche 32 → 43 %).
+- **Attributs** : control (controlF). Rôles et tactiques : rien.
+- **Config** `ouverture: { double: 0.5, h: 0.9, lateral: 0.8, tMax: 0.6, cone: 100, marge: 10, dOuvre: 6 }` ; clé absente : l'hier au bit.
+- **Mesuré** (3 × 600 s) : perdues sans touche 31,9 → 24,2 %, refus du receveur visé 17 → 8, réussite 61 → 72 % ; à 4 × 45 min : refus du receveur visé 122 → 78 par match, perdues sans touche 33 → 31 %,
+  réussite 60 → 61 %. Nommé : la moitié des passes perdues sans touche n'approchent jamais le receveur (la passe manque son homme).
+
 ### La une-touche jugée par son angle (lot 287, `cfg.layoff` — `layoff.js`)
 
 Les retours du 17/09, point 2 (les passes en une touche). Sondé (`scripts/book/sonde-287.mjs`, 4 × 90 min) : 11-15 une-touche par match,

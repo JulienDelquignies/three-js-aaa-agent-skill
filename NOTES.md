@@ -13440,6 +13440,51 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      hérités inchangés : loi12 le mur (2), loi15 la cloche, renversement (l'orientation), 246d. Réexécutions isolées vertes ; bloc 1
      seul 0,56 ms/step (1,37 en contention des 8 shards). SCEAU 287 : commit 45c5b26 poussé ; build + deploy
      Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-Bl70KgOo.js identique au bit (cmp, 623 403 octets).
+- 411: LA PASSE QUI N'ARRIVE À PERSONNE — LE BALLON QUI DOUBLE SE PREND DEVANT, LE RECEVEUR EN COURSE S'OUVRE (288 — les retours du
+     17/09, point 2, suite du 287). LE FIL : le 287 nommait les passes RAPIDES après contrôle (42-45 / match, 49-53 % c. 53-59 % posées)
+     et le barème qui ignore l'angle du ballon reçu. SONDÉ (sonde-288, 4 × 45 min) : la réussite de ces passes NE DÉPEND PAS de l'angle
+     (0-45° 50 %, > 135° 57 % — la passe arrière rapide réussit le mieux) — LA PRÉMISSE EST RÉFUTÉE ; elles sont des passes PRESSÉES (69 %
+     sous un presseur à < 2 m c. 41 % des posées) et à pression égale le déficit tient à 6 points (51 c. 57). Leurs modes d'échec
+     (sonde-288b) sont ceux de toutes les passes : la MOITIÉ des passes perdues le sont SANS la touche du receveur et sans interception du
+     presseur. SONDÉ PLUS LOIN (sonde-288c/d, 4 × 45 min, 2 111 passes au sol) : 33 % des passes au sol se perdent SANS touche du
+     receveur (700) ; le ballon passe à 1,4 m p50 de lui, à PORTÉE (≤ 0,85 m, le rayon de prise) 35 % du temps ; à l'approche minimale il
+     est dans son DOS 56 % (72 % à portée), à 7 m/s contre 3 m/s pour un receveur en course vers son rendez-vous devant lui — et le CÔNE
+     DE PRISE (lot 70, ±100°) le refuse à l'image même où il entre dans le rayon, encore derrière (controle-dos, 108 passes) : la passe
+     devient un ballon LIBRE. sonde-288e : 122 refus controle-dos par match du receveur visé, l'équipe ne garde le ballon que 33 %
+     ensuite ; le ballon DOUBLE le corps dans le sens du regard 31 %, CROISE le dos 47 %, s'en va derrière 22 %. Le lot 70 (sePresente)
+     n'ouvrait le corps que du receveur quasi statique (< 2,2 m/s). TENTÉ ET RÉFUTÉ (v1) : l'ouverture du corps + le PAS D'ARRÊT du
+     receveur en course (le cap au ballon, la cible = sa position) — 3 × 600 s : perdues sans touche 32 → 43 %, controle-dos 167 → 331,
+     réussite 61 → 50 % (arrêté et tourné vers l'arrière, le ballon le dépasse et se retrouve dans son nouveau dos). TROP RARE (v2) :
+     l'attente seule couvrait 19 % des refus (13 attentes / 30 min, le monde inchangé). LA LOI (ouverture.js, cfg.ouverture && st.full —
+     Modèle 03 § 8.1 le contrôle orienté prend le ballon là où il sera, Modèle 09 § 6.3 recevoir en mouvement) : (1) LE BALLON QUI DOUBLE
+     SE PREND DEVANT — hors cône, si le ballon double le corps dans le sens du regard (≥ double m/s de plus que lui le long du regard),
+     passe à ≤ lateral × controlF de sa ligne et sera devant dans ≤ tMax s, la prise ATTEND (refus nommé controle-attend, la passe reste
+     une passe) ; (2) L'OUVERTURE EN COURSE — le receveur en course dont le ballon est derrière (au-delà du relèvement cone − marge) et
+     ne double pas devant, à ≤ dOuvre m, tourne le corps AU BALLON (movement.js : l'autorité du cap passe de la dérive au ballon, le
+     demi-corps du 170 reste sa loi, la course continue), ouverte une fois pour cette passe (hystérésis : pas d'oscillation au seuil).
+     Attribut : control (controlF sur la portée latérale de l'attente, 1 exact à 50) ; rôles et tactiques : rien (honnête — la
+     réception est un geste). Clé absente : le refus et le cap d'hier au bit — jumeau prouvé (ouverture null = le défaut 287 d90101b
+     55081b20a3f6e83c / 43a9e9475b5c9ea4 ; le défaut 288 550a2635874e3899 / 44509e5809a04c0c). Banc : verify-match11 bloc 288 (index
+     186 : lois pures — l'attente (1 m derrière à 7 m/s : devant dans 0,25 s ; 1,2 m de côté : non, sauf le bon contrôleur ; à peine
+     plus vite : non ; à 3 m : non ; en l'air : non) et l'ouverture (le ballon qui croise à 129° : oui ; qui double : non ; devant :
+     non ; à 8 m : non) ; deux fixtures — le ballon qui double le coureur (sous la clé 12 attentes, 0 controle-dos, pris devant et
+     porté ; sans la clé 12 refus, le ballon libre) et le ballon qui CROISE le dos (le corps s'ouvre 97 → 39°, contrôle intérieur ; sans
+     la clé le regard reste à 76°) ; le monde 3 × 600 s : passes au sol perdues sans touche 31,9 → 24,2 %, refus du receveur visé 17 →
+     8, réussite 61,1 → 71,8 %, passes 144 → 124 — les possessions qui tiennent passent moins). APRÈS (4 × 45 min, mêmes graines) :
+     refus controle-dos du receveur visé 122 → 78 / match (les passes concernées 108 → 63 ; à portée le ballon dans le dos 72 → 45 %),
+     passes au sol perdues sans touche 33 → 31 % (700 → 728 sur 2 111 → 2 331 passes — le monde passe plus), réussite 60 → 61 %, perdues
+     après la touche 7 → 8 %. L'effet est net sur le mécanisme (un tiers des refus en moins), modeste sur le total : la MOITIÉ des
+     passes perdues sans touche n'approchent jamais le receveur à 1,5 m (> 1,5 m : 47 → 50 %) — la passe elle-même manque son homme
+     (interceptée en route, ou le receveur jamais rejoint : la mène, l'appel, le sous-dosage) — c'est le levier suivant, avec la
+     comptabilité des pertes (Modèle 16 lot 1). BANC COMPLET (8 shards, 187 blocs) : 28 rouges — la loi vit à chaque réception, le monde
+     bouge partout —, TOUS verts à HEAD~ (worktree d90101b), 28 blocs épinglés PAR CONTENU (ouverture: null DATÉ 288 : 119, 141, le 232/240
+     des tirs, 245, le 286 et le 287 eux-mêmes — leurs sondes se mesurent à leur monde —, le troisième homme 244b, 279, 95, 135, 189, le
+     FLUX des couloirs 138, 96, 104 et la démission, 207 — les cibles hors terrain viennent du monde, la clause ne pose pas de cible —,
+     les contres 139, 115, 246d — l'hérité rouge depuis le 246 est VERT à HEAD~ cette fois —, 274, 282, 211, 229, 267, 123, le marquage
+     134, 284, 277) ; annexes : attributes (152/158), remises (le rasant sous le mur), contact (le jockey A10), moments, petits-gestes,
+     porte, verticalite, renversement (le lot 99) épinglées après preuve verte dans le worktree ; signes : le garde-fou (pertes 106 c. 90)
+     épinglé — sa fragilité nommée au 284 —, les trois empreintes DATEES regelées ; identification regelée 11 → 16 (plage 10-24) ;
+     hérités inchangés : loi12 le mur (2), loi15 la cloche, renversement (l'orientation). ISOLES_288 SCEAU_288
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

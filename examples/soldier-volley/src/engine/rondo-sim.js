@@ -1,6 +1,6 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
-import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
+import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep, retourneeArmerStep, retourneeContact } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
@@ -240,7 +240,7 @@ function receive(st, id, cfg = RONDO) {
     // LA PREMIÈRE INTENTION (une-touche — lot 44 pressée, lot 49 au calme par l'axe de
     // style) : extraite dans premiere-intention.js au plafond de volumétrie — le ballon
     // repart SANS être possédé (le patron de la remise de tête), doc et lois là-bas.
-    if (uneTouche(st, p, cfg)) return;
+    if (uneTouche(st, p, cfg)) return; if (st.full && cfg.ouverture && !p.keeper && st.pass?.to === id && cfg.priseCone !== false && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100) && attendDe(p, st.ball, cfg.ouverture, p.skill?.controlF ?? 1).attend) { deny(st, 'controle-attend'); return; }   /* (288) LE BALLON QUI DOUBLE SE PREND DEVANT (ouverture.js) : derrière mais en train de doubler à portée, la prise attend — la passe reste une passe */
     if (st.pass && st.pass.to === id) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: id, count: st.passes });
