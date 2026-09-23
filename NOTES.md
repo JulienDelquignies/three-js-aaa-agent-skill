@@ -13477,14 +13477,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      passes perdues sans touche n'approchent jamais le receveur à 1,5 m (> 1,5 m : 47 → 50 %) — la passe elle-même manque son homme
      (interceptée en route, ou le receveur jamais rejoint : la mène, l'appel, le sous-dosage) — c'est le levier suivant, avec la
      comptabilité des pertes (Modèle 16 lot 1). BANC COMPLET (8 shards, 187 blocs) : 28 rouges — la loi vit à chaque réception, le monde
-     bouge partout —, TOUS verts à HEAD~ (worktree d90101b), 28 blocs épinglés PAR CONTENU (ouverture: null DATÉ 288 : 119, 141, le 232/240
+     bouge partout —, TOUS verts à HEAD~ (worktree d90101b) sauf le 246d hérité, 27 blocs épinglés PAR CONTENU (ouverture: null DATÉ 288 : 119, 141, le 232/240
      des tirs, 245, le 286 et le 287 eux-mêmes — leurs sondes se mesurent à leur monde —, le troisième homme 244b, 279, 95, 135, 189, le
      FLUX des couloirs 138, 96, 104 et la démission, 207 — les cibles hors terrain viennent du monde, la clause ne pose pas de cible —,
-     les contres 139, 115, 246d — l'hérité rouge depuis le 246 est VERT à HEAD~ cette fois —, 274, 282, 211, 229, 267, 123, le marquage
-     134, 284, 277) ; annexes : attributes (152/158), remises (le rasant sous le mur), contact (le jockey A10), moments, petits-gestes,
+     les contres 139, 115, 274, 282, 211, 229, 267, 123, le marquage 134, 284, 277) — 27 épingles : le 246d, rouge à HEAD~ (la preuve
+     rejouée entière), reste l'hérité nommé ; annexes : attributes (152/158), remises (le rasant sous le mur), contact (le jockey A10), moments, petits-gestes,
      porte, verticalite, renversement (le lot 99) épinglées après preuve verte dans le worktree ; signes : le garde-fou (pertes 106 c. 90)
      épinglé — sa fragilité nommée au 284 —, les trois empreintes DATEES regelées ; identification regelée 11 → 16 (plage 10-24) ;
-     hérités inchangés : loi12 le mur (2), loi15 la cloche, renversement (l'orientation). ISOLES_288 SCEAU_288
+     hérités inchangés : 246d, loi12 le mur (2), loi15 la cloche, renversement (l'orientation). LEÇON : deux preuves à HEAD~ (shards 4
+     et 5) s'étaient interrompues au redémarrage du conteneur au milieu d'une clause longue, sans ligne de bilan — six épingles posées sur
+     des preuves tronquées, rejouées entières avant le sceau (le 246d rendu à son statut) : une preuve ne vaut que si son journal se
+     ferme par « n ✓ / m ✗ ». Réexécutions isolées : 27 blocs et 10 annexes verts (le renversement ne
+     garde que son orientation héritée) ; bloc 1 seul 0,48 ms/step. SCEAU 288 : commit c837ad8 poussé ; build + deploy Vercel prod
+     (https://showcase-pi-mocha.vercel.app), Rondo-DJ99Pi0Y.js identique au bit (cmp, 624 626 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
