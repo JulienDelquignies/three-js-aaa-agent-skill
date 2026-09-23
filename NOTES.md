@@ -13598,6 +13598,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (0 %) n'a rien mesuré ; le reste (cône, réussite, issue) est juste. Bloc 292 (index 190) : lois pures (l'axe 5 m/s, 45° 4,27, 90° 2,5,
      derrière 2,5, plancher 2, sous vCorps la touche d'hier ; la clé nulle par défaut) et la réfutation clé allumée (4 × 900 s :
      échappées 33 c. 51, changements de possession par passe 0,577 c. 0,511). Monde par défaut = le 291 au bit.
+     BANC COMPLET (8 shards, 191 blocs) : tout vert sauf les hérités (246d ; loi12 le mur ×2 ; loi15 la cloche) — monde par défaut
+     inchangé, aucune épingle ; bloc 292 seul 2 ✓ ; bloc 1 seul 0,43 ms/step. SCEAU 292 : commit fb70109 poussé ; build + deploy Vercel
+     prod (https://showcase-pi-mocha.vercel.app), Rondo-xjc5Gp3R.js identique au bit (cmp, 626 373 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
