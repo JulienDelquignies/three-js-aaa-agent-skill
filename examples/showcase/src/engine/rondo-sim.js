@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep, retourneeArmerStep, retourneeContact } from './tete.js'; import { coachStep } from './coach.js';
@@ -680,19 +680,18 @@ export function rondoStep(st, dt, cfg = RONDO) {
       for (const q of st.players) {
         if (q.team === c.team || q.keeper || q.down > 0) continue;
         if ((q._pokeCd ?? -1) > st.t) continue;
-        const dq = d2(q.p, st.ball.p);
+        const dq = d2(q.p, st.ball.p); const TD = st.full && cfg.tacleDebout ? cfg.tacleDebout : null;   /* (291) LE TACLE DEBOUT (tacle-debout.js) : le cône du pied, la réussite du book, le battu */
         // …et la NOTE de tacle joue la portée du pique (loi attributs no 3 : la note agit sur
         // l'EXÉCUTION) — sans elle, un défenseur faible piquait comme un fort et ÉGALISAIT le
         // monde noté gratuitement (verdict attributs inversé mesuré : élite 16 tirs contre 27)
-        if (dq < cfg.pokeReach + (q.skill?.tackleReach ?? 0) && dq < d2(c.p, st.ball.p) - 0.15) {
+        if (dq < cfg.pokeReach + (q.skill?.tackleReach ?? 0) && dq < d2(c.p, st.ball.p) - 0.15 && (!TD || piqueTenteDe(q, st.ball, TD))) {
           // …et le pique SE RÉUSSIT à la note (loi attributs no 3) : un tackling bas manque son
           // pied une fois sur deux — sans ce tirage, le pique offrait des récupérations SANS
           // duel à l'équipe qui défend le plus, et le monde noté s'égalisait (61-69 mesuré,
           // l'élite dominait 40-32 avant le pique). Le raté a un coût : le cooldown court.
           const pokeSkill = 0.5 + 0.45 * Math.max(0, Math.min(1, ((q.skill ? (q.skill.tackleReach + 0.10) / 0.20 : 0.5))));
-          if (tirage(st, 'duel', q.id, st.rnd ?? (() => 0.5))() > pokeSkill) { q._pokeCd = st.t + 0.9; continue; }
-          const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
-          const ul = hyp(ux, uz) || 1;
+          if (tirage(st, 'duel', q.id, st.rnd ?? (() => 0.5))() > (TD ? piqueReussiteDe(pokeSkill, c, TD) : pokeSkill)) { q._pokeCd = st.t + 0.9; if (TD) q._bite = Math.max(q._bite ?? -1, st.t + (TD.battu ?? 0.22)); continue; }
+          const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2]; const ul = hyp(ux, uz) || 1;
           // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50
           st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]); if (st.full && cfg.ballonFou) appliquerFou(st, q, cfg, Math.atan2(uz, ux));   // LE BALLON FOU (271, doc fou.js) : la sortie stochastique du ballon piqué
           q._pokeCd = st.t + 1.2;

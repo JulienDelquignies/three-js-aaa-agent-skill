@@ -34,6 +34,7 @@ import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
 import { serreDe } from '../assets/starter/src/engine/serre.js';
+import { piqueTenteDe, piqueReussiteDe } from '../assets/starter/src/engine/tacle-debout.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
@@ -7359,6 +7360,32 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20, conduiteSerree: { p0: 0.3, min: 0.25, kP: 1.2, dv: 0.2 } })), mN = monde(matchCfg({ shotRange: 20 }));
   ok(`lot 290 — …et LA RÉFUTATION : 4 × 600 s, clé allumée (franche) contre éteinte — l'écart pied-ballon sous forte pression ${mA.ecart.toFixed(2)} m c. ${mN.ecart.toFixed(2)} (≤ − 0,2 : la touche se serre ; ${mA.n} c. ${mN.n} touches) ; les tacles piqués ${mA.pique} c. ${mN.pique} (≥ 0,85 × : ils ne baissent pas — la loi reste éteinte)`,
     mA.ecart <= mN.ecart - 0.2 && mA.pique >= 0.85 * mN.pique);
+}
+
+if (__bloc()) {
+  // LE TACLE DEBOUT (291 — Modèle 11 § 4 ; sonde-291 : 77,5 % des tentatives de pique réussies, le book ~50, 15-17 % hors du cône du
+  // pied) — (a) lois pures : le pied balaie ± 55° devant le buste (le ballon à 30° : tenté ; à 80° : non) ; la réussite = la note ×
+  // 0,56 (0,725 → 0,406 à l'identité), le dribbleur l'esquive (esquiveF + 0,08 : × 0,85 ; − 0,08 : × 1,15).
+  const K = matchCfg({}).tacleDebout, q0 = { yaw: 0, p: [0, 0, 0] }, bal = (deg) => ({ p: [Math.cos(deg * Math.PI / 180), 0.11, Math.sin(deg * Math.PI / 180)] });
+  const r0 = piqueReussiteDe(0.725, { skill: { esquiveF: 0 } }, K), rF = piqueReussiteDe(0.725, { skill: { esquiveF: 0.08 } }, K), rB = piqueReussiteDe(0.725, { skill: { esquiveF: -0.08 } }, K);
+  ok(`lot 291 — LE TACLE DEBOUT, lois pures : le ballon à 30° du buste ${piqueTenteDe(q0, bal(30), K) ? 'tenté' : 'non'}, à 80° ${piqueTenteDe(q0, bal(80), K) ? 'tenté' : 'non'} ; réussite à l'identité ${r0.toFixed(3)}, contre un dribbleur fort ${rF.toFixed(3)}, faible ${rB.toFixed(3)} ; battu ${K.battu} s`,
+    piqueTenteDe(q0, bal(30), K) && !piqueTenteDe(q0, bal(80), K) && Math.abs(r0 - 0.406) < 1e-9 && Math.abs(rF - 0.406 * 0.85) < 1e-9 && Math.abs(rB - 0.406 * 1.15) < 1e-9 && K.battu === 0.22);
+  // (b) le monde : 4 × 900 s, clé par défaut contre éteinte — la part des tentatives réussies tombe au book (40-62 %, contre ≥ 70 % sans),
+  // les piques réussies baissent (≤ 0,8 × sans), les changements de possession PAR PASSE baissent (le jeu tient plus de passes pour
+  // chaque perte ; en valeur absolue, 900 s est trop court : 229 → 245 pour 429 → 479 passes — au monde de 90 min, sonde-289 : 228 →
+  // 209-220 pertes par équipe), les passes tiennent (≥ 0,98 × sans), la complétion aussi (≥ sans − 2 pts).
+  const monde = (cfg) => { const o = { pique: 0, rate: 0, turn: 0, passes: 0, ok: 0, n: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, pend = null;
+      for (let i = 0; i < 900 * 60; i++) { const cd0 = st.players.map((x) => x._pokeCd ?? -1); matchStep(st, 1 / 60, cfg);
+        for (let k = 0; k < st.players.length; k++) { const cd = st.players[k]._pokeCd ?? -1; if (cd !== cd0[k] && Math.abs(cd - (st.t + 0.9)) < 0.02) o.rate++; }
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null;
+          if (e.type === 'tacle-pique') o.pique++; if (e.type === 'turnover') { o.turn++; if (pend) { o.n++; pend = null; } }
+          if ((e.type === 'control' || e.type === 'receive' || e.type === 'loose-kept') && pend && p && p.team === pend.team) { o.n++; o.ok++; pend = null; }
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && p) { o.passes++; if (pend) { o.n++; if (p.team === pend.team) o.ok++; } pend = { team: p.team, t: st.t }; } }
+        if (pend && st.t - pend.t > 6) pend = null; } }
+    return { ...o, taux: 100 * o.ok / Math.max(1, o.n), reussi: o.pique / Math.max(1, o.pique + o.rate) }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, tacleDebout: null }));
+  ok(`lot 291 — …et LE MONDE : 4 × 900 s, tentatives réussies ${(100 * mA.reussi).toFixed(0)} % (40-62) c. ${(100 * mN.reussi).toFixed(0)} % sans (≥ 70) ; piques ${mA.pique} ≤ 0,8 × ${mN.pique} ; changements de possession par passe ${(mA.turn / mA.passes).toFixed(3)} < ${(mN.turn / mN.passes).toFixed(3)} ; passes ${mA.passes} ≥ 0,98 × ${mN.passes} ; complétion ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} − 2`,
+    mA.reussi >= 0.40 && mA.reussi <= 0.62 && mN.reussi >= 0.70 && mA.pique <= 0.8 * mN.pique && mA.turn / mA.passes < mN.turn / mN.passes && mA.passes >= 0.98 * mN.passes && mA.taux >= mN.taux - 2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
