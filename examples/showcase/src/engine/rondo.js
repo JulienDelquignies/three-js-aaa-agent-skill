@@ -1,6 +1,6 @@
 import { BALL } from './ball.js';
 import { tirage } from './rng.js';
-import { BallBody } from './ball-body.js';
+import { BallBody } from './ball-body.js'; import { porteeDe } from './portee.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, etaCourse, PASS_STYLE } from './ball-predict.js';
 import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
@@ -302,7 +302,7 @@ export function choosePass(st, cfg = RONDO) {
       : _esp ? Math.max(cfg.passRange[1], _V.portee ?? 30)                     // (396) la profondeur a la sienne
       : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel'
         ? (cfg.appelRange ?? 0) + (cfg.tranchant && m._pace.rupture ? (cfg.tranchant.portee ?? 12) : 0) : 0);   // …la RUPTURE (140) se sert de LOIN
-    if (d < cfg.passRange[0] || d > rMax) continue;
+    if (d < cfg.passRange[0] || d > (st.full && cfg.porteePasse ? porteeDe(rMax, m, c, cfg.porteePasse) : rMax)) continue;   // (296) LA PORTÉE EST CELLE D'UN PIED (portee.js)
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
     // LA MÈNE SUIT LA COURSE (cfg.leadTime — le match la dérive du temps de vol : un coureur à
     // 6 m/s sur un vol d'une seconde reçoit 4 m derrière lui avec une mène figée de 0,28 s ;
@@ -319,6 +319,7 @@ export function choosePass(st, cfg = RONDO) {
     const recvPressure = Math.min(...foesL.map((o) => hyp(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
     let style = bascule ? 'lofted'                                 // la diagonale VOLE par-dessus le bloc
+      : st.full && cfg.porteePasse && d >= (cfg.porteePasse.leve ?? 32) ? 'lofted'   // (296) le ballon long vole
       : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     // LA LIGNE FERMÉE (243, cfg.ligneFermee && st.full — retour utilisateur : « un adversaire sur la ligne de passe ») : une cloche ne passe pas un corps
     // collé au pied — le bloqueur doit être à ≥ cloche m du passeur et à ≥ retombee m du point visé, sinon la ligne est fermée pour de bon (le candidat tombe).
