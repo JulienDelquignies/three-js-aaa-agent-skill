@@ -13656,6 +13656,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la perte en conduite est DIFFUSE — ni un geste, ni une porte, ni une distance ne la porte seule ; l'excès (~30 par équipe) est
      l'effet de sommes. Le chantier se déplace vers ce qui est mesurable et VISIBLE : le mélange des passes (15-18 ballons longs c.
      45-50, 45 % de passes arrière c. 36,5, le sol 81-85 % c. 90-95) et le contrôle orienté loin de la pression.
+- 419: LA PORTÉE EST CELLE D'UN PIED (296, portee.js, cfg.porteePasse — commits 82e268d, 13f9aef, fa8757d ; BANC COMPLET REPORTÉ au
+     groupe, voir la cadence du 23/09) : la portée de 13 m héritée du rondo levée à 45 m × visionF, levée au-delà de 32 m. Mesuré
+     (4 × 90 min) : ballons longs 15-18 → 42-47 par équipe (45-50), passes ~360 → 383-410, passe moyenne 14,3 → 17,1-17,4 m, 1,45 →
+     1,64-1,69 passe par séquence (le grand livre), complétion 83,5-84 ; restent faux : la réussite des longs 75 % (47 — pas de duel
+     aérien : 1 par match c. 40-50), 50 % de passes arrière (36,5). Bloc 296 (index 191) vert seul.
+- 420: LES PASSES PAR SÉQUENCE — SONDÉES (la demande « il faut augmenter les passes par séquence »). sonde-298 (4 × 90 min, au monde du
+     296) : ~203 séquences par équipe, 1,86-2,06 passe ; 27-32 % à 0 passe, 28-36 ÉCLAIRS (< 2 s, 0 passe, surtout après un tacle) ;
+     fusionnées au sens d'Opta (l'effleurement adverse ne coupe pas la possession) : ~153 possessions, 2,45-2,86 passes. Finies par :
+     passe ratée ~54 (le réel ~80 : MOINS que le réel), arrêt de jeu ~28, conduite ~29, faute ~18, take-on ~18, contrôle ~17, tir ~15,
+     pique ~12. sonde-299 : une demi-seconde avant une perte sans passe, ≥ 3 passes OUVERTES 52-65 % des fois (au moment d'une passe
+     jouée 63-66 %) — la décision, pas le soutien ; intention de passe adoptée 27-50 %, refus 'ancre' et 'contesté'. QUATRE LEVIERS
+     MESURÉS, AUCUN NE BOUGE LE CHIFFRE (~2,0) : (1) le pressé improvise (le refus d'ancre rejoué en urgence) — 66 'ancre' deviennent
+     61 'technique', AUCUNE surface ne frappe ce ballon, le monde au bit ; (2) la touche de préparation du lot 36 étendue au pressé —
+     1,97 ; (3) la garde loin 6 → 12 m (et milieu 4 → 6) — 1,89-2,03 ; (4) le volume de dribble 0,35 → 0,17 — 2,02, take-on 18 → 15.
+     Le temps : arrêts 36 %, conduite 31, vol 28, libre 5 (le vol est physique : 15 m en 1,27 s ; la « vitesse d'arrivée » d'une
+     première mesure lisait le ballon DÉJÀ amorti — erreur corrigée ; la durée de séquence de sonde-298 inclut l'arrêt jusqu'à la
+     remise — biaisée). CE QUI RESTE : le chiffre se CONSERVE comme les pertes (lots 290-295) — le générateur commun est le BALLON
+     LIBRE : 147-151 passages au ballon libre par équipe et par match (sonde-289e), dont ~48 après un contrôle qui ne pose pas le
+     ballon, ~43 échappées, ~20 duels, ~17 piques — chacun une loterie du premier arrivé. Le prochain levier : que le contrôle et la
+     conduite ne rendent pas le ballon LIBRE (la phase) quand le porteur le tient réellement.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

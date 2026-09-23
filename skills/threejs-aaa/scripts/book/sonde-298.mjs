@@ -13,7 +13,7 @@ const O = { matchs: 0, seqs: [], debut: {}, fin: {}, finAvecPasses: {}, eclair: 
 for (const seed of seeds) {
   const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: DUR, pause: 10 }, ...over }); O.matchs++;
   let seen = 0, seq = null; const last = [null, null];
-  const fin = (cause) => { if (!seq) return; const d = st.t - seq.t0; O.seqs.push({ p: seq.passes, d, debut: seq.debut, fin: cause });
+  const fin = (cause) => { if (!seq) return; const d = st.t - seq.t0; O.seqs.push({ p: seq.passes, d, debut: seq.debut, fin: cause, team: seq.team, m: O.matchs });
     O.fin[cause] = (O.fin[cause] ?? 0) + 1; if (seq.passes >= 1) O.finAvecPasses[cause] = (O.finAvecPasses[cause] ?? 0) + 1;
     if (d < 2 && seq.passes === 0) { O.eclair++; O.eclairDebut[seq.debut] = (O.eclairDebut[seq.debut] ?? 0) + 1; } seq = null; };
   const debut = (team, how) => { if (seq && seq.team === team) return; fin(seq ? (last[seq.team]?.kind ?? '?') : '?'); seq = { team, t0: st.t, passes: 0, debut: how }; };
@@ -44,3 +44,10 @@ console.log(`  sans les séquences à 0 passe : ${eq(S1.length)} par équipe, ${
 console.log(`  COMMENCÉES par : ${Object.entries(S.reduce((o, s) => ((o[s.debut] = (o[s.debut] ?? 0) + 1), o), {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${eq(v)}`).join(' ; ')}`);
 console.log(`  FINIES par (dernier acte de l'équipe) : ${Object.entries(O.fin).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${eq(v)}`).join(' ; ')}`);
 console.log(`  …celles qui avaient au moins une passe : ${Object.entries(O.finAvecPasses).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${eq(v)}`).join(' ; ')}`);
+// LA POSSESSION AU SENS OPTA : un ÉCLAIR adverse (< 2 s, 0 passe) entre deux séquences de la MÊME équipe ne coupe pas sa possession
+// (le ballon effleuré puis repris) — fusionnées, les passes s'additionnent.
+const M = []; for (let k = 0; k < S.length; k++) { const s2 = S[k], prev = M[M.length - 1], nx = S[k + 1];
+  if (prev && s2.p === 0 && s2.d < 2 && nx && nx.team === prev.team && nx.m === prev.m && s2.team !== prev.team) { prev.p += nx.p; prev.d += s2.d + nx.d; k++; continue; }
+  if (prev && s2.team === prev.team && s2.m === prev.m && s2.debut !== 'remise en jeu') { prev.p += s2.p; prev.d += s2.d; continue; }
+  M.push({ ...s2 }); }
+console.log(`  POSSESSIONS FUSIONNÉES (éclair adverse effleuré, suites de la même équipe) : ${eq(M.length)} par équipe ; passes par possession ${moy(M.map((s) => s.p)).toFixed(2)} ; durée ${moy(M.map((s) => s.d)).toFixed(1)} s ; à 0 passe ${pc(M.filter((s) => s.p === 0).length, M.length)} %`);
