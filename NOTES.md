@@ -13536,6 +13536,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (« verticalite : 6 ✓ / 0 ✗ ») — l'expression accepte désormais ce préfixe. SCEAU 289 : commits 71d0f77 (la loi) puis cebc9b9, 0badc90,
      638d626 (les épingles) poussés ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-BVr4bw_3.js identique au
      bit (cmp, 625 265 octets).
+- 413: LA CONDUITE SE SERRE SOUS PRESSION — RÉFUTÉE (290 — la suite du grand livre ; le 289 nommait ~20-25 touches de conduite qui
+     s'échappent vers un défenseur et les tacles piqués comme première source de pertes). LA SONDE (sonde-290, 4 × 90 min) : ~1 100 touches
+     de conduite par équipe et par match, l'écart pied-ballon maximal entre deux touches ~1 m DANS TOUTES les bandes de pression — le
+     porteur pressé pousse aussi loin que le porteur libre ; ~36 touches perdues par équipe. LA LOI (serre.js, `cfg.conduiteSerree`) :
+     sous la pression lue P (pressionDe, 265) au-delà de p0, la mène de la touche × max(min, 1 − kP·(P − p0)/(1 − p0)) et la vitesse du
+     ballon plafonnée à la course du corps + dv (dribble.js : `serreK`, `serreV` sur le joueur ; rondo-sim les pose à chaque touche). LA
+     MESURE RÉFUTE : au réglage doux (p0 0,3, min 0,45, kP 0,9, dv 0,6) l'écart 0,97 → 0,80-0,88 m mais les piqués 33 → 44 par équipe ;
+     au réglage franc (min 0,25, kP 1,2, dv 0,2) l'écart 0,54-0,60 m, les touches 1 150 → 1 430-1 600 par équipe, les piqués 39. Les
+     porteurs piqués avaient le ballon à 0,97 m — la pique tombe sur des touches prises AVANT que le presseur n'arrive, et une conduite
+     plus serrée donne plus de touches, donc plus d'occasions de pique. La loi reste NOMMÉE et ÉTEINTE par défaut (le précédent du
+     286) ; le levier nommé est la pique elle-même (Modèle 11, le duel : sa générosité, sa fenêtre, son angle). Le bloc 290 (index 188)
+     prouve la réfutation clé allumée : lois pures (P 0,2 → k 1 ; 0,65 → 0,55 ; 1 → 0,45 ; la clé nulle par défaut) et 4 × 600 s,
+     franche contre éteinte — l'écart sous forte pression (P ≥ 0,75) 0,72 c. 1,01 m, les piqués 22 c. 23. Monde par défaut = le 289
+     au bit (53e08475e3d8175c / ebfd994770a4b0c6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

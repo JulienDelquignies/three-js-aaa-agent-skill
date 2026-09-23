@@ -67,6 +67,9 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
    (cls, pSucc). Test 9 tenu (calage null = l'identité, l'ordre des classes conservé) ; test 2 : ECE 0,020, log-loss 0,414 ; le monde : 80 → 81 %, 88 / 83 / 77 / 60 par tranche.
 3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259 — SCELLÉ 334 pour l'appel de l'épaule et la course qui traverse ; le rendez-vous derrière la ligne reste à faire, Bible 09 lot 2).
 4. **La comptabilité des pertes** (tests 3, 3 bis ; Modèle 16 lot 1) : `LossCause` en vocabulaire Opta.
+   → **289** (sonde-289, le grand livre ; `presse-lue.js`, NOTES 412) : les pertes réparties § 7.1 ; piqués 46 → 33 par équipe.
+   → **290** (`serre.js`, `cfg.conduiteSerree` nulle, NOTES 413) : la conduite serrée sous pression RÉFUTÉE — la touche se serre, les
+   piqués ne baissent pas ; le levier est la pique (Modèle 11).
 5. **Le sous-dosage et le masque dos-au-but** (tests 4, 8 ; Bible 14 lot 5).
    → **287** (`layoff.js`, `cfg.layoff`, `layoffF` technique / control, NOTES 410) : la une-touche jugée par son angle. Reste nommé :
    la passe RAPIDE après contrôle (45 / match, 49 % de réussite, le barème de `choosePass` ignore l'angle du ballon reçu) — la

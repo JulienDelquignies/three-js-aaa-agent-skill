@@ -534,6 +534,19 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La conduite se serre sous pression (lot 290, `cfg.conduiteSerree` — `serre.js`) — RÉFUTÉE, éteinte par défaut
+
+Sondé (`scripts/book/sonde-290.mjs`, 4 × 90 min) : ~1 100 touches de conduite par équipe, l'écart pied-ballon ~1 m dans toutes les
+bandes de pression.
+
+- **`serreDe(P, K)`** : sous p0 la touche d'hier ({ k: 1, dv: null }) ; au-delà, k = max(min, 1 − kP·(P − p0)/(1 − p0)), dv = K.dv.
+- **`serrePorteurDe(st, c, K, cfg)`** : P par pressionDe (265, horizon 1,5 s × anticipF). rondo-sim pose `serreK` / `serreV` sur le joueur
+  de la touche ; dribble.js multiplie la mène par serreK et plafonne la vitesse du ballon à la course + serreV.
+- **Attributs** : anticipation (l'horizon de P). Tactique, rôles : rien.
+- **Config** `conduiteSerree: null` par défaut ; opt-in `{ p0: 0.3, min: 0.45, kP: 0.9, dv: 0.6 }` (franc : min 0,25, kP 1,2, dv 0,2).
+- **Réfuté** (4 × 90 min) : la touche se serre (0,97 → 0,54-0,88 m), les piqués montent (33 → 39-44 par équipe) ; ils tombent sur des
+  touches prises avant l'arrivée du presseur. Le levier nommé : la pique (Modèle 11).
+
 ### La pression lue au temps d'arrivée (lot 289, `cfg.presseLue` — `presse-lue.js`) et le grand livre des passes
 
 La demande « ultra réaliste sur les passes ». L'instrument : `scripts/book/sonde-289.mjs`, le grand livre — chaque passe suivie jusqu'à sa

@@ -732,6 +732,11 @@ au calme parce que le défenseur était au-delà de 1,8 m. La loi (presse-lue.js
 calme, le retournement et le libre ; piqués 46 → 33 par équipe. Nommés : la conduite sous pression (le lot suivant), la défense collée,
 le mélange des passes et le sous-dosage.
 
+**290 — LA CONDUITE SE SERRE SOUS PRESSION : RÉFUTÉE (413).** Sondé : le porteur pressé pousse le ballon aussi loin que le libre (~1 m).
+La loi (serre.js) serre la touche sous la pression lue ; la touche se serre (1,0 → 0,6-0,7 m) mais les tacles piqués ne baissent pas
+(33 → 39-44 au monde de 90 min) : ils tombent sur des touches prises avant l'arrivée du presseur, et une conduite serrée multiplie
+les touches. Nommée, éteinte par défaut ; le levier est la pique elle-même (Modèle 11).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

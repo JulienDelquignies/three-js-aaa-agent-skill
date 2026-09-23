@@ -33,6 +33,7 @@ import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
+import { serreDe } from '../assets/starter/src/engine/serre.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
@@ -7335,6 +7336,29 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, presseLue: null }));
   ok(`lot 289 — …et LE MONDE : 4 × 900 s, tacles piqués ${mA.pique} ≤ 0,85 × ${mN.pique} ; changements de possession ${mA.turn} ≤ 0,97 × ${mN.turn} ; passes ${mA.passes} ≥ 0,98 × ${mN.passes} ; complétion ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} − 2`,
     mA.pique <= 0.85 * mN.pique && mA.turn <= 0.97 * mN.turn && mA.passes >= 0.98 * mN.passes && mA.taux >= mN.taux - 2);
+}
+
+if (__bloc()) {
+  // LA CONDUITE SE SERRE SOUS PRESSION (290 — RÉFUTÉE à la mesure, éteinte par défaut ; le 289 nommait ~50 pertes par équipe sur des
+  // piques et des touches qui s'échappent) — (a) lois pures : sous p0 la touche d'hier (k 1, pas de plafond) ; à P 0,65 la mène × 0,55,
+  // au plein la borne 0,45, le ballon ≤ corps + 0,6 m/s ; la clé est nulle par défaut.
+  const K = { p0: 0.3, min: 0.45, kP: 0.9, dv: 0.6 }, a0 = serreDe(0.2, K), a65 = serreDe(0.65, K), a1 = serreDe(1, K);
+  ok(`lot 290 — LA CONDUITE SE SERRE SOUS PRESSION (réfutée), lois pures : P 0,2 → k ${a0.k} (dv ${a0.dv}) ; P 0,65 → k ${a65.k.toFixed(2)} (dv ${a65.dv}) ; P 1 → k ${a1.k.toFixed(2)} ; la clé par défaut ${JSON.stringify(matchCfg({}).conduiteSerree)}`,
+    a0.k === 1 && a0.dv === null && Math.abs(a65.k - 0.55) < 1e-12 && a65.dv === 0.6 && Math.abs(a1.k - 0.45) < 1e-12 && matchCfg({}).conduiteSerree === null);
+  // (b) la réfutation mesurée : 4 × 600 s, la clé ALLUMÉE au réglage franc contre éteinte — la touche se serre (l'écart pied-ballon
+  // maximal entre deux touches sous forte pression, P ≥ 0,75, baisse d'au moins 0,2 m) mais les tacles piqués ne baissent pas de plus de
+  // 15 % (ils tombent sur des touches prises avant que le presseur n'arrive) : la loi reste éteinte.
+  const monde = (cfg) => { const o = { pique: 0, ecarts: [] }; const K2 = matchCfg({}).presseLue ?? { seuil: 0.55 };
+    for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, cur = null;
+      for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        if (cur) { const c = st.players[cur.by]; cur.e = Math.max(cur.e, Math.hypot(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2])); if (st.t - cur.t > 1.5) { if (cur.hi) o.ecarts.push(cur.e); cur = null; } }
+        for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'tacle-pique') o.pique++;
+          if (e.type === 'touche' && e.by != null && st.possession.carrier === e.by && !st.players[e.by].keeper) { if (cur && cur.hi) o.ecarts.push(cur.e); const c = st.players[e.by];
+            cur = { by: e.by, t: st.t, e: Math.hypot(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2]), hi: presseLueDe(st, c, K2, cfg, 0.5).P >= 0.75 }; } } } }
+    const s2 = [...o.ecarts].sort((x, y) => x - y); return { pique: o.pique, ecart: s2.length ? s2[s2.length >> 1] : NaN, n: s2.length }; };
+  const mA = monde(matchCfg({ shotRange: 20, conduiteSerree: { p0: 0.3, min: 0.25, kP: 1.2, dv: 0.2 } })), mN = monde(matchCfg({ shotRange: 20 }));
+  ok(`lot 290 — …et LA RÉFUTATION : 4 × 600 s, clé allumée (franche) contre éteinte — l'écart pied-ballon sous forte pression ${mA.ecart.toFixed(2)} m c. ${mN.ecart.toFixed(2)} (≤ − 0,2 : la touche se serre ; ${mA.n} c. ${mN.n} touches) ; les tacles piqués ${mA.pique} c. ${mN.pique} (≥ 0,85 × : ils ne baissent pas — la loi reste éteinte)`,
+    mA.ecart <= mN.ecart - 0.2 && mA.pique >= 0.85 * mN.pique);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
