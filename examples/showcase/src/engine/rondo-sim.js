@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; import { declencheDe } from './declencheur.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep, retourneeArmerStep, retourneeContact } from './tete.js'; import { coachStep } from './coach.js';
@@ -442,7 +442,7 @@ function trySlide(st, cfg) {
   // WHEN. Not at a pass in flight (interception's job — 157/90 s otherwise) : a slide is for a STRAYED ball, which keeps it rare enough to read.
   const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
   const strayed = car ? d2(car.p, st.ball.p) > cfg.strikeReach : true;
-  if (!strayed) return;
+  if (!strayed || (st.full && car && cfg.contactDeclenche && !declencheDe(st, car, cfg.contactDeclenche))) return;   // (294) le glissé attend son déclencheur
   if (st.ball.owner != null) return;                            // un ballon PORTÉ se dispute debout (le duel), pas au sol
   if (st.ball.p[1] > 0.4) return;                               // you do not slide at a ball in the air
   if (hyp(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
@@ -684,7 +684,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // …et la NOTE de tacle joue la portée du pique (loi attributs no 3 : la note agit sur
         // l'EXÉCUTION) — sans elle, un défenseur faible piquait comme un fort et ÉGALISAIT le
         // monde noté gratuitement (verdict attributs inversé mesuré : élite 16 tirs contre 27)
-        if (dq < cfg.pokeReach + (q.skill?.tackleReach ?? 0) && dq < d2(c.p, st.ball.p) - 0.15 && (!TD || piqueTenteDe(q, st.ball, TD))) {
+        if (dq < cfg.pokeReach + (q.skill?.tackleReach ?? 0) && dq < d2(c.p, st.ball.p) - 0.15 && (!TD || piqueTenteDe(q, st.ball, TD)) && !(st.full && cfg.contactDeclenche && !declencheDe(st, c, cfg.contactDeclenche))) {
           // …et le pique SE RÉUSSIT à la note (loi attributs no 3) : un tackling bas manque son
           // pied une fois sur deux — sans ce tirage, le pique offrait des récupérations SANS
           // duel à l'équipe qui défend le plus, et le monde noté s'égalisait (61-69 mesuré,
@@ -755,7 +755,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // bouclier protège le BALLON — c'est son métier) → 1 duel / 9 min, un jeu sans contact.
     // Le football réel se joue AU CORPS : la charge d'épaule loyale (le ballon peut jaillir),
     // la charge PAR DERRIÈRE est une faute (Loi 12) ; un ballon jailli SORT du bloc de portage.
-    if (cfg.charge && st.full) {
+    if (cfg.charge && st.full && (!cfg.contactDeclenche || declencheDe(st, c, cfg.contactDeclenche))) {   // (294) LE CONTACT A SON DÉCLENCHEUR (declencheur.js) : sans signal le défenseur cadre
       chargeStep(st, c, dt, cfg);
       if (st.phase !== 'carry') return st;
     }
