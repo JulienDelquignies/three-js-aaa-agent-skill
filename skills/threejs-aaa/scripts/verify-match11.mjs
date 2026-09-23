@@ -32,6 +32,7 @@ import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
+import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
@@ -7282,6 +7283,58 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, ouverture: null }));
   ok(`lot 288 — …et LE MONDE : 3 × 600 s, passes au sol perdues sans touche ${mA.pSans.toFixed(1)} % de ${mA.n} (≤ sans ${mN.pSans.toFixed(1)} % de ${mN.n} − 3) ; refus controle-dos du receveur visé ${mA.dos} ≤ 0,7 × ${mN.dos} (attentes ${mA.attend}) ; réussite ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} + 1 ; passes ${mA.n} ≥ 0,8 × ${mN.n} (les possessions qui tiennent passent moins)`,
     mA.pSans <= mN.pSans - 3 && mA.dos <= 0.7 * mN.dos && mA.taux >= mN.taux + 1 && mA.n >= 0.8 * mN.n);
+}
+
+if (__bloc()) {
+  // LA PRESSION SE LIT AU TEMPS D'ARRIVÉE (289, la demande « ultra réaliste sur les passes » — le grand livre des passes sonde-289 :
+  // 2× trop de pertes, 1,3 passe par séquence ; ~46 tacles piqués par équipe et par match sur des porteurs que le moteur croyait AU CALME
+  // parce que le défenseur était à plus de 1,8 m) — (a) lois pures : le seuil vaut 0,55 à l'identité (composure 50, tempo 0,5), le
+  // sang-froid le relève (× 1,075/0,85), le nerveux l'abaisse (× 1,075/1,30), le tempo posé × 1,15, le vif × 0,85 ; la pression lue sur
+  // une géométrie réelle : un défenseur PLANTÉ à 2,3 m presse (le 1,8 m d'hier le disait calme), à 6 m non, à 5 m lancé à 6 m/s oui ; à
+  // 3 m planté, l'anticipateur (× 1,15) le lit pressé, le distrait (× 0,85) non.
+  const K = matchCfg({}).presseLue;
+  const s50 = seuilPresseDe(K, {}), sCalme = seuilPresseDe(K, { composureF: 0.85 }), sNerf = seuilPresseDe(K, { composureF: 1.30 }), sPose = seuilPresseDe(K, { tempo: 0 }), sVif = seuilPresseDe(K, { tempo: 1 });
+  const geo = (dF, vF, anticipF = 1) => { const st = makeMatch({ full: true, seed: 3 }), c = st.players.find((q) => q.team === 0 && !q.keeper), f = st.players.find((q) => q.team === 1 && !q.keeper);
+    for (const q of st.players) { q.p[0] = q.team === 0 ? -45 : 45; q.p[2] = 30; q.v = [0, 0]; q.down = 0; }
+    c.p[0] = 0; c.p[2] = 0; c.v = [0, 0]; c.skill = { ...(c.skill ?? {}), anticipF }; f.p[0] = dF; f.p[2] = 0; f.v = [-vF, 0];
+    return presseLueDe(st, c, K, matchCfg({}), 0.5); };
+  const g23 = geo(2.3, 0), g6 = geo(6, 0), g5l = geo(5, 6), g3a = geo(3, 0, 1.15), g3d = geo(3, 0, 0.85);
+  ok(`lot 289 — LA PRESSION SE LIT AU TEMPS D'ARRIVÉE, lois pures : seuil ${s50.toFixed(3)} à l'identité, ${sCalme.toFixed(3)} au sang-froid, ${sNerf.toFixed(3)} au nerveux, ${sPose.toFixed(3)} posé, ${sVif.toFixed(3)} vif ; planté à 2,3 m P ${g23.P.toFixed(2)} (pressé ${g23.presse}), à 6 m ${g6.P.toFixed(2)} (${g6.presse}), à 5 m lancé ${g5l.P.toFixed(2)} (${g5l.presse}) ; à 3 m planté l'anticipateur ${g3a.P.toFixed(2)} (${g3a.presse}), le distrait ${g3d.P.toFixed(2)} (${g3d.presse})`,
+    Math.abs(s50 - 0.55) < 1e-12 && sCalme > s50 && sNerf < s50 && Math.abs(sPose - 0.55 * 1.15) < 1e-12 && Math.abs(sVif - 0.55 * 0.85) < 1e-12
+    && g23.presse === true && g6.presse === false && g5l.presse === true && g3a.presse === true && g3d.presse === false);
+  // (b) la fixture : le porteur ballon au pied, sa tenue calme tirée longue (2,4 s), un défenseur TENU à sa place à 2,3 m en diagonale
+  // (le marqueur qui ne charge pas : l'avant-contact du 238 ne le voit pas venir), un coéquipier libre 12 m derrière ; les gestes du 1c1
+  // ôtés des deux mondes (un autre choix), la fenêtre d'engagement et la pose effacées — sous la clé il est pressé (P 0,59) : la passe
+  // part vite (≤ 1,2 s) ; sans la clé il est « au calme » (au-delà de 1,8 m) et conduit en servant sa tenue : rien ne part en 2,5 s
+  // (ou ≥ + 0,4 s).
+  const fixture = (over) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ shotRange: 20, ceremonie: null, skill: { ...matchCfg({}).skill, passementFoe: null, crochetFoe: null, doubleFoe: null, pontFoe: null, rouletteFoe: null }, ...over });
+    for (let i = 0; i < 60 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players[st.possession.carrier], sg = Math.sign(st.pitch.attackGoal(c.team).x || 1);
+    for (const q of st.players) if (q.id !== c.id) { q.p[0] = q.team === c.team ? -sg * 40 : sg * 40; q.p[2] = (q.id % 11) * 5 - 25; q.v = [0, 0]; q.act = null; q.down = 0; q._pace = null; }
+    c.p[0] = 0; c.p[2] = 0; c.v = [0, 0]; c.yaw = sg > 0 ? 0 : Math.PI; c.intent = null; c.act = null; c._retour = null; c._pausa = null; c._bouclier = null;
+    st.ball.release('perte'); st.ball.restart([sg * 0.55, 0.11, 0], { cause: 'touche' }); st.ball.possess(c.id); st.phase = 'carry'; st.hold = 0.2;
+    const f = st.players.find((q) => q.team !== c.team && !q.keeper), m = st.players.find((q) => q.team === c.team && !q.keeper && q.id !== c.id);
+    const fp = [sg * 2.3 * Math.SQRT1_2, 2.3 * Math.SQRT1_2]; f.p[0] = fp[0]; f.p[2] = fp[1]; m.p[0] = -sg * 12; m.p[2] = 1.5;
+    st._calmKey = `${c.id}:${st.turnovers}:${st.passes}`; st._calmHold = 2.4; st._settling = null; st._engagement = null;
+    const n0 = st.events.length, t0 = st.t; let tPasse = null;
+    for (let i = 0; i < 150 && tPasse == null; i++) { matchStep(st, 1 / 60, cfg); f.p[0] = fp[0]; f.p[2] = fp[1]; f.v = [0, 0]; const e = st.events.slice(n0).find((x) => x.type === 'pass' && x.by === c.id); if (e) tPasse = st.t - t0; }
+    return { tPasse, presse: c._presse?.presse ?? null, P: c._presse?.P ?? null }; };
+  const fA = fixture({}), fN = fixture({ presseLue: null });
+  ok(`lot 289 — …la FIXTURE : un défenseur tenu à 2,3 m en diagonale, la tenue calme tirée à 2,4 s — sous la clé le porteur se lit pressé (${fA.presse}, P ${fA.P?.toFixed(2)}) et la passe part à ${fA.tPasse == null ? 'jamais' : fA.tPasse.toFixed(2) + ' s'} (≤ 1,2) ; sans la clé, « au calme », ${fN.tPasse == null ? 'rien en 2,5 s' : 'à ' + fN.tPasse.toFixed(2) + ' s'} (≥ + 0,4)`,
+    fA.tPasse != null && fA.tPasse <= 1.2 && (fN.tPasse == null || fN.tPasse >= fA.tPasse + 0.4));
+  // (c) le monde : 4 × 900 s — les tacles piqués baissent (≤ 0,85 × sans), les changements de possession aussi (≤ 0,97 × sans), les
+  // passes ne baissent pas (≥ 0,98 × sans) et la complétion (première touche d'un coéquipier) tient (≥ sans − 2 pts).
+  const monde = (cfg) => { const o = { pique: 0, turn: 0, passes: 0, ok: 0, n: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, pend = null;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null;
+          if (e.type === 'tacle-pique') o.pique++; if (e.type === 'turnover') { o.turn++; if (pend) { o.n++; pend = null; } }
+          if ((e.type === 'control' || e.type === 'receive' || e.type === 'loose-kept') && pend && p && p.team === pend.team) { o.n++; o.ok++; pend = null; }
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && p) { o.passes++; if (pend) { o.n++; if (p.team === pend.team) o.ok++; } pend = { team: p.team, t: st.t }; } }
+        if (pend && st.t - pend.t > 6) pend = null; } }
+    return { ...o, taux: 100 * o.ok / Math.max(1, o.n) }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, presseLue: null }));
+  ok(`lot 289 — …et LE MONDE : 4 × 900 s, tacles piqués ${mA.pique} ≤ 0,85 × ${mN.pique} ; changements de possession ${mA.turn} ≤ 0,97 × ${mN.turn} ; passes ${mA.passes} ≥ 0,98 × ${mN.passes} ; complétion ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} − 2`,
+    mA.pique <= 0.85 * mN.pique && mA.turn <= 0.97 * mN.turn && mA.passes >= 0.98 * mN.passes && mA.taux >= mN.taux - 2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

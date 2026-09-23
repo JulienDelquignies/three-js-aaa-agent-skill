@@ -187,7 +187,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // course) : −27 % de passes, le cône du porté lâchait le ballon — refusé à la mesure. Tir, centre, main, dégagement, élan : l'hier.
     if (st.full && cfg.orientationPasse && !mains && !opts.shot && !opts.clear && !opts.elan && !choice.cross) {
       const KO = cfg.orientationPasse, dY = Math.abs(wrapA(outYaw - c.yaw)), tour = (KO.marge ?? 0.8) * (cfg.retournement?.rate ?? 4) * (c.skill?.accelF ?? 1);
-      const libre = nearFoe > (KO.presse ?? 2.2);   // libre : le pivot n'est pas un tour (son clip ne tourne le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) — il finit de se tourner et joue la passe posée
+      const libre = st.full && cfg.presseLue && c._presse?.t === st.t ? !c._presse.presse : nearFoe > (KO.presse ?? 2.2);   /* (289) le libre lu au temps d'arrivée (presse-lue.js), pas « personne à 2,2 m » */   // libre : le pivot n'est pas un tour (son clip ne tourne le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) — il finit de se tourner et joue la passe posée
       const fits = cands.filter((cd) => cd.data?.surface !== 'heel' && !(libre && cd.clip === 'passePivot') && Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic >= dY);
       if (fits.length) { cands = fits; if (c._regardOri) { c._regard = null; c._regardUntil = null; c._regardOri = false; } }
       else if (libre) {   // LIBRE : IL S'OUVRE SUR PLACE — le regard tenu vers la sortie (movement : le cap pivote à retournement.rate), la pointe

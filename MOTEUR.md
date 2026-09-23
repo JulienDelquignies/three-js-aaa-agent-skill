@@ -534,6 +534,23 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La pression lue au temps d'arrivée (lot 289, `cfg.presseLue` — `presse-lue.js`) et le grand livre des passes
+
+La demande « ultra réaliste sur les passes ». L'instrument : `scripts/book/sonde-289.mjs`, le grand livre — chaque passe suivie jusqu'à sa
+première touche, classée par la règle d'attribution du book (Modèle 09 § 7.2), contre le tableau de calibration (§ 5.1, Référentiel 02).
+Juste : la complétion (83 %), les courtes, les longues, la progression. Faux : 250 pertes par équipe et par match (110-140), 1,3 passe par
+séquence (3,5-5,1), 47 % de passes arrière (36,5), 15 ballons longs (45-50), aucun sous-dosage. La première cause des pertes : le porteur
+que le moteur croyait au calme (défenseur au-delà de 1,8 m), qui tenait, se retournait, et se faisait piquer.
+
+- **`presseLueDe(st, c, K, cfg, tempo)`** : P = 1 − TTP / (pressT × anticipF), le temps d'arrivée du presseur le plus prompt (pressionDe, 265) ;
+  pressé si P ≥ **`seuilPresseDe(K, { composureF, tempo })`** = seuil × 1,075/composureF × axe(tempo, pose, vif).
+- **Les portes** : le calme de rondo-sim (la tenue calme, la barre haute), le retournement du 240b (pas d'attente pressé), le libre de
+  l'orientation de passe (strike-sim, 395). Le porteur publie `c._presse` ({ t, P, ttp, seuil, presse }) pour ses gestes de l'image.
+- **Attributs** : anticipation (l'horizon), composure (le seuil). Tactique : le tempo. Rôles : rien.
+- **Config** `presseLue: { seuil: 0.55, pressT: 1.5, pose: 1.15, vif: 0.85 }` ; clé absente : le 1,8 m d'hier au bit.
+- **Mesuré** (4 × 90 min) : piqués 46 → 33 par équipe, pertes 250 → 228, passes 368 → 378, 1,32 → 1,45 passe par séquence, complétion tenue.
+- **Nommé** : la conduite sous pression, la défense collée (73-75 % des passes sous un défenseur à moins de 0,7 s), le mélange des passes.
+
 ### La passe qui n'arrive à personne (lot 288, `cfg.ouverture` — `ouverture.js`)
 
 Les retours du 17/09, point 2, suite. Sondé (`scripts/book/sonde-288*.mjs`, 4 × 45 min) : la prémisse du 287 (l'angle du ballon reçu) est

@@ -1244,6 +1244,6 @@ export const MATCH = {
   // …et LE CALME SE GAGNE SOUS MARQUAGE LÉGER : holdCalm ne s'appliquait qu'à foeBody > calmFoe
   // du rondo — sur 46 × 30 il y a presque toujours un corps à cette distance, la tenue restait
   // 0,93 s (mesuré). Un joueur de match FIXE avec un marqueur à 2 m ; seul le vrai pressing rushe.
-  calmFoe: 1.8,
+  calmFoe: 1.8, presseLue: { seuil: 0.55, pressT: 1.5, pose: 1.15, vif: 0.85 },   /* (289) LA PRESSION SE LIT AU TEMPS D'ARRIVÉE (presse-lue.js) : pressé si P = 1 − TTP/(pressT × anticipF) ≥ seuil × 1,075/composureF × axe(tempo, pose, vif) — le calme, le retournement et le libre la suivent ; null : le 1,8 m d'hier au bit */
 };
 import { hyp } from './hyp.js';

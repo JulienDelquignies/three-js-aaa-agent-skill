@@ -13490,6 +13490,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ferme par « n ✓ / m ✗ ». Réexécutions isolées : 27 blocs et 10 annexes verts (le renversement ne
      garde que son orientation héritée) ; bloc 1 seul 0,48 ms/step. SCEAU 288 : commit c837ad8 poussé ; build + deploy Vercel prod
      (https://showcase-pi-mocha.vercel.app), Rondo-DJ99Pi0Y.js identique au bit (cmp, 624 626 octets).
+- 412: LE GRAND LIVRE DES PASSES ET LA PRESSION LUE AU TEMPS D'ARRIVÉE (289 — la demande « on doit vraiment être ultra réaliste sur les
+     passes, sinon l'expérience match est gâchée »). L'INSTRUMENT (sonde-289, le grand livre) : chaque passe suivie jusqu'à sa première
+     touche et classée par la règle d'attribution du book (Modèle 09 § 7.2 : bloquée, hors d'atteinte sur la trajectoire contrefactuelle
+     — predictPath contre la course réelle du receveur —, interceptée en route ou à destination, non prise, contrôle raté), et toutes les
+     pertes réparties (§ 7.1), contre le tableau de calibration (Modèle 09 § 5.1, Référentiel 02). 4 matchs de 90 min (graines 3/7/11/13 ;
+     correction : les sondes 287-288 étiquetaient « 4 × 45 min » des matchs de 90 min — chrono.duree est la durée d'une PÉRIODE — et leurs
+     chiffres « par match » valaient bien 90 min). CE QUI EST JUSTE : la complétion globale 83,2 % (cible 82,5 ± 1,5), les 5-15 yd 87-90 %
+     (88-92), les 30+ yd 59-70 % (55-65), la progression par séquence 11-13 m (12,1-12,6) et la vitesse directe 1,8-2,0 m/s (1,4-2,1). CE
+     QUI NE L'EST PAS : 368 passes par équipe et par match (420-475) ; 250 PERTES par équipe (110-140) dont la moitié hors passe ; 1,3 passe
+     par séquence (3,5-5,1) et 6,5 s de séquence (9,5-10,4) — le jeu change de mains toutes les six secondes ; 47 % de passes vers l'arrière
+     (36,5) ; 15 ballons longs par équipe (45-50), la passe moyenne 14 m (20-22) ; le sol à 81-85 % (90-95) et la surface à 82-95 % (45-60) ;
+     4-5 % de passes bloquées (3,12) ; les ratées LARGES à 90 % (le book veut 60-70 % de COURTES : aucun sous-dosage, test 4). D'OÙ
+     VIENNENT LES PERTES (sonde-289b/c/e) : ~46 TACLES PIQUÉS réussis par équipe et par match (le réel ne compte que 20-25 dépossessions de
+     toutes sortes), ~20-25 touches de conduite qui s'échappent vers un défenseur, ~9 duels, ~25 reprises reperdues aussitôt ; le porteur
+     piqué tenait le ballon depuis 2,2 s p50, un adversaire à ≤ 3 m depuis 1,3 s, 82-87 % sans passe adoptée. POURQUOI LA PASSE NE PART
+     PAS (sonde-289d, la seconde d'avant chaque pique) : le défenseur à 1,6-1,95 m p50, une bonne passe existe (score médian 13 pour une
+     barre de 3,2 ou 4,8) — mais le moteur croit le porteur AU CALME la moitié du temps (le calme était « personne à moins de 1,8 m » : la
+     tenue calme de 1 à 2,5 s sous une barre de 4,8) et la moitié du temps il attend de se RETOURNER ballon au pied pour jouer en arrière
+     (le 240b, jusqu'à 1,2 s) ; la passe d'urgence du ballon disputé est ensuite refusée (le ballon à 1,1 m du pied : « ancre »,
+     « technique ») et le défenseur pique. LA LOI (presse-lue.js, cfg.presseLue && st.full) : le porteur lit la pression que le moteur
+     possède depuis le 265 — P = 1 − TTP / pressT, le temps d'arrivée du presseur le plus prompt (pressionDe, reception.js) — pour DÉCIDER :
+     pressé si P ≥ seuil (0,55 : un défenseur capable d'arriver en moins de 0,7 s) ; trois portes la suivent : le CALME (rondo-sim : la
+     tenue calme et la barre haute), le RETOURNEMENT (pas d'attente sous pression : le geste prompt joue la passe arrière), le LIBRE de
+     l'orientation de passe (strike-sim, 395 : 2,2 m). Attributs : anticipation (pressT × anticipF : il voit venir plus tôt), composure
+     (seuil × 1,075/composureF : le calme garde la tête plus longtemps) ; tactique : le tempo (× 1,15 posé, × 0,85 vif). Clé absente : le
+     1,8 m, le retournement et le 2,2 m d'hier au bit — jumeau prouvé (presseLue null = le défaut 288 550a2635874e3899 / 44509e5809a04c0c ;
+     le défaut 289 53e08475e3d8175c / ebfd994770a4b0c6). APRÈS (4 × 90 min) : tacles piqués 46 → 33 par équipe, changements de possession
+     228 → 205, ballons libres repris par l'adversaire hors passe 79 → 66, pertes du grand livre 250 → 228, passes 368 → 378 par équipe,
+     1,32 → 1,45 passe par séquence, la complétion tenue (83,2 → 83,1 %) ; la tenue avant la passe 1,7 → 1,2 s p50 (pressé 1,6 → 1,1).
+     CE QUE LE LOT NOMME : (1) la CONDUITE sous pression — les piques restants et les touches qui s'échappent vers un défenseur (~50 par
+     équipe) : la touche de conduite ne se serre pas assez près d'un défenseur (le ballon à 1,0-1,1 m du pied au pique) — le lot suivant ;
+     (2) la DÉFENSE COLLÉE — 73-75 % des passes sont frappées sous un défenseur capable d'arriver en moins de 0,7 s (le réel : ~12 % de
+     passes sous pression), avec ou sans la loi : le seuil n'a pas été abaissé pour le compenser, la loi reste physique ; (3) le mélange des
+     passes (trop courtes, trop arrière, trop peu de ballons longs) et le sous-dosage (test 4). BANC_COMPLET
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

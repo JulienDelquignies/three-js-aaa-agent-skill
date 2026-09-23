@@ -725,6 +725,13 @@ rapides après contrôle sont des passes pressées. Le vrai défaut : 33 % des p
 attend), le receveur en course s'ouvre au ballon qui croise (le cap au ballon, la course continue). Le pas d'arrêt tenté et réfuté. Monde :
 perdues sans touche 32 → 24 %, réussite 61 → 72 %.
 
+**289 — LE GRAND LIVRE DES PASSES ET LA PRESSION LUE : SCELLÉ (412).** La demande « ultra réaliste sur les passes ». Le grand livre (sonde-289,
+la règle d'attribution du book § 7.2) contre le tableau du book : la complétion est juste (83 %), mais le jeu perd le ballon deux fois trop
+(250 pertes par équipe pour 110-140) et les séquences n'ont que 1,3 passe (3,5-5,1). La première cause : le porteur que le moteur croyait
+au calme parce que le défenseur était au-delà de 1,8 m. La loi (presse-lue.js) : la pression lue au temps d'arrivée (P du 265) décide le
+calme, le retournement et le libre ; piqués 46 → 33 par équipe. Nommés : la conduite sous pression (le lot suivant), la défense collée,
+le mélange des passes et le sous-dosage.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
