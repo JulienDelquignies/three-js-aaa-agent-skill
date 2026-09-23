@@ -13571,6 +13571,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      4 × 900 s contre la clé éteinte (réussies 53 % c. 72 ; piques 24 c. 33 ; changements de possession par passe 0,511 c. 0,534 —
      en valeur absolue 900 s est trop court, 245 c. 229 pour 479 c. 429 passes ; complétion 85,1 c. 86,8). Empreinte à 90 s : celle
      du 289 (aucune pique avant 90 s, la cérémonie en prend 37).
+     BANC COMPLET (8 shards, 190 blocs) : 22 rouges, tous verts à HEAD~ (worktree d9971be, preuves entières) sauf le 246d hérité —
+     21 blocs épinglés PAR CONTENU (tacleDebout: null DATÉ 291 : la course qui traverse la frappe, 95, la démission d'hier, 115, 135,
+     168, 212, le marqueur en surface 134, le couloir 138, les contres 139, 244b, 244d, 249b, 277, 279, 281, 283, 284, 286, 289, 290 —
+     46 épingles) ; annexes : attributes (157, le pique en flux) et renversement (99) épinglées, vertes au banc du 290 ; identification
+     regelée 19 → 14 (plage 10-24) ; signes : DATEES regelées (graines 1 et 2, la 3 inchangée) ; hérités : 246d, loi12 le mur (2), loi15
+     la cloche. Réexécutions isolées : 21 blocs et 4 annexes verts ; bloc 1 seul 0,44 ms/step. SCEAU 291 : commits 44c520b (la loi),
+     ef5ab5f (docs), fb0403d (épingles) poussés ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-DhDR0QJN.js
+     identique au bit (cmp, 626 060 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
