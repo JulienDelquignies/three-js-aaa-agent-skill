@@ -13523,7 +13523,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      équipe) : la touche de conduite ne se serre pas assez près d'un défenseur (le ballon à 1,0-1,1 m du pied au pique) — le lot suivant ;
      (2) la DÉFENSE COLLÉE — 73-75 % des passes sont frappées sous un défenseur capable d'arriver en moins de 0,7 s (le réel : ~12 % de
      passes sous pression), avec ou sans la loi : le seuil n'a pas été abaissé pour le compenser, la loi reste physique ; (3) le mélange des
-     passes (trop courtes, trop arrière, trop peu de ballons longs) et le sous-dosage (test 4). BANC_COMPLET
+     passes (trop courtes, trop arrière, trop peu de ballons longs) et le sous-dosage (test 4). BANC COMPLET (8 shards, 188 blocs) : 22 rouges, tous verts à HEAD~ (worktree 7bd70e0,
+     preuves entières, ligne de bilan comprise) sauf le 246d hérité — 21 blocs épinglés PAR CONTENU (presseLue: null DATÉ 289 : 167, le 286,
+     95, 135, le FLUX des couloirs 138, le 288 lui-même — sa clause se mesure au monde du 288 —, 114, les contres 139, 273, 281, les pointes
+     sur la ligne, 115, 138 le dépassement, 211 — LA TENUE DU PORTEUR LIBRE : 1,37 s dans ce monde, la loi change QUI est libre —, 283, le
+     marquage 134, 252, 268, 284, le pivot 135, 277) ; annexes : attributes (152/158, 157), contact (le fauché, le relevé aidé, le poste de
+     l'aidant), emotion (le but forcé de la fixture), match (la passe levée), petits-gestes, porte, remises (le lanceur de touche), renversement
+     (le lot 99), slide, signes (la pausa sans la clé), verticalite épinglées après preuve verte dans le worktree ; signes : les trois
+     empreintes DATEES regelées ; identification regelée 16 → 19 (plage 10-24) ; hérités : 246d, loi12 le mur (2), loi15 la cloche,
+     renversement (l'orientation). Réexécutions isolées : 21 blocs et 12 annexes verts ; bloc 1 seul 0,48 ms/step. La vérification de
+     troncature des preuves (le 288) a levé deux fausses alertes : petits-gestes et verticalite écrivent leur nom avant le bilan
+     (« verticalite : 6 ✓ / 0 ✗ ») — l'expression accepte désormais ce préfixe. SCEAU 289 : commits 71d0f77 (la loi) puis cebc9b9, 0badc90,
+     638d626 (les épingles) poussés ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-BVr4bw_3.js identique au
+     bit (cmp, 625 265 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -71,7 +71,8 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
 
 Une preuve à HEAD~ ne vaut que si son journal se ferme par la ligne de bilan « n ✓ / m ✗ » avec autant de clauses que le banc
 (moins celles du bloc nouveau) : un conteneur redémarré au milieu d'une clause longue laisse un journal tronqué qui a l'air vert
-(leçon du 288 — six épingles posées sur des preuves tronquées, rejouées avant le sceau).
+(leçon du 288 — six épingles posées sur des preuves tronquées, rejouées avant le sceau). Certaines annexes préfixent leur bilan de leur nom
+(« verticalite : 6 ✓ / 0 ✗ ») : l'expression de contrôle est `^([a-z-]+ : )?[0-9]+ ✓ / [0-9]+ ✗$` (leçon du 289).
 
 ## L'ordre après le 289 (PLAN_DOCTRINE, la carte du book)
 
