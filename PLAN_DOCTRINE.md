@@ -753,6 +753,11 @@ défenseur à 9-12 m ; la loi de la Bible 03 § 5.1 posée puis retirée : sans 
 à chaque réception, le second presseur, le contact joué en duel. Suivants : le presseur cadre (il temporise, il ne se jette que sur
 déclencheur) et le porteur tient (la possession à 2 s).
 
+**294 — LE CONTACT A SON DÉCLENCHEUR : RÉFUTÉ ; LES PERTES COMPTÉES AU SENS DU BOOK (417).** La loi (contact seulement sur signal) baisse
+les contacts de 71 à 58, pas les pertes : retirée. La comptabilité (sonde-295) : 42 « pertes » par équipe étaient des remises en jeu ;
+au sens du book ~150-165 (110-140). Passes et take-ons justes ; l'excès (~30) est chez le porteur qui conduit (conduite, pique et
+charge subies ~45 c. ~15). Le lot suivant : le porteur tient.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

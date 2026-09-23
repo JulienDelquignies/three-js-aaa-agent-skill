@@ -13623,6 +13623,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      recul-frein, 2-3 m » —, il ne se jette que sur déclencheur, Bible 10 § 7 : le mauvais contrôle, le dos au but, la zone piège) et LE
      PORTEUR TIENT (sous un presseur qui cadre, il protège et joue, la possession à 2 s). Moteur inchangé : pas de banc, le bundle du
      292 reste en ligne.
+- 417: LE CONTACT A SON DÉCLENCHEUR — RÉFUTÉ ; LA COMPTABILITÉ DES PERTES AU SENS DU BOOK (294). LA SONDE (sonde-294, 4 × 90 min) :
+     ~71 contacts engagés par la défense sur le porteur par équipe et par match (épaule 19-22, piques tentées 23-27, fautes 17, glissés
+     5-9), 36-38 % SANS aucun déclencheur de la Bible 10 § 7 (touche exposée, dos au but, ligne, recul épuisé à < 25 m, réception
+     fraîche, fenêtre de pressing). LA LOI (declencheur.js, cfg.contactDeclenche : charge, pique, glissé et morsure du jockey seulement
+     sur déclencheur) : contacts 71 → 58, sans déclencheur 26 → 14 (le reste : des fautes, non portées) — mais PERTES 221-223
+     (inchangées), passes 338-356, 1,33-1,40 passe par séquence, PPDA 2,1-2,4 : RÉFUTÉE, retirée du code (le moteur = le 293 au bit).
+     LA COMPTABILITÉ (sonde-295 : chaque changement de possession classé par la dernière action de l'équipe qui perd, dans les 6 s) :
+     186-198 changements en jeu par équipe + 16-17 sorties rendues ; les tirs (1-2) et les dégagements (3-5) ne pèsent RIEN ; mais 42
+     par équipe (22 %) suivent 6 s SANS action de l'équipe qui « perd » — les REMISES EN JEU (coup franc, touche, sortie de but) que le
+     grand livre du 289 comptait en pertes et que la table du book (Modèle 09 § 7.1) ne compte pas. LES PERTES EN JEU COMPARABLES :
+     ~150-165 par équipe (le book 110-140 : l'écart est de 20-30 %, pas du double). Par canal, contre le book (sur ~125) : PASSES
+     (passe 52-56 + passe → sortie ~10) ~65 — le book ~65 : JUSTE ; take-on 18-23 — ~20 : JUSTE ; contrôle 15-20 + raté 4 — ~14 : un
+     peu haut ; CONDUITE 25 + PIQUE SUBIE 14-18 + CHARGE SUBIE 3-4 ≈ 45 — le tacle du book ~15 : L'EXCÈS EST LÀ, ~30 par équipe. La
+     leçon des lots 290-294 se précise : ce n'est ni la passe (juste) ni la défense en général (le marquage tient sa zone, le contact
+     sans signal n'est pas la cause) — c'est LE PORTEUR QUI CONDUIT qui perd trois fois trop, et la possession individuelle deux fois
+     trop courte (1,08 s c. 2,14). Le lot suivant : le porteur tient (la protection — le bouclier A10 ter —, la conduite qui se pose
+     au lieu de pousser devant un presseur). Moteur inchangé : pas de banc, le bundle du 292 reste en ligne.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
