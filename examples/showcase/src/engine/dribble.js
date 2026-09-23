@@ -1,4 +1,4 @@
-import { BALL, PITCH, stepBall } from './ball.js';
+import { BALL, PITCH, stepBall } from './ball.js'; import { toucheCorpsDe } from './touche-corps.js';
 
 // Le ballon peut être un BallBody (position en lecture seule, audit de continuité) ou un objet nu
 // `{p,v,w}` — les prédicteurs simulent des futurs sur des copies mutables, et c'est légitime. Ces deux
@@ -210,8 +210,9 @@ export function dribbleStep(d, ball, player, dt) {
     // UNE TOUCHE EST UNE VITESSE, JAMAIS UNE POSITION. `setVelocity` passe par le corps du ballon
     // quand il y en a un (ball-body.js), et reste compatible avec un objet nu pour les prédicteurs et
     // les harnais qui simulent des futurs sur une copie.
-    setVelocity(ball, [dx * sp, Math.max(ball.v[1], 0), dz * sp],
-      [ball.v[2] / BALL.radius, 0, -(dx * sp) / BALL.radius]);   // le pied la fait rouler : lift avant
+    const spT = player.corpsK ? toucheCorpsDe(sp, dx, dz, player.corps, player.speed, player.corpsK) : sp;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
+    setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
+      [ball.v[2] / BALL.radius, 0, -(dx * spT) / BALL.radius]);   // le pied la fait rouler : lift avant
     d.sinceTouch = 0; d.touches++; touched = true;
     // LA TOUCHE PORTE SA GÉOMÉTRIE (lot 55) : l'angle entrant→sortant et la vitesse du kick —
     // l'événement les inscrit, la scène en fait un GESTE (une cassure de 110° n'est pas une

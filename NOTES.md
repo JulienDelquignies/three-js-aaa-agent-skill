@@ -13579,6 +13579,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la cloche. Réexécutions isolées : 21 blocs et 4 annexes verts ; bloc 1 seul 0,44 ms/step. SCEAU 291 : commits 44c520b (la loi),
      ef5ab5f (docs), fb0403d (épingles) poussés ; build + deploy Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-DhDR0QJN.js
      identique au bit (cmp, 626 060 octets).
+- 415: LA TOUCHE SUIT LE CORPS — RÉFUTÉE ; LA PERTE SE CONSERVE (292 — le ballon libre hors passe, ~95 pertes par équipe au grand
+     livre). LES SONDES (4 × 90 min, au monde du 291) : sonde-289e (l'origine des ballons libres) — repris par l'adversaire hors passe
+     ouverte 48-59 par équipe : conduite → ÉCHAPPÉE sans geste 36-45 % (~21), pique 25-28 %, duel 20 %, glissé 6-10 % ; sonde-292
+     (l'échappée) — ~43 par équipe, le ballon à 2,2 m pile (le plafond du lot 37 : le porteur en course dont le ballon est devant perd
+     l'étiquette), le porteur RALENTIT à 86 % (4,1-4,5 → 2,9-3,0 m/s en 0,5 s), le défenseur le plus proche du ballon à 5 m p50 (plus
+     près que le porteur 11-14 %), et pourtant repris par lui une fois sur deux ; le corps court à 104° (p50) de son ballon. DEUX LOIS
+     MESURÉES, DEUX RÉFUTÉES : (1) « le porteur suit sa touche » (la cible derrière le ballon qui roule, la reprise à + 0,3 m/s) —
+     active avant 16 échappées sur 17, SANS EFFET (43 → 43) : ce n'était pas la cible ; retirée du code. (2) « la touche suit le corps »
+     (touche-corps.js, `cfg.toucheCorps`) : le raccourcissement de la touche qui tourne (dribble.js, turnRate) lit un taux que le match
+     passe à 0 — une touche à 90° de la course partait aussi fort que devant ; la loi : la vitesse de la touche × kMin + (1 − kMin)·cos θ.
+     kMin 0,5 : échappées 43 → 29-31, reprises 21 → 16-20, mais PERTES 222 (c. 215-222) ; au banc, 4 × 900 s : passes 479 → 440,
+     changements de possession par passe 0,511 → 0,577 ; kMin 0,7 : 37 échappées, complétion 81-82. NOMMÉE, ÉTEINTE par défaut. Et la
+     conduite serrée du 290 remesurée au monde du 291 : passes 361 → 384-409, 1,47 → 1,54-1,65 passe par séquence, pertes 214-217
+     (inchangées), échappées inchangées. LA LEÇON DES TROIS LOTS 290-292 : chaque canal corrigé baisse, LE TOTAL SE CONSERVE (~215-225) —
+     la perte est en aval d'une cause commune : la défense collée (73-75 % des passes sous un défenseur à moins de 0,7 s, le réel ~12 %) ;
+     c'est le lot suivant. CORRECTION : sonde-291 lisait la vitesse des joueurs en v[2] (elle est 2D, v[0]/v[1]) — son critère « de dos »
+     (0 %) n'a rien mesuré ; le reste (cône, réussite, issue) est juste. Bloc 292 (index 190) : lois pures (l'axe 5 m/s, 45° 4,27, 90° 2,5,
+     derrière 2,5, plancher 2, sous vCorps la touche d'hier ; la clé nulle par défaut) et la réfutation clé allumée (4 × 900 s :
+     échappées 33 c. 51, changements de possession par passe 0,577 c. 0,511). Monde par défaut = le 291 au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

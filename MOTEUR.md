@@ -534,6 +534,18 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La touche suit le corps (lot 292, `cfg.toucheCorps` — `touche-corps.js`) — RÉFUTÉE, éteinte par défaut
+
+Sondé (`scripts/book/sonde-292.mjs`) : ~43 échappées de conduite par équipe et par match, le ballon à 2,2 m, le porteur qui ralentit
+derrière une touche partie à 104° de sa course (le raccourcissement de la touche qui tourne lit un turnRate que le match passe à 0).
+
+- **`toucheCorpsDe(sp, dx, dz, corps, speed, K)`** : la vitesse de la touche × (kMin + (1 − kMin)·max(0, cos θ)^pow), θ l'angle entre
+  la touche et la course du corps ; plancher vMin ; sous vCorps la touche d'hier. rondo-sim pose `corps` (le vecteur de course) et
+  `corpsK` sur le joueur de la touche.
+- **Config** `toucheCorps: null` par défaut ; opt-in `{ kMin: 0.5, pow: 1, vCorps: 2, vMin: 2 }`.
+- **Réfuté** : échappées −30 %, pertes inchangées (la perte change de canal). « Le porteur suit sa touche », tentée avant : sans effet,
+  retirée. La cause commune nommée : la défense collée.
+
 ### Le tacle debout (lot 291, `cfg.tacleDebout` — `tacle-debout.js`)
 
 Sondé (`scripts/book/sonde-291.mjs`, 4 × 90 min) : 77,5 % des tentatives de pique réussies, 15-17 % hors du cône du pied ; le book

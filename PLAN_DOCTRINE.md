@@ -742,6 +742,11 @@ défenseur battu 49 %), 15-17 % hors du cône du pied. La loi (tacle-debout.js) 
 note × 0,56 esquivée par le dribbleur, le battu assis 0,22 s. Piques 33 → 17 par équipe, pertes 228 → ~215. Reste nommé : le ballon
 libre hors passe (~95 pertes par équipe), le lot suivant.
 
+**292 — LA TOUCHE SUIT LE CORPS : RÉFUTÉE ; LA PERTE SE CONSERVE (415).** Sondé : ~43 échappées de conduite par équipe, le porteur
+ralentit derrière une touche partie à 104° de sa course. « Le porteur suit sa touche » : sans effet, retirée. « La touche suit le
+corps » (touche-corps.js) : échappées −30 %, pertes inchangées. Nommée, éteinte. La leçon des lots 290-292 : chaque canal baisse, le
+total se conserve — la cause est la défense collée (73-75 % des passes sous pression, le réel ~12 %), le lot suivant.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

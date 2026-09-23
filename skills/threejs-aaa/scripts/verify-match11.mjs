@@ -35,6 +35,7 @@ import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
 import { serreDe } from '../assets/starter/src/engine/serre.js';
 import { piqueTenteDe, piqueReussiteDe } from '../assets/starter/src/engine/tacle-debout.js';
+import { toucheCorpsDe } from '../assets/starter/src/engine/touche-corps.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
@@ -7386,6 +7387,33 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, tacleDebout: null }));
   ok(`lot 291 — …et LE MONDE : 4 × 900 s, tentatives réussies ${(100 * mA.reussi).toFixed(0)} % (40-62) c. ${(100 * mN.reussi).toFixed(0)} % sans (≥ 70) ; piques ${mA.pique} ≤ 0,8 × ${mN.pique} ; changements de possession par passe ${(mA.turn / mA.passes).toFixed(3)} < ${(mN.turn / mN.passes).toFixed(3)} ; passes ${mA.passes} ≥ 0,98 × ${mN.passes} ; complétion ${mA.taux.toFixed(1)} % ≥ ${mN.taux.toFixed(1)} − 2`,
     mA.reussi >= 0.40 && mA.reussi <= 0.62 && mN.reussi >= 0.70 && mA.pique <= 0.8 * mN.pique && mA.turn / mA.passes < mN.turn / mN.passes && mA.passes >= 0.98 * mN.passes && mA.taux >= mN.taux - 2);
+}
+
+if (__bloc()) {
+  // LA TOUCHE SUIT LE CORPS (292 — RÉFUTÉE à la mesure, éteinte par défaut ; sonde-292 : ~43 échappées de conduite sans geste par équipe et par match, le porteur RALENTIT à 86 %
+  // et son corps court à 104° de son ballon : la touche partait aussi fort sur le côté que devant) — (a) lois pures : dans l'axe de la
+  // course la touche d'hier (5 m/s), à 90° et derrière × kMin (2,5), le plancher (3 m/s à 90° → 2), sous vCorps (le corps presque arrêté
+  // tourne avec sa semelle) la touche d'hier.
+  const K = { kMin: 0.5, pow: 1, vCorps: 2, vMin: 2 };
+  const a = toucheCorpsDe(5, 1, 0, [1, 0], 4, K), b = toucheCorpsDe(5, 0, 1, [1, 0], 4, K), c = toucheCorpsDe(5, -1, 0, [1, 0], 4, K), d = toucheCorpsDe(3, 0, 1, [1, 0], 4, K), e = toucheCorpsDe(5, 0, 1, [1, 0], 1.5, K), f = toucheCorpsDe(5, Math.SQRT1_2, Math.SQRT1_2, [1, 0], 4, K);
+  ok(`lot 292 — LA TOUCHE SUIT LE CORPS, lois pures : dans l'axe ${a} m/s, à 45° ${f.toFixed(2)}, à 90° ${b}, derrière ${c}, plancher ${d}, corps presque arrêté ${e} ; la clé par défaut ${JSON.stringify(matchCfg({}).toucheCorps)}`,
+    matchCfg({}).toucheCorps === null && a === 5 && Math.abs(f - 5 * (0.5 + 0.5 * Math.SQRT1_2)) < 1e-9 && b === 2.5 && c === 2.5 && d === 2 && e === 5);
+  // (b) LA RÉFUTATION : 4 × 900 s, la clé ALLUMÉE contre le défaut éteint — les échappées de conduite sans geste (conduite → libre, le
+  // ballon à plus de 1,5 m du porteur, aucun événement) baissent (≤ 0,8 × sans : la loi fait ce qu'elle dit) mais les changements de
+  // possession par passe NE baissent PAS (≥ 0,97 × sans : la perte change de canal) — la loi reste éteinte.
+  const monde = (cfg) => { const o = { ech: 0, turn: 0, passes: 0, ok: 0, n: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, pend = null, ph0 = st.phase;
+      for (let i = 0; i < 900 * 60; i++) { const cid = st.possession.carrier, nEv = st.events.length; matchStep(st, 1 / 60, cfg);
+        if (ph0 === 'carry' && st.phase === 'loose' && !st.restart && cid >= 0 && st.events.length === nEv) { const cc = st.players[cid]; if (Math.hypot(st.ball.p[0] - cc.p[0], st.ball.p[2] - cc.p[2]) > 1.5) o.ech++; }
+        ph0 = st.phase;
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null;
+          if (e.type === 'turnover') { o.turn++; if (pend) { o.n++; pend = null; } }
+          if ((e.type === 'control' || e.type === 'receive' || e.type === 'loose-kept') && pend && p && p.team === pend.team) { o.n++; o.ok++; pend = null; }
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && p) { o.passes++; if (pend) { o.n++; if (p.team === pend.team) o.ok++; } pend = { team: p.team, t: st.t }; } }
+        if (pend && st.t - pend.t > 6) pend = null; } }
+    return { ...o, taux: 100 * o.ok / Math.max(1, o.n) }; };
+  const mA = monde(matchCfg({ shotRange: 20, toucheCorps: K })), mN = monde(matchCfg({ shotRange: 20 }));
+  ok(`lot 292 — …et LA RÉFUTATION : 4 × 900 s, clé allumée contre éteinte — échappées de conduite ${mA.ech} ≤ 0,8 × ${mN.ech} (la loi fait ce qu'elle dit) ; changements de possession par passe ${(mA.turn / mA.passes).toFixed(3)} ≥ 0,97 × ${(mN.turn / mN.passes).toFixed(3)} (le total ne baisse pas) ; passes ${mA.passes} c. ${mN.passes}, complétion ${mA.taux.toFixed(1)} c. ${mN.taux.toFixed(1)} % — la loi reste éteinte`,
+    mA.ech <= 0.8 * mN.ech && mA.turn / mA.passes >= 0.97 * mN.turn / mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

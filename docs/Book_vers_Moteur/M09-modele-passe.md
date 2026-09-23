@@ -70,6 +70,9 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
    → **289** (sonde-289, le grand livre ; `presse-lue.js`, NOTES 412) : les pertes réparties § 7.1 ; piqués 46 → 33 par équipe.
    → **290** (`serre.js`, `cfg.conduiteSerree` nulle, NOTES 413) : la conduite serrée sous pression RÉFUTÉE — la touche se serre, les
    piqués ne baissent pas ; le levier est la pique (Modèle 11).
+   → **291** (`tacle-debout.js`, NOTES 414) : piques 33 → 17 par équipe, pertes 228 → ~215.
+   → **292** (`touche-corps.js`, `cfg.toucheCorps` nulle, NOTES 415) : les échappées de conduite −30 %, les pertes inchangées — RÉFUTÉE ;
+   le total des pertes se conserve d'un canal à l'autre : la cause commune est la défense collée.
 5. **Le sous-dosage et le masque dos-au-but** (tests 4, 8 ; Bible 14 lot 5).
    → **287** (`layoff.js`, `cfg.layoff`, `layoffF` technique / control, NOTES 410) : la une-touche jugée par son angle. Reste nommé :
    la passe RAPIDE après contrôle (45 / match, 49 % de réussite, le barème de `choosePass` ignore l'angle du ballon reçu) — la
