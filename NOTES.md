@@ -13601,6 +13601,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      BANC COMPLET (8 shards, 191 blocs) : tout vert sauf les hérités (246d ; loi12 le mur ×2 ; loi15 la cloche) — monde par défaut
      inchangé, aucune épingle ; bloc 292 seul 2 ✓ ; bloc 1 seul 0,43 ms/step. SCEAU 292 : commit fb70109 poussé ; build + deploy Vercel
      prod (https://showcase-pi-mocha.vercel.app), Rondo-xjc5Gp3R.js identique au bit (cmp, 626 373 octets).
+- 416: LA DÉFENSE COLLÉE — SONDÉE, L'HYPOTHÈSE DU MARQUAGE RÉFUTÉE (293 — la cause commune nommée au 292). LA SONDE (sonde-293 et
+     ses variantes, 4 × 90 min, au monde du 292), contre le Référentiel 02 et 05 et la Bible 03 / 10 : (1) PPDA 2,1-2,5 (big-5 7,3-17,
+     médiane 11-12, alarme sous 6) — ~260 actions défensives par équipe hors de son tiers (par match à deux : 84 tentatives de pique,
+     44 duels d'épaule, 90 take-ons, 35 fautes, 12 glissés ; les « interceptions » du moteur, 139 par match, sont des récupérations
+     de ballon libre, pas des interceptions Opta ~10 par équipe) ; (2) passes avec un adversaire qui s'approche à moins de 5 m :
+     71-73 % (à 3 m : 52 %) — le Référentiel prévient que ce taux n'est pas comparable d'un fournisseur à l'autre (~12 % StatsBomb) :
+     cible fragile ; (3) QUI est au contact du porteur : le PRESSEUR (82-84 % des premiers défenseurs), à 2,2 m p50 dans le tiers
+     défensif, 3,5 au milieu, 4,4 loin (la garde 238 : 2 / 4 / 6), le second défenseur souvent un DEUXIÈME presseur (18-57 %) ; (4) à
+     la RÉCEPTION le plus proche défenseur est à 5,2 m p50 (le presseur réélu, 65 %) et ferme à 2,6 m en 1,08 s ; (5) LA DURÉE DE
+     POSSESSION réception → passe p25/p50/p75 0,67/1,08/2,18 s — le réel (Bible 10 § 3.2, Yamamoto, Gamma 2,29 × 1,09 s) médiane
+     2,14 s : le porteur du moteur lâche deux fois trop tôt ; (6) LA COURSE (Référentiel 05 § 3) : 13,1 km par joueur de champ (réel
+     9,4-11), 48 % sous 12 km/h (réel ~2/3), 6,1 km entre 12 et 19,8 km/h (le marqueur 3,8 km dont 2,1, le soutien offensif 3,9 dont
+     2,0), haute intensité 683 m (réel 686-734 : juste), sprint 50 m (réel 166). L'HYPOTHÈSE TESTÉE ET RÉFUTÉE : « le marquage à 1,4 m
+     côté but PARTOUT colle la défense » — la loi de la Bible 03 § 5.1 (zone pure au-delà de 35 m, élastique 2-5 m de 18 à 35, contact
+     sous 18) posée puis mesurée : pression, PPDA, tirs inchangés, course − 2 % ; et l'attaquant sans ballon a son plus proche défenseur
+     à 9-12 m p50 dans les trois régimes, loi ou pas (75 % libres à > 5 m) — seuls les hommes DANGEREUX sont marqués, le reste du bloc
+     tient déjà sa zone. Loi retirée (aucun code mort). CE QUE LA SONDE NOMME : la défense n'est pas collée partout, elle est collée AU
+     PORTEUR — le presseur réélu à chaque réception, le second presseur, et le contact qui se joue en duel (PPDA) ; et le porteur qui
+     lâche en 1 s au lieu de 2. Les deux leviers suivants : LE PRESSEUR CADRE (à la distance de cadrage il temporise — Bible 05 « le
+     recul-frein, 2-3 m » —, il ne se jette que sur déclencheur, Bible 10 § 7 : le mauvais contrôle, le dos au but, la zone piège) et LE
+     PORTEUR TIENT (sous un presseur qui cadre, il protège et joue, la possession à 2 s). Moteur inchangé : pas de banc, le bundle du
+     292 reste en ligne.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

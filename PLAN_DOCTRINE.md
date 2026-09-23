@@ -747,6 +747,12 @@ ralentit derrière une touche partie à 104° de sa course. « Le porteur suit s
 corps » (touche-corps.js) : échappées −30 %, pertes inchangées. Nommée, éteinte. La leçon des lots 290-292 : chaque canal baisse, le
 total se conserve — la cause est la défense collée (73-75 % des passes sous pression, le réel ~12 %), le lot suivant.
 
+**293 — LA DÉFENSE COLLÉE : SONDÉE (416).** PPDA 2,1-2,5 (big-5 7,3-17) ; la possession individuelle 1,08 s médiane (réel 2,14) ; 13,1 km
+par joueur (réel 9,4-11) dont 6,1 à 12-19,8 km/h. L'hypothèse du marquage collé partout RÉFUTÉE (les attaquants sans ballon ont leur
+défenseur à 9-12 m ; la loi de la Bible 03 § 5.1 posée puis retirée : sans effet). La défense est collée AU PORTEUR : le presseur réélu
+à chaque réception, le second presseur, le contact joué en duel. Suivants : le presseur cadre (il temporise, il ne se jette que sur
+déclencheur) et le porteur tient (la possession à 2 s).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
