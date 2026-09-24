@@ -13903,6 +13903,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (min(touchPre, t) − 0,15), pas de pop d'une frame, et le LOD garde le décalage. Mesuré 90 s : sauts du corps 114 → 0 ; les sauts de
      pied restants sont la foulée de sprint (20), 3 du geste de touche. Filmé : contrôle (jambe tendue) et conduite à 2,8 m/s, ballon au
      pied sur chaque frame. Rendu seul : sim au bit.
+- 436: LE RECEVEUR S'ALIGNE AVANT LA PRISE (309, foulee.js cibleAlignee, cfg.aligneRecev). « Receveur toujours KO, pas bien placé ou
+     passe imprécise, on n'est pas bons sur le jeu de passe. » Sonde-309 (graines 3 et 7, par passe reçue, dans les 0,6 / 0,3 / 0,15 s
+     avant la prise) : la PASSE est précise — ligne du ballon au sol à 0,24 m du point visé p50 (0,66 p90), 0,38 toutes passes ; le
+     RECEVEUR non : 0,15 s avant la prise, 17 % des receveurs (23 % au sol) encore à plus d'1 m de la trajectoire, en travers à
+     2,6 m/s — la prise jambe tendue, le corps en retard. Sa CIBLE était sur la ligne (0,10 m p50 : le lead, la mène au ballon réel,
+     l'avancée meetWalk) — c'est la course qui arrivait trop tard, pas la cible qui était fausse. Le plafond « se poser » (303) n'y est
+     pour rien (sans lui : pire, 51 % hors ligne à 0,6 s). LA LOI (cfg.aligneRecev { marge 0,3, reach 0,35, cadence 0,1, h 0,9 },
+     absent = hier au bit) : après sa réaction, ballon bas, hors foulée lancée, la cible est le point du vol prédit qu'il rejoint le
+     plus VITE parmi ceux où il arrive avec une avance ≥ marge × (2 − anticipF) — le plus court chemin vers la ligne, pas le premier
+     point (qui ferait remonter tout le vol) ; aucun : le premier atteignable. Mesuré 4 × 90 min (graines 3, 7, 11, 19) : hors ligne
+     > 1 m à 0,15 s 17 → 7 % (au sol 23 → 10), séquences 3,39 → 3,78, complétion 86,1 → 88,4 %, passes 470 → 498, pertes 135 → 126,
+     manqués 5,2 = 5,2 %. Marge 0,15 : séquences 3,60 ; marge 0,5 : séquences 3,98, manqués 4,8 %, mais hors ligne 13 % — 0,3 garde
+     ce que l'œil voit. Bloc 309 (index 199). Jumeau = le défaut du 307 ; défaut du 309 : `ae8ef26162fc79b3 / 51f90a3b3a733825`.
+     RESTE : les receveurs lancés EN TRAVERS (> 3 m/s perpendiculaire, 16 % des passes) arrivent encore à la dernière frame.
+     Banc rapide : jumeau au bit, sync 9 ✓ (l'appel tient sur la ligne du clamp — match-sim 1250), bloc 199 vert (hors ligne 17,0 →
+     7,1 %, passe pour lui manquée 1,8 c. 1,1 % + 1, passes 546 ≥ 0,85 × 614 — la garde de volume est large parce que 900 s par graine
+     varient de ± 15 % : 12 graines × 900 s − 4 %, 4 × 90 min + 6 %) ; épingle DATÉE 309 au bloc 1 (le contrat à 22, graine 7 sèche
+     dans les deux mondes : `aligneRecev: null` dans son monde contrat, vert à HEAD~).
+     Banc complet 296-306 (worktree b0b422e) : 37 rouges match11 dont 24 absents du banc 295, et 4 annexes nouvelles (decalage,
+     moments, renversement, touche-orientee) — à prouver à la base 5e3e58c et épingler, dette du groupe.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

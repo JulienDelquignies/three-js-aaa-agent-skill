@@ -50,3 +50,31 @@ export function cibleFoulee(st, cfg, r, pitch) {
 }
 return null;
 }
+
+// LE RECEVEUR S'ALIGNE AVANT LA PRISE (309, cfg.aligneRecev && st.full — retour du 26/09 « receveur toujours KO, pas bien placé ou
+// passe imprécise »). Mesuré (sonde-309, graines 3 et 7) : la passe au sol est PRÉCISE (ligne du ballon à 0,24 m du point visé p50),
+// le receveur NON — sa cible (le lead, la mène au ballon réel, l'avancée) est sur la ligne, lui pas : 0,15 s avant la prise, 17 % des
+// receveurs (23 % au sol) sont encore à plus d'1 m de la trajectoire, en travers à 2,6 m/s — la prise jambe tendue, le corps en retard.
+// Le vrai receveur lit le départ (réaction) et se met SUR la trajectoire avec de l'avance, puis attend le ballon posé. La loi : après
+// sa réaction, la cible est le point du vol prédit (au sol) qu'il rejoint le plus VITE parmi ceux où il arrive avec une avance
+// ≥ marge × (2 − anticipF) — le plus court chemin vers la ligne, pas le premier point (qui ferait remonter tout le vol) ; aucun :
+// le rendez-vous d'hier (le premier atteignable). Rafraîchi à cadence. Clé absente : hier au bit.
+export function cibleAlignee(st, cfg, r, pitch) {
+  const K = cfg.aligneRecev, cache = st._alg;
+  if (st.ball.p[1] >= (K.h ?? 0.9) || st.t - st.pass.t < (r.skill?.reaction ?? 0.18)) return null;
+  if (!cache || cache.pass !== st.pass || st.t - cache.at > (K.cadence ?? 0.1)) {
+    const restant = Math.max(0.6, (st.pass.flight ?? 2) - (st.t - st.pass.t) + 0.8);
+    const path = predictPath(st.ball, { dt: 1 / 30, maxT: Math.min(3, restant) });
+    const opts = { accel: (cfg.accel ?? 7.5) * (r.skill?.accelF ?? 1), top: cfg.speeds.chase * (r.skill?.topF ?? 1), reach: K.reach ?? 0.35 };
+    const marge = (K.marge ?? 0.3) * (2 - (r.skill?.anticipF ?? 1)), inside = [pitch.hx - 0.5, pitch.hz - 0.5];
+    let best = null, be = Infinity;
+    for (const s of path) {
+      if (s.p[1] > (K.h ?? 0.9) || Math.abs(s.p[0]) > inside[0] || Math.abs(s.p[2]) > inside[1]) continue;
+      const eta = etaCourse(r.p, r.v, s.p, opts);
+      if (s.t - eta >= marge && eta < be) { be = eta; best = s; }
+    }
+    const rv = best ? { p: best.p } : rendezVous(path, r.p, r.v, { ...opts, reaction: 0, marge: 0, maxHeight: K.h ?? 0.9, inside: [pitch.hx, pitch.hz] });
+    st._alg = { pass: st.pass, at: st.t, p: rv ? [rv.p[0], rv.p[2]] : null };
+  }
+  return st._alg.p ? [st._alg.p[0], 0, st._alg.p[1]] : null;
+}
