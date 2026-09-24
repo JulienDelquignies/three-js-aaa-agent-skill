@@ -13821,6 +13821,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Banc rapide : jumeau au bit, blocs 7, 103, 104, 112, 113, 196 verts, sync 9 ✓ ; trois épingles DATÉES 303 (vertes à HEAD~) : le
      plein format de 3 min du bloc 1, le bloc 287 (3 × 600 s, 11-23 remises par monde : 57 c. 70 % — sur 4 × 45 min la remise devant
      reçoit 84,5 % c. 82,5 % sans) et le bloc 302 (la clause mesure le 302 seul, les deux mondes sans le 303).
+- 430: LA TOUCHE PRÉVUE — LE PIED AU BALLON À L'INSTANT DU CONTACT (304, rendu : scenes/Rondo.js). Retour du 25/09 : « le ballon est trop
+     un corps étranger au joueur ». Mesuré DANS LE RENDU (os LeftFoot/ToeBase/RightFoot/ToeBase contre le ballon rendu, 3 min de jeu,
+     44 touches de conduite) : au moment de la touche le pied le plus proche était à 0,50 m p50 (0,68 p75), 27 % des touches avec un
+     pied à < 0,25 m ; dans les 0,1 s qui suivent, 43 % des touches sans pied à < 0,35 m — le ballon partait SEUL. La cause : le warp
+     de touche (_applyTouchWarp, sin sur 0,2 s) COMMENÇAIT à l'événement et culminait 0,1 s APRÈS, le ballon déjà parti de 0,3-0,5 m ;
+     le pied choisi était celui NOMMÉ à la touche d'avant ; le warp plafonnait à 0,42 m. LA LOI (rendu, lecture pure de l'état sim) :
+     _predictTouch lit le dribble (st._drb : la prise, la foulée minStride, la touche d'allonge quand le ballon fuit plus vite que le
+     corps) et prédit l'instant du contact ; à ≤ 0,1 s le warp part, le pied est au ballon À la touche ; pendant l'attente le pied le plus
+     proche ; warpMax 0,6 (la longueur de jambe borne l'IK). Sabotage nommé : window.__sabotage = 'touche-prevue'. Mesuré : 40/44
+     touches prévues ; au contact 0,19 m p50 (0,33 p75), 61 % à < 0,25 m ; sans pied proche dans la fenêtre 43 → 23 %. RESTE (sim) : le
+     ballon à > 1 m du pied le plus proche 14,6 % du temps de conduite — la longueur des touches (touchDistance × touche 0,8).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -716,9 +716,30 @@ export class Rondo {
    *  le pied le plus proche est corrigé vers la surface du ballon : même primitive (planWarp,
    *  IK deux os), enveloppe sin C¹ (zéro aux deux bouts), borné, hors gestes (un act possède
    *  déjà sa jambe). */
+  /** (304) LA TOUCHE PRÉVUE — « le ballon est trop un corps étranger au joueur » (retour du 25/09). Mesuré dans le rendu : le warp
+   *  commençait AU contact et culminait 0,1 s APRÈS, le ballon déjà parti de 0,3-0,5 m — 39 % des touches sans pied à < 0,35 m du
+   *  ballon. La sim sait quand son pied l'atteindra (dribble.js : le ballon à < prise du corps, la foulée ≥ minStride) : à ≤ 0,1 s de
+   *  ce contact prédit, le warp part, le pied est AU ballon à l'instant de la touche. Lecture pure de l'état sim. */
+  _predictTouch(pl) {
+    if (typeof window !== 'undefined' && window.__sabotage === 'touche-prevue') { pl._touchPre = null; return; }
+    const st = this.state, c = pl.sim, d = st._drb;
+    if (!d?.cfg || st.phase !== 'carry' || st.possession.carrier !== c.id || st.ball.owner != null || c.act) { if (pl._touchPre != null && this._t > pl._touchPre + 0.1) pl._touchPre = null; return; }
+    if (pl._touchPre != null && this._t <= pl._touchPre + 0.1) return;
+    const b = st.ball.p, dx = b[0] - c.p[0], dz = b[2] - c.p[2], dist = Math.hypot(dx, dz);
+    if (dist < 1e-3 || b[1] > 0.6) return;
+    const ux = dx / dist, uz = dz / dist, vc = c.v[0] * ux + c.v[1] * uz - (st.ball.v[0] * ux + st.ball.v[2] * uz), prise = d.cfg.prise ?? d.cfg.reach ?? 0.62;
+    const tDist = dist <= prise ? 0 : vc > 0.2 ? (dist - prise) / vc : Infinity, sp = c.speed ?? 0;
+    const tFoulee = d.sinceTouch >= (d.cfg.minStride ?? 0.55) ? 0 : sp > 0.3 ? ((d.cfg.minStride ?? 0.55) - d.sinceTouch) / sp : Infinity;   // la touche part au PLUS TARD des deux : le ballon à portée ET la foulée faite
+    const bvAway = st.ball.v[0] * ux + st.ball.v[2] * uz, allonge = bvAway > sp + 0.3 && dist < (d.cfg.reach ?? 1.15);   // la touche d'ALLONGE (dribble.js : le ballon fuit plus vite que le corps, jambe tendue)
+    const tHit = allonge ? tFoulee : Math.max(tDist, tFoulee);
+    if (!(tHit <= 0.1)) return;
+    pl._touchPre = this._t + tHit;
+  }
+
   _applyTouchWarp(pl) {
     if (typeof window !== 'undefined' && window.__sabotage === 'warp-touche') return;
-    const T = pl._touchT;
+    this._predictTouch(pl);
+    const T = pl._touchPre != null && this._t >= pl._touchPre - 0.1 && this._t <= pl._touchPre + 0.1 ? pl._touchPre - 0.1 : pl._touchT;
     if (T == null || pl.sim.act) return;
     const u = (this._t - T) / 0.2;
     if (u <= 0 || u >= 1) return;
@@ -733,11 +754,11 @@ export class Rondo {
       const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
       if (d < dBest) { dBest = d; side = f; }
     }
-    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;
+    if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
     if (!side) return;
     const leg = pl.legs[side], lens = pl.legLens[side];
     leg.foot.getWorldPosition(this._wf);
-    const plan = planWarp([this._wf.x, this._wf.z], [b[0], b[2]], { standoff: 0.13, warpMax: 0.42 });
+    const plan = planWarp([this._wf.x, this._wf.z], [b[0], b[2]], { standoff: 0.13, warpMax: 0.6 });   // (304) 0,42 → 0,6 : la touche prise à 0,62 m du corps avec la jambe arrière ; la longueur de jambe borne l'IK (R)
     const env = Math.sin(Math.PI * u);
     this._wt.set(this._wf.x + plan.offset[0] * env, this._wf.y, this._wf.z + plan.offset[1] * env);
     leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
@@ -891,7 +912,7 @@ export class Rondo {
         // ballon ») : la sim inscrit chaque touche ; la scène tend le pied vers le ballon autour
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
-        if (pl) { pl._touchT = this._t; pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme
+        if (pl) { pl._touchT = pl._touchPre != null && Math.abs(this._t - pl._touchPre) < 0.12 ? pl._touchPre - 0.1 : this._t; pl._touchPre = null; pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme — (304) et commence AVANT le contact quand la touche était prévue (_predictTouch)
         // (note 388) LA CONDUITE NOMMÉE : la touche qui vire (≥ 20°), l'extérieur et la semelle jouent LEUR clip (conduite* par technique, miroir au pied nommé),
         // cadencés comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la foulée la joue déjà)
         if (pl && e.tech && (Math.abs(e.virage ?? 0) >= 20 || e.surface === 'outside' || e.surface === 'sole') && (e.dev ?? 0) < 110 && this._t - (pl._swingT ?? -9) >= 0.35) { this._playTech(pl, { ...e, move: TECHNIQUES_BY_ID[e.tech]?.clip ?? 'conduiteInterieur' }); pl._swingT = this._t; }
