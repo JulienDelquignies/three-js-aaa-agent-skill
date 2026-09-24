@@ -16,7 +16,7 @@ import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
-import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
+import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js'; import { DUEL_CAST } from './duel-joueurs.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
@@ -170,7 +170,7 @@ export class Rondo {
     const SHANON = { url: 'shanon.glb', faces: '+Z', name: 'shanon', dequantize: true, matte: true, ...(this.kits ? { hide: /Shirt|Shorts|Socks/i } : {}) };
     const SOLDIER = { url: 'Soldier.glb', faces: '-Z', name: 'soldier' };
     const rigParam = q.get('rig');
-    const roster = rigParam === 'soldier' ? [SOLDIER] : rigParam === 'mix' ? [SHANON, SOLDIER] : [SHANON];
+    const roster = rigParam === 'soldier' ? [SOLDIER] : rigParam === 'mix' ? [SHANON, SOLDIER] : this.duelMode && rigParam !== 'shanon' ? DUEL_CAST : [SHANON];   // (duel) joe contre marta, Rocketbox — ?rig=shanon rend shanon
     this.squad = await loadSquad(new GLTFLoader(), { rigs: roster, donor: 'Soldier.glb', height: 1.8 });
     this._reports.squad = this.squad.check;
     this.disposables.push(this.squad);
@@ -196,7 +196,7 @@ export class Rondo {
       // fichier contient SEPT meshes dont `Ch38_Shirt`, et le matériau est un attribut du draw
       // call — teindre le maillot n'atteint pas la peau. Voir engine/part-tint.js.
       // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe. …ET LE MAILLOT EST UNE TEXTURE (214, engine/kit-uv.js — demande projet aval : plus le « 7 » de Mixamo sur tout le monde, le numéro coûte un canvas, pas 14 meshes) ; ?kit=1 garde le kit géométrique
-      const tint = this.kits ? tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) })
+      const tint = this.squad.entries.find((e) => (e.spec.name || e.spec.url) === rig)?.spec.ownKit ? { check: { ok: true, issues: [] } } : this.kits ? tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) })
         : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}), ...(p.look?.secondary != null ? { secondary: p.look.secondary } : {}), ...(p.look?.accent != null ? { accent: p.look.accent } : {}), ...(p.look?.shorts != null ? { shorts: p.look.shorts } : {}), ...(p.look?.socks != null ? { socks: p.look.socks } : {}) }, number: p.number ?? p.id + 1, name: p.name ?? (q.get('noms') === '1' ? NOMS_DEMO[p.id % NOMS_DEMO.length] : null), initials: TEAMS[p.team].initials ?? null });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
@@ -286,7 +286,7 @@ export class Rondo {
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.
       const cloneBones = rigBones(model3d);
-      const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
+      const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head'), profile: cast.profile });   // les axes du regard par le profil du rig (Biped compris)
       this.players.push({
         sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl, ...cast,
         gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),

@@ -186,3 +186,36 @@ rig that uses the file's spelling is testing a convention the engine never sees.
 Proved headless by `scripts/verify-squad.mjs` (22/22): a mixed roster, a centimetre-scale import,
 and named sabotages for a missing bone, a wrong facing flag, a missing run clip, a mis-scaled team,
 a sunken player and a shared skeleton.
+
+## Another rig FAMILY — a 3ds Max Biped (`rig-bip01.js`, Microsoft Rocketbox)
+
+Everything above assumes Mixamo. A Biped (`Bip01 …`, the Rocketbox avatars — MIT, 80 bones with face and
+fingers) is brought in by making it PRESENT AS the reference rig before `squad.js` wraps it
+(`spec.prepare(root)`, run before the wrapper, the retarget and the measurement). Nothing downstream changes:
+the generators read the live PROFILE (`motionProfileOf`), and the profile only needs canonical names, a
+Mixamo-like topology and a comparable rest pose. Three gaps, each one invisible until the body moves:
+
+| gap | Biped | fix | law (`verify-bip01.mjs`) / sabotage |
+| --- | --- | --- | --- |
+| names | `Bip01 L Thigh` → loaded as `Bip01_L_Thigh` (GLTFLoader sanitizes spaces) | rename the 22 canonicals | engine finds 22 / raw rig: 0 |
+| topology | thighs are children of `Bip01 Spine`, clavicles of the neck | `attach` to Hips / Spine2 (world kept: 0.0000 mm) | trunk lean 25° moves the foot 0 cm / thigh back under Spine: 40 cm |
+| rest pose | bound in **A** (arms 42° below the reference T, forearms 47-52°) | rotate each functional segment (arms, forearms, legs, feet) onto the reference direction, **without** recomputing the bind inverses — the mesh follows | 0.000° / raw: 41.8° |
+
+The trunk and neck keep the character's own posture (2-14°: silhouette, not convention). Hands are bound
+flat: each phalanx flexes toward the PALM, whose side is computed on the hand (knuckle line × finger
+direction), not assumed. Size: `spec.height: 'natif'` keeps a metric file's real height (joe 1.82 m,
+marta 1.76 m) instead of normalising everyone to 1.80.
+
+**The layer that still spoke Mixamo axes was the gaze** (`gaze.js`): its neck/head axes were probed on
+shanon (+x local = down). On a Biped a pitch became a roll (the head visibly tilted). Given the profile, the
+gaze is a character-frame joint rotation `ry(−sim yaw) ⊗ rx(+pitch)` conjugated by the bone's bind
+(`B⁻¹ R B`, the generators' rule): on shanon it reproduces the probed axes to 0.00000° — but shanon's neck
+bind is a pure `ry(180)`, for which `B⁻¹RB` and `BRB⁻¹` coincide, so that equivalence could NOT catch an
+inverted conjugation; only the Biped law (head aims right/up within 0.1°, roll 0.85°) does.
+
+Two instrument traps met on the way: a hand-built test rig must use the **sanitized** node names (the
+engine never sees the file's names), and the gaze composes on the CURRENT pose — a bench that does not
+rewrite the rest pose each frame (as the mixer/gait do in game) accumulates 90 updates into nonsense.
+
+Measured in scene (same seed, same sim — only the rig differs): in-stance toe slip p50 joe/marta 5.3 cm at a
+run vs 4.5 cm for shanon, 8.4 vs 7.3 cm at a trot, same 24 cm clearance.

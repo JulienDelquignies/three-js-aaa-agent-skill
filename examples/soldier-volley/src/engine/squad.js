@@ -40,7 +40,7 @@ export function rigBones(model) {
 /**
  * Load a roster.
  * @param loader a GLTFLoader
- * @param spec.rigs   [{ url, faces:'+Z'|'-Z', dequantize?, matte?, hide?:RegExp, name? }]
+ * @param spec.rigs   [{ url, faces:'+Z'|'-Z', dequantize?, matte?, hide?:RegExp, name?, prepare?:(root)=>report, height?:number|'natif' }]
  * @param spec.donor  url of the GLB carrying idle/walk/run (+ a TPose track for the bind capture)
  * @param spec.height target height in metres (every rig is scaled to it)
  */
@@ -54,6 +54,9 @@ export async function loadSquad(loader, { rigs, donor, height = 1.8 } = {}) {
     // the donor can double as a roster rig without being fetched twice
     const gltf = spec.url === donor ? donorGltf : await loader.loadAsync(spec.url);
     const root = gltf.scene;
+    // un rig d'une autre famille se présente d'abord comme la référence (noms, topologie, pose de repos —
+    // rig-bip01.js pour un Biped Rocketbox) : AVANT le wrapper, le retarget et la mesure
+    const prepared = spec.prepare ? spec.prepare(root) : null;
     if (spec.dequantize) dequantizeSkinned(root);
     if (spec.matte) {
       // Glossiness-converted PBR from a Mixamo export renders as shiny plastic under floodlights:
@@ -85,8 +88,11 @@ export async function loadSquad(loader, { rigs, donor, height = 1.8 } = {}) {
     template.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(template);
     const size = box.getSize(new THREE.Vector3());
-    const scale = size.y > 1e-6 ? height / size.y : 1;
-    entries.push({ spec, template, clips, checks, scale, groundY: -box.min.y * scale, srcHeight: size.y, bones: rigBones(template) });
+    // spec.height : 'natif' garde la taille modélisée (un fichier en mètres réels — Rocketbox), un nombre la
+    // remplace ; absent, la normalisation du squad (hier, au bit)
+    const H = spec.height === 'natif' ? size.y : spec.height ?? height;
+    const scale = size.y > 1e-6 ? H / size.y : 1;
+    entries.push({ spec, template, clips, checks, scale, groundY: -box.min.y * scale, srcHeight: size.y, height: H, prepared, bones: rigBones(template) });
   }
 
   let n = 0;
@@ -128,7 +134,10 @@ export function checkSquad(squad, height = 1.8) {
     const who = e.spec.name || e.spec.url;
     for (const b of NEED_BONES) if (!e.bones.has(b)) issues.push(`${who}: os manquant « ${b} » — le kit et le contrôleur en dépendent`);
     if (!(e.scale > 0) || !Number.isFinite(e.scale)) issues.push(`${who}: échelle non finie (${e.scale})`);
-    if (Math.abs(e.srcHeight * e.scale - height) > 0.02) issues.push(`${who}: mis à l'échelle à ${(e.srcHeight * e.scale).toFixed(2)} m au lieu de ${height} m`);
+    const H = e.height ?? height;
+    if (Math.abs(e.srcHeight * e.scale - H) > 0.02) issues.push(`${who}: mis à l'échelle à ${(e.srcHeight * e.scale).toFixed(2)} m au lieu de ${H.toFixed(2)} m`);
+    if (!(H > 1.4 && H < 2.15)) issues.push(`${who}: ${H.toFixed(2)} m — hors d'une taille humaine (unités du fichier ?)`);
+    for (const m of e.prepared?.issues ?? []) issues.push(`${who}: préparation du rig — ${m}`);
     // 1 mm, pas l'epsilon flottant : un vrai rig a rarement min.y exactement nul, et refuser un
     // −2·10⁻⁸ c'est faire échouer un contrat sur du bruit de virgule flottante au lieu d'un défaut.
     if (!(e.groundY >= -1e-3)) issues.push(`${who}: groundY négatif (${e.groundY.toFixed(4)}) — le personnage s'enfoncerait dans la pelouse`);

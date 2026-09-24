@@ -41,6 +41,8 @@ export const GAZE = {
 };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const qmul = (a, b) => [a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1], a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0], a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3], a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+const qconj = (a) => [-a[0], -a[1], -a[2], a[3]];
 const wrapD = (a) => { while (a > 180) a -= 360; while (a < -180) a += 360; return a; };
 
 /** LCG déterministe par acteur — le visuel n'a pas le droit de casser la reproductibilité. */
@@ -100,8 +102,13 @@ export function pickGazeTarget(view, st, rng) {
  * (par-dessus mixer + gait + couche de geste, comme le stabilisateur de gait).
  */
 export class Gaze {
-  constructor({ neck, head }) {
+  constructor({ neck, head, profile = null }) {
     this.neck = neck; this.head = head;
+    // LES AXES PAR LE PROFIL (un rig d'une autre famille — Biped Rocketbox) : le regard devient une ARTICULATION
+    // du repère personnage (lever = rx+, lacet sim = ry−), conjuguée par l'orientation bind de l'os — la règle
+    // des générateurs (motion-rig.jointToSpec). Sur shanon elle redonne les axes sondés à 0,00° près (gaze-eq,
+    // 20 couples tangage × lacet, cou et tête) ; absente, le calcul d'hier au bit.
+    this._bind = profile?.bones?.Neck && profile?.bones?.Head ? { neck: profile.bones.Neck.bindQ, head: profile.bones.Head.bindQ } : null;
     this.yaw = 0; this.pitch = 0;            // l'état — en ° repère corps
     this._lastTarget = null;
   }
@@ -138,11 +145,13 @@ export class Gaze {
     this.worldYaw = bodyDeg + this.yaw;
     // application : cou 40 %, tête 60 % — axes SONDÉS (+x = bas, −y = gauche personnage) ;
     // le lacet sim tourne vers +y monde quand yaw croît → le −y local suit le signe du désiré
-    const put = (bone, share) => {
+    const put = (bone, share, B) => {
       const px = -this.pitch * share * Math.PI / 360, yy = -this.yaw * share * Math.PI / 360;  // demi-angles
       const cx = Math.cos(px), sx = Math.sin(px), cy = Math.cos(yy), sy = Math.sin(yy);
       // euler XYZ (x puis y) en quaternion, multiplié À DROITE du local courant
-      const q = [sx * cy, cx * sy, -sx * sy, cx * cy];
+      let q = [sx * cy, cx * sy, -sx * sy, cx * cy];
+      // …ou l'articulation ry(−lacet) ⊗ rx(+tangage) du repère personnage, transportée dans le local : B⁻¹ ⊗ R ⊗ B
+      if (B) q = qmul(qconj(B), qmul([-sx * cy, cx * sy, sx * sy, cx * cy], B));
       const b = bone.quaternion;
       const r = [
         b.w * q[0] + b.x * q[3] + b.y * q[2] - b.z * q[1],
@@ -153,8 +162,8 @@ export class Gaze {
       b.set(r[0] * w + b.x * (1 - w), r[1] * w + b.y * (1 - w), r[2] * w + b.z * (1 - w), r[3] * w + b.w * (1 - w));
       const n = hyp(b.x, b.y, b.z, b.w) || 1; b.set(b.x / n, b.y / n, b.z / n, b.w / n);
     };
-    put(this.neck, GAZE.neckShare);
-    put(this.head, 1 - GAZE.neckShare);
+    put(this.neck, GAZE.neckShare, this._bind?.neck);
+    put(this.head, 1 - GAZE.neckShare, this._bind?.head);
   }
 }
 
