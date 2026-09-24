@@ -1,23 +1,23 @@
 {
  "jog": {
-  "bias": 0.221,
-  "pitchHS": 0.034,
-  "pitchTO": 36.133,
-  "peel": 0.383,
+  "bias": 0.254,
+  "pitchHS": 2.367,
+  "pitchTO": 43.5,
+  "peel": 0.756,
   "drop": 0.04,
-  "bobA": 0.039
+  "bobA": 0.038
  },
  "run": {
-  "bias": 0.221,
+  "bias": 0.248,
   "pitchHS": 0,
-  "pitchTO": 62.867,
-  "peel": 0.603,
+  "pitchTO": 75,
+  "peel": 0.836,
   "drop": 0.045,
-  "bobA": 0.034
+  "bobA": 0.037
  },
  "rapport": {
   "2.5": {
-   "c": 145.89,
+   "c": 314.955,
    "rep": [
     {
      "rig": "shanon",
@@ -28,10 +28,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.0359,
-       -0.1134,
-       -0.0348,
-       -0.0117
+       -0.0298,
+       -0.1051,
+       -0.0288,
+       -0.0064
       ],
       [
        0.0012,
@@ -42,17 +42,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.356,
+       0.335,
        0.334
       ],
       "mt1_decol_L": [
-       0.404,
+       0.43,
        0.323
       ],
       "bassin_V_L": [
        [
-        0.0775,
-        0.0786
+        0.0753,
+        0.0763
        ],
        [
         0.0773,
@@ -60,34 +60,34 @@
        ]
       ]
      },
-     "genou_rms": 10.1,
-     "cuisse_rms": 3.4,
-     "cheville_forme_rms": 31.7,
+     "genou_rms": 10.4,
+     "cuisse_rms": 2.7,
+     "cheville_forme_rms": 7.1,
      "genou": {
       "pose": [
-       22,
+       21,
        11
       ],
       "appuiMax": [
-       50,
+       48,
        43
       ],
       "decollage": [
-       18,
+       21,
        19
       ],
       "volMax": [
-       90,
+       92,
        93
       ]
      },
      "cuisse": {
       "pose": [
-       22,
+       20,
        19
       ],
       "min": [
-       -19,
+       -18,
        -17
       ],
       "max": [
@@ -95,15 +95,19 @@
        30
       ],
       "decollage": [
-       -18,
+       -17,
        -12
       ]
      },
      "cheville_amplitude": [
-      82,
+      41,
       41
      ],
-     "contrats": []
+     "contrats": [
+      "L : le vol rase la pelouse (cheville +2.5 cm)",
+      "R : le vol rase la pelouse (cheville +2.2 cm)",
+      "sans griffé : L : le vol rase la pelouse (cheville +2.5 cm)"
+     ]
     },
     {
      "rig": "foot-18",
@@ -114,10 +118,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.0405,
-       -0.1145,
-       -0.0394,
-       -0.0174
+       -0.0339,
+       -0.1059,
+       -0.0329,
+       -0.0115
       ],
       [
        0.0012,
@@ -128,17 +132,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.388,
+       0.367,
        0.334
       ],
       "mt1_decol_L": [
-       0.373,
+       0.399,
        0.323
       ],
       "bassin_V_L": [
        [
-        0.074,
-        0.0751
+        0.0719,
+        0.0729
        ],
        [
         0.0773,
@@ -146,20 +150,20 @@
        ]
       ]
      },
-     "genou_rms": 11.7,
-     "cuisse_rms": 3.4,
-     "cheville_forme_rms": 31.7,
+     "genou_rms": 11.6,
+     "cuisse_rms": 2.7,
+     "cheville_forme_rms": 7.3,
      "genou": {
       "pose": [
-       23,
+       22,
        11
       ],
       "appuiMax": [
-       52,
+       49,
        43
       ],
       "decollage": [
-       24,
+       26,
        19
       ],
       "volMax": [
@@ -169,11 +173,11 @@
      },
      "cuisse": {
       "pose": [
-       23,
+       21,
        19
       ],
       "min": [
-       -16,
+       -15,
        -17
       ],
       "max": [
@@ -181,20 +185,24 @@
        30
       ],
       "decollage": [
-       -15,
+       -14,
        -12
       ]
      },
      "cheville_amplitude": [
-      83,
+      40,
       41
      ],
-     "contrats": []
+     "contrats": [
+      "L : le vol rase la pelouse (cheville +2.1 cm)",
+      "R : le vol rase la pelouse (cheville +2.2 cm)",
+      "sans griffé : L : le vol rase la pelouse (cheville +2.3 cm)"
+     ]
     }
    ]
   },
   "3.5": {
-   "c": 173.80999999999997,
+   "c": 142.745,
    "rep": [
     {
      "rig": "shanon",
@@ -205,10 +213,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.0568,
-       -0.1213,
-       -0.0549,
-       -0.0256
+       -0.0472,
+       -0.113,
+       -0.0452,
+       -0.0153
       ],
       [
        -0.0023,
@@ -219,17 +227,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.399,
+       0.374,
        0.415
       ],
       "mt1_decol_L": [
-       0.515,
+       0.543,
        0.404
       ],
       "bassin_V_L": [
        [
-        0.0645,
-        0.0664
+        0.0658,
+        0.0678
        ],
        [
         0.0692,
@@ -237,16 +245,16 @@
        ]
       ]
      },
-     "genou_rms": 10.9,
-     "cuisse_rms": 4.2,
-     "cheville_forme_rms": 38.8,
+     "genou_rms": 10.7,
+     "cuisse_rms": 3.7,
+     "cheville_forme_rms": 8.8,
      "genou": {
       "pose": [
-       27,
+       26,
        11
       ],
       "appuiMax": [
-       52,
+       49,
        44
       ],
       "decollage": [
@@ -254,17 +262,17 @@
        21
       ],
       "volMax": [
-       103,
+       106,
        107
       ]
      },
      "cuisse": {
       "pose": [
-       28,
+       25,
        22
       ],
       "min": [
-       -26,
+       -24,
        -22
       ],
       "max": [
@@ -277,7 +285,7 @@
       ]
      },
      "cheville_amplitude": [
-      104,
+      54,
       45
      ],
      "contrats": []
@@ -291,10 +299,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.0571,
-       -0.1187,
-       -0.0552,
-       -0.0272
+       -0.049,
+       -0.1118,
+       -0.047,
+       -0.0185
       ],
       [
        -0.0023,
@@ -305,17 +313,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.431,
+       0.406,
        0.415
       ],
       "mt1_decol_L": [
-       0.484,
+       0.513,
        0.404
       ],
       "bassin_V_L": [
        [
-        0.0616,
-        0.0635
+        0.0629,
+        0.0648
        ],
        [
         0.0692,
@@ -323,16 +331,16 @@
        ]
       ]
      },
-     "genou_rms": 11.5,
-     "cuisse_rms": 3.6,
-     "cheville_forme_rms": 38.9,
+     "genou_rms": 11.4,
+     "cuisse_rms": 3.4,
+     "cheville_forme_rms": 8.8,
      "genou": {
       "pose": [
-       26,
+       25,
        11
       ],
       "appuiMax": [
-       53,
+       51,
        44
       ],
       "decollage": [
@@ -340,17 +348,17 @@
        21
       ],
       "volMax": [
-       105,
+       106,
        107
       ]
      },
      "cuisse": {
       "pose": [
-       27,
+       25,
        22
       ],
       "min": [
-       -23,
+       -22,
        -22
       ],
       "max": [
@@ -358,12 +366,12 @@
        37
       ],
       "decollage": [
-       -21,
+       -20,
        -14
       ]
      },
      "cheville_amplitude": [
-      103,
+      54,
       45
      ],
      "contrats": []
@@ -371,7 +379,7 @@
    ]
   },
   "4.5": {
-   "c": 170.475,
+   "c": 127.3,
    "rep": [
     {
      "rig": "shanon",
@@ -382,10 +390,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.0636,
-       -0.1158,
-       -0.0608,
-       -0.0255
+       -0.056,
+       -0.1122,
+       -0.053,
+       -0.0151
       ],
       [
        -0.0484,
@@ -396,17 +404,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.423,
+       0.396,
        0.369
       ],
       "mt1_decol_L": [
-       0.575,
+       0.603,
        0.404
       ],
       "bassin_V_L": [
        [
-        0.0522,
-        0.055
+        0.0561,
+        0.0591
        ],
        [
         0.0565,
@@ -414,38 +422,38 @@
        ]
       ]
      },
-     "genou_rms": 12.4,
-     "cuisse_rms": 4.2,
-     "cheville_forme_rms": 45.3,
+     "genou_rms": 12,
+     "cuisse_rms": 5.1,
+     "cheville_forme_rms": 12.1,
      "genou": {
       "pose": [
        26,
        13
       ],
       "appuiMax": [
-       52,
+       50,
        44
       ],
       "decollage": [
-       17,
+       15,
        23
       ],
       "volMax": [
-       113,
+       116,
        116
       ]
      },
      "cuisse": {
       "pose": [
-       29,
+       27,
        25
       ],
       "min": [
-       -26,
+       -25,
        -27
       ],
       "max": [
-       40,
+       41,
        43
       ],
       "decollage": [
@@ -454,7 +462,7 @@
       ]
      },
      "cheville_amplitude": [
-      123,
+      65,
       47
      ],
      "contrats": []
@@ -468,10 +476,10 @@
      ],
      "bassin_abs_L": [
       [
-       -0.07,
-       -0.1199,
-       -0.0673,
-       -0.0336
+       -0.0618,
+       -0.1154,
+       -0.0589,
+       -0.0226
       ],
       [
        -0.0484,
@@ -482,17 +490,17 @@
      ],
      "geo": {
       "mt1_pose_L": [
-       0.455,
+       0.428,
        0.369
       ],
       "mt1_decol_L": [
-       0.546,
+       0.574,
        0.404
       ],
       "bassin_V_L": [
        [
-        0.0499,
-        0.0525
+        0.0537,
+        0.0565
        ],
        [
         0.0565,
@@ -500,30 +508,30 @@
        ]
       ]
      },
-     "genou_rms": 14.1,
-     "cuisse_rms": 4.4,
-     "cheville_forme_rms": 45,
+     "genou_rms": 13.1,
+     "cuisse_rms": 5.1,
+     "cheville_forme_rms": 12,
      "genou": {
       "pose": [
        28,
        13
       ],
       "appuiMax": [
-       55,
+       52,
        44
       ],
       "decollage": [
-       24,
+       21,
        23
       ],
       "volMax": [
-       115,
+       116,
        116
       ]
      },
      "cuisse": {
       "pose": [
-       30,
+       28,
        25
       ],
       "min": [
@@ -531,7 +539,7 @@
        -27
       ],
       "max": [
-       41,
+       42,
        43
       ],
       "decollage": [
@@ -540,7 +548,7 @@
       ]
      },
      "cheville_amplitude": [
-      120,
+      64,
       47
      ],
      "contrats": []

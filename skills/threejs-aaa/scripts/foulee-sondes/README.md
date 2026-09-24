@@ -41,3 +41,19 @@ URL type : `http://127.0.0.1:PORT/duel.html?duel=1&webgl&capture&seed=3`.
   d'appui, pose sous geste) et le pivot sans pas.
 - `pieds.mjs <url>` : contacts par la HAUTEUR (pied à < 2,5 cm de son sol) — inclut l'approche de la pose, où le talon avance
   encore à ~0,43·v par construction : ce n'est pas le glissement d'appui (voir `glisse-accel.mjs`).
+
+## Le sprint : Dorn, Schache & Pandy 2012 (SimTK « runningspeeds », licence MIT — LICENCE-dorn2012.txt)
+
+Un sprinter (JA1) sur piste instrumentée (8 plateformes, 12 m), 3,56 / 5,20 / 7,00 / 9,49 m/s, marqueurs à 250 Hz, poses et décollages
+du laboratoire. Télécharger RunningDataModels.zip (simtk.org/projects/runningspeeds, « I agree »), dézipper, lancer les scripts dans le
+dossier (python avec le paquet `c3d`). À 3,5 m/s ses courbes tombent sur celles de RBDS : les deux sources se prolongent.
+
+- `sprint-dorn.py` → `dorn-sprint.json` : centres articulaires (hanche Harrington, genou et cheville reconstruits de l'essai statique par
+  corps rigide), cuisse globale, genou, bassin, tronc, géométrie de la pose et du décollage, cycle par cycle.
+- `dorn-vol.py` → `DORN_VOL` (engine/foulee-rbds.js) : le vol à 5,19 / 6,97 / 9,47 m/s — genou 147° au sprint (79 sprinteurs à 9,9 m/s :
+  148,4 ± 5,6°, Miyashiro, Nagahara et al. 2019).
+- `cheville-dorn.py` → `CHEVILLE_VOL` : la cheville en vol (pied − jambe) — le pied articulaire du générateur.
+- `pied-dorn.json` : l'angle du pied sur le cycle (le générateur le suivait à plat en vol : pied à 52 rad/s, sprinter 27-30).
+- `compare-sprint.mjs` : le générateur contre le sprinter (cycle, appui, bassin, cheville à la pose / mi-appui / décollage).
+- `sprint-mesure.mjs` → `sprint-mesure.json` : le régime sprint calé dessus, sous contrat (+ contrats à 6 et 8 m/s).
+- `garde-orteil.py` (RBDS, marqueurs) : la garde du MT1 en vol — le plancher du contrat « le vol rase la pelouse » (quart bas des coureurs).

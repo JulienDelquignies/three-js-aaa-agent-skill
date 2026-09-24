@@ -100,7 +100,9 @@ export function checkClip(resolved) {
     // Petrolo et al. 2023). Nos frappes plafonnaient à 7,5 rad/s au genou : 3,5 à 5 fois trop lent,
     // et c'est une part directe du rendu « mou ». Les jambes montent donc à 30 rad/s ; tout le reste
     // (bras, tronc, tête) garde 14 — un BRAS à 20 rad/s est bien un bug, pas une frappe.
-    const wCap = /Leg$|UpLeg$|Foot$|ToeBase$/.test(bone) ? 30 : 14;
+    // (2026-09-24) …et le PIED au sprint : 27,3 rad/s mesurés (Dorn 2012, sprinter à 9,5 m/s, 250 Hz) — ×1,14 à la cadence d'une jambe
+    // plus courte (la cadence suit la jambe : gaitLegK), 31 rad/s. Pied et orteils : 35 ; la jambe garde 30 (genou du sprinter : 25).
+    const wCap = /Foot$|ToeBase$/.test(bone) ? 35 : /Leg$|UpLeg$/.test(bone) ? 30 : 14;
     for (let i = 1; i < keys.length; i++) {
       const w = quatAngle(keys[i - 1].q, keys[i].q) / Math.max(1e-4, keys[i].t - keys[i - 1].t);
       if (w > wCap) { issues.push(`${bone}: limb teleports (${w.toFixed(0)} rad/s between keys, cap ${wCap})`); break; }
