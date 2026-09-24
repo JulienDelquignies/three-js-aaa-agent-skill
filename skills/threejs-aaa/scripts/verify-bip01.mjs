@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // verify-bip01.mjs — engine/rig-bip01.js : un squelette Biped (3ds Max « Bip01 », les personnages Microsoft
 // Rocketbox) présenté au moteur COMME LE RIG DE RÉFÉRENCE. Sur les VRAIS fichiers (examples/showcase/public/
-// rocketbox : joe, marta), hiérarchie des nœuds reconstruite comme GLTFLoader la livre (noms assainis). Une loi
+// rocketbox : joe, marta, foot-18, foot-10-ciel), hiérarchie des nœuds reconstruite comme GLTFLoader la livre (noms assainis). Une loi
 // par écart — chacune avec le sabotage qui doit la faire tomber :
 //   NOMS       les 22 os canoniques, trouvés par le moteur (rigBones)          ← sabotage : le rig brut
 //   TOPOLOGIE  pencher le tronc ne déplace pas les pieds ; l'attache ne bouge
@@ -66,7 +66,7 @@ const segDeg = (m, a, c) => {
 /** Le template tel que squad.js le fait : wrapper tourné de 180° (le fichier regarde +Z). */
 const wrap = (root) => { const t = new THREE.Group(); root.rotation.y = Math.PI; t.add(root); t.updateMatrixWorld(true); return t; };
 
-for (const file of ['joe.glb', 'marta.glb']) {
+for (const file of ['joe.glb', 'marta.glb', 'foot-18.glb', 'foot-10-ciel.glb']) {
   console.log(`\n— ${file} —`);
 
   // ---- NOMS
