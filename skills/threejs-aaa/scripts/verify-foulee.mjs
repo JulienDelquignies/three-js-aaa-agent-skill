@@ -268,5 +268,54 @@ console.log('\n— § 8 : la boiterie (opts.boite — le fauché d\'une faute gr
   ok(JSON.stringify(gaitPose(P, 0.3, 3, 0, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 3, 0, NEUTRAL_GAIT_STYLE, { boite: { side: 'left', k: 0 } })), 'boite k 0 (guéri) : la foulée d\'hier au bit');
 }
 
+// ---- LE GRIFFÉ (opts.griffe — retour utilisateur « les pieds traînent ») : la cheville touche le sol et en repart
+// PRESQUE À L'ARRÊT au monde. Sans lui (la foulée d'hier — le sabotage), elle se pose et décolle à la vitesse du corps
+// (mesuré 1,4 → 8 m/s) en rasant la pelouse : le patin de chaque pas, invisible aux clauses d'appui (l'appui, lui, est fixe).
+console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
+{
+  const solVitesse = (vF, opts) => {
+    const pr = gaitPortrait(P, { vF, vR: 0, n: 480, opts }), F = pr.frames, n = F.length, dt = pr.T / n;
+    const wz = (i) => (i < n ? F[i].L.ankleW[2] : F[i - n].L.ankleW[2] - vF * pr.T), wv = (i) => Math.abs(wz(i + 1) - wz(i)) / dt;
+    const iTD = F.findIndex((f, i) => f.L.phase === 'stance' && F[(i - 1 + n) % n].L.phase === 'swing');
+    const iLO = F.findIndex((f, i) => f.L.phase === 'swing' && F[(i - 1 + n) % n].L.phase !== 'swing');
+    const st = F.filter((f) => f.L.phase === 'stance').map((f) => f.L.ankleW[2]);
+    return { pose: wv((iTD - 1 + n) % n), decolle: wv(iLO), appui: Math.max(...st) - Math.min(...st) };
+  };
+  let pire = { pose: 0, decolle: 0, appui: 0 }, hier = Infinity;
+  for (const v of [1.4, 3, 4.5, 6]) {
+    const g = solVitesse(v, { griffe: 1 }), h = solVitesse(v, {});
+    pire = { pose: Math.max(pire.pose, g.pose), decolle: Math.max(pire.decolle, g.decolle), appui: Math.max(pire.appui, g.appui) };
+    hier = Math.min(hier, h.pose, h.decolle);
+  }
+  ok(pire.pose <= 0.5 && pire.decolle <= 0.5, `griffé : la cheville se pose à ≤ ${pire.pose.toFixed(2)} m/s et décolle à ≤ ${pire.decolle.toFixed(2)} m/s au monde (1,4 → 6 m/s ; plafond 0,5)`);
+  ok(pire.appui < 0.005, `griffé : l'appui reste fixe au monde (${(100 * pire.appui).toFixed(2)} cm au pire)`);
+  ok(hier >= 1.0, `sabotage — la foulée d'hier (sans griffé) pose et décolle le pied à ≥ ${hier.toFixed(2)} m/s : la clause mord`);
+  for (const [name, vF, vR] of [['marche', 1.4, 0], ['course', 4.5, 0], ['6,5 m/s', 6.5, 0], ['sprint', 8, 0], ['arrière', -3, 0], ['chassés', 0, 2]]) {
+    const c = checkClip(resolveTracks(gaitCycleSpec(P, { vF, vR, opts: { griffe: 1 } })));
+    ok(c.ok, `griffé ${name} : checkClip${c.ok ? '' : ' — ' + c.issues.join(' ; ')}`);
+  }
+  // …ET LE DÉROULÉ PIVOTE SUR L'ORTEIL : sans griffé, la cheville avance du `roll` forfaitaire et l'orteil GLISSE pendant le pelage
+  const orteilDeroule = (vF, opts) => {
+    const pr = gaitPortrait(P, { vF, vR: 0, n: 480, opts }), F = pr.frames, dt = pr.T / F.length; let d = 0, vmax = 0;
+    for (let i = 0; i < F.length - 1; i++) if (F[i].L.phase === 'peel') { const a = F[i], b = F[i + 1]; const s = Math.hypot(b.L.toe[0] - a.L.toe[0], (b.L.toe[2] - vF * b.t) - (a.L.toe[2] - vF * a.t)); d += s; vmax = Math.max(vmax, s / dt); }
+    return { d, vmax };
+  };
+  let pd = { d: 0, vmax: 0 }, hd = Infinity;
+  for (const v of [1.4, 3, 4.5, 6]) { const g = orteilDeroule(v, { griffe: 1 }), h = orteilDeroule(v, {}); pd = { d: Math.max(pd.d, g.d), vmax: Math.max(pd.vmax, g.vmax) }; hd = Math.min(hd, h.d); }
+  ok(pd.d <= 0.05 && pd.vmax <= 1.5, `griffé : pendant le déroulé l'orteil reste planté (≤ ${(100 * pd.d).toFixed(1)} cm, pointe ${pd.vmax.toFixed(2)} m/s ; plafonds 5 cm, 1,5 m/s)`);
+  ok(hd > 0.05, `sabotage — sans griffé, l'orteil glisse de ≥ ${(100 * hd).toFixed(1)} cm par déroulé : la clause mord`);
+  // …ET LE PIED SE DÉCOLLE FRANCHEMENT : sans griffé, l'orteil rase la pelouse (< 1,5 cm à > 1 m/s) au début de chaque vol
+  const orteilRase = (vF, opts) => {
+    const pr = gaitPortrait(P, { vF, vR: 0, n: 480, opts }), F = pr.frames, dt = pr.T / F.length, sol = Math.min(...F.map((f) => f.L.toe[1])); let t = 0;
+    for (let i = 0; i < F.length - 1; i++) { const a = F[i], b = F[i + 1]; if (a.L.phase !== 'swing' || a.L.toe[1] - sol >= 0.015) continue; if (Math.hypot(b.L.toe[0] - a.L.toe[0], (b.L.toe[2] - vF * b.t) - (a.L.toe[2] - vF * a.t)) / dt > 1) t += dt; }
+    return t;
+  };
+  let pr2 = 0, hr = Infinity;
+  for (const v of [3, 4.5, 6]) { pr2 = Math.max(pr2, orteilRase(v, { griffe: 1 })); hr = Math.min(hr, orteilRase(v, {})); }
+  ok(pr2 <= 0.015, `griffé : l'orteil ne rase plus la pelouse en repartant (≤ ${(1000 * pr2).toFixed(0)} ms par vol ; plafond 15 ms)`);
+  ok(hr >= 0.025, `sabotage — sans griffé, l'orteil rase ${(1000 * hr).toFixed(0)} ms à chaque vol : la clause mord`);
+  ok(JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, { griffe: 0 })), 'griffé 0 / absent : la foulée d\'hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

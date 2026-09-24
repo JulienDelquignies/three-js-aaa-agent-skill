@@ -175,25 +175,39 @@ const sstep = (t) => { const u = clamp(t, 0, 1); return u * u * (3 - 2 * u); };
  * du corps en repère personnage, `c` le centre du pas (±hw), `ankleY` la hauteur de cheville au repos.
  * Renvoie { p, pitch (°, + = pointe haute), phase, toe (° extension des orteils) }.
  */
+/** LE GRIFFÉ — h(w) sur [0,1] : h(0) = h(1) = 0, h'(0) = h'(1) = 1, et h' = −β au milieu (β = (2e/3)/(1 − 2e/3), la pente de
+ *  compensation minimale pour que le recul des bouts se rende) ; impaire autour de ½. e = GRIFFE_E (part du vol à chaque bout). */
+export const GRIFFE_E = 0.2, GRIFFE_LEVE = 0.5;
+export function griffeH(w, e = GRIFFE_E) {
+  const b = (2 * e / 3) / (1 - 2 * e / 3);
+  const left = (x) => -b * x + (1 + b) * (e / 3) * (1 - Math.pow(1 - Math.min(x, e) / e, 3));
+  if (w <= 0.5) return w <= e ? left(w) : left(e) - b * (w - e);
+  return -griffeH(1 - w, e);
+}
+
 export function footPath(u, P_, c, vC, ankleY, Lfoot) {
   const p = P_;
   const D = [vC[0] * p.s * p.T, 0, vC[2] * p.s * p.T];                 // déplacement du corps pendant l'appui
   const dir = len(D) > 1e-9 ? [D[0] / len(D), 0, D[2] / len(D)] : [0, 0, -1];
   const roll = p.roll * Math.min(1, len(D) / 0.3);                     // pas de déroulé sur place
   const land = [c[0] + D[0] * (0.5 - p.bias), 0, c[2] + D[2] * (0.5 - p.bias)];               // c0
-  const lift = [c[0] - D[0] * (0.5 + p.bias) + dir[0] * roll, 0, c[2] - D[2] * (0.5 + p.bias) + dir[2] * roll]; // c1
+  const advTO = p.griffe ? Lfoot * (1 - Math.cos(Math.max(0, p.pitchTO) * D2R)) : roll;   // (griffé) le décollage part du pivot sur l'orteil
+  const lift = [c[0] - D[0] * (0.5 + p.bias) + dir[0] * advTO, 0, c[2] - D[2] * (0.5 + p.bias) + dir[2] * advTO]; // c1
   const sFix = p.s * (1 - p.peel);
   let pos, pitch, phase, toe = 0;
   if (u < p.s) {
     // APPUI : la cheville recule sous le corps à −v (fixe au monde), puis avance de `roll` en pelant
     const rho = u < sFix ? 0 : sstep((u - sFix) / Math.max(1e-6, p.s - sFix));
     const k = (u / p.s) * (1 - (p.slip || 0));                         // `slip` : le sabotage nommé de l'appui qui glisse
-    pos = [land[0] - D[0] * k + dir[0] * roll * rho, 0, land[2] - D[2] * k + dir[2] * roll * rho];
     const kF = Math.max(1, 0.035 / Math.max(1e-3, 0.16 * p.s * p.T));   // (A7 bis) le talon se pose en ≥ 35 ms : à haute cadence la fenêtre en
     const flatten = 1 - ramp(u / p.s, 0, 0.08 * kF, 0.16 * kF);          // fraction d'appui devenait un coup de genou (39 rad/s à la pose)
     const peel = u < sFix ? 0 : ramp(u, sFix, sFix + (p.s - sFix) * 0.55, p.s);
     pitch = p.pitchHS * flatten - p.pitchTO * peel;
     if (p.pitchHS < 0) pitch = Math.min(pitch, p.pitchHS * flatten);   // avant-pied : le talon ne descend pas
+    // (griffé) LE DÉROULÉ PIVOTE SUR L'ORTEIL : la cheville avance de L·(1 − cos θ) — la géométrie du pivot, θ le talon levé —
+    // au lieu du `roll` forfaitaire (0,1-0,2 m) qui faisait GLISSER l'orteil de 5 à 14 cm par pelage (mesuré au modèle FK)
+    const adv = p.griffe ? Lfoot * (1 - Math.cos(Math.max(0, -pitch) * D2R)) : roll * rho;
+    pos = [land[0] - D[0] * k + dir[0] * adv, 0, land[2] - D[2] * k + dir[2] * adv];
     toe = p.toeUp * peel;
     phase = u < sFix ? 'stance' : 'peel';
   } else {
@@ -201,6 +215,14 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
     const w = (u - p.s) / (1 - p.s);
     const sig = 0.5 - 0.5 * Math.cos(Math.PI * Math.pow(w, p.swingK));
     pos = [lift[0] + (land[0] - lift[0]) * sig, 0, lift[2] + (land[2] - lift[2]) * sig];
+    // LE GRIFFÉ (p.griffe 0..1, opts.griffe — retour utilisateur « les pieds traînent ») : la cloche en S part et arrive à
+    // vitesse NULLE dans le repère du corps, donc à la vitesse du CORPS au monde — mesuré au modèle FK, la cheville décolle
+    // à v (3 à 8 m/s) en raclant sous 2 cm et se pose lancée : le patin de chaque pas. Le coureur réel RÉTRACTE sa jambe
+    // (vitesse sol du pied ≈ 0 au décollage et au contact). Terme griffe(w) × le recul du corps sur le vol : pente 1 aux deux
+    // bouts (vitesse repère-corps −griffe·v, continue avec l'appui à griffe = 1), concentrée sur les GRIFFE_E du vol à
+    // chaque bout — la forme cubique w − 3w² + 2w³ rajoutait 0,5·v au milieu du vol, le genou passait 35-41 rad/s
+    // (checkClip, cap 30). 0 / absent : la foulée d'hier au bit.
+    if (p.griffe) { const kg = p.griffe * griffeH(w) * (1 - p.s) * p.T; pos[0] -= vC[0] * kg; pos[2] -= vC[2] * kg; }
     pitch = -p.pitchTO * (1 - ramp(w, 0, 0.25, 0.5)) + p.pitchHS * ramp(w, 0.5, 0.8, 1);
     toe = p.toeUp * (1 - ramp(w, 0, 0.15, 0.3));
     phase = 'swing';
@@ -210,7 +232,10 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
   let y = ankleY + heel;
   if (phase === 'swing') {
     const w = (u - p.s) / (1 - p.s);
-    y = ankleY + heel + p.swingH * bump(w, 0, p.swingPeak, 1);
+    // (griffé) LE PIED SE DÉCOLLE FRANCHEMENT : la cloche monte plus vite au départ (et redescend plus tard) — mesuré au modèle FK,
+    // l'orteil restait 28-34 ms sous 1,5 cm en repartant (le rasage du début de vol) ; même pic, même point de pose.
+    const bw = bump(w, 0, p.swingPeak, 1);
+    y = ankleY + heel + p.swingH * (p.griffe ? Math.pow(bw, GRIFFE_LEVE) : bw);
   }
   pos[1] = y;
   return { p: pos, pitch, phase, toe };
@@ -238,6 +263,9 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au plus), le bassin glisse vers l'intérieur, le pied extérieur se pose
   // plus large, la tête reste d'aplomb (contre-roulis). Absents : la foulée d'hier au bit.
   const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp(opts.turn ?? 0, -9, 9);
+  // LE GRIFFÉ (footPath) — absent : hier au bit. Plein jusqu'à 6 m/s, ramené à 0,3 dès 7 : au sprint le genou de la foulée
+  // tourne déjà à la limite (checkClip, 30 rad/s — 9 m/s le dépasse sans griffé) ; mesuré, griffé plein à 8 m/s = 32 rad/s.
+  if (opts.griffe) p.griffe = clamp(opts.griffe, 0, 1) * clamp(1 - (Math.hypot(vF, vR) - 6) * 0.7, 0.3, 1);
   // (§ 8) LA BOITERIE (opts.boite { side, k } — le fauché d'une faute grave, sim p._boite) : le côté touché a l'appui plus court (s ×(1 − 0,3k)),
   // le vol plus ras (swingH ×(1 − 0,2k) — à 0,35 le trot rasait sous les 4 cm du contrat), moins de déroulé (pitchTO) ; le bassin PLONGE de ce côté quand il porte (10°·k) — la foulée
   // d'une jambe qui se ménage. Absente : la foulée d'hier au bit.
