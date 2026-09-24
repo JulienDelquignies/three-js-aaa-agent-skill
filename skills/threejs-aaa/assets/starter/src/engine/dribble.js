@@ -98,9 +98,13 @@ export const dansCone = (yaw, px, pz, bx, bz, cone = 100) => {
   return Math.abs(((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) <= cone * Math.PI / 180;
 };
 
-export function balPrenable(ball, px, pz, prise = 0.5, fuite = 0.5) {
-  const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = hyp(bx, bz);
-  return dd < prise || (dd > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dd : 0) < fuite;
+/** (300, cfg.priseRelative) …ET LA FUITE SE LIT EN RELATIF quand on donne la vitesse du preneur (pv = [vx, vz]) : un ballon qui roule
+ *  à 3 m/s DEVANT un porteur qui court à 3 m/s ne le fuit pas — lu au sol, il « fuyait » à 3 m/s, et le porteur qui avait adopté une
+ *  passe ne le reprenait qu'à < prise (0,5 m), ce que la touche de conduite suivante empêchait : mesuré, 38 % des intentions de passe
+ *  mouraient (TTL, refus d'ancre — le ballon libre à 1,1 m, jamais au pied), la passe partait 1 s après la décision. pv absent : hier. */
+export function balPrenable(ball, px, pz, prise = 0.5, fuite = 0.5, pv = null) {
+  const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = hyp(bx, bz), vx = ball.v[0] - (pv ? pv[0] : 0), vz = ball.v[2] - (pv ? pv[1] : 0);
+  return dd < prise || (dd > 1e-4 ? (vx * bx + vz * bz) / dd : 0) < fuite;
 }
 
 export function makeDribbler(cfg = {}) {

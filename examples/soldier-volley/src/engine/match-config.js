@@ -422,7 +422,7 @@ export const MATCH = {
                           // pleine allonge reste quand le ballon fuit plus vite qu'on ne
                           // referme (le poke du sprint). false : la jambe tendue d'hier
                           // (sabotage nommé). Le rondo/réduit gardent reach, au bit près.
-  prisePied: 0.5,         // LA POSSESSION NE SE PREND PAS DE LOIN (11c11, st.full — lot 62,
+  prisePied: 0.5, priseRelative: true, /* (300) LA PRISE SE JUGE EN RELATIF (dribble.balPrenable, pv) : le porteur qui a ADOPTÉ une passe reprend le ballon qui roule AVEC lui — la fuite se lit ballon − corps, pas au sol (mesuré : 38 % des intentions mouraient, ballon à 1,1 m roulant à l'allure de l'homme, « fuyant » à 3 m/s dans l'absolu) ; null : hier au bit */ // LA POSSESSION NE SE PREND PAS DE LOIN (11c11, st.full — lot 62,
                           // capture utilisateur : « le ballon change de sens sans être touché »).
                           // Mesuré (3 graines × 300 s) : 80 des 105 captures accordaient la
                           // possession à un ballon qui FUYAIT (jusqu'à 0,9 m — captureRadius), et

@@ -13739,6 +13739,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      CONSTATS : passe.sigma0 n'est pas lu en match (la variante « sans erreur » = la base au bit). Le lecteur de pertes reçoit un
      second jeu, « sans défense » (20 épisodes, book/episodes.mjs prend maintenant des réglages) : regarder pourquoi une équipe que
      personne n'attaque perd le ballon.
+- 426: LA FOUILLE DES SÉQUENCES, ET LA PRISE EN RELATIF (300). Suite du 425 (« creuse, on doit trouver »). Ce que la fouille établit :
+     (1) LES PASSES NE SONT PAS LE DÉFAUT — complétion 86 % (le book 82,5) ; ce qui coupe les séquences, ce sont les PERTES EN
+     TENANT le ballon : ~80 par équipe et par match (le réel ~20-25), 17 % des tenues (sonde-304 : 448 tenues / 45 min, 336 passes,
+     76 pertes) — la loi des séquences est quasi géométrique (1 passe : 29 % des possessions, le mode) et la continuation par tenue
+     vaut 0,75 × 0,86 ≈ 0,65 (≈ 0,78 pour 3,5). (2) Les pertes en tenant : réceptions contestées perdues ~25, touches de conduite
+     reprises par l'adversaire ~22 (le ballon à 2,5-3 m du porteur, poussé à 4-7,5 m/s, 1,5-3 s après la touche), take-ons ratés ~13
+     (souvent < 0,8 s après le contrôle) ; 40 des 76 pertes arrivent AVANT la première décision du porteur. (3) La conduite : le
+     porteur poursuit son ballon comme une cible FIXE (s = min(top, 2,6 d)) et le locomoteur (260) accélère vers la vitesse VOULUE,
+     pas vers la capacité (Bible 10 § 3.2 : a = α (v_max − v)) — ~0,5 m/s² près de la demande ; les virages lisses (B5) freinent le
+     porteur à 0,2 × quand le cap diffère. Corrigés à l'essai (poursuite à vitesse du ballon, a vers la capacité, porteur hors virages
+     lisses, sans duel de réception) : les échappées 22 → 10, les pertes en tenant − 21 %… et les passes par possession INCHANGÉES
+     sur 90 min (2,25-2,50) : le porteur à l'aise conduit et tire (35-44 tirs). Ni la barre de passe au calme (4,8 → 2,0 : rien, 3,6 =
+     la base au bit sur une graine). (4) LA DÉCISION (instrumentée à l'essai, crochets retirés) : 300 intentions de passe adoptées,
+     113 MORTES (38 %) — TTL expiré 71 (refus « ancre » 2 583 images, « technique » 941 : le plan de frappe ne trouve pas sa stance),
+     le ballon LIBRE à 1,1 m roulant à l'allure de l'homme ; la latence adoption → passe 1,0 s p50. LA CAUSE : balPrenable lisait la
+     fuite AU SOL — un ballon à 3 m/s devant un corps à 3 m/s « fuyait » ; la reprise n'existait qu'à < 0,5 m, ce que la touche
+     suivante empêchait. Et le LANCÉ (189 : ≤ 3 adversaires devant dans les 45 m, la passe arrière refusée) tient 60 % des images de
+     décision des tenues perdues et 96 % de celles qui finissent en tir. LA LOI 300 (cfg.priseRelative, null = hier au bit) : le
+     porteur qui a une intention juge la fuite en RELATIF (dribble.balPrenable, pv). Mesuré (sonde-305, 45 min) : intentions jouées
+     62 → 79 %, mortes au TTL 71 → 17 ; 4 × 90 min (sonde-303, graines 3, 7, 11, 19) : passes par possession 2,51 → 2,66, passes
+     394 → 400, tirs 32 → 26 (le book 26), pertes 146 → 142. Le lancé à l'essai (null) : 2,63 et passes 430 ; les deux : 2,82 et
+     442 passes MAIS 17 tirs — le lancé est le lot suivant (son déclencheur, pas sa suppression). Bloc 300 (index 193). Jumeau :
+     `89a5b29538350a36 / e32e5016283143df` (= le défaut du 297) ; défaut du 300 : `f5d3b9d135d8f05e / e32e5016283143df`. Sondes
+     gardées : sonde-304 (les tenues), sonde-305 (les intentions). Banc rapide : jumeau au bit, bloc 193 2 ✓, sync 9 ✓ ; le bloc 1
+     rougissait deux fois — le plein format de 3 min (graine 3 : 22 passes c. ≥ 25 ; 6 graines × 3 min : 12-37 dans les deux mondes)
+     épinglé `priseRelative: null` DATÉ 300, et le contrat de base (graine 7, 480 s sans tir) dont la fenêtre SUIT LE TEMPO (la
+     doctrine de la clause) : 480 → 600 s, les tirs étant revenus au book. Le banc complet du groupe 296-297-300 reste à jouer.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
