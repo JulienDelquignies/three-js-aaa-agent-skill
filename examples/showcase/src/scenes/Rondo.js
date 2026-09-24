@@ -23,7 +23,7 @@ import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
-import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
+import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply } from './rondo-touche.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
@@ -709,71 +709,10 @@ export class Rondo {
     this._armsToBall(pl, Math.sin(Math.PI * u));
   }
 
-  /** LE WARP DE TOUCHE — quatrième consommateur du warp de contact (pied de frappe, gant,
-   *  racine, et maintenant LE PIED DE CONDUITE). La sim touche à ~1,15 m (jambe tendue) mais le
-   *  clip de course ne le sait pas : le contact restait invisible — « il ne touche jamais le
-   *  ballon » (retour utilisateur, captures). Autour de chaque événement 'touche' (0,2 s),
-   *  le pied le plus proche est corrigé vers la surface du ballon : même primitive (planWarp,
-   *  IK deux os), enveloppe sin C¹ (zéro aux deux bouts), borné, hors gestes (un act possède
-   *  déjà sa jambe). */
-  /** (304) LA TOUCHE PRÉVUE — « le ballon est trop un corps étranger au joueur » (retour du 25/09). Mesuré dans le rendu : le warp
-   *  commençait AU contact et culminait 0,1 s APRÈS, le ballon déjà parti de 0,3-0,5 m — 39 % des touches sans pied à < 0,35 m du
-   *  ballon. La sim sait quand son pied l'atteindra (dribble.js : le ballon à < prise du corps, la foulée ≥ minStride) : à ≤ 0,1 s de
-   *  ce contact prédit, le warp part, le pied est AU ballon à l'instant de la touche. Lecture pure de l'état sim. */
-  _predictTouch(pl) {
-    if (typeof window !== 'undefined' && window.__sabotage === 'touche-prevue') { pl._touchPre = null; return; }
-    const st = this.state, c = pl.sim, d = st._drb;
-    if (!d?.cfg || st.phase !== 'carry' || st.possession.carrier !== c.id || st.ball.owner != null || c.act) { if (pl._touchPre != null && this._t > pl._touchPre + 0.1) pl._touchPre = null; return; }
-    if (pl._touchPre != null && this._t <= pl._touchPre + 0.1) return;
-    const b = st.ball.p, dx = b[0] - c.p[0], dz = b[2] - c.p[2], dist = Math.hypot(dx, dz);
-    if (dist < 1e-3 || b[1] > 0.6) return;
-    const ux = dx / dist, uz = dz / dist, vc = c.v[0] * ux + c.v[1] * uz - (st.ball.v[0] * ux + st.ball.v[2] * uz), prise = d.cfg.prise ?? d.cfg.reach ?? 0.62;
-    const tDist = dist <= prise ? 0 : vc > 0.2 ? (dist - prise) / vc : Infinity, sp = c.speed ?? 0;
-    const tFoulee = d.sinceTouch >= (d.cfg.minStride ?? 0.55) ? 0 : sp > 0.3 ? ((d.cfg.minStride ?? 0.55) - d.sinceTouch) / sp : Infinity;   // la touche part au PLUS TARD des deux : le ballon à portée ET la foulée faite
-    const bvAway = st.ball.v[0] * ux + st.ball.v[2] * uz, allonge = bvAway > sp + 0.3 && dist < (d.cfg.reach ?? 1.15);   // la touche d'ALLONGE (dribble.js : le ballon fuit plus vite que le corps, jambe tendue)
-    const tHit = allonge ? tFoulee : Math.max(tDist, tFoulee);
-    if (!(tHit <= 0.1)) return;
-    pl._touchPre = this._t + tHit;
-  }
-
-  _applyTouchWarp(pl) {
-    if (typeof window !== 'undefined' && window.__sabotage === 'warp-touche') return;
-    this._predictTouch(pl);
-    const T = pl._touchPre != null && this._t >= pl._touchPre - 0.1 && this._t <= pl._touchPre + 0.1 ? pl._touchPre - 0.1 : pl._touchT;
-    if (T == null || pl.sim.act) return;
-    const u = (this._t - T) / 0.2;
-    if (u <= 0 || u >= 1) return;
-    const b = this.state.ball.p;
-    if (b[1] > 0.6) return;
-    // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée)
-    let side = null, dBest = 1.8;
-    for (const f of ['left', 'right']) {
-      const leg = pl.legs?.[f];
-      if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f]) continue;
-      leg.foot.getWorldPosition(this._wf);
-      const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
-      if (d < dBest) { dBest = d; side = f; }
-    }
-    if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
-    if (!side) return;
-    const leg = pl.legs[side], lens = pl.legLens[side];
-    leg.foot.getWorldPosition(this._wf);
-    const plan = planWarp([this._wf.x, this._wf.z], [b[0], b[2]], { standoff: 0.13, warpMax: 0.6 });   // (304) 0,42 → 0,6 : la touche prise à 0,62 m du corps avec la jambe arrière ; la longueur de jambe borne l'IK (R)
-    const env = Math.sin(Math.PI * u);
-    this._wt.set(this._wf.x + plan.offset[0] * env, this._wf.y, this._wf.z + plan.offset[1] * env);
-    leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
-    const dT = this._wh.distanceTo(this._wt);
-    const R = (lens.A + lens.B) * 0.995;
-    if (dT > R) {
-      this._wt.set(this._wh.x + (this._wt.x - this._wh.x) * (R / dT), this._wh.y + (this._wt.y - this._wh.y) * (R / dT), this._wh.z + (this._wt.z - this._wh.z) * (R / dT));
-    }
-    const sol = twoBoneIK(
-      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
-      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
-    );
-    aimChildAt(leg.up, leg.knee, this._wm.fromArray(sol.mid));
-    aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
-  }
+  /** Le contact du pied au ballon vit dans rondo-touche.js (lots 304-305) : la touche prévue, le corps au contact, le pied au ballon. */
+  _predictTouch(pl) { predictTouch(this, pl); }
+  _contactRoot(pl) { contactRoot(this, pl); }
+  _applyTouchWarp(pl) { touchWarpApply(this, pl); }
 
   /** Le warp de frappe vit dans rondo-warp.js (lot B1) : phase 1 AVANT le verrou (calibration,
    *  amorce, plan, fente du bassin, cible), phase 2 APRÈS (l'IK de la jambe frappeuse). */
@@ -889,7 +828,7 @@ export class Rondo {
         // où le ballon est vraiment)
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
-        if (pl && pl.sim.act?.payload?.kind === 'tacle-debout') { pl._teched = this._t; pl._touchT = this._t; } /* (A10 bis) la prise du TACLEUR n'est pas une réception : le tacle possède déjà la jambe (mesuré : 'amorti' par-dessus, bras à 49° sur le vainqueur pendant son accompagnement) */ else if (pl && e.type === 'control' && elanTake(this, e)) { pl._rxAt = this._t; pl._touchT = this._t; }   /* (B2) la prise au contact d'élan : le pied frappe, pas de clip de contrôle par-dessus le clip d'élan (le warp de touche seul) */ else if (pl) { const dY = e.type === 'control' && !e.miss && e.tech !== 'prise-gardien' && this._mcfg?.petitsGestes?.controleOriente && pl.sim.yawWant != null ? Math.atan2(Math.sin(pl.sim.yawWant - pl.sim.yaw), Math.cos(pl.sim.yawWant - pl.sim.yaw)) * 180 / Math.PI : 0; this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : Math.abs(dY) >= (this._mcfg?.petitsGestes?.controleOriente?.angle ?? 45) ? { ...e, move: 'controleOriente', foot: dY > 0 ? 'left' : 'right' } : e); pl._teched = this._t;   /* (§ 10) LE CONTRÔLE ORIENTÉ : le receveur que la sim tourne (yawWant hors du presseur) de plus de `angle` ° ouvre les hanches vers sa course — le pied par le sens du virage (dY > 0 = à droite : le miroir) */ if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+        if (pl && pl.sim.act?.payload?.kind === 'tacle-debout') { pl._teched = this._t; pl._touchT = this._t; } /* (A10 bis) la prise du TACLEUR n'est pas une réception : le tacle possède déjà la jambe (mesuré : 'amorti' par-dessus, bras à 49° sur le vainqueur pendant son accompagnement) */ else if (pl && e.type === 'control' && elanTake(this, e)) { pl._rxAt = this._t; pl._touchT = this._t; }   /* (B2) la prise au contact d'élan : le pied frappe, pas de clip de contrôle par-dessus le clip d'élan (le warp de touche seul) */ else if (pl) { const dY = e.type === 'control' && !e.miss && e.tech !== 'prise-gardien' && this._mcfg?.petitsGestes?.controleOriente && pl.sim.yawWant != null ? Math.atan2(Math.sin(pl.sim.yawWant - pl.sim.yaw), Math.cos(pl.sim.yawWant - pl.sim.yaw)) * 180 / Math.PI : 0; this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : Math.abs(dY) >= (this._mcfg?.petitsGestes?.controleOriente?.angle ?? 45) ? { ...e, move: 'controleOriente', foot: dY > 0 ? 'left' : 'right' } : e); pl._teched = this._t;   /* (§ 10) LE CONTRÔLE ORIENTÉ : le receveur que la sim tourne (yawWant hors du presseur) de plus de `angle` ° ouvre les hanches vers sa course — le pied par le sens du virage (dY > 0 = à droite : le miroir) */ if (e.type === 'control') { pl._rxAt = this._t; if (pl._rec) { pl._contact = { tc: this._t, ux: pl._rec.ux, uz: pl._rec.uz, need: pl._rec.need, w0: pl._rec.w }; pl._rec = null; } if (e.tech === 'prise-gardien') pl._catchT = this._t; else { pl._touchT = pl._touchPre != null && this._t >= pl._touchPre - 0.25 && this._t - pl._touchPre < 0.12 ? Math.min(pl._touchPre, this._t) - 0.1 : this._t - 0.07; pl._touchPre = null; } } }
       } else if (e.type === 'faute' || e.type === 'carton' || e.type === 'glissade' || e.type === 'poignee' || e.type === 'salut') { feteEvent(this, e); if (e.type === 'faute' && e.kind === 'accrochage') contactEvent(this, e); this._ticker.event(e, this.state);   // (A11) la protestation du fautif, la glissade du buteur — le ticker garde ces événements
       } else if (e.type === 'geste') { const pl = this.players[e.by]; if (pl && !pl.gestureLayer.active && (pl.sim.down ?? 0) <= 0 && !pl.sim.act) { this._playTech(pl, e); pl._teched = this._t; if (e.move === 'arretSemelle') pl._semelleT = this._t; }   // (§ 10, petits-gestes.js) la semelle du preneur, le gardien qui replace son mur, la feinte d'appel : un corps libre joue le geste nommé
       } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
@@ -912,7 +851,7 @@ export class Rondo {
         // ballon ») : la sim inscrit chaque touche ; la scène tend le pied vers le ballon autour
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
-        if (pl) { pl._touchT = pl._touchPre != null && Math.abs(this._t - pl._touchPre) < 0.12 ? pl._touchPre - 0.1 : this._t; pl._touchPre = null; pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme — (304) et commence AVANT le contact quand la touche était prévue (_predictTouch)
+        if (pl) { pl._touchT = pl._touchPre != null && this._t >= pl._touchPre - 0.2 && this._t - pl._touchPre < 0.12 ? Math.min(pl._touchPre, this._t) - 0.1 : this._t - 0.07; pl._touchPre = null;   /* (305) prévue : le sommet au contact ; sinon le pied part à 0,89 de l'enveloppe (une image) */ pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme — (304) et commence AVANT le contact quand la touche était prévue (_predictTouch)
         // (note 388) LA CONDUITE NOMMÉE : la touche qui vire (≥ 20°), l'extérieur et la semelle jouent LEUR clip (conduite* par technique, miroir au pied nommé),
         // cadencés comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la foulée la joue déjà)
         if (pl && e.tech && (Math.abs(e.virage ?? 0) >= 20 || e.surface === 'outside' || e.surface === 'sole') && (e.dev ?? 0) < 110 && this._t - (pl._swingT ?? -9) >= 0.35) { this._playTech(pl, { ...e, move: TECHNIQUES_BY_ID[e.tech]?.clip ?? 'conduiteInterieur' }); pl._swingT = this._t; }
@@ -994,6 +933,7 @@ export class Rondo {
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);
+      this._contactRoot(pl);   // (304 bis) le corps va au contact — APRÈS la vérité sim, AVANT le verrou des pieds
       // LE LACET AUSSI EST À LA SIM — même régime que la position. Le contrôleur dérive son facing
       // de l'intention de vitesse : pendant un armé en pivot la vitesse est nulle et le modèle
       // restait planté jusqu'à 110° du lacet sim AU CONTACT (mesuré épisode par épisode — le pied

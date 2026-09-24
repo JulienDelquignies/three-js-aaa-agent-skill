@@ -413,7 +413,7 @@ export const MATCH = {
                           // prédiction de vol couvre le vol ENTIER (maxT suit pass.flight —
                           // le receveur vise la CHUTE, pas un chemin tronqué à 2,2 s).
                           // false : le flipper d'hier (sabotage nommé).
-  prise: 0.8,             // LA TOUCHE SE PREND AU PIED (11c11, st.full — lot 58, captures
+  prise: 0.5, allongeTouche: 0.75, /* (305) LA TOUCHE À LA PORTÉE DU PIED : « une touche sans pied proche, on doit être à 0 % » — mesuré dans le rendu, la touche partait à 0,62 m du centre (p50, 44 % > 0,7, l'allonge jusqu'à 1,15) quand la jambe (~0,75 m) met l'orteil au ballon à ~0,35 m, + le corps rendu qui va au contact (≤ 0,6) ; 4 × 90 min : manqués 5,45 → 4,48 %, passes et séquences tenues. 0,8 et allongeTouche null : hier */ // LA TOUCHE SE PREND AU PIED (11c11, st.full — lot 58, captures
                           // utilisateur : « le ballon est trop loin et ne touche jamais le
                           // pied » en conduite de course, alors que le porté cérémonial est
                           // correct). Mesuré : la touche partait dès la portée de jambe tendue

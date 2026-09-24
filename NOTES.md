@@ -13832,6 +13832,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      proche ; warpMax 0,6 (la longueur de jambe borne l'IK). Sabotage nommé : window.__sabotage = 'touche-prevue'. Mesuré : 40/44
      touches prévues ; au contact 0,19 m p50 (0,33 p75), 61 % à < 0,25 m ; sans pied proche dans la fenêtre 43 → 23 %. RESTE (sim) : le
      ballon à > 1 m du pied le plus proche 14,6 % du temps de conduite — la longueur des touches (touchDistance × touche 0,8).
+- 431: LE PIED AU BALLON, AU CONTRÔLE COMME EN CONDUITE (305 sim + rendu scenes/rondo-touche.js). « Touche sans aucun pied proche, on
+     doit être à 0 % ? Que ce soit au contrôle ou en conduite de balle. » MESURÉ DANS LE RENDU (os Foot/ToeBase contre le ballon rendu,
+     en 3D, à l'instant de l'événement ; aériens : poitrine, hanches, genoux aussi) : touches de conduite 41 % sans pied à < 0,3 m,
+     contrôles 94 % — la cause unique : le ballon HORS DE PORTÉE de la jambe (hanche–ballon > A+B ≈ 0,75 m). La sim déclare le contrôle
+     à 0,89 m du centre du corps (p50 — receiveRadius 0,85) et la touche à 0,62 m (44 % > 0,7, l'allonge jusqu'à 1,15) ; une jambe met
+     l'orteil au ballon à ~0,35 m du centre. DEUX MOITIÉS. (1) SIM, LOI 305 : cfg.prise 0,8 → 0,5 et cfg.allongeTouche 0,75 (la touche
+     de conduite à la portée du pied ; clé nommée allongeTouche — cfg.allonge est la jambe tendue du 181) ; null / 0,8 : hier au bit.
+     4 × 90 min : manqués 5,45 → 4,48 %, passes par possession 3,51 → 3,54, passes tenues, tirs 23,75 → 19,5 ; 0,6/0,85 : tirs 16
+     (refusé). Le rayon de RÉCEPTION n'est PAS réduit (essayé : le ballon qui passe à 0,6-0,85 m devient une jambe tendue dégradée — plus
+     de manqués ; un vrai joueur fait le pas : c'est au rendu de le montrer). Bloc 305 (index 197) : touche p90 1,07 → 0,69 m du centre,
+     manqués ≤ hier + 0,5. Jumeau = le défaut du 303 `e25ac1675dd99ff5 / 3e514d624bf84261` ; défaut du 305 : `e134e2cd5d15074d /
+     2a6d7112c666a69f`. Épingle DATÉE 305 au bloc 7 (la foulée de frappe, verte à HEAD~). verify-dribble : deux rouges PRÉEXISTANTS
+     (rouges au monde d'hier aussi — « chaque touche porte sa cassure », « les touches fortes vivent ») : dette nommée. (2) RENDU :
+     le motion warping (Unreal Motion Warping) — le CORPS RENDU va au contact : la touche prévue (dribble : prise, foulée, allonge, la
+     reprise par intention, horizon 0,2 s) ou la réception suivie en continu (la trajectoire ballon/corps des 0,25 s qui viennent : le
+     premier instant dans receiveRadius — la jambe tendue pour le receveur attitré — et il est le plus proche du ballon, intercepteur
+     compris) ; le corps glisse vers le point de contact (au plus 0,6 m, 0,75 pour l'aérien, le corps SOUS le ballon), smoothstep 0,2-
+     0,25 s avant, 0,25 s après, avant le verrou des pieds ; le pied au ballon en 3D (le ballon qui rebondit : le pied monte) ; sans
+     prévision, le geste part à 0,89 de l'enveloppe à l'événement (une image). Extrait de Rondo.js (au plafond : 1 312 → 1 201) dans
+     scenes/rondo-touche.js. Sabotages : 'touche-prevue', 'corps-contact'. Mesuré 6 min de jeu : touches sans pied 41 → 2 % (1/50),
+     contrôles au sol 94 → 1,9 % (1/54), pied au ballon 0,13 m p50 ; RESTE : les contrôles AÉRIENS (poitrine, amorti de la retombée —
+     3/4, ~7 % des contrôles) : le corps va sous le ballon mais la poitrine n'y est pas — l'IK du buste/de la cuisse est le lot suivant.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
