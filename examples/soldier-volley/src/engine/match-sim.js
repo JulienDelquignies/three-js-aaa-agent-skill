@@ -6,7 +6,7 @@ export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
-import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
+import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js'; import { cueilletteSprintDe } from './cueillette.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -442,7 +442,7 @@ function assignMatchJobs(st, cfg) {
       let foeD = Infinity;
       for (const q of defenders) if (q.down <= 0) foeD = Math.min(foeD, hyp(q.p[0] - leadP[0], q.p[2] - leadP[1]));
       const myD = hyp(hunter.p[0] - leadP[0], hunter.p[2] - leadP[1]);
-      hunter.job = foeD > myD + 2.5 ? 'support' : 'receive';
+      if (st.full && cfg.cueillette) { const KC = cfg.cueillette, et = (q) => etaCourse(q.p, q.v, [leadP[0], 0, leadP[1]], { accel: (cfg.accel ?? 7.5) * (q.skill?.accelF ?? 1), top: (cfg.speeds?.chase ?? 6.4) * (q.skill?.topF ?? 1) }); let eF = Infinity; for (const q of defenders) if (q.down <= 0 && !q.keeper) eF = Math.min(eF, et(q)); hunter.job = cueilletteSprintDe(et(hunter), eF, KC) ? 'receive' : 'support'; } else hunter.job = foeD > myD + 2.5 ? 'support' : 'receive';   // (298) LA CUEILLETTE SE JUGE AU TEMPS (cueillette.js)
       hunter.target = [leadP[0], 0, leadP[1]];
     }
   }
