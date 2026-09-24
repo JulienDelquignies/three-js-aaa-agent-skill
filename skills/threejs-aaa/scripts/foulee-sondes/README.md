@@ -84,3 +84,32 @@ talon le plus en avant du bassin, le décollage = MT1 le plus en arrière) : pas
 - En jeu : `glisse-accel.mjs` compte aussi l'orteil pendant le DÉROULÉ. C'est lui qui a trouvé que l'avance propre du pied (le talon qui
   roule, le pivot sur les métatarses) suivait l'axe du CORPS qui tourne au-dessus du pied planté (orteil p90 6-8 cm dans les virages
   lents) : elle suit maintenant l'axe du pied planté (motion-gait `axeDe`, character-controller `_anchorStance`) — p90 2-3 cm.
+
+## À reculons (2026-09-24)
+
+**La marche arrière est MESURÉE** : Scherpereel, Molinaro, Inan, Shepherd & Young 2023 (Scientific Data 10:924 — SMARTech, Georgia Tech,
+DOI 10.35090/gatech/70296, CC BY 4.0) : 12 adultes sur tapis instrumenté à DEUX BANDES (une force par pied), `walk_backward` à 0,6 / 0,8 /
+1,0 m/s et `normal_walk` 0,6 / 1,2 m/s (la référence avant des mêmes sujets), marqueurs à 200 Hz. L'archive fait 28 Go (marqueurs) et 13 Go
+(données traitées) : `zipdistant.py <url> '<regex>' <dossier>` en extrait les seuls fichiers voulus par requêtes Range (8 fils ; UN_STATIQUE=1 :
+un essai statique par sujet) — URL des archives dans le README de SMARTech.
+- `recul-mesure.py` → `recul-scherpereel.json` : contacts à la force (> 50 N), fenêtres de vitesse des données traitées (20 s), cadence, appui,
+  vol (cuisse, genou, cheville), pied (talon → MT1), talon et MT1 en appui, bassin (Harrington), pose / décollage, vitesse sol à la pose,
+  garde du MT1 et du TALON en vol (à reculons c'est le talon qui mène : quart bas 1,4-2,7 mm).
+- Ce qu'on y lit : le pied se pose sur la POINTE (MT1 d'abord dans 100 % des cycles, −22 à −31°), le talon descend en 20 % de l'appui, le pied
+  quitte le sol TALON EN DERNIER (+13 à +19°) ; genou 31-39° à la pose, 4° au décollage ; le vol plie le genou TARD (44-50° vers 70 %) ; cadence
+  ×1,19-1,25 la marche avant des mêmes sujets ; appui 0,63 → 0,61. C'est la marche avant renversée dans le temps (Winter 1989, Thorstensson 1986).
+
+**La course arrière est ASSEMBLÉE** (aucun jeu de données public au-delà de 1 m/s) — `recul-vers-moteur.py` en donne chaque source :
+cadence (×1,22-1,37 la course avant) et appui de Brennan et al. 2026 (Eur J Sport Sci, 16 athlètes, lus sur leurs figures) ; forme des
+courbes d'un acteur (100STYLE, Mason 2022, Zenodo 8127870, CC BY 4.0, combinaison inertielle, ~1 m/s : `recul-100style.py` →
+`recul-100style.json` — sa marche arrière tombe sur Scherpereel à quelques degrés) ; genou 40° à la pose tenu jusqu'à mi-appui, pied posé sur la
+pointe, talon qui descend (Bates, Morrison & Hamill 1986) ; amplitude à 5,1 m/s (Arata 1999 : genou 83°, hanche 42°) ; rebond du centre de masse
+(Cavagna, Legramandi & La Torre 2012 : 8,0 / 7,2 / 6,0 cm à 2 / 3 / 4 m/s) avec le creux TARD dans l'appui (atterrissage doux, décollage dur —
+la dissymétrie de la course avant renversée). Les hauteurs de bassin qu'on déduirait des angles de Bates (un sujet, une figure) sont
+incompatibles avec un vol balistique de 83 ms : le rebond suit la physique, le genou à la pose suit Bates.
+- `recul-vers-moteur.py recul-scherpereel.json recul-100style.json <engine>/foulee-rbds.js` → `RECUL_REF` (BASSIN_BR : le haut du rebond, calé).
+- `compare-recul.mjs` : le générateur contre la marche mesurée et les ancres de la course (c'est lui qui a calé bias et BASSIN_BR).
+- Écarts restants : le genou au décollage de la marche arrière (15-20° contre 4° — le résidu de normalisation de la jambe, celui de la pose en
+  avant) ; au décollage de la course arrière 16-25° (Bates : 2° sur un sujet, 100STYLE : 19°).
+- Trouvé en route : le recollement du cycle dans le contrat de glissement avait le signe inversé (latent : en avant aucun pied n'était « à
+  plat » sur la couture) ; sous griffé, l'avance du pivot suivait la COURSE et non l'axe du pied (à reculons l'appui glissait à 0,5-0,9 m/s).

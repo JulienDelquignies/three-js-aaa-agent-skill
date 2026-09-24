@@ -10,13 +10,14 @@
 //
 // Lancer : node skills/threejs-aaa/scripts/verify-foulee.mjs
 
+import { readFileSync } from 'node:fs';
 import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
 import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, LEG_REF, gaitBrakeCadence, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
 import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
 import { applyQuat } from '../assets/starter/src/engine/vecmath.js';
-import { volRef, chevilleRef } from '../assets/starter/src/engine/foulee-rbds.js';
+import { volRef, chevilleRef, cadenceRecul, dutyRef, RECUL_REF } from '../assets/starter/src/engine/foulee-rbds.js';
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
@@ -96,7 +97,7 @@ function portraitOf(v) { return gaitPortrait(P, { vF: v, vR: 0, n: 60 }); }
 
 // ---- 7. la cadence suit la direction, continûment
 {
-  ok(Math.abs(gaitCadenceFactor(4, 0) - 1) < 1e-9 && Math.abs(gaitCadenceFactor(-3, 0) - 1.3) < 1e-9 && Math.abs(gaitCadenceFactor(0, 2) - 1.9) < 1e-9, 'cadence ×1 en avant, ×1,3 à reculons, ×1,9 de côté');
+  ok(Math.abs(gaitCadenceFactor(4, 0) - 1) < 1e-9 && Math.abs(gaitCadenceFactor(-3, 0) - cadenceRecul(3)) < 1e-9 && Math.abs(gaitCadenceFactor(0, 2) - 1.9) < 1e-9, `cadence ×1 en avant, ×${cadenceRecul(3).toFixed(2)} à reculons à 3 m/s (mesurée : RECUL_REF), ×1,9 de côté`);
   let jump = 0; for (let a = 0; a < 360; a += 2) { const k1 = gaitCadenceFactor(Math.cos(a * Math.PI / 180) * 3, Math.sin(a * Math.PI / 180) * 3), k2 = gaitCadenceFactor(Math.cos((a + 2) * Math.PI / 180) * 3, Math.sin((a + 2) * Math.PI / 180) * 3); jump = Math.max(jump, Math.abs(k2 - k1)); }
   ok(jump < 0.05, `le facteur de cadence est continu en direction (saut max ${jump.toFixed(3)} par 2°)`);
   const T = gaitParams(0, 2).T;
@@ -114,9 +115,8 @@ function portraitOf(v) { return gaitPortrait(P, { vF: v, vR: 0, n: 60 }); }
 // ---- 9. régimes particuliers : la course arrière et les pas chassés ont leur corps
 {
   const back = gaitPortrait(P, { vF: -3, vR: 0, n: 60 });
-  const land = back.frames[0].L.ankle;
-  let hi = back.frames[0].L; for (const f of back.frames) if (f.L.ankle[1] > hi.ankle[1]) hi = f.L;
-  ok(land[2] > 0.1 && hi.ankle[2] < 0, `course arrière : le pied se pose ${cm(land[2])} cm DERRIÈRE le bassin, le vol culmine ${cm(-hi.ankle[2])} cm devant (genou levé)`);
+  const land = back.frames[0].L.ankle, cuisse = back.frames.filter((f) => f.L.phase === 'swing').map((f) => f.L.hipFlex);
+  ok(land[2] > 0.1 && back.frames[0].feet.Left.pitch < -30 && Math.min(...cuisse) > -8 && Math.max(...cuisse) > 20, `course arrière : le pied se pose ${cm(land[2])} cm DERRIÈRE le bassin, sur la pointe (${back.frames[0].feet.Left.pitch.toFixed(0)}°), le GENOU reste devant la hanche en vol (cuisse ${Math.min(...cuisse).toFixed(0)} → ${Math.max(...cuisse).toFixed(0)}°)`);
   const lat = gaitPortrait(P, { vF: 0, vR: 2, n: 60 });
   const widthMin = Math.min(...lat.frames.map((f) => f.R.ankle[0] - f.L.ankle[0]));
   const handOut = Math.min(...lat.frames.map((f) => Math.abs(f.R.hand[0] - f.R.hip[0])));
@@ -137,7 +137,8 @@ sab('genou à l\'envers (pole arrière)', { vF: 4.5, vR: 0, opts: { override: { 
 sab('bras en phase (armPhase π)', { vF: 4.5, vR: 0, opts: { override: { armPhase: Math.PI } } }, /main gauche|main droite/);
 sab('chassés qui croisent (hw 0,04)', { vF: 0, vR: 2, opts: { override: { hw: 0.04 } } }, /croisent/);
 sab('tronc raide en course (lean 0, bassin droit)', { vF: 5, vR: 0, opts: { override: { lean: 0, pTilt: 0 } } }, /ne penche pas/);
-sab('course arrière qui lève derrière (swingPeak 0,95)', { vF: -3, vR: 0, opts: { override: { swingPeak: 0.95 } } }, /ne monte pas devant/);
+sab('course arrière au modèle d\'hier (chemin cartésien, wRun 0)', { vF: -3, vR: 0, opts: { override: { wRun: 0 } } }, /genou ne reste pas devant/);
+sab('course arrière posée sur le talon (pitchHS +10)', { vF: -3, vR: 0, opts: { override: { pitchHS: 10 } } }, /pas sur la pointe/);
 sab('pas trop long (bias −0,45)', { vF: 4.5, vR: 0, opts: { override: { bias: -0.45 } } }, /hors de portée|hanche hors|GLISSE|pas de/);
 
 console.log('\n— A12b : la réception en mouvement — les bras en équilibre du receveur (opts.receveur) —');
@@ -357,6 +358,40 @@ console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
   ok(pr2 <= 0.03, `course : l'orteil ne rase pas la pelouse en repartant (≤ ${(1000 * pr2).toFixed(0)} ms par vol ; les coureurs 17-27 ms, p90 20-33 : plafond 30 ms)`);
   ok(hr >= 0.04, `sabotage — le chemin cartésien d'hier fait raser l'orteil ${(1000 * hr).toFixed(0)} ms à chaque vol : la clause mord`);
   ok(JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, { griffe: 0 })), 'griffé 0 / absent : la foulée d\'hier au bit');
+}
+
+console.log('\n— À RECULONS (2026-09-24) : la marche arrière contre les marcheurs mesurés (Scherpereel 2023), la course arrière contre ses ancres (Bates 1986, Arata 1999, Cavagna 2012) —');
+{
+  const W = JSON.parse(readFileSync(new URL('./foulee-sondes/recul-scherpereel.json', import.meta.url)));
+  const Lg = P.lengths.thigh + P.lengths.shank, hip0 = P.bones.LeftUpLeg.bindP[1];
+  const recul = (v, o = {}) => {
+    const pr = gaitPortrait(P, { vF: -v, vR: 0, opts: { griffe: 1, ...o }, n: 240 }), F = pr.frames, to = F.findIndex((f) => f.L.phase === 'swing');
+    const hh = F.map((f) => (f.L.hip[1] - hip0) / Lg), bassin = hh.map((x, i) => (x + hh[(i + F.length / 2) % F.length]) / 2), K = F.map((f) => f.L.kneeAngle);
+    return { f: 1 / pr.T, s: F[0].meta.s, genouPose: K[0], genouVol: Math.max(...K.slice(to)), piedPose: F[0].feet.Left.pitch, piedDecol: F[to - 1].feet.Left.pitch,
+      rebond: Math.max(...bassin) - Math.min(...bassin), pose: -(F[0].L.ankle[2] - F[0].L.hip[2]) / Lg, orteilPose: -(F[0].L.toe[2] - F[0].L.hip[2]) / Lg };
+  };
+  const avantF = (v) => 1 / gaitPortrait(P, { vF: v, vR: 0, opts: { griffe: 1 }, n: 60 }).T;
+  let pire = { s: 0, k: 0, g: 0, gv: 0, p: 0, r: 0, x: 0 }, hier = 0;
+  for (const k of ['recul-0.6', 'recul-0.8', 'recul-1.0']) {
+    const m = W[k], g = recul(m.v), fav = (x) => W['avant-0.6'].f + (W['avant-1.2'].f - W['avant-0.6'].f) * (x - W['avant-0.6'].v) / (W['avant-1.2'].v - W['avant-0.6'].v);
+    const kMes = m.f / fav(m.v), kGen = g.f / avantF(m.v), to = Math.round(100 * m.duty);
+    pire = { s: Math.max(pire.s, Math.abs(g.s - m.duty)), k: Math.max(pire.k, Math.abs(kGen / kMes - 1)), g: Math.max(pire.g, Math.abs(g.genouPose - m.genouCycle[0])), gv: Math.max(pire.gv, Math.abs(g.genouVol - Math.max(...m.volGenou))),
+      p: Math.max(pire.p, Math.abs(g.piedPose - m.piedAppui[0]), Math.abs(g.piedDecol - m.piedAppui[20])), r: Math.max(pire.r, Math.abs(g.rebond - (Math.max(...m.hancheCycle.map((x, i) => (x + m.hancheCycle[(i + 50) % 100]) / 2)) - Math.min(...m.hancheCycle.map((x, i) => (x + m.hancheCycle[(i + 50) % 100]) / 2))))),
+      x: Math.max(pire.x, Math.abs(g.pose - m.pose[0])) };
+    const h = recul(m.v, { override: { wRun: 0, s: 0.40, peel: 0.20, pitchHS: -10, pitchTO: 8 } });   // la marche arrière d'hier : le régime de course arrière à toutes les allures
+    hier = Math.max(hier, Math.min(Math.abs(h.s - m.duty) / 0.01, Math.abs(h.piedPose - m.piedAppui[0]) / 3));
+  }
+  ok(pire.s <= 0.01 && pire.k <= 0.03 && pire.g <= 6 && pire.gv <= 5 && pire.p <= 3 && pire.r <= 0.008 && pire.x <= 0.05,
+    `marche arrière (0,6 / 0,8 / 1,0 m/s) contre 10 marcheurs : appui ±${pire.s.toFixed(3)}, cadence / marche avant ±${(100 * pire.k).toFixed(1)} %, genou à la pose ±${pire.g.toFixed(0)}°, genou en vol ±${pire.gv.toFixed(0)}°, pied à la pose et au décollage ±${pire.p.toFixed(0)}° (pointe −22 → −31°, talon en dernier +13 → +19°), rebond ±${(100 * pire.r).toFixed(1)} % de jambe, pose ±${(100 * pire.x).toFixed(1)} % (plafonds 0,01 / 3 % / 6° / 5° / 3° / 0,8 % / 5 %)`);
+  ok(hier >= 2, `sabotage — la marche arrière d'hier (le régime de course à toutes les allures : appui 0,40 avec vol, pointe −10°, chemin cartésien) sort des plafonds de ×${hier.toFixed(0)} au moins sur l'appui ET le pied : la clause mord`);
+  const c27 = recul(2.7), c51 = recul(5.1), cav = [[2, 0.080], [3, 0.072], [4, 0.060]].map(([v, cc]) => Math.abs(recul(v).rebond - cc / 0.9));
+  ok(c27.genouPose >= 34 && c27.genouPose <= 47 && Math.max(...cav) <= 0.01 && c51.genouVol >= 78 && c27.orteilPose <= -0.2 && c51.orteilPose <= -0.2,
+    `course arrière : genou à la pose ${c27.genouPose.toFixed(0)}° à 2,7 m/s (Bates : 40°), rebond du bassin à ±${(100 * Math.max(...cav)).toFixed(1)} % de jambe du centre de masse de Cavagna (2 / 3 / 4 m/s), genou en vol ${c51.genouVol.toFixed(0)}° à 5,1 m/s (Arata : ~85°), l'orteil se pose ${(-100 * c27.orteilPose).toFixed(0)} / ${(-100 * c51.orteilPose).toFixed(0)} % de jambe derrière la hanche (Arata : 26 %)`);
+  ok(Math.abs(recul(3).f / avantF(3) - cadenceRecul(3)) < 0.01 && Math.abs(recul(3).s - dutyRef(3, true)) < 1e-6, `course arrière à 3 m/s : cadence ×${(recul(3).f / avantF(3)).toFixed(3)} la course avant, appui ${recul(3).s.toFixed(3)} (Brennan 2026 : ×1,23, 0,342)`);
+  let rouges = [];
+  for (const v of [0.3, 0.6, 1, 1.3, 1.6, 2, 2.5, 3, 4, 5]) for (const o of [{}, { griffe: 1 }]) { const r = checkGaitGen(P, { vF: -v, vR: 0, opts: o }); if (!r.ok) rouges.push(`${v}${o.griffe ? ' griffé' : ''} : ${r.issues[0]}`); }
+  for (const [vF, vR, o] of [[-1.5, 0.6, { jockey: true }], [-2, 1, {}], [-0.8, 0.8, { griffe: 1 }], [-3, 1, { griffe: 1 }]]) { const r = checkGaitGen(P, { vF, vR, opts: o }); if (!r.ok) rouges.push(`(${vF}, ${vR}) : ${r.issues[0]}`); }
+  ok(!rouges.length, `à reculons de 0,3 à 5 m/s (avec et sans griffé) et en diagonale arrière : sous contrat${rouges.length ? ' — ' + rouges.slice(0, 3).join(' ; ') : ''}`);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
