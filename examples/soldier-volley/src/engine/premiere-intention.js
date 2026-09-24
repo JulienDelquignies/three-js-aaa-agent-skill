@@ -1,3 +1,4 @@
+import { rendezVousDe } from './rendezvous.js';
 import { tirage } from './rng.js'; import { sigmaLayoffF, scoreLayoffDe, impossibleDe } from './layoff.js';
 // premiere-intention.js — JOUER LE BALLON SANS LE POSSÉDER : la famille de la première
 // intention. La remise de tête et la volée vivent dans tete.js (le répertoire aérien) ; ICI
@@ -69,7 +70,11 @@ export function uneTouche(st, p, cfg) {
     const dose = st.full && UT.dose !== false ? (UT.dose === true || UT.dose == null ? {} : UT.dose) : null;
     const bvl0 = hyp(st.ball.v[0], st.ball.v[2]) || 1;
     // LE RELAIS CHAUD SE SERT DANS SA COURSE (218, V.mene / bonus3 / capRelais — TENTÉE ET REJETÉE à la mesure : la fixture élit le relais dans les 3 géométries, mais au flux 1 retour/16 et la une-touche 79 → 73 % ; les situations sont rares et le lanceur ne sprinte pas (1-5 m/s) — le levier est le LANCEUR. Défauts = l'hier au bit ; les clés restent des boutons. l'entonnoir du mur d'un une-deux : 6/16 « pas de candidat », la ligne mur → PIEDS du coureur traverse le presseur contourné ; le vrai retour va DEVANT lui) : la cible du candidat au relais est m.p + v × mene, le couloir et le dosage se jugent sur ELLE. Absente : les pieds d'hier.
-    const cibleDe = (m) => (V && (m._troisT ?? -1) > st.t && (V.mene ?? 0) > 0) ? [m.p[0] + m.v[0] * (V.mene ?? 0), m.p[2] + m.v[1] * (V.mene ?? 0)] : [m.p[0], m.p[2]];
+    const cibleDe = (m) => { if (V && (m._troisT ?? -1) > st.t && (V.mene ?? 0) > 0) return [m.p[0] + m.v[0] * (V.mene ?? 0), m.p[2] + m.v[1] * (V.mene ?? 0)];
+      // (303, cfg.remiseDevant && st.full) LA REMISE VA OÙ SERA LE RECEVEUR : visée à ses pieds du départ (0,0 m mesuré), elle arrivait DERRIÈRE le coureur — 56 % des receveurs d'une remise
+      // faisaient demi-tour pendant le vol (retour du 25/09 : « la passe arrive derrière le joueur, demi-tour et 5 m de course »). Le rendez-vous des passes (281, rendezvous.js) ; lent : ses pieds. Absent : hier au bit.
+      if (st.full && cfg.remiseDevant && cfg.rendezVous) { const R = rendezVousDe([p.p[0], 0, p.p[2]], m.p, [m.v[0], m.v[1]], cfg.rendezVous, { sigPsi: 0, topF: m.skill?.topF ?? 1, solve: (f2, l) => solvePass(f2, l, { style: 'ground', arrival: cfg.uneToucheVive?.dose?.arr ?? 5.0 }) }); if (R) return [R.lead[0], R.lead[2]]; }
+      return [m.p[0], m.p[2]]; };
     // …ET LE MUR DOIT VOIR SON COUREUR (218d, V.relaisLecture — le mantra) : la priorité au relais chaud
     // se perd parfois chez le mur mal noté VISION — probabilité (1 − visionF) × relaisLecture (visionF
     // 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.

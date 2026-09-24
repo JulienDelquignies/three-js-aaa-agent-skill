@@ -338,6 +338,7 @@ export function movePlayers(st, dt, cfg) {
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
     if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1)); if (st.full && cfg.orientationPasse && (p._ouvre ?? -1) > st.t && st.possession.carrier === p.id) top = Math.min(top, cfg.orientationPasse.vTour ?? 1.2);   /* (395) LE PORTEUR QUI S'OUVRE FREINE : sous vTour le cône du porté ne joue pas, le ballon tourne avec lui */   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
+    if (st.full && cfg.sePoser && (p._pose ?? -1) > st.t) top = Math.min(top, cfg.sePoser.v ?? 1.5);   // (303) le receveur face au ballon se pose (match-sim : les appuis avant la réception)
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];

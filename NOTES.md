@@ -13799,6 +13799,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      frappe du bloc 7 (toucheAxe null : la touche change le pool des frappes des deux mondes, vif 3,87 c. gelé 3,85). Le budget du bloc 1
      (1,67 ms en contention à 4 processus) repasse seul. verify-dribble : 18 ✓ / 1 ✗ au monde d'hier AUSSI (« chaque touche porte sa
      cassure ») — préexistant, pas de ce lot.
+- 429: LES APPUIS DU RECEVEUR ET LA REMISE DEVANT (303). Retours du 25/09 sur Vercel : « il faut baisser les contrôles manqués » puis
+     « premier contrôle, la balle part à 2 m devant ; la passe arrive derrière le joueur qui fait demi-tour et court 5 m — les stats ne
+     sont pas faussées mais visuellement c'est très mauvais ». LA COMPTABILITÉ D'ABORD (2 × 90 min) : les « contrôles manqués » de
+     sonde-303 (5,7 %) mêlent trois issues — le vrai MISCONTROL du Modèle 09 § 6.1 (le tirage de Weibull) 1,2 %, la prise d'un ballon
+     rapide récupéré (touchePrix, 13-18 m/s) 1,1 %, et la réception CONTESTÉE perdue 3,4 % (une issue à part au book) : au sens du book
+     le taux est ~2,3 %, dans la cible 2-4 % ; ce qui reste est le duel de réception. PISTE RÉFUTÉE : l'arrivée dosée (solvePass roule
+     pour arriver à 6,5 m/s ; la Bible 13 § 4.2 vise ~5) — 13 % des réceptions au-dessus de 5,5 m/s faisaient ~75 % des ratés, mais
+     doser à 5 ou 4 m/s ne bouge pas le taux (5,85 → 5,7 / 6,1 % sur 4 × 90 min) : la vitesse RELATIVE vient du receveur. LA VUE
+     (sonde-306) : 22 % des receveurs font demi-tour pendant le vol, 38 % courent > 5 m ; 19 % des contrôles laissent le ballon à
+     > 1,5 m dans les 0,6 s. Par famille : les REMISES en une touche visaient les pieds du départ (0,0 m) — 56 % de demi-tours — ;
+     les passes au rendez-vous 15 %. Et 43 des 51 touches LOURDES venaient d'un receveur courant DANS le ballon (4,3 m/s, vitesse
+     relative 10 c. 6,5 pour les propres). LA LOI 303 (deux clés, null = hier au bit) : cfg.sePoser { v 1,0, fen 1,0, cos 0 }
+     (match-sim/movement : la dernière seconde du vol, le receveur qui ne court pas avec le ballon a sa pointe à 1 m/s — il se pose,
+     les appuis avant la réception) et cfg.remiseDevant (premiere-intention : la remise au rendez-vous du 281). Mesuré 4 × 90 min :
+     manqués (au sens de sonde-303) 5,85 → 5,45 %, passes par possession 3,51 (tenues), pertes 132 → 129, tirs 20,5 → 24 (la cible
+     revient) ; lourdes 15 → 8 % ; demi-tours des remises 56 → 18 %. Bloc 303 (index 196) : lourdes 14,5 → 6,9 %, demi-tours de
+     remise 56 → 25 % (4 × 900 s). Jumeau = le défaut du 302 `c5426de23f277dca / 32443be6040d8a60` ; défaut du 303 :
+     `e25ac1675dd99ff5 / 3e514d624bf84261`. RESTE : le duel de réception (3,4 %, le défenseur qui arrive pendant le contrôle), les
+     passes levées (43 % de demi-tours, hors rendez-vous), les passes au rendez-vous (15 %).
+     Banc rapide : jumeau au bit, blocs 7, 103, 104, 112, 113, 196 verts, sync 9 ✓ ; trois épingles DATÉES 303 (vertes à HEAD~) : le
+     plein format de 3 min du bloc 1, le bloc 287 (3 × 600 s, 11-23 remises par monde : 57 c. 70 % — sur 4 × 45 min la remise devant
+     reçoit 84,5 % c. 82,5 % sans) et le bloc 302 (la clause mesure le 302 seul, les deux mondes sans le 303).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
