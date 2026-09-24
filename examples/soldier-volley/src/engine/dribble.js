@@ -214,7 +214,13 @@ export function dribbleStep(d, ball, player, dt) {
     // UNE TOUCHE EST UNE VITESSE, JAMAIS UNE POSITION. `setVelocity` passe par le corps du ballon
     // quand il y en a un (ball-body.js), et reste compatible avec un objet nu pour les prédicteurs et
     // les harnais qui simulent des futurs sur une copie.
-    const spT = player.corpsK ? toucheCorpsDe(sp, dx, dz, player.corps, player.speed, player.corpsK) : sp;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
+    // (302, player.axe — cfg.toucheAxe) LA TOUCHE SE DOSE SUR L'ALLURE DANS SA DIRECTION : pushSpeed donne au ballon `lead` m d'avance sur
+    // un corps qui GARDE sa vitesse dans le sens de la touche — lue scalaire, une touche de côté ou de retournement à 3 m/s partait à
+    // 4,4 m/s et roulait ~8 m pendant que le corps allait ailleurs (le porteur retiré à 2,2 m, « il contrôle et le perd »). La vitesse
+    // du corps PROJETÉE sur la touche, et le plancher de la touche d'arrêt (plancher m/s, ~1 m de roule) au lieu de minPush.
+    const spA = player.axe ? (() => { const vA = Math.max(0, player.vel[0] * dx + player.vel[1] * dz), s0 = Math.max(player.axe.plancher ?? 1.6, pushSpeed(vA, lead) * (player.touchDamp ?? 1));
+      return player.serreV != null ? Math.min(s0, Math.max(2.0, vA + player.serreV)) : s0; })() : sp;
+    const spT = player.corpsK ? toucheCorpsDe(spA, dx, dz, player.corps, player.speed, player.corpsK) : spA;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
       [ball.v[2] / BALL.radius, 0, -(dx * spT) / BALL.radius]);   // le pied la fait rouler : lift avant
     d.sinceTouch = 0; d.touches++; touched = true;

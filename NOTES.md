@@ -13778,6 +13778,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      hier sur 4 × 900 s (529 → 539 : le quart d'heure est court pour + 8 %). Jumeau (`lance` sans couloir) = le défaut du 300
      `f5d3b9d135d8f05e / e32e5016283143df` ; défaut du 301 : `a62a061b2eea593d / e32e5016283143df`. Banc rapide vert (jumeau, blocs 1, 98 —
      le 189 lui-même —, 194, sync). Le banc complet du groupe 296-297-300-301 reste à jouer.
+- 428: LA TOUCHE DANS SA DIRECTION ET LE DEMI-TOUR QUI FREINE (302). Retour du 25/09 (Vercel) : « un énorme problème d'appui des
+     joueurs, aucun contrôle n'est réussi ». Regardé en local (playmode, caméra au receveur) puis mesuré : le moteur note « contrôle
+     propre », et 22 % de ces contrôles rendent le ballon LIBRE ~0,5 s après — le porteur RETIRÉ sans événement (rondo-sim, la
+     bascule carry → loose au-delà de 2,2 m ; piégé par la pile : 43 retraits silencieux en 45 min, tous là). La géométrie au
+     retrait : le ballon à 4,9 m/s, le corps à 3,1 m/s, les deux PERPENDICULAIRES ; la dernière touche 0,33 s avant, à 5,4 m/s. DEUX
+     défauts. (1) pushSpeed dose l'avance de la touche sur la vitesse SCALAIRE du corps : une touche de côté ou de retournement à
+     3 m/s partait à 4,4 m/s (~8 m de roule), et la touche d'arrêt (minPush 2,5) roulait 2,6 m. (2) Les virages lisses (B5) faisaient
+     du demi-tour un ARC : le porteur qui dépasse son ballon courait 1,1 s à 140° de sa cible (slew 6/v rad/s, frein 0,2). Chacun
+     seul ne suffit pas (retraits 43 → 38 ; 43 → 48) ; ensemble 43 → 17. LA LOI 302 : cfg.toucheAxe { plancher 1,6 } (dribble.js :
+     la vitesse du corps PROJETÉE sur la touche, le plancher de la touche d'arrêt ~1 m) et cfg.viragesLisses.demiTour 100 (movement.js :
+     au-delà de 100° pas d'arc, le locomoteur freine et repart) ; null / absent : hier au bit. Mesuré 4 × 90 min (graines 3, 7, 11,
+     19) : PASSES PAR POSSESSION 2,90 → 3,51 (LA CIBLE DU BOOK 3,5-4,5 ATTEINTE), passes 432 → 462, pertes 146 → 132 (110-140),
+     possessions 149 → 132, longs 34 → 42, tirs 23,5 → 20,5 (la bande basse : à suivre). Bloc 302 (index 195) : la touche à 90° de la
+     course 4,41 → 1,58 m/s (dans l'axe inchangée) ; 4 × 900 s : retraits silencieux 57 → 13, passes ≥ 0,97 × hier (533 c. 539 sur
+     les quarts d'heure). Jumeau = le défaut du 301 `a62a061b2eea593d / e32e5016283143df` ; défaut du 302 : `c5426de23f277dca /
+     32443be6040d8a60`. La fouille (426-428) : 2,49 → 3,51 en trois lois (la prise en relatif, le couloir ouvert, la touche et le
+     demi-tour). Banc rapide : jumeau au bit, blocs 3, 4, 8, 15, 16, 195 verts, sync 9 ✓, verify-conduite 9 ✓ ; deux épingles DATÉES 302
+     (vertes au monde d'hier) : le plein format de 3 min du bloc 1 (toucheAxe null, demiTour absent — la clause du 300) et la foulée de
+     frappe du bloc 7 (toucheAxe null : la touche change le pool des frappes des deux mondes, vif 3,87 c. gelé 3,85). Le budget du bloc 1
+     (1,67 ms en contention à 4 processus) repasse seul. verify-dribble : 18 ✓ / 1 ✗ au monde d'hier AUSSI (« chaque touche porte sa
+     cassure ») — préexistant, pas de ce lot.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

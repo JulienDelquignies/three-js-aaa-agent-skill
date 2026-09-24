@@ -368,12 +368,14 @@ export function movePlayers(st, dt, cfg) {
       if (spW >= (VL.des ?? 1.0) && dTgt > (VL.arrivee ?? 1.5)) {   // …et pas à l'ARRIVÉE (la cible à < arrivee m) : le demi-tour de l'arrivée est un frein, pas un virage — le slew le retardait (mesuré : le lanceur dépassait son point de 0,17 m)
         const want = Math.atan2(wz, wx), mag = hyp(wx, wz), have = p._capW ?? Math.atan2(p.v[1], p.v[0]);
         let d = want - have; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+        if (VL.demiTour != null && Math.abs(d) > VL.demiTour * Math.PI / 180) { p._capW = null; } else {   // (302, viragesLisses.demiTour) LE DEMI-TOUR EST UN FREINAGE : la cible au-delà de demiTour° derrière, pas d'arc — le locomoteur freine et repart (mesuré : le porteur qui dépasse son ballon courait 1,1 s à 140° de sa cible, le ballon à 2,2 m, l'étiquette retirée) ; absent : hier au bit
         if (VL.tau) d *= 1 - Math.exp(-dt / VL.tau);
         const cap = ((VL.taux ?? 6) / Math.max(1, spW)) * dt;
         const nw = have + Math.max(-cap, Math.min(cap, d));
         let rest = want - nw; while (rest > Math.PI) rest -= 2 * Math.PI; while (rest < -Math.PI) rest += 2 * Math.PI;
         const k = Math.max(VL.frein ?? 0.2, Math.cos(rest));               // le cap loin du voulu FREINE (on ne fait pas le tour à pleine vitesse : mesuré, le receveur en arc saturait 6 m/s² à p50)
         wx = Math.cos(nw) * mag * k; wz = Math.sin(nw) * mag * k; p._capW = nw;
+        }
       } else p._capW = null;
     } else p._capW = null;
     // TURNING COSTS, AND THE FASTER YOU GO THE WIDER YOU TURN. Acceleration used to be isotropic:
