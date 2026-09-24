@@ -16,7 +16,7 @@ import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
-import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE_STADE } from '../engine/duel-1v1.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
+import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
@@ -67,7 +67,7 @@ export class Rondo {
     const chk = checkStadium(model);
     if (!chk.ok) console.warn('checkStadium', chk.issues);
     const theme = makeTheme({ seed: 3, name: 'Grand Bol', primary: TEAMS[0].secondary, secondary: TEAMS[0].primary });
-    const built = buildStadium(model, theme, { at: [0, 0, 0] });
+    const built = this.duelMode ? buildCage(CAGE) : buildStadium(model, theme, { at: [0, 0, 0] });   // (duel) la cage street à la place du stade
     this.scene.add(built.group); this.disposables.push(built);
     this.scene.fog = new THREE.FogExp2(0x0a1020, 0.0016);
 
@@ -84,7 +84,7 @@ export class Rondo {
     }
 
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
-    this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
+    this.night = this.duelMode ? await setupDuelDay(this.scene, this.renderer, { cage: CAGE, turf: built.turfAlbedo }) : setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,   // (duel) le jour : ciel de tidewater
       // plein format : 22 corps skinnés se re-déforment dans la passe d'ombre — la map se
       // resserre (1024²) et le BUDGET DE CASTERS (update) limite qui la paie. Le 512² du lot 61
       // est REVENU à 1024 (lot 63 — « encore un peu les traits », capture) : son texel de 22 cm
