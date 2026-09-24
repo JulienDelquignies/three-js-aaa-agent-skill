@@ -13689,6 +13689,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      fait que tuer le ballon. Le lot proposé : LA PRISE EN ALLONGE — un contrôle de la table des techniques à 1,0-1,35 m (moins propre :
      le ballon se pose plus loin, la précision plus basse), pour tout ballon libre ou de passe à portée — qui exige son CLIP (la
      branche animations) pour que l'image reste honnête.
+- 422: LA PASSE OU LE RECEVEUR ? ET LE BALLON LIBRE — SONDÉS ; LA CUEILLETTE AU TEMPS RÉFUTÉE (298). sonde-300 (la question du 24/09 :
+     « la passe n'est pas assez bonne, ou le destinataire se déplace mal ? ») : les passes FRÔLÉES (0,85-1,4 m du receveur, pas prises)
+     ne font que 3-4 % des passes (10-16 par équipe) — le passeur et le receveur y sont tous deux loin du point visé (67-76 %), la passe
+     souvent courte (41-63 %) ; les passes prises arrivent à 1,4-1,6 m p50 du point visé, le receveur à ~1 m — imprécis tous deux,
+     mais le rendez-vous se fait (77 % prises par le receveur désigné) : ni la passe ni le receveur n'expliquent l'effet du rayon de
+     prise, qui agit sur les BALLONS LIBRES hors passe. sonde-301 : 120-147 ballons libres pris par équipe ; l'équipe qui avait
+     l'AVANTAGE (temps d'atteinte) le prend 66-74 %, le PERD 16-22 % (21-29 par équipe) avec 0,4 s d'avance ; son joueur le plus
+     prompt ne courait vers le ballon qu'une fois sur trois (il pressait, soutenait, couvrait — l'élu du moteur n'est pas lui),
+     'controle-dos' domine les refus (il arrive le ballon hors du cône). LA LOI (cueillette.js : l'élu ne trotte que si l'adversaire le
+     plus prompt arrive 1 s après lui, hier 2,5 m de distance) : perdus avec l'avantage 16-22 % (inchangé), 1,86 passe par séquence
+     (1,96) — RÉFUTÉE, retirée (le moteur = le 296 au bit). L'élection au temps d'arrivée elle-même avait été réfutée au 240c.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
