@@ -16,7 +16,7 @@ import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
-import { makeRondo, RONDO } from '../engine/rondo.js';
+import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, DUEL } from '../engine/duel-1v1.js';   // (duel) le 1c1 : une config de rondoStep, ?duel
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
@@ -52,7 +52,7 @@ export class Rondo {
     const q = new URLSearchParams(location.search);
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
-    this.matchMode = q.has('match');
+    this.matchMode = q.has('match'); this.duelMode = !this.matchMode && q.has('duel');
     // LE 11C11 (?full) : terrain Loi 1, 10 + gardien par équipe, postes de formation — la même scène, le même moteur : une CONFIGURATION (la preuve que l'architecture scale à 22 corps)
     this.fullMode = this.matchMode && q.has('full');
 
@@ -126,7 +126,7 @@ export class Rondo {
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
     // paramétrique a déjà peint les lignes et posé les cages
-    this.grid = this.matchMode ? null : buildRondoGrid(RONDO.area);
+    this.grid = this.matchMode ? null : buildRondoGrid(this.duelMode ? DUEL.area : RONDO.area);
     if (this.grid) { this.scene.add(this.grid.group); this.disposables.push(this.grid); }
 
     this.ball = ballMesh();
@@ -141,7 +141,7 @@ export class Rondo {
     // de trois pixels ; à six, on voit ce que chacun fait — ce qui est tout l'intérêt de la scène.
     const perTeam = this.fullMode
       ? Math.max(6, Math.min(10, Number(q.get('n')) || 10))
-      : Math.max(2, Math.min(6, Number(q.get('n')) || 5));
+      : this.duelMode ? 1 : Math.max(2, Math.min(6, Number(q.get('n')) || 5));
     // ?match : LE MATCH RÉDUIT — deux buts, gardiens, tirs, remises (match-sim). Même scène, même
     // pipeline visuel : le match est une CONFIGURATION du moteur, l'habillage ne change pas.
     // en plein format, la portée de tir suit l'échelle (les frappes du 11c11 partent de 16-25 m)
@@ -151,7 +151,7 @@ export class Rondo {
       : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
       ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
-      : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
+      : this.duelMode ? makeDuel({ seed: Number(q.get('seed')) || 7 }) : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
     // ---- the squad (squad.js loads a ROSTER, normalises facing/height, transports the donor's
@@ -432,12 +432,12 @@ export class Rondo {
     // rapproché le premier rang à 21 m du centre : l'ancienne position (z=−34) filmait l'intérieur
     // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
     const back = this.fullMode ? (narrow ? 42 : 47)
-      : this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
+      : this.matchMode ? (narrow ? 17 : 20) : this.duelMode ? (narrow ? 9.5 : 10.5) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);   // (duel) plus près, plus bas : un 1c1 se lit aux appuis
     // fov full 50 → 54 (retour utilisateur « un joueur blanc invisible » : mesuré, le gardien du
     // côté opposé au regard projetait à 1431 px pour un cadre de 1280 — TOUTE la 1re période hors
     // champ ; à 54° les deux gardiens vivent dans le cadre au coup d'envoi, corps ~7 % plus petits)
-    cam.fov = this.fullMode ? (narrow ? 60 : 54) : this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
-    cam.position.set(0, this.fullMode ? 40 : this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
+    cam.fov = this.fullMode ? (narrow ? 60 : 54) : this.matchMode ? (narrow ? 56 : 50) : this.duelMode ? (narrow ? 44 : 36) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
+    cam.position.set(0, this.fullMode ? 40 : this.matchMode ? 19 : this.duelMode ? 4.6 : 8.5 - (narrow ? 1.2 : 0), -back);
     this._camBack = back; this._camH = cam.position.y;
     cam.lookAt(0, 1, 0);
     this.cam = cam;
@@ -844,7 +844,7 @@ export class Rondo {
     const toBefore = this.state.turnovers;
     for (let sv = 0; sv < (this.vitesse ?? 1); sv++) {
       if (this.matchMode) matchStep(this.state, step, this._mcfg);
-      else rondoStep(this.state, step);
+      else rondoStep(this.state, step, this.duelMode ? DUEL : undefined);
     }
     this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + stepV;
 
@@ -950,7 +950,7 @@ export class Rondo {
       // proches. ?animlod=0 le coupe (sabotage nommé).
       const stx = this.state;
       // L'ATTENTE (A8, motion-idle) : la situation de la sim → l'espèce d'idle (politique pure du contrôleur)
-      { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
+      { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : stx._duel && stx.possession.carrier >= 0 ? stx.players[stx.possession.carrier] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
         pl.ctrl.idleCtx = { boite: s._boite && stx.t < s._boite.until ? { side: s._boite.side, k: Math.max(0.2, (s._boite.until - stx.t) / (s._boite.duree || 1)) } : null, abattu: feteStep(this, pl), keeper: !!s.keeper, dead: !!r && r.type !== 'fin', receveur: stx.phase === 'flight' && stx.pass?.to === s.id, wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team, marcheur: ((s.role?.ancrage ?? 0.5) >= 0.8 || (s.role?.repli ?? 0.5) >= 0.9) && !s.act && stx.pass?.to !== s.id && Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]) > 25 && !(o && o.team !== s.team && Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) < 12), jockey: (() => { if (!o || o.team === s.team || s.job !== 'press') return false; const dx = o.p[0] - s.p[0], dz = o.p[2] - s.p[2], d = Math.hypot(dx, dz), sp = Math.hypot(s.v[0], s.v[1]); if (d > 4.5 || d < 0.3 || sp > 3.5) return false; return sp <= 0.25 || (s.v[0] * dx + s.v[1] * dz) / (sp * d) < 0.5; })() };   // jockey (A12d) : la condition du jockey de la sim (A10), relue ici
         // LE BALLON EN MAINS (A9) : le preneur qui attend ou arme sa touche, le gardien qui arme son roulé ou qui vient de ramasser
         /* (A12c) LA PAUSA (253, p._pausa) : la semelle sur le ballon RÉEL, en repère personnage */ if (s._pausa && !s.act) { const me = pl.model.matrixWorld.elements, dx = stx.ball.p[0] - s.p[0], dz = stx.ball.p[2] - s.p[2], rl = Math.hypot(me[0], me[2]) || 1, fl = Math.hypot(me[8], me[10]) || 1, at = [(dx * me[0] + dz * me[2]) / rl, (dx * me[8] + dz * me[10]) / fl]; pl.ctrl.idleForce = 'pausa'; pl.ctrl.idleOpts = { override: { raise: Math.hypot(at[0], at[1]) <= 0.55 ? { side: at[0] < 0 ? 'Left' : 'Right', at: [Math.max(-0.25, Math.min(0.25, at[0])), Math.max(-0.42, Math.min(-0.12, at[1]))], toe: 8 } : null } }; } else if (r?.type === 'corner' && r.elan?.phase === 'attend' && r.taker === s.id) { pl.ctrl.idleForce = 'signal'; pl.ctrl.idleOpts = null; } else if (pl.ctrl.idleForce === 'pausa' || pl.ctrl.idleForce === 'signal') { pl.ctrl.idleForce = null; pl.ctrl.idleOpts = null; } pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || remiseHands(pl, aT, stx, s) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }

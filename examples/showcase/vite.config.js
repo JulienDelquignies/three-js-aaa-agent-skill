@@ -15,6 +15,7 @@ export default defineConfig({
         interieur: page('interieur'),
         carriere: page('carriere'),
         rondo: page('rondo'),
+        duel: page('duel'),
         match: page('match'),
         match11: page('match11'),
         stadiums: page('stadiums'),
