@@ -16,6 +16,7 @@ import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engin
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
 import { applyQuat } from '../assets/starter/src/engine/vecmath.js';
+import { volRef } from '../assets/starter/src/engine/foulee-rbds.js';
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
@@ -221,6 +222,15 @@ console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le
   let rouges = 0;
   for (let s = 1; s <= 40; s++) { const st = gaitStyleFromSeed(s); for (const [vF, o] of [[4.5, { brake: 1 }], [7, { brake: 1 }], [4.5, { turn: 7 }], [7, { turn: -7 }], [8, { brake: 1, turn: 4 }]]) if (!checkGaitGen(P, { vF, vR: 0, style: st, opts: o }).ok) rouges++; }
   ok(rouges === 0, `40 signatures × 5 régimes de frein et de virage = 200 foulées sous contrat (${rouges} rouges)`);
+  // (2026-09-24) LE GENOU EN VOL au frein et en virage : le pic ne dépasse pas celui de la ligne droite à la même vitesse (+2°), qui reste
+  // sur les coureurs (+3° du pic des courbes réalignées, foulee-rbds). Le recalage cartésien du décollage (pied 18 cm derrière la hanche au
+  // frein, 40 en ligne droite) le repliait à 132° au frein plein, 130 en virage à 9 m/s², 135 les deux, 120 en ligne droite (4,5 m/s ;
+  // coureurs 116) — en jeu, p90 136° en course.
+  { const genouVol = (v, o) => { let m = 0; for (const f of gaitPortrait(P, { vF: v, vR: 0, opts: { griffe: 1, ...o }, n: 240 }).frames) for (const sd of ['L', 'R']) if (f[sd].phase === 'swing') m = Math.max(m, f[sd].kneeAngle); return m; };
+    const pic = (v) => { let m = 0; for (let i = 0; i <= 40; i++) m = Math.max(m, volRef(v, i / 40).genou); return m; };
+    let pire = null; for (const v of [3, 4.5, 6]) { const d = genouVol(v, {}), r = pic(v); if (d > r + 3) pire ??= `${v} m/s en ligne droite : ${d.toFixed(0)}° pour ${r.toFixed(0)} chez les coureurs`;
+      for (const o of [{ brake: 1 }, { turn: 9 }, { turn: -9 }, { brake: 1, turn: 9 }]) { const k = genouVol(v, o); if (k > d + 2) pire ??= `${v} m/s ${JSON.stringify(o)} : ${k.toFixed(0)}° c. ${d.toFixed(0)} en ligne droite`; } }
+    ok(!pire, `le genou en vol, au frein et en virage serré, ne se replie pas plus qu'en ligne droite (qui suit le pic des coureurs : ${genouVol(4.5, {}).toFixed(0)}° à 4,5 m/s pour ${pic(4.5).toFixed(0)} ; frein plein + virage 9 m/s² : ${genouVol(4.5, { brake: 1, turn: 9 }).toFixed(0)}°)${pire ? ' — ' + pire : ''}`); }
   const a = JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, {}));
   ok(a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 0, turn: 0 })) && a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: undefined, turn: undefined, legK: undefined })), 'sans frein ni virage (0 ou absents), la foulée à la cadence de la jambe, au bit');
 }
