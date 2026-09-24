@@ -93,7 +93,12 @@ export function enLance(st, c, cfg, choice) {
   if (hyp(g.x - c.p[0], c.p[2]) >= (cfg.lance.porte ?? 45)) return false;
   if (choice && st.players[choice.to.id] && st.players[choice.to.id].p[0] * sg > c.p[0] * sg + 3) return false;
   let gs = 0;
-  for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0 && q.p[0] * sg > c.p[0] * sg) gs++;
+  const KC = cfg.lance.couloir, gx = g.x - c.p[0], gz = -c.p[2], gl = hyp(gx, gz) || 1, cc = Math.cos((cfg.lance.cone ?? 35) * Math.PI / 180);
+  for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0 && q.p[0] * sg > c.p[0] * sg) {
+    gs++;
+    // (301, cfg.lance.couloir) …ET LE COULOIR EST OUVERT : le lancé de la doc (« aucun adversaire de champ goal-side dans le couloir »), pas le compte seul — un défenseur dans le cône ± cone° vers le but à moins de couloir m, et on n'est pas lancé
+    if (KC != null) { const qx = q.p[0] - c.p[0], qz = q.p[2] - c.p[2], d = hyp(qx, qz); if (d < KC && (qx * gx + qz * gz) / (Math.max(1e-6, d) * gl) > cc) return false; }
+  }
   return gs <= (cfg.lance.surnombre ?? 3);                         // le CONTRE : 3 corps ou moins entre lui et le but — on joue VERS L'AVANT
 }
 

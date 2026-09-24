@@ -268,7 +268,7 @@ export const MATCH = {
                           // coéquipier qui vient vers lui se rencontre au point d'interception
                           // (filmé : pris à 1,6 m de la ligne, le vrai le prend à 6-14 m).
                           // Absente : le gardien-statue d'hier.
-  lance: { porte: 45, surnombre: 3, barre: 6, malus: 6 },  // 189 : LE LANCÉ VA AU BUT — derrière la ligne
+  lance: { porte: 45, surnombre: 3, barre: 6, malus: 6, couloir: 12, cone: 35 /* (301) LE COULOIR OUVERT : lancé seulement sans défenseur de champ à < couloir m dans le cône ± cone° vers le but (la doc du 189) — le compte seul (≤ 3 goal-side) lançait 45 des 108 porteurs couloir fermé, sans passe arrière ni holdMax ; absent : hier au bit */ },  // 189 : LE LANCÉ VA AU BUT — derrière la ligne
                           // avec l'espace, la barre de passe s'envole (× composureF) sauf pour
                           // servir un coéquipier PLUS lancé (le 2c1). Absente : le contre gâché
                           // par la passe arrière d'hier (1 tir sur 48 through mesuré).

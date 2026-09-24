@@ -24,7 +24,7 @@ const B_0746 = { loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sor
 const LEUR_1609 = {"loi12": {"avantage": 1.8, "contact": 0.9, "mur": 9.15, "jaune": 2}, "viragesLisses": null, "plantVitesse": null, "sortieAerienne": null, "tete": {"min": 1.5, "max": 2.2, "reach": 1, "but": 12, "saut": 0.75, "duel": 1.9}, "retournee": null, "enchainement": null, "ramasseurs": null, "boiterie": null, "entrant": null, "petitsGestes": null, "conduiteNommee": null, "passements": null, "arbitreGestes": null, "fete": null, "sol": null, "remisesPied": {"elan": {"recul": 3.5, "lat": 1.5, "vitesse": 4, "patience": 4}, "volee": {"h": 1, "avance": 0.45, "lacher": 0.72}, "touche": {"recul": 0.25}}, "bouclier": null, "ceremonie": null};   // LEURS CLÉS D'HIER — DATÉ fusion 16/09 (278-280 × A2-C3) : les dix-neuf clés que la branche animations a posées depuis f62c3d8, à leurs valeurs du 15/09 (null ou l'objet d'alors) — le monde de mon parent 29c0f95 au bit (3bc007bc74a4355f / 6c592ab9df792a83) sur l'état fusionné e798b47
 const MES_1609 = { blocPercu: null, enveloppe: null, visee: null, ellipse: null, repertoire: null, arretControle: null, ligneAccrochee: null };   // MES CLÉS D'HIER — DATÉ fusion 16/09 : les sept clés de 275-280 nulles = le monde de la branche animations 5f8870f au bit (bb530de469f21cbc / d5ba9ca701a880fa) sur l'état fusionné e798b47
 import { formationSpots, checkFormation, premierOffensif, blocFor } from '../assets/starter/src/engine/formation.js';
-import { evadeSpot, choosePass } from '../assets/starter/src/engine/rondo.js';
+import { evadeSpot, choosePass, enLance } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch, matchInternals } from '../assets/starter/src/engine/match-sim.js';
 import { couloirDe, ouvrirRegistre, placerCouloir, tenirDemiEspace, dansOmbre } from '../assets/starter/src/engine/couloirs.js';
 import { checkOffside, offsideLine, pointCorps, horsJeuTente } from '../assets/starter/src/engine/offside.js';
@@ -7489,6 +7489,27 @@ if (__bloc()) {
     return { ad, ok: ok2, taux: 100 * ok2 / Math.max(1, ad) }; };
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, priseRelative: null }));
   ok(`lot 300 — …et LE MONDE : 4 × 900 s, intentions devenues passe ${mA.taux.toFixed(0)} % (${mA.ok}/${mA.ad}) ≥ hier ${mN.taux.toFixed(0)} % (${mN.ok}/${mN.ad}) + 5`, mA.taux >= mN.taux + 5);
+}
+
+if (__bloc()) {
+  // LE COULOIR OUVERT (301 — la fouille du 25/09 : le lancé du 189 comptait ≤ 3 défenseurs goal-side n'importe où ; 45 des 108
+  // porteurs lancés par match l'étaient couloir FERMÉ — un défenseur à < 12 m devant eux — et y refusaient la passe arrière, sans
+  // holdMax : ils conduisaient dans le défenseur). cfg.lance.couloir 12 / cone 35 : lancé seulement le couloir vers le but ouvert
+  // (la doc du 189). (a) la loi, sur 4 × 900 s : aucun porteur lancé avec un défenseur de champ à < 12 m dans le cône (hier : > 0) ;
+  // (b) le monde contre hier (couloir absent) : passes ≥ hier, tirs ≥ 0,7 × hier (mesuré 4 × 90 min : passes 400 → 432, passes par
+  // possession 2,66 → 2,90, tirs 26 → 23,5 ; sur ces quatre premiers quarts d'heure 529 → 539, + 2 % — le seuil posé après la mesure).
+  const L0 = { ...matchCfg({}).lance }; delete L0.couloir; delete L0.cone;
+  const monde = (cfg) => { const o = { fermes: 0, lances: 0, passes: 0, tirs: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null; if (!p || p.keeper) continue;
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0) o.passes++; if (e.type === 'shot') o.tirs++; }
+        if (i % 6 || st.restart) continue; const c = st.players[st.possession.carrier]; if (!c || c.keeper || !enLance(st, c, cfg, null)) continue; o.lances++;
+        const g = st.pitch.attackGoal(c.team), sg = Math.sign(g.x || 1), gx = g.x - c.p[0], gz = -c.p[2], gl = Math.hypot(gx, gz);
+        if (st.players.some((q) => { if (q.team === c.team || q.keeper || q.down > 0 || q.p[0] * sg <= c.p[0] * sg) return false; const qx = q.p[0] - c.p[0], qz = q.p[2] - c.p[2], d = Math.hypot(qx, qz); return d < 12 && (qx * gx + qz * gz) / (d * gl) > Math.cos(35 * Math.PI / 180); })) o.fermes++; } }
+    return o; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, lance: L0 }));
+  ok(`lot 301 — LE COULOIR OUVERT : images lancées couloir fermé ${mA.fermes}/${mA.lances} (hier ${mN.fermes}/${mN.lances})`, mA.fermes === 0 && mN.fermes > 0);
+  ok(`lot 301 — …et LE MONDE : 4 × 900 s, passes ${mA.passes} ≥ ${mN.passes} ; tirs ${mA.tirs} ≥ 0,7 × ${mN.tirs}`, mA.passes >= mN.passes && mA.tirs >= 0.7 * mN.tirs);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -13766,6 +13766,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      rougissait deux fois — le plein format de 3 min (graine 3 : 22 passes c. ≥ 25 ; 6 graines × 3 min : 12-37 dans les deux mondes)
      épinglé `priseRelative: null` DATÉ 300, et le contrat de base (graine 7, 480 s sans tir) dont la fenêtre SUIT LE TEMPO (la
      doctrine de la clause) : 480 → 600 s, les tirs étant revenus au book. Le banc complet du groupe 296-297-300 reste à jouer.
+- 427: LE COULOIR OUVERT (301). Le lancé du 189 (« le joueur parti seul en contre passe en arrière ») : sa doc dit « aucun adversaire de
+     champ goal-side dans le couloir », son code comptait ≤ 3 défenseurs goal-side N'IMPORTE OÙ, but < 45 m — et le lancé bloque la
+     passe arrière (barre 6, malus 6, intention déchirée), la panique au chasseur et le holdMax. Profil (2 × 45 min) : 108 porteurs
+     lancés par match ; couloir libre > 12 m : 63 (14 tirs, 13 pertes — le vrai contre) ; couloir 6-12 m : 25, fermé < 6 m : 20 (10
+     pertes, 9 tirs : ils conduisent dans le défenseur). À la fouille (426) le lancé tenait 60 % des images de décision des tenues
+     perdues. LA LOI 301 (cfg.lance.couloir 12, cone 35 ; absents = hier au bit) : pas lancé si un défenseur de champ est à < 12 m
+     dans le cône ± 35° vers le but. Mesuré 4 × 90 min (graines 3, 7, 11, 19) : passes par possession 2,66 → 2,90, passes 400 → 432
+     (la cible 420-475), tirs 26 → 23,5, pertes 142 → 147 ; couloir 8 m : 2,80 / 447 / 23 ; sans lancé : 2,82 / 442 / 17 (le contre
+     disparaît). Bloc 301 (index 194) : aucune image lancée couloir fermé (hier 913 / 1 703 — 54 %), passes ≥ hier et tirs ≥ 0,7 ×
+     hier sur 4 × 900 s (529 → 539 : le quart d'heure est court pour + 8 %). Jumeau (`lance` sans couloir) = le défaut du 300
+     `f5d3b9d135d8f05e / e32e5016283143df` ; défaut du 301 : `a62a061b2eea593d / e32e5016283143df`. Banc rapide vert (jumeau, blocs 1, 98 —
+     le 189 lui-même —, 194, sync). Le banc complet du groupe 296-297-300-301 reste à jouer.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
