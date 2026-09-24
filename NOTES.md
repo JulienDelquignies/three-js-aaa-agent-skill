@@ -13895,6 +13895,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la pointe — les plafonds de vitesse par rôle ; les freinages structurels (possession, le corps planté sur la passe).
      Banc rapide : jumeau au bit, blocs 1, 157, 159, 198 verts, sync 9 ✓ ; épingle DATÉE 307 au bloc 158 (le 260, lois pures : « on freine
      plus fort qu'on n'accélère » mesuré sur un soutien — la clause mesure la capacité, K sans freinEffort ; vert à HEAD~).
+- 435: PLUS DE TÉLÉPORTATION AU CONTRÔLE (rendu — scenes/rondo-touche.js, Rondo.js). « Sur les contrôles il y a téléportation » :
+     trois causes mesurées (sonde-306, sauts du corps > 12 cm d'une frame à l'autre) — le décalage corps→contact passait de 0 à 0,6 m
+     en 4 frames (fenêtre 0,15 s), le repli du pied posé d'une frame (pop) quand la touche prévue tombait, et les frames LOD qui
+     lâchaient le décalage (le corps revenait d'un coup). Correctifs : le décalage APPLIQUÉ est limité en vitesse (vMax 1,2 m/s, suit la
+     cible sans jamais sauter), fenêtre de warp élargie à 0,3 s (avant 0,6, après 0,35), la touche prévue ne recule plus son départ
+     (min(touchPre, t) − 0,15), pas de pop d'une frame, et le LOD garde le décalage. Mesuré 90 s : sauts du corps 114 → 0 ; les sauts de
+     pied restants sont la foulée de sprint (20), 3 du geste de touche. Filmé : contrôle (jambe tendue) et conduite à 2,8 m/s, ballon au
+     pied sur chaque frame. Rendu seul : sim au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

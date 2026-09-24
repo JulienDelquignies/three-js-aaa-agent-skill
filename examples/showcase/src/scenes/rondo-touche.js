@@ -38,7 +38,7 @@ export function predictTouch(scene, pl) {
  *  0,25 s après ; le verrou des pieds re-plante l'appui, le warp de touche met le pied. Sabotage : 'corps-contact'. */
 export function contactRoot(scene, pl) {
   if (typeof window !== 'undefined' && window.__sabotage === 'corps-contact') { pl._contact = null; pl._rec = null; return; }
-  const st = scene.state, s = pl.sim, t = scene._t, b = st.ball.p, K = { confort: 0.35, hancheRec: 0.2, hancheTouche: 0.3, max: 0.6, avant: 0.25, apres: 0.25 };   // la réception s'approche plus (le ballon vient, la touche de conduite part devant le pied)
+  const st = scene.state, s = pl.sim, t = scene._t, b = st.ball.p, K = { confort: 0.35, hancheRec: 0.2, hancheTouche: 0.3, max: 0.6, avant: 0.6, apres: 0.35, vMax: 1.2 };   // la réception s'approche plus (le ballon vient, la touche de conduite part devant le pied)
   const ss = (w) => { w = Math.max(0, Math.min(1, w)); return w * w * (3 - 2 * w); };
   // LE PIED LIBRE VA AU CONTACT (la foulée mesurée : un pied d'APPUI ne fait jamais la touche — touchWarpApply). Un pied planté, l'autre
   // libre : la portée se lit depuis la HANCHE de la jambe libre (sa position rendue, portée à l'instant du contact avec le corps sim),
@@ -85,7 +85,12 @@ export function contactRoot(scene, pl) {
   let ox = 0, oz = 0;
   if (pl._rec) { ox = pl._rec.ux * pl._rec.need * pl._rec.w; oz = pl._rec.uz * pl._rec.need * pl._rec.w; }
   else if (C) { const e = ss(t < C.tc ? 1 - (C.tc - t) / K.avant : 1 - (t - C.tc) / K.apres) * (C.w0 ?? 1); ox = C.ux * C.need * e; oz = C.uz * C.need * e; }
-  pl.model.position.x += ox; pl.model.position.z += oz;
+  // (308) LE CORPS NE SE TÉLÉPORTE PAS : le décalage appliqué suit sa cible à vMax m/s au plus (mesuré avant : 15-18 cm par image,
+  // 0 → 60 cm en 4 images — « sur les contrôles il y a téléportation », retour du 25/09) ; il revient à la vérité sim au même pas
+  const A = pl._offA ?? (pl._offA = [0, 0]), dtA = Math.max(0, Math.min(0.1, t - (pl._offT ?? t))); pl._offT = t;
+  const ex = ox - A[0], ez = oz - A[1], el = Math.hypot(ex, ez), pas = K.vMax * dtA;
+  if (el > pas) { A[0] += ex / el * pas; A[1] += ez / el * pas; } else { A[0] = ox; A[1] = oz; }
+  pl.model.position.x += A[0]; pl.model.position.z += A[1];
 }
 
 /** LE WARP DE TOUCHE — quatrième consommateur du warp de contact (pied de frappe, gant,
@@ -98,9 +103,9 @@ export function contactRoot(scene, pl) {
 export function touchWarpApply(scene, pl) {
   if (typeof window !== 'undefined' && window.__sabotage === 'warp-touche') return;
   predictTouch(scene, pl);
-  const T = pl._touchPre != null && scene._t >= pl._touchPre - 0.1 && scene._t <= pl._touchPre + 0.1 ? pl._touchPre - 0.1 : pl._touchT;
+  const T = pl._touchPre != null && scene._t >= pl._touchPre - 0.15 && scene._t <= pl._touchPre + 0.15 ? pl._touchPre - 0.15 : pl._touchT;   // (308) le geste sur 0,3 s, centré au contact
   if (T == null || pl.sim.act) return;
-  const u = (scene._t - T) / 0.2;
+  const u = (scene._t - T) / 0.3;
   if (u <= 0 || u >= 1) return;
   const b = scene.state.ball.p;
   if (b[1] > 1.0) return;   // (305) au-dessus de la hanche, c'est la poitrine ou la tête (le corps sous le ballon : contactRoot)
@@ -142,9 +147,9 @@ export function touchWarpApply(scene, pl) {
  *  frappe, rondo-warp.js). Même enveloppe que touchWarpApply. Sabotage : 'fente-touche'. */
 export function touchLunge(scene, pl) {
   if (typeof window !== 'undefined' && window.__sabotage === 'fente-touche') return;
-  const T = pl._touchPre != null && scene._t >= pl._touchPre - 0.1 && scene._t <= pl._touchPre + 0.1 ? pl._touchPre - 0.1 : pl._touchT;
+  const T = pl._touchPre != null && scene._t >= pl._touchPre - 0.15 && scene._t <= pl._touchPre + 0.15 ? pl._touchPre - 0.15 : pl._touchT;   // (308) le geste sur 0,3 s, centré au contact
   if (T == null || pl.sim.act || !pl.hipsNudge) return;
-  const u = (scene._t - T) / 0.2; if (u <= 0 || u >= 1) return;
+  const u = (scene._t - T) / 0.3; if (u <= 0 || u >= 1) return;
   const b = scene.state.ball.p; if (b[1] > 1.0) return;
   const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
   let side = null, dBest = 1.8;
