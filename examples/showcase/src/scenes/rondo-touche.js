@@ -92,15 +92,16 @@ export function touchWarpApply(scene, pl) {
   const b = scene.state.ball.p;
   if (b[1] > 1.0) return;   // (305) au-dessus de la hanche, c'est la poitrine ou la tête (le corps sous le ballon : contactRoot)
   // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée)
-  let side = null, dBest = 1.8;
+  // …jamais un pied d'APPUI (la foulée générée le dit : verrouillé au sol, la touche le traînait jusqu'à 36 cm)
+  let side = null, dBest = 1.8; const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
   for (const f of ['left', 'right']) {
     const leg = pl.legs?.[f];
-    if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f]) continue;
+    if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f] || planted(f)) continue;
     leg.foot.getWorldPosition(scene._wf);
     const d = Math.hypot(scene._wf.x - b[0], scene._wf.y - b[1], scene._wf.z - b[2]);
     if (d < dBest) { dBest = d; side = f; }
   }
-  if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
+  if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot] && !planted(pl._touchFoot)) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
   if (!side) return;
   const leg = pl.legs[side], lens = pl.legLens[side];
   leg.foot.getWorldPosition(scene._wf);

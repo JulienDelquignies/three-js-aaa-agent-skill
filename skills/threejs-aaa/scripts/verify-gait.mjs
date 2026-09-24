@@ -18,15 +18,18 @@ const has = (r, n) => !r.ok && r.issues.some((i) => i.toLowerCase().includes(n.t
 
 console.log('— la loi de cadence —');
 {
-  ok('la loi passe par la table de Dorn 2012 (1,88 / 2,21 / 2,63 Hz)',
-    Math.abs(strideLaw(3.5) - 1.88) < 1e-9 && Math.abs(strideLaw(5.2) - 2.21) < 1e-9 && Math.abs(strideLaw(7.0) - 2.63) < 1e-9);
-  ok('f·S = v tient aux points de la table (1,88 × 1,86 ≈ 3,5)', Math.abs(1.88 * 1.86 - 3.5) < 0.01);
+  // (2026-09-24) la table RÉELLE : RBDS 2017 (coureurs amateurs, 2,5-4,5 m/s) puis Dorn 2012 (5,2-8,95 m/s), relue dans le texte du PDF
+  ok('la loi passe par les mesures (RBDS 1,286 / 1,358 / 1,433 Hz à 2,5 / 3,5 / 4,5 m/s ; Dorn 1,47 / 1,75 / 2,18 Hz à 5,2 / 7,0 / 8,95)',
+    [[2.5, 1.286], [3.5, 1.358], [4.5, 1.433], [5.2, 1.47], [7.0, 1.75], [8.95, 2.18]].every(([v, f]) => Math.abs(strideLaw(v) - f) < 1e-9));
+  ok('f·S = v tient aux points de Dorn (1,47 × 3,42 ≈ 5,2 ; 1,75 × 3,99 ≈ 7,0 ; 2,18 × 4,10 ≈ 8,95 — moyennes de coureurs : le produit des moyennes n’est pas la moyenne des produits, 3,3 % à 5,2 — à 4 %)',
+    [[5.2, 1.47, 3.42], [7.0, 1.75, 3.99], [8.95, 2.18, 4.10]].every(([v, f, S]) => Math.abs(f * S - v) / v < 0.04));
+  ok('les deux sources se recoupent (Dorn 3,52 m/s → 1,31 Hz : la loi y donne ' + strideLaw(3.52).toFixed(3) + ')', Math.abs(strideLaw(3.52) - 1.31) < 0.05);
   ok('monotone et bornée', strideLaw(2) < strideLaw(5) && strideLaw(12) === strideLaw(9) && strideLaw(0) === 0);
-  // LE sabotage : la constante `stride: 2.6` devinée. À 3,5 m/s elle donne 1,35 Hz contre 1,88 — les
-  // jambes tournaient 28 % trop lentement, et c'est une part directe du rendu « clip au ralenti ».
-  const guessed = (v) => v / 2.6;
-  ok(`sabotage « constante stride 2.6 » attrapé (${guessed(3.5).toFixed(2)} Hz au lieu de 1,88 à 3,5 m/s)`,
-    Math.abs(guessed(3.5) - 1.88) / 1.88 > 0.2);
+  // LE sabotage : la table MAL CITÉE d'hier (1,88 / 2,21 / 2,63 Hz, 1,43 à 1,50 × le papier) — 281 pas/min à 4 m/s, des pas de marche
+  // à vitesse de course, sans vol : « ils collent au sol ». (La constante `stride: 2.6` d'avant, elle, tombait juste à 3,5 m/s : 1,35 Hz.)
+  const misquoted = (v) => v <= 3.5 ? 1.88 * v / 3.5 : v <= 5.2 ? 1.88 + (v - 3.5) / 1.7 * 0.33 : 2.21 + (v - 5.2) / 1.8 * 0.42;
+  ok(`sabotage « la table mal citée » attrapé (${misquoted(3.5).toFixed(2)} Hz au lieu de ${strideLaw(3.5).toFixed(2)} à 3,5 m/s, ${(misquoted(5.2) / strideLaw(5.2)).toFixed(2)}× à 5,2)`,
+    [3.5, 5.2, 7.0].every((v) => misquoted(v) / strideLaw(v) > 1.3));
 }
 
 console.log('\n— l\'horloge unique —');

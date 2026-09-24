@@ -929,7 +929,7 @@ export class Rondo {
         continue;
       }
       const dtP = pl._lodAcc; pl._lodAcc = 0;
-      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top);       // magnitude picks idle / walk / run
+      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))];       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);

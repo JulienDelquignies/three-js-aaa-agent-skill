@@ -13,10 +13,13 @@
 // L'idle, lui, n'a PAS de foulée : il garde sa propre horloge (un idle asservi à φ se FIGE à l'arrêt —
 // le joueur ne respire plus ; attrapé par les réfuteurs avant d'être écrit).
 //
-// Et la cadence n'est plus devinée. `stride: 2.6` était une constante inventée qui faisait tourner les
-// jambes 12 à 28 % trop lentement ; la loi vient de Dorn, Schache & Pandy 2012 (J Exp Biol 215:1944,
-// table 2, relue dans le papier — les valeurs citées de mémoire par la première recherche étaient
-// fausses et ont été corrigées par les réfuteurs) : f·S = v exactement, par construction de la table.
+// Et la cadence n'est plus devinée. `stride: 2.6` était une constante inventée ; la loi vient de Dorn,
+// Schache & Pandy 2012 (J Exp Biol 215:1944, table 2) : f·S = v exactement, par construction de la table.
+// (2026-09-24 : les valeurs d'ici se disaient « relues dans le papier » et ne l'étaient pas — 1,88 /
+// 2,21 / 2,63 Hz, 1,43 à 1,50 × la table. Relue dans le TEXTE du PDF : 1,31 / 1,47 / 1,75 / 2,18 Hz,
+// foulées 2,62 / 3,42 / 3,99 / 4,10 m, « stride = consecutive ipsilateral foot-strikes ». Mesuré avant la
+// correction, en jeu : 281 pas/min à 4 m/s pour 170-180 chez l'humain — des pas de marche à vitesse de
+// course, sans vol : « ils collent au sol ».)
 //
 // La SECONDE moitié du fichier est la couche « corps accordé » : bassin, colonne, bras, tête dérivés de
 // (φ, v) en ADDITIF par-dessus le clip — parce que la mesure disait 9 os jamais animés, des bras à 36°
@@ -28,14 +31,21 @@
 // Dépendance : aucune. Tout se prouve dans node (verify-gait.mjs), la scène ne fait qu'appliquer.
 
 /**
- * LA LOI DE CADENCE — fréquence de CYCLE COMPLET (deux appuis) en Hz, en fonction de la vitesse sol.
- * Points d'ancrage : marche typique à 1,4 m/s (foulée 1,5 m), puis Dorn/Schache/Pandy 2012 table 2 :
- * 3,5 m/s → 1,88 Hz (S 1,86 m) ; 5,2 → 2,21 (2,35) ; 7,0 → 2,63 (2,67). Au-delà : extrapolation douce
- * bornée à 3,1 Hz (marquée comme telle — la table s'arrête où la table s'arrête).
+ * LA LOI DE CADENCE — fréquence de CYCLE COMPLET (deux appuis) en Hz, en fonction de la vitesse sol, MESURÉE :
+ *   marche typique 1,4 m/s → 0,93 Hz (foulée 1,5 m) ;
+ *   la course des coureurs AMATEURS (Fukuchi, Fukuchi & Duarte 2017, PeerJ 5:e3298 — RBDS, figshare 4543435 ; fréquence dominante de
+ *   l'altitude du talon, 14 coureurs sur tapis) : 2,5 m/s → 1,286 Hz (154 pas/min), 3,5 → 1,358, 4,5 → 1,433 ;
+ *   la course rapide et le sprint (Dorn, Schache & Pandy 2012, J Exp Biol 215:1944, table 2 — relue dans le texte du PDF) :
+ *   5,2 → 1,47 Hz, 7,0 → 1,75, 8,95 → 2,18. Les deux sources se recoupent (Dorn 1,31 Hz à 3,52 m/s).
+ * Au-delà de 8,95 m/s : la dernière valeur (la table s'arrête).
+ * (2026-09-24 : la loi d'avant se disait « Dorn table 2, relue dans le papier » et valait 1,88 / 2,21 / 2,63 Hz — 1,43 à 1,50 × la
+ * table : 281 pas/min à 4 m/s, des pas de marche à vitesse de course, sans vol — « ils collent au sol ».)
  */
-const LAW = [[0, 0], [1.4, 0.93], [3.5, 1.88], [5.2, 2.21], [7.0, 2.63], [9.0, 3.1]];
+export const RBDS_2017 = [[2.5, 1.286, 0.338], [3.5, 1.358, 0.299], [4.5, 1.433, 0.275]];   // [v m/s, f Hz, appui : contact (force > 50 N) × f]
+export const DORN_2012 = [[3.52, 1.31, 0.243], [5.2, 1.47, 0.188], [7.0, 1.75, 0.145], [8.95, 2.18, 0.118]];   // [v m/s, f Hz, contact s]
+const LAW = [[0, 0], [1.4, 0.93], ...RBDS_2017.map(([v, f]) => [v, f]), ...DORN_2012.slice(1).map(([v, f]) => [v, f])];
 export function strideLaw(v) {
-  const x = Math.max(0, Math.min(9.0, Math.abs(v)));
+  const x = Math.max(0, Math.min(8.95, Math.abs(v)));
   // SOUS LA MARCHE (< 1,4 m/s) : la foulée RACCOURCIT avec l'allure (S ∝ v^0,75 — 0,59 m à 0,4 m/s,
   // 0,28 m à 0,15) au lieu de garder les 1,5 m du segment linéaire (f ∝ v ⇒ S constante : un joueur
   // qui se replace à 0,4 m/s faisait des enjambées de 1,5 m au ralenti — mesuré avec la foulée
@@ -173,7 +183,7 @@ export function checkGait({ clock = null, layer = gaitLayer, law = strideLaw } =
   const issues = [];
 
   // 1. la loi passe par la table de Dorn (f·S = v) — pas par une constante inventée
-  for (const [v, f] of [[3.5, 1.88], [5.2, 2.21], [7.0, 2.63]]) {
+  for (const [v, f] of [...RBDS_2017, ...DORN_2012.slice(1)]) {
     if (Math.abs(law(v) - f) > 0.02) issues.push(`cadence hors la loi à ${v} m/s : ${law(v).toFixed(2)} Hz au lieu de ${f}`);
   }
   if (!(law(2) < law(4) && law(4) < law(6))) issues.push('la cadence ne croît pas avec la vitesse');
