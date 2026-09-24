@@ -7451,5 +7451,25 @@ if (__bloc()) {
     mA.longs >= 2 * mN.longs && mA.moy >= mN.moy + 2 && mA.passes >= 0.95 * mN.passes && mA.taux >= mN.taux - 2);
 }
 
+if (__bloc()) {
+  // LA REMISE ET LE CONTRÔLE AU LIVRE (297 — le lecteur de pertes, 24/09 : « beaucoup de contrôles ratés ? trop de remises en une
+  // touche pourries ? » ; sonde-302 : 44-60 une-touches par équipe et par match, courtes, lentes, en retrait — le book 15-25 ; 7-8 %
+  // de contrôles manqués dont ~50 réceptions contestées — le book 2-4 %). Deux calibrations : uneToucheVive.base 0,7 → 0,35 (la
+  // une-touche au calme du 216 avait dépassé sa cible), passe.tClean 0,4 → 0,25 (le budget du contrôle propre du Modèle 09 § 6.1).
+  // (a) les valeurs ; (b) 4 × 900 s contre les valeurs d'hier : une-touches ≤ 0,9 × hier (au monde de 90 min 49,5 → 35, − 29 % ; sur ces quatre premiers quarts d'heure − 13 % — le seuil posé après la mesure), contrôles manqués ≤ hier − 0,5 pt, passes
+  // ≥ 0,95 × hier.
+  const C = matchCfg({});
+  ok(`lot 297 — LA REMISE ET LE CONTRÔLE AU LIVRE : uneToucheVive.base ${C.uneToucheVive.base} (hier 0,7), passe.tClean ${C.passe.tClean} (le book 0,25 ; hier 0,4)`, C.uneToucheVive.base === 0.35 && C.passe.tClean === 0.25);
+  const monde = (cfg) => { const o = { un: 0, passes: 0, ctrl: 0, miss: 0 }; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0; const pris = {};
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; seen < st.events.length; seen++) { const e = st.events[seen], p = e.by != null ? st.players[e.by] : null; if (!p || p.keeper || st.restart) continue;
+          if (e.type === 'control' || e.type === 'receive') { pris[p.id] = st.t; if (e.type === 'control') { o.ctrl++; if (e.miss) o.miss++; } }
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0) { o.passes++; if (pris[p.id] != null && st.t - pris[p.id] < 0.35) o.un++; } } } }
+    return { ...o, pm: 100 * o.miss / Math.max(1, o.ctrl) }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, uneToucheVive: { ...C.uneToucheVive, base: 0.7 }, passe: { ...C.passe, tClean: 0.4 } }));
+  ok(`lot 297 — …et LE MONDE : 4 × 900 s, une-touches ${mA.un} ≤ 0,9 × ${mN.un} ; contrôles manqués ${mA.pm.toFixed(1)} % ≤ ${mN.pm.toFixed(1)} − 0,5 ; passes ${mA.passes} ≥ 0,95 × ${mN.passes}`,
+    mA.un <= 0.9 * mN.un && mA.pm <= mN.pm - 0.5 && mA.passes >= 0.95 * mN.passes);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

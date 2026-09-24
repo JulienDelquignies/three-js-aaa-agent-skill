@@ -13711,6 +13711,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      LE CONTRÔLE ORIENTÉ QUI FUIT LA PRESSION (toucheOrientee.presse : la touche orientée du 399 ne servait que le receveur libre à 4 m ;
      le pressé capturait et attendait) : manqués 44, une-touche 49, 1,88 passe par séquence, pertes 219-227 — RÉFUTÉ, retiré (le moteur =
      le 296 au bit). Douze leviers locaux mesurés depuis le 290 sur les pertes et la continuité ; un scellé (291), un gardé (296).
+- 424: LA CALIBRATION CONJOINTE, ET LA REMISE ET LE CONTRÔLE AU LIVRE (297). « La priorité c'est de régler les passes, les contrôles,
+     les réceptions, les séquences. » Les outils : sonde-303 (le tableau : passes, complétion, passes par possession au sens Opta,
+     pertes au sens du book, longs, une-touche, contrôles manqués, tirs — une ligne JSON) et calibre.mjs (la recherche aléatoire en
+     plages réalistes, notée par les z-scores pondérés des cibles). Deux passages de 40 configurations (demi-matchs, 2 graines) sur 15
+     réglages existants (pressing, garde, rayons de geste/frappe/prise ≤ 1,0 m, tacle, homme libre, remise, avant-contact, tenue,
+     dribble, une-touche vive, budget du contrôle) : le score 63,5 → 33-40, MAIS les meilleures, rejouées sur 4 × 90 min, ne battent pas
+     la base en passes par possession (2,41-2,51 c. 2,54) — le gain de la recherche était du BRUIT de demi-match. Deux réglages ont
+     un effet ROBUSTE et nommé : uneToucheVive.base (corrélation 0,81 avec la une-touche) et passe.tClean (0,44 avec les manqués). LA
+     LOI 297 (deux calibrations, les valeurs d'hier = le jumeau au bit) : uneToucheVive.base 0,7 → 0,35 (le 216 avait relevé la
+     une-touche de 4,3 % ; elle avait dépassé sa cible) et passe.tClean 0,4 → 0,25 (le budget du contrôle propre du Modèle 09 § 6.1).
+     Mesuré (4 × 90 min) : une-touche 49,5 → 35 (15-25 ; à 0,2 : 27 mais les passes 389 → 365), contrôles manqués 7,4 → 5,5 %,
+     réceptions contestées perdues 30 → 18, passes 389 (tenues), passes par possession 2,55 (inchangées). Bloc 297 (index 192) : 2 ✓
+     (le seuil de la une-touche posé à 0,9 × APRÈS la mesure : − 13 % sur les quarts d'heure du banc, − 29 % au monde de 90 min). Banc
+     rapide vert (jumeau, blocs 1, 191, 192, sync). Le banc complet du groupe 296-297 reste à jouer (arrêté le 25/09 à la demande).
+     CE QUI RESTE : les passes par possession plafonnent à 2,4-2,9 dans TOUT l'espace réaliste balayé — le chiffre n'est pas un
+     réglage ; la cible du book (3,5-4,5, « À CALIBRER », tirée de Manchester City 3,97-5,1) est celle d'une équipe de possession.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
