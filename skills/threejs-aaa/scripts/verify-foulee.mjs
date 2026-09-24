@@ -16,7 +16,7 @@ import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engin
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
 import { applyQuat } from '../assets/starter/src/engine/vecmath.js';
-import { volRef } from '../assets/starter/src/engine/foulee-rbds.js';
+import { volRef, chevilleRef } from '../assets/starter/src/engine/foulee-rbds.js';
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
@@ -199,7 +199,7 @@ console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le
   const hier = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, { legK: 1 }).meta, rig = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, {}).meta;
   ok(Math.abs(rig(4.5).T * legK - hier(4.5).T) < 1e-9 && Math.abs(hier(4.5).T - gaitParams(4.5, 0).T) < 1e-9, `à 4,5 m/s le cycle passe de ${hier(4.5).T.toFixed(3)} s (legK 1 = gaitParams d'hier) à ${rig(4.5).T.toFixed(3)} s (× 1/legK)`);
   ok(rig(4.5).drop <= hier(4.5).drop - 0.02 && rig(3).drop <= hier(3).drop - 0.015 && Math.abs(rig(8).T * legK - hier(8).T) < 1e-9, `le bassin ne s'affaisse plus pour atteindre des foulées de grand : −${cm(hier(3).drop)} → −${cm(rig(3).drop)} cm à 3 m/s, −${cm(hier(4.5).drop)} → −${cm(rig(4.5).drop)} à 4,5 ; et jusqu'au sprint (8 m/s : ${hier(8).T.toFixed(3)} → ${rig(8).T.toFixed(3)} s — sur la loi réelle la marge articulaire existe)`);
-  ok(Math.abs(gaitLegFactor(legK, 4.5) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 8) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 9.5) - (1 + (legK - 1) * 0.5)) < 1e-12 && gaitLegFactor(legK, 10) === 1, `gaitLegFactor : plein sur toute la table de Dorn (≤ 9 m/s), à mi-chemin à 9,5, ×1 dès 10 — le même facteur pour la pose et pour l'horloge du contrôleur`);
+  ok(Math.abs(gaitLegFactor(legK, 4.5) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 9.47) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 10) - (1 + (legK - 1) * 0.5)) < 1e-12 && gaitLegFactor(legK, 10.5) === 1, `gaitLegFactor : plein jusqu'au sprinter mesuré (≤ 9,5 m/s — Dorn 2012 : la foulée rapportée à la jambe y tombe juste, 1,29 L contre 1,27 mesurés), à mi-chemin à 10, ×1 dès 10,5 — le même facteur pour la pose et pour l'horloge du contrôleur`);
   const spec = gaitCycleSpec(P, { vF: 4.5, vR: 0 });
   ok(Math.abs(spec.duration - rig(4.5).T) < 2e-4, `la spec animkit du cycle dure ce que dure la pose (${spec.duration.toFixed(4)} s) — une phase, une durée`);
   // le frein
@@ -231,6 +231,18 @@ console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le
     let pire = null; for (const v of [3, 4.5, 6]) { const d = genouVol(v, {}), r = pic(v); if (d > r + 3) pire ??= `${v} m/s en ligne droite : ${d.toFixed(0)}° pour ${r.toFixed(0)} chez les coureurs`;
       for (const o of [{ brake: 1 }, { turn: 9 }, { turn: -9 }, { brake: 1, turn: 9 }]) { const k = genouVol(v, o); if (k > d + 2) pire ??= `${v} m/s ${JSON.stringify(o)} : ${k.toFixed(0)}° c. ${d.toFixed(0)} en ligne droite`; } }
     ok(!pire, `le genou en vol, au frein et en virage serré, ne se replie pas plus qu'en ligne droite (qui suit le pic des coureurs : ${genouVol(4.5, {}).toFixed(0)}° à 4,5 m/s pour ${pic(4.5).toFixed(0)} ; frein plein + virage 9 m/s² : ${genouVol(4.5, { brake: 1, turn: 9 }).toFixed(0)}°)${pire ? ' — ' + pire : ''}`); }
+
+  // (2026-09-24) LE SPRINT MESURÉ ET LE PIED ARTICULAIRE. Le vol du sprint suit le sprinter de Dorn 2012 (genou 146-148° à 7 et 9,5 m/s ;
+  // 148,4 ± 5,6° chez 79 sprinteurs à 9,9 m/s, Miyashiro 2019) — la référence d'hier, extrapolée, s'arrêtait à 128°. Et le pied en vol SUIT
+  // la jambe : la cheville (pied − jambe) reste dans la plage du sprinter (−35 … +20°) tout le vol ; tenu à plat au monde (le vol d'hier,
+  // wRun 0), elle plie à l'extrême quand le talon monte à la fesse.
+  { const cheville = (v, o = {}) => { let lo = 99, hi = -99; const pr = gaitPortrait(P, { vF: v, vR: 0, opts: { griffe: 1, ...o }, n: 120 }), s0 = pr.frames[0].meta.s;
+      for (const f of pr.frames) { if (f.L.phase !== 'swing') continue; const w = (f.feet.Left.u - s0) / (1 - s0); if (w < 0.1 || w > 0.9) continue;
+        const sh = Math.atan2(-(f.L.ankle[2] - f.L.knee[2]), -(f.L.ankle[1] - f.L.knee[1])) * 180 / Math.PI, a = f.feet.Left.pitch - sh; lo = Math.min(lo, a); hi = Math.max(hi, a); } return [lo, hi]; };
+    const genouSprint = (v) => { let m = 0; for (const f of gaitPortrait(P, { vF: v, vR: 0, opts: { griffe: 1 }, n: 240 }).frames) if (f.L.phase === 'swing') m = Math.max(m, f.L.kneeAngle); return m; };
+    const g95 = genouSprint(9.47), g7 = genouSprint(6.97), c95 = cheville(9.47), c45 = cheville(4.5), sab = cheville(9.47, { override: { wRun: 0 } });
+    ok(g95 >= 140 && g95 <= 155 && g7 >= 138, `le sprint suit le sprinter mesuré : genou en vol ${g7.toFixed(0)}° à 7 m/s, ${g95.toFixed(0)}° à 9,47 (Dorn : 148 / 147 ; 79 sprinteurs : 148,4 ± 5,6)`);
+    ok(c95[0] >= -40 && c95[1] <= 25 && c45[0] >= -40 && c45[1] <= 25 && (sab[0] < -60 || sab[1] > 60), `en vol le pied suit la jambe : cheville ${c45.map((x) => x.toFixed(0)).join(' … ')}° à 4,5 m/s, ${c95.map((x) => x.toFixed(0)).join(' … ')}° à 9,47 (sprinter −31 … +7) — sabotage « pied tenu à plat » attrapé (${sab.map((x) => x.toFixed(0)).join(' … ')}°)`); }
   const a = JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, {}));
   ok(a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 0, turn: 0 })) && a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: undefined, turn: undefined, legK: undefined })), 'sans frein ni virage (0 ou absents), la foulée à la cadence de la jambe, au bit');
 }
