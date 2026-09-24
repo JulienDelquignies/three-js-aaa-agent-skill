@@ -13854,6 +13854,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      scenes/rondo-touche.js. Sabotages : 'touche-prevue', 'corps-contact'. Mesuré 6 min de jeu : touches sans pied 41 → 2 % (1/50),
      contrôles au sol 94 → 1,9 % (1/54), pied au ballon 0,13 m p50 ; RESTE : les contrôles AÉRIENS (poitrine, amorti de la retombée —
      3/4, ~7 % des contrôles) : le corps va sous le ballon mais la poitrine n'y est pas — l'IK du buste/de la cuisse est le lot suivant.
+- 432: L'INTÉGRATION DE LA FOULÉE MESURÉE (feat/1v1-maquette → cette branche, via origin/integration/foulee-mesuree). Cinq cherry-picks -x,
+     dans l'ordre : ee4478c (le griffé), c8a3c46 (la foulée RBDS + Dorn 2012, les appuis tenus en jeu), b9221e0 (le genou en vol), d61f240
+     (le sprint mesuré), a24d63f (l'appui de course mesuré) — rien du duel ni de Rocketbox. La branche n'avait pas bougé depuis 7426692 :
+     avance rapide, relue (le conflit de c8a3c46 résolu comme prescrit : Rondo.js garde la délégation touchWarpApply, rootFinal sur la ligne
+     setMoveWorld existante — 1 201 lignes ; « jamais un pied d'appui » reporté dans rondo-touche.js). Bancs : verify-foulee 106 ✓ / 0 ✗,
+     gait 24, sync 9, rondo 40, animkit 156, gestes 60, frappes 13, conduite 9, boiterie 4, gesture-layer 10, squad 22, locomotion 6,
+     emotion 49, persona 25, fusion 21, approach 24, orientation 8 — verts ; verify-motion 10 ✗, dribble 2 ✗, petits-gestes 1 ✗ :
+     EXACTEMENT les mêmes clauses qu'à 7426692 (rejoué en worktree, comparé clause par clause). La sim n'a pas bougé : empreinte défaut
+     `e134e2cd5d15074d / 2a6d7112c666a69f` (= le 305 au bit) ; verify-match 84/0, matchday 88/0, blocs 1 et 305 verts. ÉCART MESURÉ : la
+     règle « jamais un pied d'appui » (juste : la touche ne traîne plus un pied planté) fait reculer l'indicateur du 305 — touches sans
+     pied à < 0,3 m 2 → 10 % (5/50), contrôles au sol 1,9 → 5,6 % (3/54), même passe de jeu de 6 min (sim identique) : le pied LIBRE,
+     qui prend la touche à la place du pied planté, est parfois hors de portée. À reprendre dans rondo-touche.js (le corps au contact
+     choisi pour le pied libre), sans lever la règle.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
