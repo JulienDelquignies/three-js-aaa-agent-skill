@@ -52,7 +52,11 @@ export function pasLoco(p, st, K, vAlong, vWant, dt) {
     return Math.min(dv, a * dt);
   }
   // le freinage est une INTENTION aussi : sous seuilFrein m/s d'écart on ROULE (−roule m/s²), au-delà on freine fort
-  const d = -dv < (K.seuilFrein ?? 1.5) ? (K.roule ?? 1.5) : (K.dMax ?? 6.0) * F.kD * Math.min(1, Math.max(0, vAlong) / (K.vBrk ?? 2.0));
+  // (307, K.freinEffort) …ET LE FREIN SUIT L'INTENTION COMME L'ÉLAN : ε (epsilonDe — le soutien 0,55, le presseur 0,85, la rupture 1)
+  // dose le freinage fort comme il dose l'accélération ; mesuré sans : 4,2 freinages < −3 m/s² par joueur-minute (le réel 0,86-1,17,
+  // Biology of Sport 2024), 30 % sur une cible de marquage ou de soutien qui saute. Absent : hier au bit.
+  const kE = K.freinEffort && (p.job === 'support' || p.job === 'mark' || p.job === 'cover' || p.job === 'walk') ? Math.pow(epsilonDe(p, st, K), K.freinEffort) : 1;   // …les rôles SANS ballon seulement : le receveur, le porteur, le presseur gardent le frein plein (mesuré sur tous : séquences 3,54 → 3,22, manqués +1,2 pt — on ne se pose plus)
+  const d = -dv < (K.seuilFrein ?? 1.5) ? (K.roule ?? 1.5) : (K.dMax ?? 6.0) * F.kD * Math.min(1, Math.max(0, vAlong) / (K.vBrk ?? 2.0)) * kE;
   return Math.max(dv, -d * dt);
 }
 

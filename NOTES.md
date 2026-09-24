@@ -13878,6 +13878,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (5/50) — les variantes s'échangent l'un contre l'autre (6 % / 7,4 % ou 10 % / 3,7 %, ~7 ratés sur 104) ; pieds > 3 cm sous le sol
      89 → ~175 images sur 4 min × 44 pieds (~0,05 %). RESTE : la touche de conduite du pied libre en course (la limite est la jambe contre
      une hanche haute : une fente plus basse, ou la touche prise sur la bonne foulée — le pied libre à portée — côté sim), les aériens.
+- 434: LA LOCOMOTION MESURÉE, ET LE FREIN QUI SUIT L'INTENTION (307). « Est-ce que la vitesse de locomotion est réelle ? » Non (sonde-308,
+     un match, par joueur de champ ramené à 90 min) : 12,1 km (réel ~10,2 ; élite suédoise 10,19 ± 0,19), marche 2,7 km, TROT 6,3 km
+     (réel ~4), haute vitesse 430 m (réel ~690-730), SPRINT > 7 m/s 27 m (réel ~170-250), pointe du match 7,5 m/s p50, max 7,84 (réel
+     8-9 ; le plus lent de PL 8,17 ; record 10,38), accélérations > 3 m/s² 1,4 / min (réel 0,81-0,97), FREINAGES < −3 m/s² 4,1 / min
+     (réel 0,86-1,17 — Modèle 02 § 2). Les freinages d'abord (sonde-307, par cause) : 30 % une cible de marquage ou de soutien qui saute,
+     16 % l'arrivée, 12 % le changement de possession, 8 % le passeur qui s'arrête sur sa passe (le corps planté sous l'acte, B6). La
+     cause moteur : pasLoco freine à dMax (6 m/s²) dès que la demande baisse de 1,5 m/s, quel que soit l'effort — l'élan, lui, suit ε.
+     LA LOI 307 (cfg.locomoteur.freinEffort 2, absent = hier au bit) : le frein fort × ε² pour les rôles SANS ballon (support, mark,
+     cover, walk). Sur tous les rôles : séquences 3,54 → 3,22, manqués 4,5 → 5,7 % (on ne se pose plus) — REFUSÉ. Hors ballon, 8 × 90 min
+     (graines 3, 7, 11, 19, 23, 29, 31, 37) : freinages 4,2 → 2,4 / min, accélérations 1,75 → 1,35, séquences 3,50 → 3,59, passes
+     457 → 475, tirs 20,3 → 18,3, contrôles manqués 5,0 → 5,6 % (des réceptions CONTESTÉES, +6-8 par match : le marqueur ne pile plus, il
+     arrive en mouvement sur le receveur) ; ε¹ : 3,1 / min, séquences 3,56, passes 441, manqués 5,4 %. Choix de l'utilisateur (25/09) :
+     ε² ; les réceptions contestées se traitent côté receveur. Bloc 307 (index 198). Jumeau = le défaut du 305 `e134e2cd5d15074d /
+     2a6d7112c666a69f` ; défaut du 307 : `21fe2f73ed4cc237 / 7e2e23c088e2ea7b`. RESTE (même mesure) : le trot permanent, les sprints,
+     la pointe — les plafonds de vitesse par rôle ; les freinages structurels (possession, le corps planté sur la passe).
+     Banc rapide : jumeau au bit, blocs 1, 157, 159, 198 verts, sync 9 ✓ ; épingle DATÉE 307 au bloc 158 (le 260, lois pures : « on freine
+     plus fort qu'on n'accélère » mesuré sur un soutien — la clause mesure la capacité, K sans freinEffort ; vert à HEAD~).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

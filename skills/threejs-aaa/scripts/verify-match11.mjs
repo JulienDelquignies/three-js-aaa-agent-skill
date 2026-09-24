@@ -6335,7 +6335,7 @@ if (__bloc()) {
   // l'accélération, la pointe refusée sans réservoir. (b) la fixture : un corps à l'arrêt lancé vers une cible lointaine
   // au métier de bloc (ε 0,55) — sous la clé il n'a pas la pointe à 1 s (le mono-exponentiel : t₉₀ = 2,3 τ), sans la clé
   // il l'a (7,5 m/s² constants : 5,4 m/s en 0,72 s) ; et en rupture (ε 1) il va plus vite qu'au bloc.
-  const K = matchCfg({ ...B_0746 }).locomoteur;
+  const K = { ...matchCfg({ ...B_0746 }).locomoteur, freinEffort: undefined };   // freinEffort DATÉ 307 : vert à HEAD~ ; la clause mesure la CAPACITÉ (le frein plein), le 307 dose le frein du soutien par son intention
   const id = profilDe({ skill: null }, K), sur = profilDe({ skill: { topF: 1.10, accelF: 1.12 } }, K);
   const F0 = fatigueDe(0, K), F1 = fatigueDe(1, K);
   const st0 = makeMatch({ full: true, seed: 5 }); st0.t = 1;
@@ -7571,6 +7571,24 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, prise: 0.8, allongeTouche: null }));
   ok(`lot 305 — LA TOUCHE À LA PORTÉE DU PIED : 4 × 900 s, touche au p90 à ${mA.p90.toFixed(2)} m du centre du corps ≤ 0,7 (hier ${mN.p90.toFixed(2)} > 0,9) ; contrôles manqués ${mA.pm.toFixed(1)} % ≤ ${mN.pm.toFixed(1)} + 0,5`,
     mA.p90 <= 0.7 && mN.p90 > 0.9 && mA.pm <= mN.pm + 0.5);
+}
+
+if (__bloc()) {
+  // LE FREIN SUIT L'INTENTION (307 — « est-ce que la vitesse de locomotion est réelle ? » : 4,2 décélérations < −3 m/s² par
+  // joueur-minute, le réel 0,86-1,17 (Biology of Sport 2024) ; 30 % sur une cible de marquage ou de soutien qui saute). cfg.locomoteur.
+  // freinEffort 2 : le frein fort des rôles SANS ballon (support, mark, cover, walk) × ε² ; le receveur, le porteur, le presseur gardent
+  // le frein plein (sur tous : séquences 3,54 → 3,22). Le monde, 4 × 900 s contre hier : décélérations ≤ 0,7 × hier ; passes ≥ 0,95 × hier
+  // (mesuré 8 × 90 min : 4,2 → 2,4 / min, passes 457 → 475, séquences 3,50 → 3,59 ; contrôles manqués 5,0 → 5,6 % — des réceptions
+  // contestées : le défenseur ne pile plus, il arrive en mouvement ; accepté le 25/09).
+  const L0 = { ...matchCfg({}).locomoteur }; delete L0.freinEffort;
+  const monde = (cfg) => { let dec = 0, min = 0, passes = 0; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0; const H = st.players.map(() => []), et = st.players.map(() => 0);
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); min += 20 / 3600;
+        for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && !st.players[e.by]?.keeper) passes++; }
+        st.players.forEach((p, k) => { if (p.keeper) return; const h = H[k]; h.push(Math.hypot(p.v[0], p.v[1])); if (h.length > 31) h.shift(); if (h.length < 31) return; const a = (h[30] - h[0]) / 0.5;
+          if (a < -3 && et[k] !== -1) { et[k] = -1; dec++; } else if (a > 3) et[k] = 1; else if (Math.abs(a) < 1) et[k] = 0; }); } }
+    return { taux: dec / min, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, locomoteur: L0 }));
+  ok(`lot 307 — LE FREIN SUIT L'INTENTION : 4 × 900 s, décélérations < −3 m/s² ${mA.taux.toFixed(2)} / joueur-minute ≤ 0,7 × ${mN.taux.toFixed(2)} ; passes ${mA.passes} ≥ 0,95 × ${mN.passes}`, mA.taux <= 0.7 * mN.taux && mA.passes >= 0.95 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
