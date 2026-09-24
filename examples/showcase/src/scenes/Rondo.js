@@ -724,16 +724,16 @@ export class Rondo {
     if (u <= 0 || u >= 1) return;
     const b = this.state.ball.p;
     if (b[1] > 0.6) return;
-    // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée)
-    let side = null, dBest = 1.8;
+    // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée) — jamais un pied d'APPUI (la foulée générée le dit : verrouillé au sol, la touche le traînait jusqu'à 36 cm, 2026-09-24)
+    let side = null, dBest = 1.8; const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
     for (const f of ['left', 'right']) {
       const leg = pl.legs?.[f];
-      if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f]) continue;
+      if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f] || planted(f)) continue;
       leg.foot.getWorldPosition(this._wf);
       const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
       if (d < dBest) { dBest = d; side = f; }
     }
-    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;
+    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot] && !planted(pl._touchFoot)) side = pl._touchFoot;
     if (!side) return;
     const leg = pl.legs[side], lens = pl.legLens[side];
     leg.foot.getWorldPosition(this._wf);
@@ -969,7 +969,7 @@ export class Rondo {
         continue;
       }
       const dtP = pl._lodAcc; pl._lodAcc = 0;
-      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top);       // magnitude picks idle / walk / run
+      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))];       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);

@@ -90,6 +90,9 @@ export class FootLockIK {
    *              (XZ tenu pendant que le corps tourne = jambes qui se vrillent — mesuré : 298
    *              croisements de pieds en virage quand le lacet n'était pas écouté, 5 avant)
    */
+  /** Le verrou PILOTÉ (foulée générée) : le point au sol (monde) du pied i pendant son appui, ou null en vol. */
+  drive(i, x, z) { const st = this.state[i]; if (x == null) st.driven = false; else { st.driven = true; st.dx = x; st.dz = z; } }
+
   solve(dt = 1 / 60, mask = null, bodyYaw = null, bodySpeed = 0) {
     for (let i = 0; i < this.legs.length; i++) {
       const l = this.legs[i], st = this.state[i], { A, B } = this.lens[i];
@@ -105,6 +108,31 @@ export class FootLockIK {
       const vFoot = st.prev ? hyp(_foot.x - st.prev.x, _foot.z - st.prev.z) / Math.max(1e-4, dt) : 0;
       st.prev = st.prev ? st.prev.set(_foot.x, _foot.y, _foot.z) : _foot.clone();
       const allowed = !mask || mask[i] !== false;
+      // (2026-09-24) LE VERROU PILOTÉ : la foulée générée connaît la phase EXACTE de chaque pied et son point au sol — le contrôleur
+      // (character-controller._anchorStance) le donne ici par drive(i, x, z) ; plus de détection heuristique (hauteur, vitesse), qui
+      // capturait sa propre position puis relâchait d'un coup. Le verrou reste le DERNIER écrivain de la jambe : l'inclinaison dans
+      // l'accélération et le roulis en virage (_applyLean, après la foulée) faisaient pivoter la jambe autour du bassin — 25-34 cm au pied.
+      if (st.driven !== undefined) {
+        const on = allowed && st.driven;
+        // À LA POSE, le pied RENDU fait foi : la couche de geste (après la foulée) a pu le déplacer — tirer vers le point de la foulée
+        // le faisait glisser de 9 à 30 cm en deux images (mesuré en jeu, 7 appuis sur 332 en 60 s, tous sous geste). L'écart de la pose
+        // est gardé tout l’appui (≤ 50 cm : un geste armé déplace la jambe d’appui jusqu’à 44 cm) ; sans geste il est nul (2026-09-24).
+        if (on && !st.drvOn) { const ox = _foot.x - st.dx, oz = _foot.z - st.dz, d = hyp(ox, oz), k = d > 0.5 ? 0.5 / d : 1; st.off = [ox * k, oz * k]; }
+        st.drvOn = on;
+        if (on) st.lock.set(st.dx + st.off[0], _foot.y, st.dz + st.off[1]);
+        st.grounded = on;
+        st.w = Math.max(0, Math.min(1, st.w + (on ? dt : -dt) / 0.03));
+        if (st.w > 1e-3) {
+          _tgt.set(_foot.x + (st.lock.x - _foot.x) * st.w, Math.max(_foot.y, st.floor), _foot.z + (st.lock.z - _foot.z) * st.w);
+          l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee);
+          const d = _hip.distanceTo(_tgt), R = (A + B) * 0.995;
+          if (d > R) _tgt.set(_hip.x + (_tgt.x - _hip.x) * (R / d), _hip.y + (_tgt.y - _hip.y) * (R / d), _hip.z + (_tgt.z - _hip.z) * (R / d));
+          const pole = [_knee.x - _hip.x, _knee.y - _hip.y, _knee.z - _hip.z];
+          const sol = twoBoneIK(_hip.toArray(), _tgt.toArray(), A, B, pole);
+          aimChildAt(l.up, l.knee, _mid.fromArray(sol.mid)); aimChildAt(l.knee, l.foot, _end.fromArray(sol.end));
+        }
+        continue;
+      }
       const low = _foot.y <= st.floor + this.contactBand;
       const stanceV = Math.max(0.4, 0.6 * bodySpeed);
       if (allowed && low && vFoot < stanceV && !st.grounded) {

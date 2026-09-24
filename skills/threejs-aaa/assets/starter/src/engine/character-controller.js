@@ -3,7 +3,7 @@ import { FootLockIK } from './foot-lock.js';
 import { WORLD } from './world-basis.js';
 import { AnimationStateMachine } from './anim-state-machine.js';
 import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
-import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, gaitBrakeCadence, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
+import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, gaitBrakeCadence, gaitTurnCadence, gaitPivotCadence, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
 import { idlePose, idlePolicy, idleStyleFromSeed, NEUTRAL_IDLE_STYLE } from './motion-idle.js';
 import { profileFromBones } from './motion-rig.js';
 import { UP_BONES } from './gesture-layer.js';
@@ -259,7 +259,11 @@ export class CharacterController {
       // motion-gait.gaitCadenceFactor : une phase, une durée, le chemin de pied et l'horloge sont UN)
       const gen = this._gaitGen && this.locomotion === 'generee';
       const vb = gen ? this._bodyVelocity(vGait) : null;
-      if (this.gait) this.gait.advance(vGait, dt * (gen ? gaitCadenceFactor(vb[0], vb[1]) * gaitLegFactor(this._gaitGen.legK ?? 1, vGait) * gaitBrakeCadence(this._brake) : 1));   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe et du frein (motion-gait : une phase, une durée)
+      const kClock = gen ? gaitCadenceFactor(vb[0], vb[1]) * gaitLegFactor(this._gaitGen.legK ?? 1, vGait) * gaitBrakeCadence(this._brake) * gaitTurnCadence(this._turn) : 1;
+      if (this.gait) this.gait.advance(vGait, dt * kClock);
+      // (2026-09-24) LE PIVOT : le corps qui tourne presque sur place change d'appui au moins à gaitPivotCadence (la foulée prend la même durée, opts.pivotHz)
+      const fPiv = gen ? gaitPivotCadence(this._yawRate) : 0, fNow = this.gait ? this.gait.law(vGait) * kClock : 0;
+      if (this.gait && fPiv > fNow) this.gait.phi = (this.gait.phi + (fPiv - fNow) * dt) % 1;   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe, du frein et du virage serré (motion-gait : une phase, une durée)
       // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
       // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
       // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
@@ -344,6 +348,8 @@ export class CharacterController {
     const vx = (now.x - this._accPrev.p[0]) / dtc, vz = (now.z - this._accPrev.p[1]) / dtc;
     const ax = (vx - this._accPrev.v[0]) / dtc, az = (vz - this._accPrev.v[1]) / dtc;
     this._accPrev = { p: [now.x, now.z], v: [vx, vz] };
+    { const yNow = this.rootFinal ? this.rootFinal[2] : (this._yawIn ?? this.yaw), dy = this._yawPrev == null ? 0 : Math.atan2(Math.sin(yNow - this._yawPrev), Math.cos(yNow - this._yawPrev));   // le lacet de la racine FINALE (rootFinal : la sim)
+      this._yawPrev = yNow; this._yawRate = (this._yawRate ?? 0) + (dy / dtc - (this._yawRate ?? 0)) * (1 - Math.exp(-dtc / 0.1)); }
     const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);   // le repère de _bodyVelocity (le rig regarde selon `fa`, pas selon +Z)
     const vF = vx * fx + vz * fz, vR = -vx * fz + vz * fx, fwd = vF > 1.5 && Math.abs(vR) < vF && hyp(ax, az) < 40;
     const aF = ax * fx + az * fz, aR = -ax * fz + az * fx, k = 1 - Math.exp(-dtc / 0.15);
@@ -375,8 +381,11 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined });   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert
+      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, pivotHz: gaitPivotCadence(this._yawRate) || undefined, boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
+      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, this._lastGaitOpts);
+      gait = this._anchorStance(gait, (plant, plantYaw) => gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { ...this._lastGaitOpts, plant, plantYaw }));
     }
+    this._gaitFeet = gait ? gait.feet : null;                  // la phase et la cible de chaque pied (instruments, ancrage de l'appui)
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;
     for (const name in pose.q) {
@@ -390,6 +399,38 @@ export class CharacterController {
     }
     const hips = this._gaitBones.get('Hips');
     if (hips) hips.position.copy(G.hipsRest).addScaledVector(G.axisY, pose.hips[1]).addScaledVector(G.axisX, pose.hips[0]);
+  }
+
+  /** L'APPUI ANCRÉ AU MONDE (2026-09-24). À la pose, le point de contact de chaque pied (sa cible moins son mouvement propre) est retenu
+   *  au monde, avec l'orientation du corps ; pendant l'appui et le déroulé, la cible du générateur est remplacée par ce point ramené dans
+   *  le repère de l'instant (+ le mouvement propre du pied : le pivot sur l'orteil), et le pied garde son lacet au sol. Un corps qui s'est
+   *  écarté de plus de 0,3 m du point (téléportation, sortie de geste) RE-PLANTE. Retour : la pose recalculée (seconde passe). */
+  _anchorStance(gait, repose) {
+    if (!gait?.feet) return gait;
+    // la racine FINALE de l'image : une scène qui recale le corps sur sa sim APRÈS update() (Rondo : position et lacet de la sim) la donne
+    // d'avance dans `rootFinal` [x, z, lacet] — ancrer dans la racine du contrôleur posait le pied rendu à côté de l'ancre, et le verrou
+    // l'y tirait d'un coup à chaque pose (7-16 cm en une image, mesuré en jeu ; 36 cm en pivot) (2026-09-24)
+    const m = this.model, R = this.rootFinal, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), s = Math.sin(yaw);
+    const toW = (p) => [ox + c * p[0] + s * p[2], oz - s * p[0] + c * p[2]];
+    const toC = (w) => { const dx = w[0] - ox, dz = w[1] - oz; return [c * dx - s * dz, s * dx + c * dz]; };
+    this._plants ??= { Left: null, Right: null };
+    const plant = {}, plantYaw = {}; let any = false;
+    for (const side of ['Left', 'Right']) {
+      const f = gait.feet[side];
+      const li = side === 'Left' ? 0 : 1;
+      if (!f || f.phase === 'swing') { this._plants[side] = null; this.footLock?.drive(li, null); continue; }
+      const own = f.own ?? [0, 0, 0], base = [f.p[0] - own[0], f.p[2] - own[2]];
+      let a = this._plants[side];
+      if (!a) a = this._plants[side] = { w: toW([base[0], 0, base[1]]), yaw };
+      const bc = toC(a.w);
+      if (Math.hypot(bc[0] - base[0], bc[1] - base[1]) > 0.3) { a.w = toW([base[0], 0, base[1]]); a.yaw = yaw; }   // re-plante
+      const pc = toC(a.w);
+      plant[side] = [pc[0] + own[0], 0, pc[1] + own[2]];
+      const tw = toW(plant[side]); this.footLock?.drive(li, tw[0], tw[1]);   // …et le verrou, dernier écrivain de la jambe, le tient là
+      plantYaw[side] = ((a.yaw - yaw) * 180) / Math.PI;
+      any = true;
+    }
+    return any ? repose(plant, plantYaw) : gait;
   }
 
   /** Forcer une espèce d'attente (la planche-contact, un test) — null : la politique décide. */

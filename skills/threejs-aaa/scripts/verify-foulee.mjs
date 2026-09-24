@@ -11,7 +11,7 @@
 // Lancer : node skills/threejs-aaa/scripts/verify-foulee.mjs
 
 import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
-import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, gaitBrakeCadence, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
+import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, LEG_REF, gaitBrakeCadence, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
 import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
@@ -131,7 +131,7 @@ const sab = (label, args, want) => {
   ok(hit, `sabotage « ${label} » attrapé${hit ? ` (${r.issues.find((i) => want.test(i)).slice(0, 90)})` : r.ok ? ' — PASSÉ SOUS LE CONTRAT' : ` — autre motif : ${r.issues.join(' ; ').slice(0, 120)}`}`);
 };
 sab('appui qui glisse (slip 0,35)', { vF: 4.5, vR: 0, opts: { override: { slip: 0.35 } } }, /GLISSE/);
-sab('vol qui rase (swingH 0)', { vF: 4.5, vR: 0, opts: { override: { swingH: 0 } } }, /rase la pelouse/);
+sab('vol qui rase (swingH 0, chemin cartésien)', { vF: 4.5, vR: 0, opts: { override: { swingH: 0, wRun: 0 } } }, /rase la pelouse/);   // (le vol ARTICULAIRE de la course n'a pas de swingH : le sabotage force le chemin d'hier)
 sab('genou à l\'envers (pole arrière)', { vF: 4.5, vR: 0, opts: { override: { pole: [0, 0, 1] } } }, /genou plie à l'envers/);
 sab('bras en phase (armPhase π)', { vF: 4.5, vR: 0, opts: { override: { armPhase: Math.PI } } }, /main gauche|main droite/);
 sab('chassés qui croisent (hw 0,04)', { vF: 0, vR: 2, opts: { override: { hw: 0.04 } } }, /croisent/);
@@ -193,12 +193,12 @@ console.log('\n— A12e : la marche des rôles marchants — les mains sur les h
 console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le frein (opts.brake) et le virage (opts.turn) —');
 {
   const legK = gaitLegK(P), L = P.lengths.thigh + P.lengths.shank;
-  ok(legK > 1.1 && legK < 1.3 && Math.abs(legK - 0.9 / L) < 1e-9, `shanon : jambe ${cm(L)} cm → cadence ×${legK.toFixed(3)} (0,90 m / L, la loi de Dorn est celle d'une jambe de 0,90 m)`);
-  ok(Math.abs(gaitLegK({ lengths: { thigh: 0.45, shank: 0.45 } }) - 1) < 1e-9 && gaitLegK({ lengths: { thigh: 0.2, shank: 0.2 } }) === 1.35, 'une jambe de 0,90 m tourne à la cadence de la loi (×1) ; borné à ×1,35');
+  ok(legK > 1.1 && legK < 1.3 && Math.abs(legK - LEG_REF / L) < 1e-9 && LEG_REF === 0.864, `shanon : jambe ${cm(L)} cm → cadence ×${legK.toFixed(3)} (0,864 m / L : les sujets de Dorn, 176 cm × Winter 0,491 — hanche → cheville, la même mesure que le rig)`);
+  ok(Math.abs(gaitLegK({ lengths: { thigh: 0.432, shank: 0.432 } }) - 1) < 1e-9 && gaitLegK({ lengths: { thigh: 0.2, shank: 0.2 } }) === 1.35, 'une jambe de 0,864 m tourne à la cadence de la loi (×1) ; borné à ×1,35');
   const hier = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, { legK: 1 }).meta, rig = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, {}).meta;
   ok(Math.abs(rig(4.5).T * legK - hier(4.5).T) < 1e-9 && Math.abs(hier(4.5).T - gaitParams(4.5, 0).T) < 1e-9, `à 4,5 m/s le cycle passe de ${hier(4.5).T.toFixed(3)} s (legK 1 = gaitParams d'hier) à ${rig(4.5).T.toFixed(3)} s (× 1/legK)`);
-  ok(rig(4.5).drop <= hier(4.5).drop - 0.02 && rig(3).drop <= hier(3).drop - 0.015 && Math.abs(rig(6).T - hier(6).T) < 1e-12 && Math.abs(rig(8).drop - hier(8).drop) < 1e-12, `le bassin ne s'affaisse plus pour atteindre des foulées de grand : −${cm(hier(3).drop)} → −${cm(rig(3).drop)} cm à 3 m/s, −${cm(hier(4.5).drop)} → −${cm(rig(4.5).drop)} à 4,5 ; au-delà de 5,5 m/s la cadence d'hier (${hier(6).T.toFixed(3)} s à 6, −${cm(rig(8).drop)} cm à 8 : la loi y touche déjà le plafond des articulations)`);
-  ok(Math.abs(gaitLegFactor(legK, 4.5) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 5) - (1 + (legK - 1) * 0.5)) < 1e-12 && gaitLegFactor(legK, 5.5) === 1 && gaitLegFactor(legK, 8) === 1, `gaitLegFactor : plein jusqu'à 4,5 m/s, à mi-chemin à 5, ×1 dès 5,5 — le même facteur pour la pose et pour l'horloge du contrôleur`);
+  ok(rig(4.5).drop <= hier(4.5).drop - 0.02 && rig(3).drop <= hier(3).drop - 0.015 && Math.abs(rig(8).T * legK - hier(8).T) < 1e-9, `le bassin ne s'affaisse plus pour atteindre des foulées de grand : −${cm(hier(3).drop)} → −${cm(rig(3).drop)} cm à 3 m/s, −${cm(hier(4.5).drop)} → −${cm(rig(4.5).drop)} à 4,5 ; et jusqu'au sprint (8 m/s : ${hier(8).T.toFixed(3)} → ${rig(8).T.toFixed(3)} s — sur la loi réelle la marge articulaire existe)`);
+  ok(Math.abs(gaitLegFactor(legK, 4.5) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 8) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 9.5) - (1 + (legK - 1) * 0.5)) < 1e-12 && gaitLegFactor(legK, 10) === 1, `gaitLegFactor : plein sur toute la table de Dorn (≤ 9 m/s), à mi-chemin à 9,5, ×1 dès 10 — le même facteur pour la pose et pour l'horloge du contrôleur`);
   const spec = gaitCycleSpec(P, { vF: 4.5, vR: 0 });
   ok(Math.abs(spec.duration - rig(4.5).T) < 2e-4, `la spec animkit du cycle dure ce que dure la pose (${spec.duration.toFixed(4)} s) — une phase, une durée`);
   // le frein
@@ -246,7 +246,8 @@ console.log('\n— A7 ter (§ 6) : le pas croisé du virage serré, le port des 
     const a = [fk.LeftArm.p[0] - fk.LeftForeArm.p[0], fk.LeftArm.p[1] - fk.LeftForeArm.p[1], fk.LeftArm.p[2] - fk.LeftForeArm.p[2]], b = [fk.LeftHand.p[0] - fk.LeftForeArm.p[0], fk.LeftHand.p[1] - fk.LeftForeArm.p[1], fk.LeftHand.p[2] - fk.LeftForeArm.p[2]];
     const el = 180 - Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (Math.hypot(...a) * Math.hypot(...b) || 1)))) / D2R; elMin = Math.min(elMin, el); elMax = Math.max(elMax, el); } return { hMax, elMin, elMax }; };
   const r45 = bras(4.5), r8 = bras(8), r28 = bras(2.8);
-  ok(r45.hMax >= -0.03 && r45.elMin >= 88 && r45.elMax <= 106 && GAIT_REGIMES.run.elbow === 90, `en course (4,5 m/s) : la main avant monte à hauteur de poitrine (${cm(r45.hMax)} cm du sternum — hier −4), le coude fléchi entre ${r45.elMin.toFixed(0)} et ${r45.elMax.toFixed(0)}° (régime run : coude 90°, hier 85 ; armOff 10, hier 8)`);
+  // (2026-09-24) le régime run est ancré à 4,5 m/s (les coureurs mesurés) : 90° + elbowMod 14 + le style y sont purs (hier à 5,5 m/s ; 106 à 4,5 interpolé)
+  ok(r45.hMax >= -0.03 && r45.elMin >= 88 && r45.elMax <= 110 && GAIT_REGIMES.run.elbow === 90, `en course (4,5 m/s) : la main avant monte à hauteur de poitrine (${cm(r45.hMax)} cm du sternum — hier −4), le coude fléchi entre ${r45.elMin.toFixed(0)} et ${r45.elMax.toFixed(0)}° (régime run : coude 90°, hier 85 ; armOff 10, hier 8)`);
   ok(r8.hMax >= 0 && r8.elMin >= 95 && r8.elMax <= 120 && r28.elMin >= 78, `au sprint (8 m/s) : la main avant au-dessus du sternum (+${cm(r8.hMax)} cm), le coude ${r8.elMin.toFixed(0)}-${r8.elMax.toFixed(0)}° (le régime sprint est celui d'hier : 92°) ; au trot ${r28.elMin.toFixed(0)}°`);
   const frein = gaitPose(P, 0, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 1 }).meta.params, sans = gaitPose(P, 0, 4.5, 0, NEUTRAL_GAIT_STYLE, {}).meta.params;
   ok(Math.abs(frein.elbow - sans.elbow - 6) < 1e-9, `au frein le coude se ferme de +6° (hier +10 : avec le coude de course monté, la main avant repliée perdait l'opposition bras-jambe au sprint freiné — marges 2,2 → 1,8 cm sur 5 signatures, 2,5-3,1 aujourd'hui)`);
@@ -258,7 +259,8 @@ console.log('\n— § 8 : la boiterie (opts.boite — le fauché d\'une faute gr
 {
   const d = gaitPortrait(P, { vF: 3, vR: 0, n: 60 }), b = gaitPortrait(P, { vF: 3, vR: 0, opts: { boite: { side: 'left', k: 1 } }, n: 60 });
   const stance = (pr, side) => pr.frames.filter((f) => f[side].phase === 'stance').length;
-  ok(stance(b, 'L') < stance(d, 'L') - 4 && Math.abs(stance(b, 'R') - stance(d, 'R')) <= 2, `boite gauche à 3 m/s : l'appui gauche raccourcit (${stance(b, 'L')} images sur 60 c. ${stance(d, 'L')}), le droit tient (${stance(b, 'R')} c. ${stance(d, 'R')})`);
+  // (2026-09-24) relatif : l'appui réel est plus court (hier −4 images sur ~17)
+  ok(stance(b, 'L') <= 0.8 * stance(d, 'L') && Math.abs(stance(b, 'R') - stance(d, 'R')) <= 2, `boite gauche à 3 m/s : l'appui gauche raccourcit (${stance(b, 'L')} images sur 60 c. ${stance(d, 'L')}), le droit tient (${stance(b, 'R')} c. ${stance(d, 'R')})`);
   const clear = (pr, side) => Math.max(...pr.frames.filter((f) => f[side].phase === 'swing').map((f) => f[side].ankle[1]));
   ok(clear(b, 'L') < clear(d, 'L') - 0.02, `…le vol gauche rase (cheville à ${cm(clear(b, 'L'))} c. ${cm(clear(d, 'L'))} cm au plus haut)`);
   const list = (pr) => { let mn = 9; for (const f of pr.frames) mn = Math.min(mn, f.L.hip[1] - f.R.hip[1]); return mn; };
@@ -281,39 +283,50 @@ console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
     const st = F.filter((f) => f.L.phase === 'stance').map((f) => f.L.ankleW[2]);
     return { pose: wv((iTD - 1 + n) % n), decolle: wv(iLO), appui: Math.max(...st) - Math.min(...st) };
   };
+  // (2026-09-24) LE GRIFFÉ VIT EN MARCHE : la COURSE avant a son vol ARTICULAIRE (les courbes des coureurs mesurés, foulee-rbds) et le
+  // pivot exact sur l'orteil — griffé ou non, la même foulée. Ses lois se jugent donc en marche ; celles de la course, sur les coureurs
+  // de Fukuchi 2017 (RBDS, marqueurs et forces : foulee-sondes/pied-vitesse.py) — le talon se pose à ~0,43·v (p90 ~0,6-0,8·v), MT1
+  // quitte le sol en 17-27 ms pour 1,5 cm (p90 20-33) ; le sabotage de chaque clause de course est le chemin cartésien d'hier.
   let pire = { pose: 0, decolle: 0, appui: 0 }, hier = Infinity;
-  for (const v of [1.4, 3, 4.5, 6]) {
+  for (const v of [1.4, 1.8]) {
     const g = solVitesse(v, { griffe: 1 }), h = solVitesse(v, {});
     pire = { pose: Math.max(pire.pose, g.pose), decolle: Math.max(pire.decolle, g.decolle), appui: Math.max(pire.appui, g.appui) };
     hier = Math.min(hier, h.pose, h.decolle);
   }
-  ok(pire.pose <= 0.5 && pire.decolle <= 0.5, `griffé : la cheville se pose à ≤ ${pire.pose.toFixed(2)} m/s et décolle à ≤ ${pire.decolle.toFixed(2)} m/s au monde (1,4 → 6 m/s ; plafond 0,5)`);
+  ok(pire.pose <= 0.5 && pire.decolle <= 0.5, `griffé (marche) : la cheville se pose à ≤ ${pire.pose.toFixed(2)} m/s et décolle à ≤ ${pire.decolle.toFixed(2)} m/s au monde (1,4 → 1,8 m/s ; plafond 0,5)`);
   ok(pire.appui < 0.005, `griffé : l'appui reste fixe au monde (${(100 * pire.appui).toFixed(2)} cm au pire)`);
-  ok(hier >= 1.0, `sabotage — la foulée d'hier (sans griffé) pose et décolle le pied à ≥ ${hier.toFixed(2)} m/s : la clause mord`);
+  ok(hier >= 1.0, `sabotage — la marche d'hier (sans griffé) pose et décolle le pied à ≥ ${hier.toFixed(2)} m/s : la clause mord`);
+  let run = { pose: 0, decolle: 0 }, runHier = Infinity;
+  for (const v of [3, 4.5, 6]) { const s = solVitesse(v, {}); run = { pose: Math.max(run.pose, s.pose / v), decolle: Math.max(run.decolle, s.decolle / v) }; runHier = Math.min(runHier, solVitesse(v, { override: { wRun: 0 } }).pose / v); }
+  ok(run.pose <= 0.8 && run.decolle <= 0.8, `course (3 → 6 m/s) : la cheville se pose à ≤ ${run.pose.toFixed(2)}·v et décolle à ≤ ${run.decolle.toFixed(2)}·v au monde (les coureurs : talon ~0,43·v, p90 ~0,6-0,8·v ; plafond 0,8·v)`);
+  ok(runHier >= 0.95, `sabotage — la course d'hier (chemin cartésien) pose le pied à ≥ ${runHier.toFixed(2)}·v : la clause mord`);
   for (const [name, vF, vR] of [['marche', 1.4, 0], ['course', 4.5, 0], ['6,5 m/s', 6.5, 0], ['sprint', 8, 0], ['arrière', -3, 0], ['chassés', 0, 2]]) {
     const c = checkClip(resolveTracks(gaitCycleSpec(P, { vF, vR, opts: { griffe: 1 } })));
     ok(c.ok, `griffé ${name} : checkClip${c.ok ? '' : ' — ' + c.issues.join(' ; ')}`);
   }
-  // …ET LE DÉROULÉ PIVOTE SUR L'ORTEIL : sans griffé, la cheville avance du `roll` forfaitaire et l'orteil GLISSE pendant le pelage
+  // …ET LE DÉROULÉ PIVOTE SUR L'ORTEIL : en marche sans griffé, la cheville avance du `roll` forfaitaire et l'orteil GLISSE ; en course,
+  // le pivot exact est la géométrie de tous
   const orteilDeroule = (vF, opts) => {
     const pr = gaitPortrait(P, { vF, vR: 0, n: 480, opts }), F = pr.frames, dt = pr.T / F.length; let d = 0, vmax = 0;
-    for (let i = 0; i < F.length - 1; i++) if (F[i].L.phase === 'peel') { const a = F[i], b = F[i + 1]; const s = Math.hypot(b.L.toe[0] - a.L.toe[0], (b.L.toe[2] - vF * b.t) - (a.L.toe[2] - vF * a.t)); d += s; vmax = Math.max(vmax, s / dt); }
+    for (let i = 0; i < F.length - 1; i++) if (F[i].L.phase === 'peel' && F[i + 1].L.phase === 'peel') { const a = F[i], b = F[i + 1]; const s = Math.hypot(b.L.toe[0] - a.L.toe[0], (b.L.toe[2] - vF * b.t) - (a.L.toe[2] - vF * a.t)); d += s; vmax = Math.max(vmax, s / dt); }
     return { d, vmax };
   };
-  let pd = { d: 0, vmax: 0 }, hd = Infinity;
-  for (const v of [1.4, 3, 4.5, 6]) { const g = orteilDeroule(v, { griffe: 1 }), h = orteilDeroule(v, {}); pd = { d: Math.max(pd.d, g.d), vmax: Math.max(pd.vmax, g.vmax) }; hd = Math.min(hd, h.d); }
-  ok(pd.d <= 0.05 && pd.vmax <= 1.5, `griffé : pendant le déroulé l'orteil reste planté (≤ ${(100 * pd.d).toFixed(1)} cm, pointe ${pd.vmax.toFixed(2)} m/s ; plafonds 5 cm, 1,5 m/s)`);
-  ok(hd > 0.05, `sabotage — sans griffé, l'orteil glisse de ≥ ${(100 * hd).toFixed(1)} cm par déroulé : la clause mord`);
-  // …ET LE PIED SE DÉCOLLE FRANCHEMENT : sans griffé, l'orteil rase la pelouse (< 1,5 cm à > 1 m/s) au début de chaque vol
+  let pd = { d: 0, vmax: 0 }, hd = Infinity, pr_ = 0;
+  for (const v of [1.4, 1.8]) { const g = orteilDeroule(v, { griffe: 1 }), h = orteilDeroule(v, {}); pd = { d: Math.max(pd.d, g.d), vmax: Math.max(pd.vmax, g.vmax) }; hd = Math.min(hd, h.d); }
+  for (const v of [3, 4.5, 6]) pr_ = Math.max(pr_, orteilDeroule(v, {}).d);
+  ok(pd.d <= 0.05 && pd.vmax <= 1.5, `griffé (marche) : pendant le déroulé l'orteil reste planté (≤ ${(100 * pd.d).toFixed(1)} cm, pointe ${pd.vmax.toFixed(2)} m/s ; plafonds 5 cm, 1,5 m/s)`);
+  ok(hd > 0.05, `sabotage — en marche sans griffé, l'orteil glisse de ≥ ${(100 * hd).toFixed(1)} cm par déroulé : la clause mord`);
+  ok(pr_ <= 0.02, `course (3 → 6 m/s, sans griffé) : l'orteil reste planté pendant le déroulé (≤ ${(100 * pr_).toFixed(1)} cm — le pivot exact)`);
+  // …ET LE PIED SE DÉCOLLE FRANCHEMENT en course : l'orteil rase la pelouse (< 1,5 cm à > 1 m/s) moins longtemps que les coureurs au p90
   const orteilRase = (vF, opts) => {
     const pr = gaitPortrait(P, { vF, vR: 0, n: 480, opts }), F = pr.frames, dt = pr.T / F.length, sol = Math.min(...F.map((f) => f.L.toe[1])); let t = 0;
     for (let i = 0; i < F.length - 1; i++) { const a = F[i], b = F[i + 1]; if (a.L.phase !== 'swing' || a.L.toe[1] - sol >= 0.015) continue; if (Math.hypot(b.L.toe[0] - a.L.toe[0], (b.L.toe[2] - vF * b.t) - (a.L.toe[2] - vF * a.t)) / dt > 1) t += dt; }
     return t;
   };
   let pr2 = 0, hr = Infinity;
-  for (const v of [3, 4.5, 6]) { pr2 = Math.max(pr2, orteilRase(v, { griffe: 1 })); hr = Math.min(hr, orteilRase(v, {})); }
-  ok(pr2 <= 0.015, `griffé : l'orteil ne rase plus la pelouse en repartant (≤ ${(1000 * pr2).toFixed(0)} ms par vol ; plafond 15 ms)`);
-  ok(hr >= 0.025, `sabotage — sans griffé, l'orteil rase ${(1000 * hr).toFixed(0)} ms à chaque vol : la clause mord`);
+  for (const v of [3, 4.5, 6]) { pr2 = Math.max(pr2, orteilRase(v, {})); hr = Math.min(hr, orteilRase(v, { override: { wRun: 0 } })); }
+  ok(pr2 <= 0.03, `course : l'orteil ne rase pas la pelouse en repartant (≤ ${(1000 * pr2).toFixed(0)} ms par vol ; les coureurs 17-27 ms, p90 20-33 : plafond 30 ms)`);
+  ok(hr >= 0.04, `sabotage — le chemin cartésien d'hier fait raser l'orteil ${(1000 * hr).toFixed(0)} ms à chaque vol : la clause mord`);
   ok(JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, { griffe: 0 })), 'griffé 0 / absent : la foulée d\'hier au bit');
 }
 
