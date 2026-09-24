@@ -13676,6 +13676,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      LIBRE : 147-151 passages au ballon libre par équipe et par match (sonde-289e), dont ~48 après un contrôle qui ne pose pas le
      ballon, ~43 échappées, ~20 duels, ~17 piques — chacun une loterie du premier arrivé. Le prochain levier : que le contrôle et la
      conduite ne rendent pas le ballon LIBRE (la phase) quand le porteur le tient réellement.
+- 421: LE BALAYAGE DE SENSIBILITÉ (book/balayage.mjs — configurations × graines, 4 processus). 16 réglages existants, demi-matchs,
+     2 graines : aucun n'approche 3,5 passes par séquence ; se détachent rushedRadius 5 (2,12 c. 1,80), strikeReach 1,6 (2,07),
+     presseurs lents (2,06 / 2,84 par possession), receiveRadius 1,1 (2,05 / 2,94) ; pressRadius et calmFoe ne sont PLUS lus en match
+     (au bit). 4 graines : receiveRadius 1,4 seul → 3,45 par possession (c. 2,52, bruit ± 0,15 par graine). La COMBINAISON RÉALISTE
+     (receiveRadius 1,1, rushedRadius 5, strikeReach 1,6 ; 4 × 90 min) : passes 470-485 (420-475), ratées 81-82 (~80), complétion
+     82,6-83,1, 2,18 passes par séquence (1,96), 3,24 par possession (2,61) — MAIS le gain tient au rayon de prise : à 1,0 m (la
+     fenêtre la plus large de la table des techniques, la raison pour laquelle 1,25 avait été ramené à 0,85 : au-delà la touche part
+     hors de portée et le ballon s'arrête à un mètre du pied) il disparaît (1,77 / 2,58, 390 passes). NON RETENUE : un artefact de
+     prise, pas du football. CE QUE ÇA NOMME : la PORTÉE DE PRISE gouverne la continuité (le ballon libre à 0,9-1,4 m d'un joueur
+     qui ne peut pas le jouer) ; la loi d'allonge existante (jambe tendue) ne sert que le receveur désigné d'une passe rapide et ne
+     fait que tuer le ballon. Le lot proposé : LA PRISE EN ALLONGE — un contrôle de la table des techniques à 1,0-1,35 m (moins propre :
+     le ballon se pose plus loin, la précision plus basse), pour tout ballon libre ou de passe à portée — qui exige son CLIP (la
+     branche animations) pour que l'image reste honnête.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
