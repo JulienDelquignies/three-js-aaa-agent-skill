@@ -56,11 +56,19 @@ const TAU = Math.PI * 2;
  *   armA armOff  balancier des bras (°)        elbow elbowMod  coude (°)   armElev  écartement (°)
  *   turnout   ouverture des pieds (°)          toeUp    extension des orteils au pelage (°)
  */
+// L'APPUI DE COURSE N'EST PAS RÉGLÉ, IL EST DÉRIVÉ : s = temps de contact × fréquence de cycle, les deux dans la table 2 de
+// Dorn 2012 (gait.DORN_2012) — 0,318 à 3,52 m/s, 0,276 à 5,2, 0,254 à 7,0, 0,257 à 8,95 ; run (5,5) et sprint (8,5) en sont
+// l'interpolation, jog (2,8) l'extrapolation de la pente des deux premières vitesses (marquée). Les 0,44 / 0,36 / 0,27 d'avant,
+// avec la cadence 1,5 × trop vive, faisaient 14-22 % de vol en jeu au lieu de 35-45 % : des coureurs qui ne décollent pas.
+// LE PIED AU DÉCOLLAGE (pitchTO, angle pied/sol) se dérive des angles articulaires de la course au décollage : cuisse ~20° derrière
+// la verticale + genou ~20° + flexion plantaire ~19° (3,3 m/s, coureurs récréatifs) ≈ 58° ; 50 au trot, 65 au sprint. Les 25 / 22 / 20
+// d'avant (des angles de marche, décroissants avec l'allure : l'inverse du réel) laissaient la cheville basse et loin derrière au
+// décollage — avec les foulées de Dorn, le bassin s'écrasait de 17 à 27 cm pour l'atteindre (sonde dropprobe, joe).
 export const GAIT_REGIMES = {
   walk:   { v: 1.4, s: 0.62, peel: 0.50, bias: 0.20, roll: 0.20, hw: 0.09,  pitchHS: 12, pitchTO: 30, swingH: 0.11, swingPeak: 0.34, swingK: 1.0,  drop: 0.010, bobA: 0.024, bobSign: 1,  pYaw: 4,  pList: 4, pTilt: 0,  lean: 3,  girdle: 4.5, psi: 149, armA: 14, armOff: 0,  elbow: 24, elbowMod: 8,  armElev: 8,  turnout: 8, toeUp: 22 },
-  jog:    { v: 2.8, s: 0.44, peel: 0.35, bias: 0.10, roll: 0.12, hw: 0.07,  pitchHS: 4,  pitchTO: 25, swingH: 0.20, swingPeak: 0.32, swingK: 1.2,  drop: 0.040, bobA: 0.028, bobSign: -1, pYaw: 6,  pList: 5, pTilt: 3,  lean: 6,  girdle: 9,   psi: 100, armA: 26, armOff: 6,  elbow: 75, elbowMod: 12, armElev: 11, turnout: 6, toeUp: 18 },
-  run:    { v: 5.5, s: 0.36, peel: 0.30, bias: 0.10, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 22, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.036, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 5,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 10, elbow: 90, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
-  sprint: { v: 8.5, s: 0.27, peel: 0.30, bias: 0.12, roll: 0.06, hw: 0.045, pitchHS: -8, pitchTO: 20, swingH: 0.30, swingPeak: 0.42, swingK: 1.0,  drop: 0.035, bobA: 0.040, bobSign: -1, pYaw: 9,  pList: 5, pTilt: 8,  lean: 10, girdle: 14,  psi: 92,  armA: 42, armOff: 10, elbow: 92, elbowMod: 18, armElev: 15, turnout: 4, toeUp: 12 },
+  jog:    { v: 2.8, s: 0.336, peel: 0.35, bias: 0.10, roll: 0.12, hw: 0.07,  pitchHS: 4,  pitchTO: 50, swingH: 0.20, swingPeak: 0.32, swingK: 1.2,  drop: 0.040, bobA: 0.028, bobSign: -1, pYaw: 6,  pList: 5, pTilt: 3,  lean: 6,  girdle: 9,   psi: 100, armA: 26, armOff: 6,  elbow: 75, elbowMod: 12, armElev: 11, turnout: 6, toeUp: 18 },
+  run:    { v: 5.5, s: 0.273, peel: 0.30, bias: 0.10, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 58, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.036, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 5,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 10, elbow: 90, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
+  sprint: { v: 8.5, s: 0.256, peel: 0.30, bias: 0.12, roll: 0.06, hw: 0.045, pitchHS: -8, pitchTO: 65, swingH: 0.30, swingPeak: 0.42, swingK: 1.0,  drop: 0.035, bobA: 0.040, bobSign: -1, pYaw: 9,  pList: 5, pTilt: 8,  lean: 10, girdle: 14,  psi: 92,  armA: 42, armOff: 10, elbow: 92, elbowMod: 18, armElev: 15, turnout: 4, toeUp: 12 },
   // la course ARRIÈRE : appui sur l'avant-pied, genou devant en vol, buste droit, bras courts
   back:   { v: 3.0, s: 0.40, peel: 0.20, bias: 0,     roll: 0.05, hw: 0.09, pitchHS: -10, pitchTO: 8, swingH: 0.14, swingPeak: 0.45, swingK: 1.0, drop: 0.060, bobA: 0.025, bobSign: -1, pYaw: 3,  pList: 3, pTilt: -2, lean: 1,  girdle: 5,   psi: 100, armA: 14, armOff: 12, elbow: 70, elbowMod: 6,  armElev: 14, turnout: 6, toeUp: 10 },
   // les PAS CHASSÉS : larges (hw dynamique — jamais de croisement), bas, tronc penché, bras ouverts
@@ -87,14 +95,16 @@ function forwardParams(v) {
 }
 
 /** Les paramètres résolus pour (v→) : fondu des régimes avant / arrière / latéral par la direction. */
-/** (A7 bis) LA CADENCE À L'ÉCHELLE DE LA JAMBE : la loi de Dorn est celle d'une jambe de 0,90 m (hanche à ~0,92 m) ; une jambe plus courte
- *  fait des foulées plus courtes à la même vitesse (S ∝ L), donc une cadence plus haute (× L₀/L). Le rig shanon (0,76 m) tournait avec les
- *  foulées d'un grand : 10-12 cm d'affaissement du bassin à 4,5-6 m/s pour atteindre ses pieds. Borné [0,85 ; 1,35]. */
-export const LEG_REF = 0.90;
+/** (A7 bis) LA CADENCE À L'ÉCHELLE DE LA JAMBE : une jambe plus courte fait des foulées plus courtes à la même vitesse (S ∝ L), donc
+ *  une cadence plus haute (× L₀/L). Borné [0,85 ; 1,35]. LA MÊME MESURE DES DEUX CÔTÉS (2026-09-24) : la référence est une HAUTEUR DE
+ *  HANCHE debout (0,92 m, les sujets de Dorn) et le rig se mesure pareil (profil : hipsY). On comparait 0,90 à cuisse + tibia (hanche →
+ *  cheville, 0,76-0,80 m sur shanon, joe, marta — la même personne mesurée sans le pied ni le bassin) : +13 à +18 % de cadence sur des
+ *  jambes normales. */
+export const LEG_REF = 0.92;
 /** (A7 bis) LE FREIN RACCOURCIT LA FOULÉE : les pas de frein sont plus courts et plus vifs (le cycle × (1 − 0,25·frein)) — la cadence
  *  de l'horloge du contrôleur suit du même facteur (une phase, une durée). */
 export function gaitBrakeCadence(brake) { return 1 / (1 - 0.25 * clamp(brake ?? 0, 0, 1)); }
-export function gaitLegK(P) { return clamp(LEG_REF / Math.max(0.3, P.lengths.thigh + P.lengths.shank), 0.85, 1.35); }
+export function gaitLegK(P) { return clamp(LEG_REF / Math.max(0.3, P.lengths.hipsY), 0.85, 1.35); }
 /** Le facteur EFFECTIF à l'allure v : plein jusqu'à 4,5 m/s, fondu à 1 à 5,5 m/s — au sprint la loi tourne déjà à la limite des articulations
  *  (genou 30 rad/s, bras 14 rad/s entre deux clés à 60 Hz : checkClip — le genou, presque tendu à la pose, est le plus sensible),
  *  une cadence plus haute encore les téléporterait. */
@@ -178,6 +188,11 @@ const sstep = (t) => { const u = clamp(t, 0, 1); return u * u * (3 - 2 * u); };
 /** LE GRIFFÉ — h(w) sur [0,1] : h(0) = h(1) = 0, h'(0) = h'(1) = 1, et h' = −β au milieu (β = (2e/3)/(1 − 2e/3), la pente de
  *  compensation minimale pour que le recul des bouts se rende) ; impaire autour de ½. e = GRIFFE_E (part du vol à chaque bout). */
 export const GRIFFE_E = 0.2, GRIFFE_LEVE = 0.5;
+/** LA FENÊTRE DU GRIFFÉ EST UN TEMPS, pas une part du vol : le rappel du pied (vitesse sol ≈ 0 → le pied repart) est une affaire de
+ *  dynamique du membre. Calibré à 20 % d'un vol de 0,26 s (la cadence d'avant, 5 m/s) = 52 ms ; avec la cadence de Dorn le vol dure
+ *  0,49 s et 20 % gardaient le pied immobile ~100 ms — 12 cm de traîne de plus derrière la hanche, que le bassin rattrapait en
+ *  s'écrasant (sonde dropprobe : 27 cm à 5 m/s). e = min(GRIFFE_E, GRIFFE_T / durée du vol). */
+export const GRIFFE_T = 0.052;
 export function griffeH(w, e = GRIFFE_E) {
   const b = (2 * e / 3) / (1 - 2 * e / 3);
   const left = (x) => -b * x + (1 + b) * (e / 3) * (1 - Math.pow(1 - Math.min(x, e) / e, 3));
@@ -222,7 +237,7 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
     // bouts (vitesse repère-corps −griffe·v, continue avec l'appui à griffe = 1), concentrée sur les GRIFFE_E du vol à
     // chaque bout — la forme cubique w − 3w² + 2w³ rajoutait 0,5·v au milieu du vol, le genou passait 35-41 rad/s
     // (checkClip, cap 30). 0 / absent : la foulée d'hier au bit.
-    if (p.griffe) { const kg = p.griffe * griffeH(w) * (1 - p.s) * p.T; pos[0] -= vC[0] * kg; pos[2] -= vC[2] * kg; }
+    if (p.griffe) { const kg = p.griffe * griffeH(w, Math.min(GRIFFE_E, GRIFFE_T / Math.max(1e-3, (1 - p.s) * p.T))) * (1 - p.s) * p.T; pos[0] -= vC[0] * kg; pos[2] -= vC[2] * kg; }
     pitch = -p.pitchTO * (1 - ramp(w, 0, 0.25, 0.5)) + p.pitchHS * ramp(w, 0.5, 0.8, 1);
     toe = p.toeUp * (1 - ramp(w, 0, 0.15, 0.3));
     phase = 'swing';
