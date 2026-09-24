@@ -1,0 +1,204 @@
+<title>Lecteur de pertes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --page: #eef1ec; --panel: #ffffff; --ink: #16211b; --muted: #5a6960; --rule: #d3dbd4;
+  --pitch: #2f6a47; --pitch2: #2a6141; --line: rgba(255,255,255,.55);
+  --t0: #ff8a55; --t0ink: #2a1206; --t1: #f3efe2; --t1ink: #1b2a22;
+  --ball: #ffd23f; --lose: #e2413a; --win: #1f8fff; --accent: #1f6b44;
+  --chip-bg: #e3ebe4;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #101712; --panel: #18221c; --ink: #e5ece6; --muted: #98a89d; --rule: #2b3830;
+    --pitch: #24553a; --pitch2: #214f36; --line: rgba(255,255,255,.45);
+    --accent: #6fcf97; --chip-bg: #223029; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #101712; --panel: #18221c; --ink: #e5ece6; --muted: #98a89d; --rule: #2b3830;
+  --pitch: #24553a; --pitch2: #214f36; --line: rgba(255,255,255,.45);
+  --accent: #6fcf97; --chip-bg: #223029; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 72ch; }
+.grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+aside { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button, .ctl button, .ctl select { font: 500 12px var(--body); color: var(--ink); background: var(--chip-bg); border: 1px solid var(--rule); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.list { display: grid; gap: 4px; max-height: 70vh; overflow-y: auto; }
+@media (max-width: 860px) { .list { max-height: 240px; } }
+.ep { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; text-align: left; font: inherit; color: inherit; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; cursor: pointer; }
+.ep:hover { background: var(--chip-bg); }
+.ep[aria-current="true"] { border-color: var(--accent); background: var(--chip-bg); }
+.ep .n { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.ep .c { font-weight: 600; }
+.ep .m { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stage { display: grid; gap: 10px; min-width: 0; }
+.board { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px; display: grid; gap: 10px; }
+canvas { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--pitch); touch-action: none; }
+.ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ctl .play { font-family: var(--display); font-size: 16px; font-weight: 600; padding: 4px 16px; background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.ctl input[type=range] { flex: 1 1 220px; min-width: 0; accent-color: var(--accent); }
+.clock { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; min-width: 88px; }
+.ctl label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; }
+.card h2 { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.card p { margin: 0; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 12px; font-size: 13px; }
+.legend span b { font-family: var(--mono); display: inline-block; width: 16px; }
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: 4px; border: 1px solid rgba(0,0,0,.35); }
+.note { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Lecteur de pertes</h1>
+    <p>24 pertes de balle enregistrées dans deux matchs du moteur (graines 3 et 7) : les 3 secondes qui les précèdent et la seconde qui suit, au ralenti. Chaque pion porte la lettre de son rôle du moment. Le ballon est jaune, le joueur qui perd est cerclé de rouge, celui qui récupère de bleu.</p>
+  </header>
+  <div class="grid">
+    <aside aria-label="Épisodes">
+      <div class="filters" id="filters"></div>
+      <div class="list" id="list"></div>
+    </aside>
+    <section class="stage">
+      <div class="board">
+        <canvas id="pitch" width="1200" height="780" aria-label="Terrain vu de dessus"></canvas>
+        <div class="ctl">
+          <button class="play" id="play" type="button">Lire</button>
+          <button id="back" type="button" aria-label="Image précédente">−0,05 s</button>
+          <button id="fwd" type="button" aria-label="Image suivante">+0,05 s</button>
+          <input id="scrub" type="range" min="0" max="79" value="0" aria-label="Position dans l'épisode">
+          <span class="clock" id="clock">−3,00 s</span>
+          <label for="speed">Vitesse
+            <select id="speed"><option value="0.25">× 0,25</option><option value="0.5" selected>× 0,5</option><option value="1">× 1</option></select>
+          </label>
+          <label for="zoom"><input id="zoom" type="checkbox" checked> Cadrer sur l'action</label>
+          <label for="trail"><input id="trail" type="checkbox" checked> Traces</label>
+        </div>
+      </div>
+      <div class="info">
+        <div class="card"><h2>Épisode</h2><dl class="kv" id="facts"></dl></div>
+        <div class="card"><h2>Rôles sur les pions</h2><div class="legend" id="legend"></div></div>
+        <div class="card"><h2>Lire un épisode</h2><p class="note">L'instant 0 est le changement de possession. Regardez surtout la seconde d'avant : où va le porteur, où sont ses coéquipiers libres, qui arrive sur lui et d'où. Flèches ←/→ : image par image ; espace : lecture.</p></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const JOB_FR = { carry: ['B', 'porteur'], receive: ['R', 'reçoit / va au ballon'], support: ['S', 'soutien'], press: ['P', 'presse'], cover: ['C', 'couvre'], mark: ['M', 'marque'], intercept: ['I', 'intercepte'], walk: ['·', 'se replace'], keeper: ['G', 'gardien'], contre: ['X', 'contre-press'] };
+const CAUSE_FR = { conduite: 'Conduite', 'take-on': 'Take-on', 'contrôle': 'Contrôle', 'pique subie': 'Pique subie', passe: 'Passe', 'charge subie': 'Charge subie' };
+const cv = document.getElementById('pitch'), ctx = cv.getContext('2d');
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let D = null, ep = null, fi = 0, playing = false, acc = 0, lastTs = 0, filter = 'toutes';
+const $ = (id) => document.getElementById(id);
+
+fetch('episodes.json').then((r) => r.json()).then((data) => { D = data; buildFilters(); buildList(); buildLegend(); select(0); }).catch(() => { $('list').textContent = 'Les données des épisodes ne se chargent pas.'; });
+
+function buildFilters() {
+  const causes = ['toutes', ...new Set(D.episodes.map((e) => e.cause))];
+  $('filters').innerHTML = '';
+  for (const c of causes) { const b = document.createElement('button'); b.type = 'button'; b.textContent = c === 'toutes' ? 'Toutes' : (CAUSE_FR[c] ?? c); b.setAttribute('aria-pressed', String(c === filter)); b.onclick = () => { filter = c; buildFilters(); buildList(); }; $('filters').appendChild(b); }
+}
+function buildList() {
+  $('list').innerHTML = '';
+  D.episodes.forEach((e, k) => { if (filter !== 'toutes' && e.cause !== filter) return;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'ep'; b.setAttribute('aria-current', String(ep === e));
+    b.innerHTML = `<span class="n">${String(k + 1).padStart(2, '0')}</span><span class="c">${CAUSE_FR[e.cause] ?? e.cause}</span><span class="m">g${e.seed} · ${e.minute}'</span>`;
+    b.onclick = () => select(k); $('list').appendChild(b); });
+}
+function buildLegend() {
+  $('legend').innerHTML = Object.values(JOB_FR).map(([l, t]) => `<span><b>${l}</b>${t}</span>`).join('') +
+    `<span><i class="dot" style="background:${css('--t0')}"></i>équipe 0</span><span><i class="dot" style="background:${css('--t1')}"></i>équipe 1</span>`;
+}
+function select(k) {
+  ep = D.episodes[k]; fi = 0; playing = false; $('play').textContent = 'Lire';
+  $('scrub').max = String(ep.frames.length - 1); buildList();
+  const lab = (id) => id == null || id < 0 ? '—' : `n° ${id} (équipe ${ep.meta[id]?.team})`;
+  $('facts').innerHTML = `<dt>Cause</dt><dd>${CAUSE_FR[ep.cause] ?? ep.cause}</dd><dt>Match</dt><dd>graine ${ep.seed}, ${ep.minute}'${String(Math.round(ep.t % 60)).padStart(2, '0')}</dd>` +
+    `<dt>Perd</dt><dd>équipe ${ep.perd}, ${lab(ep.perdant)}</dd><dt>Récupère</dt><dd>${lab(ep.gagneur)}</dd><dt>Moteur</dt><dd>${ep.why ?? '—'}</dd>`;
+  draw();
+}
+function view(f) {
+  const hx = D.pitch.hx, hz = D.pitch.hz;
+  if (!$('zoom').checked) return { cx: 0, cz: 0, w: 2 * hx + 6, h: 2 * hz + 4 };
+  // cadre fixe sur l'épisode : la boîte du ballon sur tout l'épisode, 34 × 22 m au moins
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (const fr of ep.frames) { x0 = Math.min(x0, fr.b[0]); x1 = Math.max(x1, fr.b[0]); z0 = Math.min(z0, fr.b[1]); z1 = Math.max(z1, fr.b[1]); }
+  let w = Math.max(34, x1 - x0 + 16), h = Math.max(22, z1 - z0 + 12); const r = cv.width / cv.height;
+  if (w / h > r) h = w / r; else w = h * r;
+  return { cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, w, h };
+}
+function draw() {
+  if (!ep) return;
+  const f = ep.frames[fi], V = view(f), W = cv.width, H = cv.height, s = Math.min(W / V.w, H / V.h);
+  const X = (x) => W / 2 + (x - V.cx) * s, Z = (z) => H / 2 + (z - V.cz) * s;
+  const hx = D.pitch.hx, hz = D.pitch.hz;
+  ctx.fillStyle = css('--pitch'); ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = css('--pitch2'); for (let k = -hx; k < hx; k += 10.5) if (Math.round((k + hx) / 10.5) % 2) ctx.fillRect(X(k), Z(-hz), 10.5 * s, 2 * hz * s);
+  ctx.strokeStyle = css('--line'); ctx.lineWidth = Math.max(1, s * 0.12);
+  ctx.strokeRect(X(-hx), Z(-hz), 2 * hx * s, 2 * hz * s);
+  ctx.beginPath(); ctx.moveTo(X(0), Z(-hz)); ctx.lineTo(X(0), Z(hz)); ctx.stroke();
+  ctx.beginPath(); ctx.arc(X(0), Z(0), 9.15 * s, 0, Math.PI * 2); ctx.stroke();
+  for (const sg of [-1, 1]) { ctx.strokeRect(X(sg * hx - (sg > 0 ? 16.5 : 0)), Z(-20.16), 16.5 * s, 40.32 * s); ctx.strokeRect(X(sg * hx - (sg > 0 ? 5.5 : 0)), Z(-9.16), 5.5 * s, 18.32 * s);
+    ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillRect(X(sg * hx) - (sg > 0 ? 0 : 0.8 * s), Z(-3.66), 0.8 * s, 7.32 * s); }
+  // traces des 1,5 dernières secondes
+  if ($('trail').checked) {
+    const from = Math.max(0, fi - 30);
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    for (let i = 0; i < ep.meta.length; i++) { ctx.strokeStyle = ep.meta[i].team === 0 ? 'rgba(255,138,85,.45)' : 'rgba(243,239,226,.45)'; ctx.beginPath();
+      for (let k = from; k <= fi; k++) { const p = ep.frames[k].p[i]; k === from ? ctx.moveTo(X(p[0]), Z(p[1])) : ctx.lineTo(X(p[0]), Z(p[1])); } ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,210,63,.9)'; ctx.lineWidth = Math.max(1.5, s * 0.14); ctx.beginPath();
+    for (let k = from; k <= fi; k++) { const b = ep.frames[k].b; k === from ? ctx.moveTo(X(b[0]), Z(b[1])) : ctx.lineTo(X(b[0]), Z(b[1])); } ctx.stroke();
+  }
+  // joueurs
+  const R = Math.max(7, s * 0.55);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `600 ${Math.round(R * 1.1)}px ${css('--mono').split(',')[0]}`;
+  f.p.forEach((p, i) => { const m = ep.meta[i], x = X(p[0]), z = Z(p[1]);
+    if (i === ep.perdant) { ctx.strokeStyle = css('--lose'); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, z, R + 5, 0, Math.PI * 2); ctx.stroke(); }
+    if (i === ep.gagneur) { ctx.strokeStyle = css('--win'); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, z, R + 5, 0, Math.PI * 2); ctx.stroke(); }
+    if (i === f.c) { ctx.strokeStyle = css('--ball'); ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(x, z, R + 9, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.globalAlpha = p[3] ? 0.45 : 1;
+    ctx.fillStyle = m.team === 0 ? css('--t0') : css('--t1'); ctx.beginPath(); ctx.arc(x, z, R, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1; ctx.stroke();
+    const job = D.jobs[p[2]]; ctx.fillStyle = m.team === 0 ? css('--t0ink') : css('--t1ink'); ctx.fillText((JOB_FR[job] ?? ['?'])[0], x, z + 0.5);
+    ctx.globalAlpha = 1; });
+  // ballon (plus gros quand il est en l'air)
+  const bR = Math.max(4, s * 0.3) * (1 + Math.min(1.2, f.b[2] / 3));
+  ctx.fillStyle = css('--ball'); ctx.beginPath(); ctx.arc(X(f.b[0]), Z(f.b[1]), bR, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#111'; ctx.lineWidth = 1.5; ctx.stroke();
+  // horloge et repère de l'instant de la perte
+  const t = (fi - 60) * 0.05; $('clock').textContent = (t < 0 ? '−' : '+') + Math.abs(t).toFixed(2).replace('.', ',') + ' s'; $('scrub').value = String(fi);
+  if (fi >= 60) { ctx.fillStyle = 'rgba(226,65,58,.9)'; ctx.font = `700 ${Math.round(H * 0.035)}px ${css('--display').split(',')[0]}`; ctx.textAlign = 'left'; ctx.fillText('PERTE', 14, 24); }
+}
+function tick(ts) {
+  if (playing) { if (lastTs) acc += (ts - lastTs) / 1000 * +$('speed').value; lastTs = ts;
+    while (acc >= 0.05) { acc -= 0.05; fi++; if (fi >= ep.frames.length) { fi = ep.frames.length - 1; playing = false; $('play').textContent = 'Relire'; break; } }
+    draw(); } else lastTs = 0;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+$('play').onclick = () => { if (!ep) return; if (fi >= ep.frames.length - 1) fi = 0; playing = !playing; $('play').textContent = playing ? 'Pause' : 'Lire'; };
+$('back').onclick = () => { playing = false; $('play').textContent = 'Lire'; fi = Math.max(0, fi - 1); draw(); };
+$('fwd').onclick = () => { playing = false; $('play').textContent = 'Lire'; fi = Math.min(ep.frames.length - 1, fi + 1); draw(); };
+$('scrub').oninput = (e) => { playing = false; $('play').textContent = 'Lire'; fi = +e.target.value; draw(); };
+$('zoom').onchange = draw; $('trail').onchange = draw;
+document.addEventListener('keydown', (e) => { if (!ep || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); $('back').click(); } else if (e.key === 'ArrowRight') { e.preventDefault(); $('fwd').click(); } else if (e.key === ' ') { e.preventDefault(); $('play').click(); } });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { buildLegend(); draw(); });
+</script>
