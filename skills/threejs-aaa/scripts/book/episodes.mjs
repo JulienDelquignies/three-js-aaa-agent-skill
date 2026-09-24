@@ -2,16 +2,16 @@
 // les moyennes ne montrent plus la cause ; on regarde les pertes elles-mêmes). Joue des matchs de 90 min et garde des PERTES EN JEU
 // (changement de possession hors remise en jeu) : 3 s avant, 1 s après, 20 images par seconde — chaque joueur (x, z, son job), le
 // ballon (x, z, hauteur), le porteur. La cause est la dernière action de l'équipe qui perd (la comptabilité de sonde-295).
-// usage : node episodes.mjs fichier.json [graines] [nombre par graine]
+// usage : node episodes.mjs fichier.json [graines] [nombre par graine] [json des réglages]
 import { makeMatch, matchStep, matchCfg } from '/home/user/three-js-aaa-agent-skill/skills/threejs-aaa/assets/starter/src/engine/match-sim.js';
 import { writeFileSync } from 'node:fs';
-const out = process.argv[2] ?? 'episodes.json', seeds = (process.argv[3] ?? '3,7').split(',').map(Number), parGraine = +(process.argv[4] ?? 12);
+const out = process.argv[2] ?? 'episodes.json', seeds = (process.argv[3] ?? '3,7').split(',').map(Number), parGraine = +(process.argv[4] ?? 12), over = JSON.parse(process.argv[5] ?? '{}');
 const JOBS = ['carry', 'receive', 'support', 'press', 'cover', 'mark', 'intercept', 'walk', 'keeper', 'contre'];
 const jc = (j) => { const k = JOBS.indexOf(j); return k < 0 ? JOBS.length : k; };
 const r1 = (x) => Math.round(x * 10) / 10;
 const episodes = [];
 for (const seed of seeds) {
-  const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 2700, pause: 10 } });
+  const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over });
   const ring = [], pend = [], last = [null, null]; let seen = 0, gardes = 0; const cibles = { conduite: 0, 'take-on': 0, contrôle: 0, 'pique subie': 0, 'charge subie': 0, passe: 0 };
   const quota = { conduite: 4, 'take-on': 2, contrôle: 2, 'pique subie': 2, 'charge subie': 0, passe: 2 };
   const meta = st.players.map((P) => ({ id: P.id, team: P.team, keeper: !!P.keeper, post: P.post ?? null, name: P.name ?? null }));

@@ -13727,6 +13727,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      rapide vert (jumeau, blocs 1, 191, 192, sync). Le banc complet du groupe 296-297 reste à jouer (arrêté le 25/09 à la demande).
      CE QUI RESTE : les passes par possession plafonnent à 2,4-2,9 dans TOUT l'espace réaliste balayé — le chiffre n'est pas un
      réglage ; la cible du book (3,5-4,5, « À CALIBRER », tirée de Manchester City 3,97-5,1) est celle d'une équipe de possession.
+- 425: LES ABLATIONS — CE N'EST PAS LA DÉFENSE (25/09, « creuse, on doit trouver »). sonde-303, 2 × 90 min par variante, les familles
+     éteintes EXPRÈS (irréaliste, pour peser) : base 2,49 passes par possession (157 possessions, 391 passes) ; sans pique 2,24 ; sans
+     charge 2,53 ; sans glissé 2,41 ; dribble ~0 2,35 ; sans duel de réception (budget 0) 2,35 (manqués 6,5 → 1,8 %) ; sans contact
+     (piques + charges + glissés) 2,28 ; sans le TACLE DEBOUT engagé (tackleTime 99 — la loi 157 l'engage après 0,23 s au contact) 2,68 ;
+     TOUT éteint (les précédents + tacle debout) 2,98 (139 possessions, 419 passes, pertes 121). La défense n'explique qu'un demi-point :
+     SANS AUCUNE action défensive, l'équipe perd encore le ballon 156-161 fois en jeu par équipe — ~60 après une passe ratée (le
+     volume réel), 26-30 après une CONDUITE sans contact, ~20 après un take-on (le noyau 268 n'était pas éteint), ~10 au contrôle. Le
+     plafond de l'étiquette de conduite (2,2 m, lot 37 — rendu configurable le temps d'un essai, retiré) à 3 / 4 m / ∞ : 2,46-2,49,
+     rien. Le tempo : ~13 passes par minute de possession (réel ~16), ~5,2 possessions par minute de possession (réel ~4,5).
+     CONSTATS : passe.sigma0 n'est pas lu en match (la variante « sans erreur » = la base au bit). Le lecteur de pertes reçoit un
+     second jeu, « sans défense » (20 épisodes, book/episodes.mjs prend maintenant des réglages) : regarder pourquoi une équipe que
+     personne n'attaque perd le ballon.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
