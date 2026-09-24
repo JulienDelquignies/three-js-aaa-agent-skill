@@ -13700,6 +13700,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      'controle-dos' domine les refus (il arrive le ballon hors du cône). LA LOI (cueillette.js : l'élu ne trotte que si l'adversaire le
      plus prompt arrive 1 s après lui, hier 2,5 m de distance) : perdus avec l'avantage 16-22 % (inchangé), 1,86 passe par séquence
      (1,96) — RÉFUTÉE, retirée (le moteur = le 296 au bit). L'élection au temps d'arrivée elle-même avait été réfutée au 240c.
+- 423: LE LECTEUR DE PERTES ET LE RECEVEUR (24/09). Le lecteur (book/episodes.mjs + book/lecteur/index.html, publié) : 24 pertes en jeu
+     rejouées au ralenti, rôles sur les pions. L'œil de l'utilisateur : « beaucoup de contrôles ratés ? trop de remises en une touche
+     pourries ? le problème c'est le receveur ? ». sonde-302 (4 × 90 min) : CONTRÔLES manqués 38-50 par équipe (7-8 % des contrôles ;
+     le book 2-4 %) — dont le vrai MISCONTROL (Weibull) 2,9 %, dans la cible, et les réceptions CONTESTÉES (le presseur au TTP < budget
+     de contrôle, 50/50 du book § 6.1) ~50 par équipe perdues une fois sur deux, 18 % de touches lourdes ; UNE-TOUCHE 44-60 par équipe
+     (11-14 % des passes ; le book 15-25), des LAY_OFF courtes (9 m), lentes (8 m/s c. 15), en retrait une fois sur deux. Balayage du
+     barème : la remise ne rabat plus le malus du marqué (remiseF 1) → une-touche 54 → 42 ; l'homme libre exigeant (4 m, malus 6) →
+     manqués 45 → 36, une-touche 42 — mais les passes baissent (350 → 309) et les passes par séquence ne montent pas (1,83-1,96).
+     LE CONTRÔLE ORIENTÉ QUI FUIT LA PRESSION (toucheOrientee.presse : la touche orientée du 399 ne servait que le receveur libre à 4 m ;
+     le pressé capturait et attendait) : manqués 44, une-touche 49, 1,88 passe par séquence, pertes 219-227 — RÉFUTÉ, retiré (le moteur =
+     le 296 au bit). Douze leviers locaux mesurés depuis le 290 sur les pertes et la continuité ; un scellé (291), un gardé (296).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
