@@ -38,8 +38,21 @@ export function predictTouch(scene, pl) {
  *  0,25 s après ; le verrou des pieds re-plante l'appui, le warp de touche met le pied. Sabotage : 'corps-contact'. */
 export function contactRoot(scene, pl) {
   if (typeof window !== 'undefined' && window.__sabotage === 'corps-contact') { pl._contact = null; pl._rec = null; return; }
-  const st = scene.state, s = pl.sim, t = scene._t, b = st.ball.p, K = { confort: 0.35, max: 0.6, avant: 0.25, apres: 0.25 };
+  const st = scene.state, s = pl.sim, t = scene._t, b = st.ball.p, K = { confort: 0.35, hancheRec: 0.2, hancheTouche: 0.3, max: 0.6, avant: 0.25, apres: 0.25 };   // la réception s'approche plus (le ballon vient, la touche de conduite part devant le pied)
   const ss = (w) => { w = Math.max(0, Math.min(1, w)); return w * w * (3 - 2 * w); };
+  // LE PIED LIBRE VA AU CONTACT (la foulée mesurée : un pied d'APPUI ne fait jamais la touche — touchWarpApply). Un pied planté, l'autre
+  // libre : la portée se lit depuis la HANCHE de la jambe libre (sa position rendue, portée à l'instant du contact avec le corps sim),
+  // pas depuis le centre du corps — sinon le corps s'arrêtait à portée du pied planté et le pied libre n'arrivait pas (mesuré après
+  // l'intégration : touches sans pied 2 → 10 %, contrôles 1,9 → 5,6 %). Deux pieds libres (le vol) ou deux plantés : le centre.
+  const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
+  const libre = planted('left') !== planted('right') ? (planted('left') ? 'right' : 'left') : null;
+  const vise = (bx, bz, px, pz, aer, hanche) => {
+    const dc = Math.hypot(bx - px, bz - pz) || 1e-6, base = { need: Math.min(aer ? 0.75 : K.max, Math.max(0, dc - (aer ? 0.12 : K.confort))), ux: (bx - px) / dc, uz: (bz - pz) / dc };
+    const up = libre && !aer ? pl.legs?.[libre]?.up : null; if (!up) return base;
+    up.getWorldPosition(scene._wh);
+    const hx = scene._wh.x - pl.model.position.x + px, hz = scene._wh.z - pl.model.position.z + pz, dh = Math.hypot(bx - hx, bz - hz) || 1e-6, needH = Math.min(K.max, Math.max(0, dh - hanche));
+    return needH > base.need ? { need: needH, ux: (bx - hx) / dh, uz: (bz - hz) / dh } : base;
+  };
   let C = pl._contact;
   if (C && t > C.tc + K.apres) C = pl._contact = null;
   // LA RÉCEPTION, SUIVIE EN CONTINU : la passe adressée, ou le ballon libre dont il est le plus proche de son équipe — le point de
@@ -54,9 +67,9 @@ export function contactRoot(scene, pl) {
       const bx = b[0] + st.ball.v[0] * tt, bz = b[2] + st.ball.v[2] * tt, px = s.p[0] + s.v[0] * tt, pz = s.p[2] + s.v[1] * tt, dc = Math.hypot(bx - px, bz - pz);
       if (dc > rMax) continue;
       if (!st.players.every((q) => q === s || q.keeper || q.down > 0 || Math.hypot(q.p[0] + q.v[0] * tt - bx, q.p[2] + q.v[1] * tt - bz) >= dc)) break;
-      const aer = b[1] + st.ball.v[1] * tt - 4.9 * tt * tt > 0.6, need = Math.min(aer ? 0.75 : K.max, Math.max(0, dc - (aer ? 0.12 : K.confort)));   // l'amorti aérien : le corps SOUS le ballon
+      const aer = b[1] + st.ball.v[1] * tt - 4.9 * tt * tt > 0.6, V = vise(bx, bz, px, pz, aer, K.hancheRec);   // l'amorti aérien : le corps SOUS le ballon ; au sol : le pied libre
       pl._touchPre = t + tt;   // le pied part avec (le warp de touche lit la touche prévue ; l'événement la consomme)
-      if (need > 0.01) pl._rec = { ux: (bx - px) / dc, uz: (bz - pz) / dc, need, w: ss(1 - tt / K.avant) };
+      if (V.need > 0.01) pl._rec = { ux: V.ux, uz: V.uz, need: V.need, w: ss(1 - tt / K.avant) };
       break;
     }
   }
@@ -65,8 +78,8 @@ export function contactRoot(scene, pl) {
     predictTouch(scene, pl);
     const tc = pl._touchPre != null && pl._touchPre >= t - 0.05 && st.phase === 'carry' ? Math.max(t, pl._touchPre) : null;   // une touche prévue « maintenant » à l'image d'avant compte encore
     if (tc != null) {
-      const dt = tc - t, cx = b[0] + st.ball.v[0] * dt - (s.p[0] + s.v[0] * dt), cz = b[2] + st.ball.v[2] * dt - (s.p[2] + s.v[1] * dt), dc = Math.hypot(cx, cz), need = Math.min(K.max, Math.max(0, dc - K.confort));
-      C = pl._contact = need > 0.01 ? { tc, ux: cx / dc, uz: cz / dc, need } : null;
+      const dt = tc - t, V = vise(b[0] + st.ball.v[0] * dt, b[2] + st.ball.v[2] * dt, s.p[0] + s.v[0] * dt, s.p[2] + s.v[1] * dt, false, K.hancheTouche);
+      C = pl._contact = V.need > 0.01 ? { tc, ux: V.ux, uz: V.uz, need: V.need } : null;
     }
   }
   let ox = 0, oz = 0;
@@ -120,4 +133,28 @@ export function touchWarpApply(scene, pl) {
   );
   aimChildAt(leg.up, leg.knee, scene._wm.fromArray(sol.mid));
   aimChildAt(leg.knee, leg.foot, scene._wm.fromArray(sol.end));
+}
+
+/** (306) LA FENTE DE LA TOUCHE — AVANT le verrou des pieds (Rondo.js, à côté de strikeWarpPlan). Mesuré après la foulée mesurée : au
+ *  contact, la hanche de la jambe libre est à 0,77-0,97 m du ballon pour une jambe (A+B) de 0,74-0,80 m — debout, la hanche à ~0,85 m
+ *  du sol, le pied n'atteint que le sol SOUS elle. Un vrai joueur fléchit : le bassin DESCEND (≤ drop) et avance (≤ lunge) jusqu'à
+ *  mettre le ballon à 0,97 × la jambe libre ; le verrou re-plante ensuite l'appui sous le bassin déplacé (le patron de la fente de
+ *  frappe, rondo-warp.js). Même enveloppe que touchWarpApply. Sabotage : 'fente-touche'. */
+export function touchLunge(scene, pl) {
+  if (typeof window !== 'undefined' && window.__sabotage === 'fente-touche') return;
+  const T = pl._touchPre != null && scene._t >= pl._touchPre - 0.1 && scene._t <= pl._touchPre + 0.1 ? pl._touchPre - 0.1 : pl._touchT;
+  if (T == null || pl.sim.act || !pl.hipsNudge) return;
+  const u = (scene._t - T) / 0.2; if (u <= 0 || u >= 1) return;
+  const b = scene.state.ball.p; if (b[1] > 1.0) return;
+  const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
+  let side = null, dBest = 1.8;
+  for (const f of ['left', 'right']) { const leg = pl.legs?.[f]; if (!leg?.foot || !leg.up || !pl.legLens?.[f] || planted(f)) continue; leg.foot.getWorldPosition(scene._wf); const d = Math.hypot(scene._wf.x - b[0], scene._wf.z - b[2]); if (d < dBest) { dBest = d; side = f; } }
+  if (!side) return;
+  const L = { lunge: 0.18, drop: 0.14 }, lens = pl.legLens[side], R = (lens.A + lens.B) * 0.97, env = Math.sin(Math.PI * u);
+  pl.legs[side].up.getWorldPosition(scene._wh);
+  const dx = b[0] - scene._wh.x, dz = b[2] - scene._wh.z, r = Math.hypot(dx, dz) || 1e-6, h = scene._wh.y - Math.max(0.08, b[1] - 0.05);
+  if (Math.hypot(r, h) <= R) return;
+  const manque = Math.hypot(r, h) - R, drop = Math.min(L.drop, 0.6 * manque), h2 = h - drop;   // le bassin descend de 60 % du manque, avance du reste
+  const lunge = Math.min(L.lunge, Math.max(0, r - Math.sqrt(Math.max(0, R * R - h2 * h2))));
+  pl.hipsNudge([dx / r * lunge * env, -drop * env, dz / r * lunge * env]);
 }

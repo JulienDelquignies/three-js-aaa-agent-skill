@@ -23,7 +23,7 @@ import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
-import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply } from './rondo-touche.js';
+import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
@@ -1090,7 +1090,7 @@ export class Rondo {
       // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
       // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
       // pied d'appui garde son verrou.
-      strikeWarpPlan(this, pl);   // B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
+      strikeWarpPlan(this, pl); touchLunge(this, pl);   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
         const striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;

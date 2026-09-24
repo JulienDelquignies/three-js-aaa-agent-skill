@@ -13867,6 +13867,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pied à < 0,3 m 2 → 10 % (5/50), contrôles au sol 1,9 → 5,6 % (3/54), même passe de jeu de 6 min (sim identique) : le pied LIBRE,
      qui prend la touche à la place du pied planté, est parfois hors de portée. À reprendre dans rondo-touche.js (le corps au contact
      choisi pour le pied libre), sans lever la règle.
+- 433: LE PIED LIBRE VA AU CONTACT, ET LA FENTE DE LA TOUCHE (306, rendu — scenes/rondo-touche.js). Suite du 432 : la règle « jamais un
+     pied d'appui » (juste) faisait remonter les contacts sans pied (touches 2 → 10 %, contrôles 1,9 → 5,6 %). Mesuré sur les ratés : au
+     contact, la HANCHE de la jambe libre est à 0,77-0,97 m du ballon pour une jambe A+B de 0,74-0,80 m — debout (hanche à ~0,85 m du sol)
+     le pied n'atteint que le sol sous elle. Deux lois de rendu : (1) contactRoot vise depuis la hanche de la jambe LIBRE (un pied planté,
+     l'autre libre ; sinon le centre du corps) — portée 0,2 m pour la réception, 0,3 pour la touche de conduite (0,2 pour les deux : touches
+     12 %) ; (2) touchLunge, AVANT le verrou des pieds (à côté de strikeWarpPlan, le patron de la fente de frappe) : le bassin descend de
+     60 % du manque (≤ 0,14 m) et avance du reste (≤ 0,18 ; 0,24 : touches 10 → plus mauvais) jusqu'à 0,97 × la jambe libre. Sabotage
+     'fente-touche'. Mesuré (même passe de 6 min, sim identique) : contrôles au sol sans pied 5,6 → 3,7 % (2/54), touches de conduite 10 %
+     (5/50) — les variantes s'échangent l'un contre l'autre (6 % / 7,4 % ou 10 % / 3,7 %, ~7 ratés sur 104) ; pieds > 3 cm sous le sol
+     89 → ~175 images sur 4 min × 44 pieds (~0,05 %). RESTE : la touche de conduite du pied libre en course (la limite est la jambe contre
+     une hanche haute : une fente plus basse, ou la touche prise sur la bonne foulée — le pied libre à portée — côté sim), les aériens.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
