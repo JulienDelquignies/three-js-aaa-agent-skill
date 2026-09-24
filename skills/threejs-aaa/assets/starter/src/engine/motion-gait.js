@@ -34,8 +34,8 @@ import { fkPose, jointToSpec, quatToEulerXYZ, rx, ry, rz, chain } from './motion
 import { legIK, armJoints, ramp, bump } from './motion-strike.js';
 import { armPose } from './motion-idle.js';   // (A12e) la pose de bras de l'attente, reprise en marche
 import { strideLaw } from './gait.js';
-import { volRef, chevilleRef } from './foulee-rbds.js';
-import { sub, len, quatMul, quatConjugate, quatNormalize, clamp } from './vecmath.js';
+import { volRef, chevilleRef, piedAppuiRef, hancheRef, dutyRef, metatarseRef, APPUI_REF } from './foulee-rbds.js';
+import { sub, len, quatMul, quatConjugate, quatNormalize, clamp, applyQuat } from './vecmath.js';
 import { subRng } from './rng.js';
 
 const D2R = Math.PI / 180;
@@ -66,15 +66,17 @@ const TAU = Math.PI * 2;
 // LE SPRINT EST MESURÉ (2026-09-24) : ancré à 9,47 m/s, la vitesse du sprinter de Dorn 2012 (SimTK runningspeeds, MIT) — appui 0,257
 // (contact × fréquence, 9 sprinteurs de la table de Dorn), antéversion +7,6° (ASIS/sacrum − debout), tronc 16° ; le vol (cuisse, genou,
 // cheville) suit ses courbes (foulee-rbds). Le reste est calé sur son cycle à 6,97 et 9,47 m/s sous contrat (foulee-sondes/sprint-mesure.mjs).
-// LIMITE CONNUE : l'appui de ce modèle (cheville fixe, pivot sur la tête des métatarses, bassin à UNE hauteur pour tout l'appui) ne rejoint
-// pas celui du sprinter — il pose le pied 0,47 L devant la hanche (0,31 mesuré) et tient le bassin 5-7 cm trop bas, le sprinter décollant
-// cheville +16 cm sur la pointe (orteils fléchis) et descendant son bassin PENDANT l'appui (−6 → −11 cm). pitchHS 10° (le sprinter pose le
-// pied à ~2°) est une compensation de l'ajusteur : la pointe relevée en fin de vol garde l'orteil au-dessus du plancher mesuré à 6 m/s.
+// L'APPUI DE COURSE EST MESURÉ (2026-09-24, poids wRun) : l'inclinaison du pied, la hauteur du bassin et la levée des métatarses suivent les
+// coureurs (APPUI_REF : RBDS 2,5-4,5, le sprinter 5,2-9,5 ; foulee-rbds) — pitchHS / pitchTO / drop / bobA des régimes ne servent plus qu'aux
+// mélanges avec la marche. Le point d'appui est géométrique (talon qui roule, métatarses, orteils), la portée ne rabaisse le bassin que
+// LOCALEMENT. bias est calé sur la pose et le décollage mesurés (compare-appui.mjs). Écart restant : au sprint, la géométrie de décollage
+// du sprinter dépasse la jambe du rig de 1,6 % (l'incertitude d'un centre de hanche estimé) — le compromis garde son bassin (sans plongée)
+// et pose le pied ~8 cm plus en avant (0,38 L contre 0,29).
 export const GAIT_REGIMES = {
   walk:   { v: 1.4, s: 0.62, peel: 0.50, bias: 0.20, roll: 0.20, hw: 0.09,  pitchHS: 12, pitchTO: 30, swingH: 0.11, swingPeak: 0.34, swingK: 1.0,  drop: 0.010, bobA: 0.024, bobSign: 1,  pYaw: 4,  pList: 4, pTilt: 0,  lean: 3,  girdle: 4.5, psi: 149, armA: 14, armOff: 0,  elbow: 24, elbowMod: 8,  armElev: 8,  turnout: 8, toeUp: 22 },
-  jog:    { v: 2.5, s: 0.338, peel: 0.756, bias: 0.254, roll: 0.12, hw: 0.07,  pitchHS: 2,  pitchTO: 44, swingH: 0.20, swingPeak: 0.32, swingK: 1.2,  drop: 0.04, bobA: 0.038, bobSign: -1, pYaw: 6,  pList: 5, pTilt: 4.2,  lean: 6,  girdle: 9,   psi: 100, armA: 26, armOff: 6,  elbow: 75, elbowMod: 12, armElev: 11, turnout: 6, toeUp: 18 },
-  run:    { v: 4.5, s: 0.275, peel: 0.836, bias: 0.248, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 75, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.037, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 7.2,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 10, elbow: 90, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
-  sprint: { v: 9.47, s: 0.257, peel: 0.35, bias: 0.105, roll: 0.06, hw: 0.045, pitchHS: 10, pitchTO: 50, swingH: 0.30, swingPeak: 0.42, swingK: 1.0,  drop: 0.035, bobA: 0.005, bobSign: -1, pYaw: 9,  pList: 5, pTilt: 7.6,  lean: 10, girdle: 14,  psi: 92,  armA: 42, armOff: 10, elbow: 92, elbowMod: 18, armElev: 15, turnout: 4, toeUp: 12 },
+  jog:    { v: 2.5, s: 0.338, peel: 0.756, bias: 0.175, roll: 0.12, hw: 0.07,  pitchHS: 2,  pitchTO: 44, swingH: 0.20, swingPeak: 0.32, swingK: 1.2,  drop: 0.04, bobA: 0.038, bobSign: -1, pYaw: 6,  pList: 5, pTilt: 4.2,  lean: 6,  girdle: 9,   psi: 100, armA: 26, armOff: 6,  elbow: 75, elbowMod: 12, armElev: 11, turnout: 6, toeUp: 18 },
+  run:    { v: 4.5, s: 0.275, peel: 0.836, bias: 0.15, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 75, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.037, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 7.2,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 10, elbow: 90, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
+  sprint: { v: 9.47, s: 0.257, peel: 0.35, bias: 0.175, roll: 0.06, hw: 0.045, pitchHS: 10, pitchTO: 50, swingH: 0.30, swingPeak: 0.42, swingK: 1.0,  drop: 0.035, bobA: 0.005, bobSign: -1, pYaw: 9,  pList: 5, pTilt: 7.6,  lean: 10, girdle: 14,  psi: 92,  armA: 42, armOff: 10, elbow: 92, elbowMod: 18, armElev: 15, turnout: 4, toeUp: 12 },
   // la course ARRIÈRE : appui sur l'avant-pied, genou devant en vol, buste droit, bras courts
   back:   { v: 3.0, s: 0.40, peel: 0.20, bias: 0,     roll: 0.05, hw: 0.09, pitchHS: -10, pitchTO: 8, swingH: 0.14, swingPeak: 0.45, swingK: 1.0, drop: 0.060, bobA: 0.025, bobSign: -1, pYaw: 3,  pList: 3, pTilt: -2, lean: 1,  girdle: 5,   psi: 100, armA: 14, armOff: 12, elbow: 70, elbowMod: 6,  armElev: 14, turnout: 6, toeUp: 10 },
   // les PAS CHASSÉS : larges (hw dynamique — jamais de croisement), bas, tronc penché, bras ouverts
@@ -219,22 +221,31 @@ export function griffeH(w, e = GRIFFE_E) {
   return -griffeH(1 - w, e);
 }
 
-export function footPath(u, P_, c, vC, ankleY, Lfoot) {
+export function footPath(u, P_, c, vC, ankleY, Lfoot, pied = null) {
   const p = P_;
   const D = [vC[0] * p.s * p.T, 0, vC[2] * p.s * p.T];                 // déplacement du corps pendant l'appui
   const dir = len(D) > 1e-9 ? [D[0] / len(D), 0, D[2] / len(D)] : [0, 0, -1];
+  // (2026-09-24) en course, le pied pivote comme l'os le fait tourner — J.Foot = ry(ouverture) · rx(inclinaison) incline autour de l'axe
+  // LATÉRAL DU PERSONNAGE, le vecteur du pied déjà ouvert : l'avance du roulé et du pelage suit l'AVANT du personnage (pas la course : en
+  // diagonale l'orteil glissait), la géométrie est celle du pied ouvert dans le plan (haut, avant) (`pied` : { L, a0 } par côté)
+  const ax = (P_.wRun ?? 0) > 0 && pied ? [0, 0, -1] : dir;
   const roll = p.roll * Math.min(1, len(D) / 0.3);                     // pas de déroulé sur place
   const land = [c[0] + D[0] * (0.5 - p.bias), 0, c[2] + D[2] * (0.5 - p.bias)];               // c0
   // (griffé) LE PIVOT EXACT SUR L'ORTEIL : au repos la cheville est AU-DESSUS de l'orteil (α0 = footA0 : 31° shanon, 35° les Rocketbox) ;
   // talon levé de θ, elle tourne autour de lui — Δx = L·(cos α0 − cos(α0+θ)), Δy = L·(sin(α0+θ) − sin α0). La version à pied plat (α0 = 0 :
   // L·(1 − cos θ), L·sin θ) tenait à 22° de décollage (1-3 cm d'erreur) et laissait glisser l'orteil de 6 cm à 58°.
-  const a0 = (p.footA0 ?? 0) * D2R, pivX = (th) => Lfoot * (Math.cos(a0) - Math.cos(a0 + th * D2R));
+  // (2026-09-24) en course, la géométrie EXACTE du pivot : l'os tourne dans le plan (haut, avant) — longueur et angle cheville → métatarses dans ce
+  // plan (le pied ouvert du rig : 1,5 % de moins que la longueur 3D) ; l'orteil dérivait de ~0,5 mm par image
+  const run0 = (P_.wRun ?? 0) > 0 && pied, Lp = run0 ? pied.L : Lfoot;
+  const a0 = (run0 ? pied.a0 : p.footA0 ?? 0) * D2R, pivX = (th) => Lp * (Math.cos(a0) - Math.cos(a0 + th * D2R));
   // LE PIVOT EXACT en course avant (poids p.wRun, celui du vol articulaire — calé sur les coureurs), le déroulé forfaitaire `roll` d'hier
   // en marche, à reculons et en chassés (leurs régimes sont réglés dessus ; aucune donnée ne les recale encore) — fondu continu.
-  const kR = p.wRun ?? 0, advTO = kR * pivX(Math.max(0, p.pitchTO)) + (1 - kR) * (p.griffe ? pivX(Math.max(0, p.pitchTO)) : roll);
-  const lift = [c[0] - D[0] * (0.5 + p.bias) + dir[0] * advTO, 0, c[2] - D[2] * (0.5 + p.bias) + dir[2] * advTO]; // c1
+  // (2026-09-24) …et le roulé sur les orteils du décollage (course) : le vol part EXACTEMENT de la fin de l'appui (avance et levée du métatarse)
+  const kR = p.wRun ?? 0, Lo1 = ORTEIL * Lfoot, lev1 = kR > 0 ? (p.legL ?? 0) * metatarseRef(p.v, 1) : 0, phi1 = Math.asin(clamp(lev1 / Lo1, 0, 0.95));
+  const advTO = kR * (pivX(Math.max(0, p.pitchTO)) + Lo1 * (1 - Math.cos(phi1))) + (1 - kR) * (p.griffe ? pivX(Math.max(0, p.pitchTO)) : roll);
+  const lift = [c[0] - D[0] * (0.5 + p.bias) + ax[0] * advTO, 0, c[2] - D[2] * (0.5 + p.bias) + ax[2] * advTO]; // c1
   const sFix = p.s * (1 - p.peel);
-  let pos, pitch, phase, toe = 0, carry = null, own = null;
+  let pos, pitch, phase, toe = 0, carry = null, own = null, roule = 0;
   if (u < p.s) {
     // APPUI : la cheville recule sous le corps à −v (fixe au monde), puis avance de `roll` en pelant
     const rho = u < sFix ? 0 : sstep((u - sFix) / Math.max(1e-6, p.s - sFix));
@@ -245,15 +256,32 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
     // le sol, puis continue en vol — Dorn 2012) : le pic de la rampe au décollage (même vitesse de pointe). À 55 % du pelage, la rampe
     // CALAIT à la fin de l'appui : la cheville cessait de monter, le corps avançait, le genou claquait de 50 à 17° en 5 ms (66-91 rad/s)
     const peel = u < sFix ? 0 : ramp(u, sFix, sFix + (p.s - sFix) * (0.55 + 0.45 * kR), p.s);
-    pitch = p.pitchHS * flatten - p.pitchTO * peel;
-    if (p.pitchHS < 0) pitch = Math.min(pitch, p.pitchHS * flatten);   // avant-pied : le talon ne descend pas
+    const pitchOld = p.pitchHS * flatten - p.pitchTO * peel;
+    pitch = p.pitchHS < 0 ? Math.min(pitchOld, p.pitchHS * flatten) : pitchOld;   // avant-pied : le talon ne descend pas
     // (griffé) LE DÉROULÉ PIVOTE SUR L'ORTEIL : la cheville avance de L·(1 − cos θ) — la géométrie du pivot, θ le talon levé —
     // au lieu du `roll` forfaitaire (0,1-0,2 m) qui faisait GLISSER l'orteil de 5 à 14 cm par pelage (mesuré au modèle FK)
-    const adv = kR * pivX(Math.max(0, -pitch)) + (1 - kR) * (p.griffe ? pivX(Math.max(0, -pitch)) : roll * rho);
-    pos = [land[0] - D[0] * k + dir[0] * adv, 0, land[2] - D[2] * k + dir[2] * adv];
-    own = [dir[0] * adv, 0, dir[2] * adv];                             // ce que le PIED fait au sol (le pivot) — le reste est le sol qui défile
+    const advOld = kR * pivX(Math.max(0, -pitch)) + (1 - kR) * (p.griffe ? pivX(Math.max(0, -pitch)) : roll * rho);
+    let adv = advOld, x = u / p.s;
     toe = p.toeUp * peel;
     phase = u < sFix ? 'stance' : 'peel';
+    // (2026-09-24) L'APPUI MESURÉ en course (poids kR) : l'inclinaison du pied suit les coureurs (piedAppuiRef — pointe relevée de 13-15° à la
+    // pose chez les coureurs RBDS, à plat chez le sprinter, talon qui se lève dès 10 % de l'appui puis jusqu'à −40 / −74° au décollage),
+    // les deux bouts recalés sur pitchHS / pitchTO (le frein, la boiterie y restent). Le POINT D'APPUI est géométrique : pointe relevée, le
+    // pied pivote sur le TALON (derrière la cheville de 0,57, dessous de 0,49 longueur cheville → MT1 — les coureurs debout) ; talon levé,
+    // sur les MÉTATARSES (pivX) ; à plat, la cheville est fixe. L'avance propre de la cheville en découle (0,15-0,19 L mesurés).
+    if (kR > 0) {
+      const pd = piedAppuiRef(p.v, x) + (p.pitchHS - piedAppuiRef(p.v, 0)) * (1 - sstep(x / 0.3)) + (-p.pitchTO - piedAppuiRef(p.v, 1)) * sstep((x - 0.5) / 0.5);
+      pitch += (pd - pitch) * kR;
+      // …et LE ROULÉ SUR LES ORTEILS : la tête des métatarses se soulève (metatarseRef — nulle chez les coureurs RBDS au décollage, +0,034 à
+      // +0,039 L chez le sprinter, mesurée aux plateformes), les orteils restent posés (longueur 0,45 × cheville → métatarses, la proportion
+      // d'un pied humain) : le pied monte et avance d'autant, l'articulation des orteils se plie (le pied pointé moins leur inclinaison).
+      const t = pitch * D2R, lev = pitch < 0 ? p.legL * metatarseRef(p.v, x) * sstep((x - 0.4) / 0.2) : 0, Lo = ORTEIL * Lfoot,   /* talon levé, seconde moitié de l'appui seulement : à l'image de la pose le métatarse mesuré est encore en l'air (le pied finit d'atterrir) */ phi = Math.asin(clamp(lev / Lo, 0, 0.95));
+      const advN = (pitch > 0 ? p.talonB * Math.cos(t) - p.talonH * Math.sin(t) - p.talonB : pivX(-pitch)) + Lo * (1 - Math.cos(phi));
+      adv = pitch > 0 ? advN : advOld + (advN - advOld) * kR; roule = lev * kR;   // pointe relevée : le talon roule EN ENTIER (mélangé à la marche, il glissait)
+      if (kR >= 0.5) { phase = pitch < -1 ? 'peel' : 'stance'; toe = clamp(-pitch - phi / D2R, 0, 70) * kR + p.toeUp * clamp(-pitch / Math.max(1, p.pitchTO), 0, 1) * (1 - kR); }
+    }
+    pos = [land[0] - D[0] * k + ax[0] * adv, 0, land[2] - D[2] * k + ax[2] * adv];
+    own = [ax[0] * adv, 0, ax[2] * adv];                               // ce que le PIED fait au sol (le pivot) — le reste est le sol qui défile
   } else {
     // VOL : de c1 à c0, le transfert horizontal retardé (le talon monte d'abord), cloche de hauteur
     const w = (u - p.s) / (1 - p.s);
@@ -268,11 +296,15 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
     // (checkClip, cap 30). 0 / absent : la foulée d'hier au bit.
     if (p.griffe) { const kg = p.griffe * griffeH(w, Math.min(GRIFFE_E, GRIFFE_T / Math.max(1e-3, (1 - p.s) * p.T))) * (1 - p.s) * p.T; carry = [-vC[0] * kg, 0, -vC[2] * kg]; pos[0] += carry[0]; pos[2] += carry[2]; }
     pitch = -p.pitchTO * (1 - ramp(w, 0, 0.25, 0.5)) + p.pitchHS * ramp(w, 0.5, 0.8, 1);
-    toe = p.toeUp * (1 - ramp(w, 0, 0.15, 0.3));
+    roule = kR * lev1 * (1 - sstep(w / 0.2));                           // la levée du métatarse du décollage s'éteint en début de vol
+    toe = (kR * clamp(p.pitchTO - phi1 / D2R, 0, 70) + (1 - kR) * p.toeUp) * (1 - ramp(w, 0, 0.15, 0.3));   // (2026-09-24) en course, depuis la flexion du décollage (le pied pointé moins le roulé)
     phase = 'swing';
   }
   // la hauteur : pivot sur l'orteil quand la pointe est basse (talon levé), cloche en vol
-  const th = Math.max(0, -pitch) * D2R, hx = Lfoot * (Math.sin(a0 + th) - Math.sin(a0)), heel = kR * hx + (1 - kR) * (p.griffe ? hx : Lfoot * Math.sin(th));
+  const th = Math.max(0, -pitch) * D2R, hx = Lp * (Math.sin(a0 + th) - Math.sin(a0));
+  let heel = kR * hx + (1 - kR) * (p.griffe ? hx : Lfoot * Math.sin(th));
+  if (phase !== 'swing' && pitch > 0 && kR > 0) { const t = pitch * D2R; heel += p.talonB * Math.sin(t) + p.talonH * Math.cos(t) - p.talonH; }   // (2026-09-24) pointe relevée : le pivot sur le talon soulève la cheville
+  heel += roule;                                                        // …et le roulé sur les orteils
   let y = ankleY + heel;
   if (phase === 'swing') {
     const w = (u - p.s) / (1 - p.s);
@@ -322,6 +354,9 @@ const W_GENOU = 0.5;
  *  la jambe l'a freiné, sans l'arrêter. Le vol articulaire la tient là par un terme d'Hermite (nul en position aux deux bouts, nul en
  *  pente au décollage) ; sans lui la cheville arrivait à ~0,62·v et s'arrêtait net au contact (le genou claquait au sprint). */
 export const POSE_VSOL = 0.43;
+/** La longueur des orteils (articulation → bout), en longueurs cheville → métatarses : 0,45 — la proportion d'un pied humain (orteils ~27 % du
+ *  pied, cheville → métatarses ~60 %) ; le rig n'a pas d'os au bout des orteils. Le roulé du décollage (la tête des métatarses levée). */
+export const ORTEIL = 0.45;
 /** La jambe (angle GLOBAL, degrés, + = cheville devant le genou) que prend une jambe à deux segments dont la cheville est à d = [y, z] de la
  *  hanche (repère personnage, avant = −Z), genou fléchi vers l'avant. */
 function jambeSag(d, L) {
@@ -385,6 +420,13 @@ function volArticulaire(fp, w, wJ, v, L, hipNow, hipTO, hipTD, lift, land, kGeno
  */
 export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) {
   const p = gaitParams(vF, vR, style, opts.override || null, opts.legK ?? gaitLegK(P));   // (A7 bis) la cadence à l'échelle de la jambe du rig (le contrôleur avance l'horloge du même facteur)
+  // (2026-09-24) L'APPUI MESURÉ (course, poids wRun) : le pied se pose et décolle à l'inclinaison des coureurs (piedAppuiRef) ; le talon du rig
+  // (hauteur de sa cheville, et 0,57 / 0,49 de celle-ci derrière — les coureurs debout) ; l'affaissement du RÉGIME (le bassin de course est
+  // mesuré, plus bas) — ce que le jockey et le frein y ajoutent reste.
+  { const kR = p.wRun ?? 0, ov = opts.override || {};
+    if (kR > 0 && ov.pitchHS == null) p.pitchHS += (piedAppuiRef(p.v, 0) - p.pitchHS) * kR;
+    if (kR > 0 && ov.pitchTO == null) p.pitchTO += (-piedAppuiRef(p.v, 1) - p.pitchTO) * kR;
+    p.talonH = P.bones.LeftFoot.bindP[1] - P.lengths.groundY; p.talonB = p.talonH * APPUI_REF.talon.roule; p.drop0 = p.drop; p.legL = P.lengths.thigh + P.lengths.shank; }
   // (A12b) LA RÉCEPTION EN MOUVEMENT : le receveur qui va au-devant du ballon (la sim ne le laisse jamais attendre
   // sur place — 0 % des images de vol sous 0,6 m/s, sonde A12b) garde les bras CALMES : un peu plus ouverts, coudes un peu plus
   // fermés, balancier réduit — l'amplitude vient du PORT DE BRAS de la persona (bras 0..1), pas d'un écart uniforme. `opts.receveur` (true ou { elev, elbow, swing }) — posé par le contrôleur quand la scène
@@ -422,11 +464,23 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const armF = (opts.armSwingF ?? 1) * (opts.receveur ? ((opts.receveur === true ? {} : opts.receveur).swing ?? 0.7) : 1) * (opts.jockey ? ((opts.jockey === true ? {} : opts.jockey).swing ?? 0.5) : 1);
 
   // ---- le bassin : rebond (2/cycle), affaissement, roulis vers le pied d'appui, lacet, tangage
-  const bobPhase = TAU * 2 * (ph - p.s / 2);
-  let bob = p.bobA * p.bobSign * Math.cos(bobPhase);
+  // (2026-09-24) LE BASSIN MESURÉ en course (poids wRun) : la hauteur de la hanche des coureurs sur le demi-cycle (hancheRef — RBDS : à hauteur
+  // debout à la pose et au décollage, −0,08 à −0,09 L à mi-appui ; le sprinter : −0,07 → −0,10 L, plus bas à mesure qu'il va vite), recalée sur
+  // l'appui du générateur (facteur mesuré → p.s). Hier : un affaissement unique pour tout le cycle (le pire instant de l'appui), plus un rebond
+  // symétrique — 3-4 cm trop bas au trot, 5-7 au sprint. La portée ne fait plus que RABAISSER si un pied en sort (la boucle ci-dessous).
+  const kRun = p.wRun ?? 0, dutyD = kRun > 0 ? dutyRef(p.v) : 0.3, sG = Math.min(p.s, 0.49);
+  const bobAt = (x) => {
+    const old = p.bobA * p.bobSign * Math.cos(TAU * 2 * (x - p.s / 2));
+    if (kRun <= 0) return old;
+    const t = ((x % 0.5) + 0.5) % 0.5, td = t < sG ? (t / sG) * dutyD : dutyD + ((t - sG) / (0.5 - sG)) * (0.5 - dutyD);
+    return old + ((L.thigh + L.shank) * hancheRef(p.v, td) - old) * kRun;
+  };
+  let bob = bobAt(ph);
   // le bassin doit ATTEINDRE le pied aux extrêmes (pose et décollage) — l'affaissement nécessaire
   // se calcule, il ne se devine pas (la portée saturée est le patin silencieux des jambes IK)
-  const reach = REACH_K * R;                                            // genou ≥ 12° aux extrêmes de l'appui (la pose mesurée)
+  // genou ≥ 12° aux extrêmes de l'appui (la pose mesurée) — au sprint le décollage se TEND (le sprinter de Dorn aux plateformes : 18 / 17 /
+  // 13 / 7° à 3,5 / 5,2 / 7,0 / 9,5 m/s) : 12° jusqu'à 7 m/s, 7° à 9,5 (2026-09-24)
+  const reach = Math.cos((12 - 5 * clamp((Math.hypot(vF, vR) - 7) / 2.47, 0, 1)) / 2 * D2R) * R;
   const cL = [-p.hw + 0.05 * inG - 0.04 * Math.max(0, inG), 0, 0], cR = [p.hw + 0.05 * inG + 0.04 * Math.max(0, -inG), 0, 0];   // (A7 bis) les pieds glissent vers l'intérieur du virage, l'extérieur s'élargit
   // (A7 ter) LE PAS CROISÉ du virage serré (|aT| > 7 m/s², vF > 3) : la jambe EXTÉRIEURE croise devant l'intérieure — son couloir passe
   // la ligne médiane et se pose à `cross` m À L'INTÉRIEUR du couloir de l'intérieure (qui s'écarte de `wide` vers l'intérieur), le bassin
@@ -436,50 +490,61 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
   const pYawTurn = -6 * kX * sX;
   if (kX > 0) p.swingH *= 1 - 0.12 * kX;                                 // (A7 ter) le vol rase un peu plus dans le pas croisé (le genou reste sous 140°)
-  let drop = p.drop;
+  const listAt = (x) => -p.pList * Math.cos(TAU * (x - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 12 * B.k * (0.5 + 0.5 * Math.cos(TAU * (x - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // (2026-09-24) 12° (hier 10) : sur l'appui réel, plus court, le plongeon se perdait dans le roulis normal   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
+  // (2026-09-24) la hanche EXACTE (le bassin tourné : antéversion, roulis, lacet) pour la portée de la course — la hanche de repos (bind − hipX)
+  // ignorait 1-2 cm de lacet et de roulis : sans la marge du maximum global d'hier, la jambe saturait au pelage des virages serrés
+  const hipsB = P.bones.Hips.bindP, hipRel = (x, side) => applyQuat(sub(P.bones[`${side}UpLeg`].bindP, hipsB), chain(rx(-p.pTilt), rz(listAt(x) - rollIn), ry(-p.pYaw * Math.cos(TAU * x) + pYawTurn)));
+  const needAt = (x, side, fp, marge) => { const r = hipRel(x, side), horiz = Math.hypot(fp.p[0] - hipsB[0] - hipX - r[0], fp.p[2] - hipsB[2] - r[2]); return hipsB[1] + r[1] + bobAt(x) - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + marge; };
+  const axeDe = (side) => { const r = applyQuat(sub(P.bones[`${side}ToeBase`].bindP, P.bones[`${side}Foot`].bindP), ry((side === 'Left' ? 1 : -1) * p.turnout + (opts.plantYaw?.[side] ?? 0)));   // le pied ouvert (J.Foot sans l'inclinaison)
+    return { L: Math.hypot(r[1], r[2]), a0: Math.atan2(-r[1], Math.abs(r[2])) / D2R }; };
+  let drop = p.drop - kRun * p.drop0;                                   // (2026-09-24) en course, l'affaissement du régime s'efface devant le bassin mesuré
+  // (2026-09-24) …et la portée y RABAISSE LOCALEMENT : chaque instant d'appui qui sortirait de portée note son besoin (demi-cycle t) ; une
+  // enveloppe lisse (cosinus, ±0,08 cycle) l'applique autour de lui seulement. Global, le pire instant (la pose ou le décollage, jambe presque
+  // tendue chez les coureurs — genou 11-19°) abaissait tout le cycle de 2-3 cm, et le genou se posait plié à 36-45° (coureurs : 11-13°).
+  const dropBase = drop, besoins = [], note = (u, need) => { if (kRun > 0 && need > dropBase) besoins.push([((u % 0.5) + 0.5) % 0.5, need - dropBase]); };
   // (2026-09-24) L'APPUI SEULEMENT, pelage compris : c'est là qu'un pied hors de portée GLISSE. En vol le chemin de base est atteignable
   // et le griffé est borné par la portée (boundCarry, plus bas) — la marge d'hier (u ≤ s + 0,06) mettait le début du vol dans le calcul,
   // et avec les foulées de Dorn le pied qui traîne derrière faisait tomber le bassin de 10-20 cm pour une jambe qui ne touche plus le sol.
   for (let i = 0; i <= 16; i++) {
     const u = (i / 16) * p.s;
-    const bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));
+    const bobU = bobAt(u);
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
-      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
+      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot, axeDe(side));
       const dx = fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, dz = fp.p[2] - P.bones[`${side}UpLeg`].bindP[2];   // (A7 bis) la hanche de l'instant : glissée…
       const horiz = Math.hypot(dx, dz);
       const maxDown = Math.sqrt(Math.max(0, reach * reach - horiz * horiz));
-      drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - maxDown + 0.005);   // …et montée du côté extérieur du virage
+      const need = hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - maxDown + 0.005, x = side === 'Left' ? u : u + 0.5; if (kRun > 0) note(x, needAt(x, side, fp, 0.005)); else drop = Math.max(drop, need);   // …et montée du côté extérieur du virage
     }
   }
   // (griffé) …ET LE POINT LE PLUS AVANCÉ DU VOL : le pied passe devant son point de pose avant d'y revenir (vitesse sol nulle au contact) ;
   // la jambe doit l'atteindre GENOU À 18°, sinon le retour est coupé par la portée (boundCarry) et le pied arrive lancé, piloté à l'arrêt
   // à l'image du contact (sonde griffe-speeds : 4,7 m/s six millisecondes avant la pose à 4,5 m/s). La fin du vol, à pas fin.
-  if (p.griffe) for (let i = 0; i <= 12; i++) {
+  if (p.griffe && kRun < 0.5) for (let i = 0; i <= 12; i++) {            // (2026-09-24) en course le vol est articulaire et borné par la portée : plus de contrainte ici
     const w = 1 - (i / 12) * 1.6 * Math.min(GRIFFE_E, GRIFFE_T / Math.max(1e-3, (1 - p.s) * p.T)), u = p.s + w * (1 - p.s);
-    const bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));
+    const bobU = bobAt(u);
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
-      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
+      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot, axeDe(side));
       const horiz = Math.hypot(fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, fp.p[2] - P.bones[`${side}UpLeg`].bindP[2]);
-      drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.005);
+      const need = hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.005, x = side === 'Left' ? u : u + 0.5; if (kRun > 0) note(x, needAt(x, side, fp, 0.005)); else drop = Math.max(drop, need);
     }
   }
   if (br > 0 || aT !== 0 || B) for (let i = 0; i <= 32; i++) {             // (A7 bis) sous frein ou virage, l'APPUI entier à pas fin (le vol :
-    const u = (i / 32) * p.s, bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));   // le griffé borné), marge 1,2 cm
+    const u = (i / 32) * p.s, bobU = bobAt(u);   // le griffé borné), marge 1,2 cm
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
-      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
+      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot, axeDe(side));
       const horiz = Math.hypot(fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, fp.p[2] - P.bones[`${side}UpLeg`].bindP[2]);
-      drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.012);
+      const need = hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.012, x = side === 'Left' ? u : u + 0.5; if (kRun > 0) note(x, needAt(x, side, fp, 0.012)); else drop = Math.max(drop, need);
     }
   }
-  const hips = [hipX, -drop + bob, 0];                                // (A7 bis) le bassin glisse vers l'intérieur du virage
+  const rabais = (x) => { const t = ((x % 0.5) + 0.5) % 0.5; let e = 0; for (const [tb, n] of besoins) { let d = Math.abs(t - tb); d = Math.max(0, Math.min(d, 0.5 - d) - 0.03) / 0.08; if (d < 1) e = Math.max(e, n * (0.5 + 0.5 * Math.cos(Math.PI * d))); } return e; };   // plateau ±0,03 (la jambe qui vient se poser est déjà tendue), puis cosinus
+  const hips = [hipX, -drop + bob - rabais(ph), 0];                    // (A7 bis) le bassin glisse vers l'intérieur du virage
   const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn;               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
-  const listAt = (x) => -p.pList * Math.cos(TAU * (x - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 12 * B.k * (0.5 + 0.5 * Math.cos(TAU * (x - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // (2026-09-24) 12° (hier 10) : sur l'appui réel, plus court, le plongeon se perdait dans le roulis normal   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
   const pList = listAt(ph);
   const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
   // la hanche (articulation) à une autre phase du cycle — les deux bouts du vol articulaire
   const hipJointAt = (x, side) => {
     const RH = chain(rx(-p.pTilt), rz(listAt(x) - rollIn), ry(-p.pYaw * Math.cos(TAU * x) + pYawTurn));
-    return fkPose(P, { Hips: jointToSpec(P, 'Hips', RH) }, [hipX, -drop + p.bobA * p.bobSign * Math.cos(TAU * 2 * (x - p.s / 2)), 0])[`${side}UpLeg`].p;
+    return fkPose(P, { Hips: jointToSpec(P, 'Hips', RH) }, [hipX, -drop + bobAt(x) - rabais(x), 0])[`${side}UpLeg`].p;
   };
   // (2026-09-24) LE VOL ARTICULAIRE en course avant (fondu de 1,8 à 2,5 m/s, pleine dès 2,5 ; la marche, la course arrière et les chassés
   // gardent le chemin cartésien) : voir volArticulaire.
@@ -512,7 +577,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', RHips) }, hips);
   const feet = {};
   for (const [side, u, c, sgn] of [['Left', uL, cL, 1], ['Right', uR, cR, -1]]) {
-    const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
+    const fp = footPath(u, pS(side), c, vC, ankleY, L.foot, axeDe(side));
     const hipW = partial[`${side}UpLeg`].p;
     // (2026-09-24) L'APPUI ANCRÉ : le contrôleur tient le pied posé AU MONDE (opts.plant[side], repère personnage de l'instant) — la
     // cible du générateur est calculée dans le repère du CORPS, et un corps qui pivote en appui entraînait le pied dans sa rotation
@@ -522,7 +587,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     if (fp.carry) boundCarry(fp, hipW, REACH_K * R);
     if (fp.phase === 'swing' && wJ > 0) volArticulaire(fp, (u - pS(side).s) / (1 - pS(side).s), wJ, p.v, L, hipW,
       hipJointAt(((side === 'Left' ? 0 : 0.5) + pS(side).s) % 1, side), hipJointAt(side === 'Left' ? 0 : 0.5, side),
-      ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot), b = footPath(0, pS(side), c, vC, ankleY, L.foot); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
+      ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot, axeDe(side)), b = footPath(0, pS(side), c, vC, ankleY, L.foot, axeDe(side)); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
@@ -590,6 +655,16 @@ export function gaitPortrait(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
  * qui plie à l'envers, les bras en phase, le buste qui ne penche pas plus vite, les pieds qui se
  * croisent en pas chassés. Chacune a son sabotage dans verify-foulee.mjs.
  */
+/** Le talon (le point de roulement : hb derrière la cheville, ha dessous au repos) d'une image du portrait, au MONDE — tourné comme l'axe
+ *  cheville → métatarses de la pose FK (indépendant de la variable « pitch » du générateur). */
+function talonDe(A, q, dir, rest) {
+  // l'inclinaison du pied comme la pose l'applique (J.Foot = ry(ouverture) · rx(inclinaison) : autour de l'axe latéral du personnage, le pied
+  // déjà ouvert) : l'axe cheville → métatarses de la FK contre celui du pied ouvert au repos, dans le plan (haut, avant) du personnage
+  const d = sub(A.toe, A.ankle), f = dir;                               // f : l'avant du personnage (le talon roule dans ce plan)
+  const delta = Math.atan2(d[1], -d[2]) - Math.atan2(rest[1], -rest[2]);   // + = pointe relevée par rapport au repos
+  const fw = -q.talonB * Math.cos(delta) + q.talonH * Math.sin(delta), up = -q.talonB * Math.sin(delta) - q.talonH * Math.cos(delta);
+  return { p: [A.ankleW[0] + f[0] * fw, A.ankleW[1] + up, A.ankleW[2] + f[2] * fw], delta };
+}
 export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, opts = {} } = {}) {
   const issues = [];
   const v = Math.hypot(vF, vR);
@@ -601,11 +676,15 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
     for (let i = 0; i < frames.length; i++) {
       const f = frames[i], g = frames[(i + 1) % frames.length], A = f[side], B = g[side];
       if (A.phase === 'stance' && B.phase === 'stance') {
-        // le voyage du monde entre deux images : la cheville fixe ne bouge pas
-        const wrap = (i + 1) % frames.length === 0 ? [vR * T, 0, -vF * T] : [0, 0, 0];
-        const dx = B.ankleW[0] - wrap[0] - A.ankleW[0], dz = B.ankleW[2] - wrap[2] - A.ankleW[2];
+        // le voyage du monde entre deux images : le point d'appui ne bouge pas — le TALON (2026-09-24 : pointe relevée, le pied roule sur lui ;
+        // à plat c'est la cheville, au même déplacement), calculé sur la pose FK (l'axe cheville → métatarses) et la géométrie du talon
+        // (en course seulement : la marche, à reculons et en chassés gardent leur appui d'hier — cheville fixe — et son contrat)
+        const wrap = (i + 1) % frames.length === 0 ? [vR * T, 0, -vF * T] : [0, 0, 0], q = frames[i].meta.params, run = (q.wRun ?? 0) > 0;
+        const sd = side === 'L' ? 'Left' : 'Right', dirC = [0, 0, -1], rest = applyQuat(sub(P.bones[`${sd}ToeBase`].bindP, P.bones[`${sd}Foot`].bindP), ry((side === 'L' ? 1 : -1) * q.turnout));
+        const Ha = talonDe(A, q, dirC, rest), Hb = talonDe(B, q, dirC, rest), pa = !run ? A.ankleW : Ha.delta >= 0 ? Ha.p : A.toeW, pb = !run ? B.ankleW : Ha.delta >= 0 ? Hb.p : B.toeW;
+        const dx = pb[0] - wrap[0] - pa[0], dz = pb[2] - wrap[2] - pa[2];
         slideMax = Math.max(slideMax, Math.hypot(dx, dz) / dt);
-        const lowest = Math.min(A.ankle[1] - ankleY, A.toe[1] - ground);
+        const lowest = Math.min(A.ankle[1] - ankleY, A.toe[1] - ground, run ? Ha.p[1] - (A.ankleW[1] - A.ankle[1]) - ground : 9);
         if (lowest > 0.012) issues.push(`${side} : le pied d'appui flotte à ${(lowest * 100).toFixed(1)} cm du sol (φ ${f.phi.toFixed(2)})`);
       }
       // l'appui MESURABLE : à plat ou en pelage (le talon des coureurs se lève dès 16-35 % de l'appui — 2026-09-24 ; l'orteil du pelage de

@@ -57,3 +57,11 @@ dossier (python avec le paquet `c3d`). À 3,5 m/s ses courbes tombent sur celles
 - `compare-sprint.mjs` : le générateur contre le sprinter (cycle, appui, bassin, cheville à la pose / mi-appui / décollage).
 - `sprint-mesure.mjs` → `sprint-mesure.json` : le régime sprint calé dessus, sous contrat (+ contrats à 6 et 8 m/s).
 - `garde-orteil.py` (RBDS, marqueurs) : la garde du MT1 en vol — le plancher du contrat « le vol rase la pelouse » (quart bas des coureurs).
+
+## L'appui mesuré (2026-09-24)
+
+- `appui-mesure.py` (RBDS, marqueurs + force) → `appui-rbds.json` et `appui-dorn.py` (le sprinter, contacts aux plateformes, même définition)
+  → `appui-dorn.json` : par vitesse, l'inclinaison du pied, la hanche (pose / mi-appui / décollage, et sur le cycle), la cheville, le métatarse,
+  l'avance propre de la cheville, le talon debout. `appui-vers-moteur.py` → `APPUI_REF` (engine/foulee-rbds.js).
+- `compare-appui.mjs` : l'appui du générateur contre ces mesures (en longueurs de jambe) — c'est lui qui a calé `bias`.
+- `glisse-accel.mjs` mesure désormais le glissement du POINT D'APPUI (la cheville moins l'avance propre du pied : le talon qui roule, le pivot).

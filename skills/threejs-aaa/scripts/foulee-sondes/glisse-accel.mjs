@@ -25,6 +25,8 @@ const r = await pg.evaluate((SECS) => {
           if (phase === 'peel' && !pl.sim?.act) { if (!o) openT[j][side] = { x0: tmp.x, z0: tmp.z, n: 1 }; else { o.x1 = tmp.x; o.z1 = tmp.z; o.n++; } }
           else if (o) { if (o.x1 != null && o.n >= 3) outT.push(Math.hypot(o.x1 - o.x0, o.z1 - o.z0)); openT[j][side] = null; } }
         A[j][side].getWorldPosition(tmp);
+        { const f = pl.ctrl._gaitFeet?.[side], own = f?.own, yw = pl.model.rotation.y, c = Math.cos(yw), s = Math.sin(yw);   // (2026-09-24) moins l'avance PROPRE du pied (roulé du talon, pivot) : le glissement réel du point d'appui
+          if (own && f.phase !== 'swing') { tmp.x -= c * own[0] + s * own[2]; tmp.z -= -s * own[0] + c * own[2]; } }
         const o = open[j][side];
         if (phase === 'stance' && !pl.sim?.act) {
           const f = pl.ctrl._gaitFeet[side], pa = pl.ctrl._plants?.[side];
