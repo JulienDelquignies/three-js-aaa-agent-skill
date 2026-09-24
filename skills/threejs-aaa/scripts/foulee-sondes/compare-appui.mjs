@@ -3,7 +3,7 @@
 // (hauteur − debout) à la pose et au décollage, pied (°) à la pose et au décollage, cheville par rapport à la hanche (avant) à la pose et au
 // décollage, genou (pose, max d'appui, décollage), avance propre de la cheville. Usage : node compare-appui.mjs [rig=shanon]
 import { readFileSync } from 'node:fs';
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || new URL('../../../../examples/showcase/src/engine/', import.meta.url).href;
 const R = JSON.parse(readFileSync(new URL('./appui-rbds.json', import.meta.url))), Dn = JSON.parse(readFileSync(new URL('./appui-dorn.json', import.meta.url)));
 const MG = await import(E + 'motion-gait.js'); const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');
 export function appuiGen(P, v, opts = { griffe: 1 }) {

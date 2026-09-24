@@ -1,6 +1,6 @@
 // Le glissement du pied d'appui EN JEU, ventilé par l'accélération du corps pendant l'appui (dynamique) — l'appui = la PHASE du
 // générateur (feet.*.phase === 'stance', pas une détection) ; glisse = déplacement monde de la cheville pendant la phase 'stance'.
-import { chromium } from '/home/delkit/DelkIT/skill-1v1/examples/showcase/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 const [URL, SECS = '60'] = process.argv.slice(2);
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const pg = await b.newPage({ viewport: { width: 320, height: 180 } });
@@ -22,8 +22,8 @@ const r = await pg.evaluate((SECS) => {
       for (const side of ['Left', 'Right']) {
         const phase = pl.ctrl._gaitFeet?.[side]?.phase;
         { A[j][side + 'T'].getWorldPosition(tmp); const o = openT[j][side];
-          if (phase === 'peel' && !pl.sim?.act) { if (!o) openT[j][side] = { x0: tmp.x, z0: tmp.z, n: 1 }; else { o.x1 = tmp.x; o.z1 = tmp.z; o.n++; } }
-          else if (o) { if (o.x1 != null && o.n >= 3) outT.push(Math.hypot(o.x1 - o.x0, o.z1 - o.z0)); openT[j][side] = null; } }
+          if (phase === 'peel' && !pl.sim?.act) { if (!o) openT[j][side] = { x0: tmp.x, z0: tmp.z, n: 1, v: Math.hypot(...vel), yr: dyaw }; else { o.x1 = tmp.x; o.z1 = tmp.z; o.n++; o.yr = Math.max(o.yr, dyaw); } }
+          else if (o) { if (o.x1 != null && o.n >= 3) outT.push([Math.hypot(o.x1 - o.x0, o.z1 - o.z0), o.v, o.yr, o.n]); openT[j][side] = null; } }
         A[j][side].getWorldPosition(tmp);
         { const f = pl.ctrl._gaitFeet?.[side], own = f?.own, yw = pl.model.rotation.y, c = Math.cos(yw), s = Math.sin(yw);   // (2026-09-24) moins l'avance PROPRE du pied (roulé du talon, pivot) : le glissement réel du point d'appui
           if (own && f.phase !== 'swing') { tmp.x -= c * own[0] + s * own[2]; tmp.z -= -s * own[0] + c * own[2]; } }
@@ -43,7 +43,7 @@ const r = await pg.evaluate((SECS) => {
 }, Number(SECS));
 const q = (xs, f) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(f * (s.length - 1))] : NaN; };
 const R = r.out;
-console.log(`${R.length} appuis ; orteil pendant le déroulé : p50 ${(100 * q(r.outT, 0.5)).toFixed(1)} cm, p90 ${(100 * q(r.outT, 0.9)).toFixed(1)} cm (${r.outT.length} déroulés)`);
+const OT = r.outT.map((x) => x[0]); console.log(`${R.length} appuis ; orteil pendant le déroulé : p50 ${(100 * q(OT, 0.5)).toFixed(1)} cm, p90 ${(100 * q(OT, 0.9)).toFixed(1)} cm (${OT.length} déroulés)`); for (const [lo, hi] of [[0, 1], [1, 1.8], [1.8, 2.5], [2.5, 9]]) { const g = r.outT.filter((x) => x[1] >= lo && x[1] < hi); console.log(`  déroulé v ${lo}-${hi} : ${g.length}, orteil p50 ${(100 * q(g.map((x) => x[0]), 0.5)).toFixed(1)} p90 ${(100 * q(g.map((x) => x[0]), 0.9)).toFixed(1)} cm, lacet max p50 ${q(g.map((x) => x[2]), 0.5)?.toFixed(1)}`); }
 for (const [lo, hi] of [[0, 2], [2, 6], [6, 99]]) { const g = R.filter((x) => x.yr >= lo && x.yr < hi && x.v > 1.5); console.log(`lacet ${lo}-${hi} rad/s : ${g.length} appuis, glisse p50 ${(100 * q(g.map((x) => x.slip), 0.5)).toFixed(1)} cm, p90 ${(100 * q(g.map((x) => x.slip), 0.9)).toFixed(1)} cm`); }
 const big = R.filter((x) => x.slip > 0.08 && x.v > 1.5); console.log('appuis qui glissent > 8 cm :', big.length, JSON.stringify(big.slice(0, 8).map((x) => ({ cm: +(100 * x.slip).toFixed(0), lacet: +x.yr.toFixed(1), horsPortee: x.unr, replante: x.rep, verrou: +x.lock.toFixed(2), images: x.n, v: +x.v.toFixed(1) }))));
 for (const [lo, hi] of [[0, 1.5], [1.5, 4], [4, 99]]) {

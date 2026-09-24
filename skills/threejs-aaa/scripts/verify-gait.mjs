@@ -19,8 +19,8 @@ const has = (r, n) => !r.ok && r.issues.some((i) => i.toLowerCase().includes(n.t
 console.log('— la loi de cadence —');
 {
   // (2026-09-24) la table RÉELLE : RBDS 2017 (coureurs amateurs, 2,5-4,5 m/s) puis Dorn 2012 (5,2-8,95 m/s), relue dans le texte du PDF
-  ok('la loi passe par les mesures (RBDS 1,286 / 1,358 / 1,433 Hz à 2,5 / 3,5 / 4,5 m/s ; Dorn 1,47 / 1,75 / 2,18 Hz à 5,2 / 7,0 / 8,95)',
-    [[2.5, 1.286], [3.5, 1.358], [4.5, 1.433], [5.2, 1.47], [7.0, 1.75], [8.95, 2.18]].every(([v, f]) => Math.abs(strideLaw(v) - f) < 1e-9));
+  ok('la loi passe par les mesures (WBDS marche 0,633 / 0,792 / 0,932 / 1,032 / 1,082 Hz à 0,59 → 1,78 m/s ; RBDS 1,286 / 1,358 / 1,433 Hz à 2,5 / 3,5 / 4,5 ; Dorn 1,47 / 1,75 / 2,18 Hz à 5,2 / 7,0 / 8,95)',
+    [[0.586, 0.633], [0.898, 0.792], [1.207, 0.932], [1.506, 1.032], [1.778, 1.082], [2.5, 1.286], [3.5, 1.358], [4.5, 1.433], [5.2, 1.47], [7.0, 1.75], [8.95, 2.18]].every(([v, f]) => Math.abs(strideLaw(v) - f) < 1e-9));
   ok('f·S = v tient aux points de Dorn (1,47 × 3,42 ≈ 5,2 ; 1,75 × 3,99 ≈ 7,0 ; 2,18 × 4,10 ≈ 8,95 — moyennes de coureurs : le produit des moyennes n’est pas la moyenne des produits, 3,3 % à 5,2 — à 4 %)',
     [[5.2, 1.47, 3.42], [7.0, 1.75, 3.99], [8.95, 2.18, 4.10]].every(([v, f, S]) => Math.abs(f * S - v) / v < 0.04));
   ok('les deux sources se recoupent (Dorn 3,52 m/s → 1,31 Hz : la loi y donne ' + strideLaw(3.52).toFixed(3) + ')', Math.abs(strideLaw(3.52) - 1.31) < 0.05);

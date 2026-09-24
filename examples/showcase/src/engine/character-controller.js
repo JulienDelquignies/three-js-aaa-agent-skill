@@ -424,10 +424,12 @@ export class CharacterController {
       if (!a) a = this._plants[side] = { w: toW([base[0], 0, base[1]]), yaw };
       const bc = toC(a.w);
       if (Math.hypot(bc[0] - base[0], bc[1] - base[1]) > 0.3) { a.w = toW([base[0], 0, base[1]]); a.yaw = yaw; }   // re-plante
-      const pc = toC(a.w);
-      plant[side] = [pc[0] + own[0], 0, pc[1] + own[2]];
+      const pc = toC(a.w), py = a.yaw - yaw, cy = Math.cos(py), sy = Math.sin(py);
+      // (2026-09-24) l'avance PROPRE du pied (le talon qui roule, le pivot sur les métatarses) suit l'axe du pied PLANTÉ — son lacet figé —,
+      // pas celui du corps qui tourne dessus (l'orteil dérivait de 6-8 cm au p90 dans les virages lents)
+      plant[side] = [pc[0] + cy * own[0] + sy * own[2], 0, pc[1] - sy * own[0] + cy * own[2]];
       const tw = toW(plant[side]); this.footLock?.drive(li, tw[0], tw[1]);   // …et le verrou, dernier écrivain de la jambe, le tient là
-      plantYaw[side] = ((a.yaw - yaw) * 180) / Math.PI;
+      plantYaw[side] = (py * 180) / Math.PI;
       any = true;
     }
     return any ? repose(plant, plantYaw) : gait;

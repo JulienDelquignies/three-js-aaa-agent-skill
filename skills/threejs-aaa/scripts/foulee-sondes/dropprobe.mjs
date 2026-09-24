@@ -1,7 +1,7 @@
 // L'affaissement du bassin que le générateur CALCULE (meta.drop) pour joe, par vitesse — et qui le fixe : le pied posé devant
 // (u = 0) ou le décollage derrière (fin d'appui). Sonde des paramètres (override) : pitchTO, roll, bias.
 import { readFileSync } from 'node:fs';
-const S = '/home/delkit/DelkIT/skill-1v1/';
+const S = decodeURI(new URL('../../../../', import.meta.url).pathname) + '';
 const THREE = await import(S + 'examples/showcase/node_modules/three/build/three.webgpu.js');
 const { adaptBip01 } = await import(S + 'examples/showcase/src/engine/rig-bip01.js');
 const { rigBones } = await import(S + 'examples/showcase/src/engine/squad.js');

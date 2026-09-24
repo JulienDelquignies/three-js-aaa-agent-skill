@@ -1,5 +1,5 @@
 import fs from 'fs';
-const E = '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const src = fs.readFileSync(E + 'motion-gait.js', 'utf8');
 const V = {
   base: [],

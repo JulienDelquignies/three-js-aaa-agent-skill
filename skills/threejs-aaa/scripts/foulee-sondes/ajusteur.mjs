@@ -3,7 +3,7 @@
 // genou ≤ 140°, cuisse [−30, 80]°, symétrie, pas = v·T/2 ; checkClip à 60 Hz sur shanon). Deux rigs à la fois : shanon (jambe 0,76 m)
 // et foot-18 (Rocketbox, 0,80 m). Descente coordonnée bornée ; sortie : les valeurs et le rapport, validés à 3,5 m/s (interpolé).
 import { readFileSync, writeFileSync } from 'node:fs';
-const S = '/home/delkit/DelkIT/skill-1v1/';
+const S = decodeURI(new URL('../../../../', import.meta.url).pathname) + '';
 const E = S + 'examples/showcase/src/engine/';
 const THREE = await import(S + 'examples/showcase/node_modules/three/build/three.webgpu.js');
 const MG = await import(E + 'motion-gait.js');

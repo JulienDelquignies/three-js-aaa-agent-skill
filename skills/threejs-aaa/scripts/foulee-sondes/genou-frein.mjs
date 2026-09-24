@@ -1,5 +1,5 @@
 // Le genou en VOL (max) du générateur : ligne droite contre frein / virage, à vitesse égale ; la référence des coureurs (volRef).
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const MG = await import(E + 'motion-gait.js'); const { SHANON_PROFILE: P } = await import(E + 'motion-profile-shanon.js');
 const { volRef } = await import(E + 'foulee-rbds.js');
 const ref = (v) => { let m = 0; for (let i = 0; i <= 40; i++) m = Math.max(m, volRef(v, i / 40).genou); return m; };

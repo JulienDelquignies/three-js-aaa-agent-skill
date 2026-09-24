@@ -312,15 +312,19 @@ console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
   // pivot exact sur l'orteil — griffé ou non, la même foulée. Ses lois se jugent donc en marche ; celles de la course, sur les coureurs
   // de Fukuchi 2017 (RBDS, marqueurs et forces : foulee-sondes/pied-vitesse.py) — le talon se pose à ~0,43·v (p90 ~0,6-0,8·v), MT1
   // quitte le sol en 17-27 ms pour 1,5 cm (p90 20-33) ; le sabotage de chaque clause de course est le chemin cartésien d'hier.
-  let pire = { pose: 0, decolle: 0, appui: 0 }, hier = Infinity;
-  for (const v of [1.4, 1.8]) {
-    const g = solVitesse(v, { griffe: 1 }), h = solVitesse(v, {});
-    pire = { pose: Math.max(pire.pose, g.pose), decolle: Math.max(pire.decolle, g.decolle), appui: Math.max(pire.appui, g.appui) };
-    hier = Math.min(hier, h.pose, h.decolle);
-  }
-  ok(pire.pose <= 0.5 && pire.decolle <= 0.5, `griffé (marche) : la cheville se pose à ≤ ${pire.pose.toFixed(2)} m/s et décolle à ≤ ${pire.decolle.toFixed(2)} m/s au monde (1,4 → 1,8 m/s ; plafond 0,5)`);
-  ok(pire.appui < 0.005, `griffé : l'appui reste fixe au monde (${(100 * pire.appui).toFixed(2)} cm au pire)`);
-  ok(hier >= 1.0, `sabotage — la marche d'hier (sans griffé) pose et décolle le pied à ≥ ${hier.toFixed(2)} m/s : la clause mord`);
+  // (2026-09-24) LA MARCHE EST MESURÉE (WBDS, 24 jeunes adultes) : jambe presque tendue à la pose (genou 1-3°), bassin au plus haut à
+  // mi-appui (−0,4 à −1,4 cm) — la marche d'hier (le modèle cartésien, wRun 0) posait le genou plié à 43-65°, le bassin 5-15 cm trop bas
+  // (« la marche accroupie »). (Les plafonds de vitesse de la cheville d'hier — 0,5 m/s à la pose — ne tiennent pas aux mesures : aux
+  // évènements de Zeni la cheville des marcheurs avance à ~1,03·v à la pose, ~1,5·v au décollage ; le point d'appui, lui, est tenu par
+  // checkGaitGen : talon, métatarses.)
+  const marche = (v, o) => { const pr = gaitPortrait(P, { vF: v, vR: 0, n: 200, opts: o }), F = pr.frames, to = F.findIndex((f) => f.L.phase === 'swing'), Lg = P.lengths.thigh + P.lengths.shank;
+    const hh = F.map((f) => (f.L.hip[1] - P.bones.LeftUpLeg.bindP[1]) / Lg); return { genouPose: F[0].L.kneeAngle, hautMi: Math.max(...hh.slice(0, to)), bas: Math.min(...hh) }; };
+  const WBDS_BAS = { 0.9: -0.048, 1.2: -0.056, 1.5: -0.065 };   // le point bas de la hanche des marcheurs (double appui), en longueurs de jambe — marche-wbds.json
+  let pireG = 0, pireH = 0, ecart = 0, hierEcart = 9;
+  for (const v of [0.9, 1.2, 1.5]) { const g = marche(v, { griffe: 1 }), h = marche(v, { griffe: 1, override: { wRun: 0 } });
+    pireG = Math.max(pireG, g.genouPose); pireH = Math.min(pireH, g.hautMi); ecart = Math.max(ecart, Math.abs(g.bas - WBDS_BAS[v])); hierEcart = Math.min(hierEcart, WBDS_BAS[v] - h.bas); }
+  ok(pireG <= 30 && pireH >= -0.02 && ecart <= 0.015, `marche (0,9 → 1,5 m/s) : la jambe se pose presque tendue (genou ≤ ${pireG.toFixed(0)}° — marcheurs 1-3°, le résidu est la normalisation de la jambe à 1,7 %), le bassin culmine à mi-appui (≥ ${(100 * pireH).toFixed(1)} % de jambe ; marcheurs −0,4 à −1,4 %) et son point bas suit les marcheurs à ${(100 * ecart).toFixed(1)} % près`);
+  ok(hierEcart >= 0.02, `sabotage — la marche d'hier (le modèle cartésien, wRun 0) plonge le bassin ${(100 * hierEcart).toFixed(1)} % de jambe (au moins) sous les marcheurs : la clause mord`);
   let run = { pose: 0, decolle: 0 }, runHier = Infinity;
   for (const v of [3, 4.5, 6]) { const s = solVitesse(v, {}); run = { pose: Math.max(run.pose, s.pose / v), decolle: Math.max(run.decolle, s.decolle / v) }; runHier = Math.min(runHier, solVitesse(v, { override: { wRun: 0 } }).pose / v); }
   ok(run.pose <= 0.8 && run.decolle <= 0.8, `course (3 → 6 m/s) : la cheville se pose à ≤ ${run.pose.toFixed(2)}·v et décolle à ≤ ${run.decolle.toFixed(2)}·v au monde (les coureurs : talon ~0,43·v, p90 ~0,6-0,8·v ; plafond 0,8·v)`);
@@ -337,10 +341,10 @@ console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
     return { d, vmax };
   };
   let pd = { d: 0, vmax: 0 }, hd = Infinity, pr_ = 0;
-  for (const v of [1.4, 1.8]) { const g = orteilDeroule(v, { griffe: 1 }), h = orteilDeroule(v, {}); pd = { d: Math.max(pd.d, g.d), vmax: Math.max(pd.vmax, g.vmax) }; hd = Math.min(hd, h.d); }
+  for (const v of [1.4, 1.8]) { const g = orteilDeroule(v, { griffe: 1 }), h = orteilDeroule(v, { override: { wRun: 0 } }); pd = { d: Math.max(pd.d, g.d), vmax: Math.max(pd.vmax, g.vmax) }; hd = Math.min(hd, h.d); }
   for (const v of [3, 4.5, 6]) pr_ = Math.max(pr_, orteilDeroule(v, {}).d);
   ok(pd.d <= 0.05 && pd.vmax <= 1.5, `griffé (marche) : pendant le déroulé l'orteil reste planté (≤ ${(100 * pd.d).toFixed(1)} cm, pointe ${pd.vmax.toFixed(2)} m/s ; plafonds 5 cm, 1,5 m/s)`);
-  ok(hd > 0.05, `sabotage — en marche sans griffé, l'orteil glisse de ≥ ${(100 * hd).toFixed(1)} cm par déroulé : la clause mord`);
+  ok(hd > 0.05, `sabotage — en marche d'hier (le déroulé forfaitaire, wRun 0), l'orteil glisse de ≥ ${(100 * hd).toFixed(1)} cm par déroulé : la clause mord`);
   ok(pr_ <= 0.02, `course (3 → 6 m/s, sans griffé) : l'orteil reste planté pendant le déroulé (≤ ${(100 * pr_).toFixed(1)} cm — le pivot exact)`);
   // …ET LE PIED SE DÉCOLLE FRANCHEMENT en course : l'orteil rase la pelouse (< 1,5 cm à > 1 m/s) moins longtemps que les coureurs au p90
   const orteilRase = (vF, opts) => {

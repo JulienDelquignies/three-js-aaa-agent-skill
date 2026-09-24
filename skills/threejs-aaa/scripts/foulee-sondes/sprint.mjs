@@ -2,7 +2,7 @@
 // CONTRAT (avec et sans griffé, deux rigs, checkClip) et vraisemblable : genou à la pose ~15°, appui max ~50°, bassin à mi-appui
 // ~−0,12 L, vol collé à la référence prolongée (volRef).
 import { readFileSync, writeFileSync } from 'node:fs';
-const S = '/home/delkit/DelkIT/skill-1v1/', E = S + 'examples/showcase/src/engine/';
+const S = decodeURI(new URL('../../../../', import.meta.url).pathname) + '', E = S + 'examples/showcase/src/engine/';
 const THREE = await import(S + 'examples/showcase/node_modules/three/build/three.webgpu.js');
 const MG = await import(E + 'motion-gait.js'); const { volRef } = await import(E + 'foulee-rbds.js');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');

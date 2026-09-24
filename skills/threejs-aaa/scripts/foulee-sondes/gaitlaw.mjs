@@ -1,6 +1,6 @@
 // Ce que le générateur PRÉVOIT par vitesse (avant, style neutre) contre la littérature (temps de contact : Weyand 2000,
 // Cavanagh & Kram 1989, Nummela 2007 ; foulée = 2 pas).
-const E = '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const { gaitParams, gaitLegK } = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');
 const LIT = { 3: { tc: 0.27, S: 2.2 }, 4: { tc: 0.225, S: 2.8 }, 5: { tc: 0.19, S: 3.4 }, 6: { tc: 0.165, S: 3.9 }, 7: { tc: 0.14, S: 4.3 }, 8: { tc: 0.12, S: 4.6 } };

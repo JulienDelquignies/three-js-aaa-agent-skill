@@ -1,6 +1,6 @@
 // Les contrats de foulée (checkGaitGen) sur le PROFIL d'un joueur Rocketbox du duel (foot-18), griffé 1, de 1,4 à 8 m/s + virages/frein.
 import { readFileSync } from 'node:fs';
-const S = '/home/delkit/DelkIT/skill-1v1/';
+const S = decodeURI(new URL('../../../../', import.meta.url).pathname) + '';
 const THREE = await import(S + 'examples/showcase/node_modules/three/build/three.webgpu.js');
 const { adaptBip01 } = await import(S + 'examples/showcase/src/engine/rig-bip01.js');
 const { rigBones } = await import(S + 'examples/showcase/src/engine/squad.js');

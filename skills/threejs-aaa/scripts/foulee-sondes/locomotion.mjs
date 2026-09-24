@@ -7,7 +7,7 @@
 //   bassin    oscillation crête-crête par pas (cm)          — 6-10 cm en course (Cavanagh)
 //   hanche    hauteur moyenne du bassin − debout (cm)
 // Usage : node locomotion.mjs <url> [secondes=60]
-import { chromium } from '/home/delkit/DelkIT/skill-1v1/examples/showcase/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 const [URL, SECS = '60'] = process.argv.slice(2);
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const pg = await b.newPage({ viewport: { width: 320, height: 180 } });

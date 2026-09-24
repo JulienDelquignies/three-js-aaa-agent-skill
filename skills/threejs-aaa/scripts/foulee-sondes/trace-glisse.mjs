@@ -1,6 +1,6 @@
 // Les appuis qui glissent > 8 cm EN JEU : trace image par image (phase, cheville monde, cible du verrou, portée réelle hanche→cible
 // contre A+B, poids du verrou, act de la sim, lacet, vitesse)
-import { chromium } from '/home/delkit/DelkIT/skill-1v1/examples/showcase/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 const [URL, SECS = '60'] = process.argv.slice(2);
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const pg = await b.newPage({ viewport: { width: 320, height: 180 } });

@@ -1,5 +1,5 @@
 // Où la hanche dépasse-t-elle −30° ? Portrait fin (480), shanon et foot-18, griffé 1/0 : phase, u, cheville (derrière, hauteur), genou, bassin.
-const E = '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const { gaitPortrait } = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');
 for (const [name, P] of [['shanon', SHANON_PROFILE]]) for (const v of [4.5, 6, 8]) for (const g of [1, 0]) {

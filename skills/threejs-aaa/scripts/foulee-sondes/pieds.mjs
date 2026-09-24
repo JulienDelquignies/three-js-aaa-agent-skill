@@ -2,7 +2,7 @@
 //   glissement d'appui : vitesse horizontale du pied quand il est au sol (devrait être ≈ 0)
 //   dégagement : hauteur max du pied entre deux appuis (un pied qui ne se lève pas « traîne »)
 // ventilé par allure du corps (sim) : lent < 1,5 m/s, trot 1,5-4, course > 4.
-import { chromium } from '/home/delkit/DelkIT/skill-1v1/examples/showcase/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 const VARIANT = process.env.VARIANT || 'base'; const pages = process.argv.slice(2);
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 for (const url of pages) {

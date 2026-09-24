@@ -1,5 +1,5 @@
 // Où le genou dépasse-t-il 30 rad/s ? Portrait fin (480 images) du cycle, shanon, griffé 1 et 0 ; vitesse du genou et phase.
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const { gaitPortrait, gaitLegK, gaitLegFactor } = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE: P } = await import(E + 'motion-profile-shanon.js');
 for (const v of [3, 4.5, 6.5, 8]) for (const g of [1, 0]) {

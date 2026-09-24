@@ -1,6 +1,6 @@
 // Par vitesse : cheville au monde à la pose / au décollage (même instrument que verify-foulee), temps de rasage de l'orteil,
 // et part du griffé retenue par la portée (λ moyen en fin de vol).
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const { gaitPortrait } = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE: P } = await import(E + 'motion-profile-shanon.js');
 for (const v of [1.4, 3, 4.5, 6]) {

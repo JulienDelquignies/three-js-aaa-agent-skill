@@ -65,3 +65,22 @@ dossier (python avec le paquet `c3d`). À 3,5 m/s ses courbes tombent sur celles
   l'avance propre de la cheville, le talon debout. `appui-vers-moteur.py` → `APPUI_REF` (engine/foulee-rbds.js).
 - `compare-appui.mjs` : l'appui du générateur contre ces mesures (en longueurs de jambe) — c'est lui qui a calé `bias`.
 - `glisse-accel.mjs` mesure désormais le glissement du POINT D'APPUI (la cheville moins l'avance propre du pied : le talon qui roule, le pivot).
+
+## La marche : Fukuchi, Fukuchi & Duarte 2018 (WBDS, figshare 5722711, CC BY 4.0)
+
+PeerJ 6:e4640 — le labo de RBDS : 24 jeunes adultes sur tapis, 8 vitesses (0,4 → 2,2 m/s), marqueurs à 150 Hz (mêmes conventions).
+Télécharger `WBDSxxwalkT01…T08mkr.txt` et `WBDSxxstatic.txt` dans un dossier de travail. Évènements cinématiques de Zeni 2008 (la pose =
+talon le plus en avant du bassin, le décollage = MT1 le plus en arrière) : pas de plateformes de force sous un tapis de marche.
+
+- `marche-mesure.py` → `marche-wbds.json` : par classe de vitesse (0,59 / 0,90 / 1,21 / 1,51 / 1,78 m/s), cadence, appui, vol réaligné
+  (cuisse globale, genou, cheville), appui (pied, cheville, MT1, hanche sur le cycle), pose / décollage, avance propre, garde du MT1 en vol.
+- `marche-vers-moteur.py marche-wbds.json <engine>/foulee-rbds.js` → `MARCHE_VOL` et les nœuds de marche d'`APPUI_REF`. À lancer APRÈS
+  `appui-vers-moteur.py` (qui réécrit `APPUI_REF` avec les seules vitesses de course).
+- `compare-marche.mjs` : la marche du générateur contre les marcheurs (en longueurs de jambe). Écart restant : le genou à la pose (20-30°
+  contre 1-3°) — la jambe du rig contre la géométrie des données ; la cadence du rig est ~14 % plus haute (legK, voulu).
+- Ce que ces mesures ont changé : la portée du bassin à 4° en marche (12° l'accroupissait), `bias` 0,10 (balayé), le plancher de l'orteil
+  en vol (`plancherOrteil` : médiane MT1 0,7 cm, quart bas 0,3-0,4), le poids wRun étendu à la marche, et le contrat — à la pose, les
+  marcheurs ont la cheville à ~1,0-1,5·v (événements de Zeni) : le « talon qui se pose immobile » n'est pas une loi de la marche.
+- En jeu : `glisse-accel.mjs` compte aussi l'orteil pendant le DÉROULÉ. C'est lui qui a trouvé que l'avance propre du pied (le talon qui
+  roule, le pivot sur les métatarses) suivait l'axe du CORPS qui tourne au-dessus du pied planté (orteil p90 6-8 cm dans les virages
+  lents) : elle suit maintenant l'axe du pied planté (motion-gait `axeDe`, character-controller `_anchorStance`) — p90 2-3 cm.

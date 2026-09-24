@@ -2,7 +2,7 @@
 // 5,19 / 6,97 / 9,47 m/s : cycle complet (0 = pose), genou et cuisse globale (rms), appui, bassin à mi-appui, géométrie de la pose et du
 // décollage — longueurs rapportées à la jambe (hanche-cheville : 0,925 m chez JA1, cuisse + jambe du rig).
 import { readFileSync } from 'node:fs';
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const D = JSON.parse(readFileSync(new URL('./dorn-sprint.json', import.meta.url)));
 process.env.ENG = E; const { measure } = await import('./compare.mjs');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');

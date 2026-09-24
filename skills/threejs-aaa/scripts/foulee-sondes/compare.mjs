@@ -2,7 +2,7 @@
 // (sans ambiguïté de repère), cuisse GLOBALE (hanche Visual3D − inclinaison du bassin mesurée sur les marqueurs), cheville (forme :
 // moyenne retirée — le zéro du pied diffère). Cycle sur 101 points, 0 = pose (les deux conventions).
 import { readFileSync } from 'node:fs';
-const E = process.env.ENG || '/home/delkit/DelkIT/skill-1v1/examples/showcase/src/engine/';
+const E = process.env.ENG || decodeURI(new URL('../../../../', import.meta.url).pathname) + 'examples/showcase/src/engine/';
 const R = JSON.parse(readFileSync(new URL('./rbds-moyennes.json', import.meta.url)));
 const { gaitPortrait } = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');

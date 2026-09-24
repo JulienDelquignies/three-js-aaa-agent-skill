@@ -32,7 +32,8 @@
 
 /**
  * LA LOI DE CADENCE — fréquence de CYCLE COMPLET (deux appuis) en Hz, en fonction de la vitesse sol, MESURÉE :
- *   marche typique 1,4 m/s → 0,93 Hz (foulée 1,5 m) ;
+ *   la MARCHE de 24 jeunes adultes (Fukuchi, Fukuchi & Duarte 2018, PeerJ 6:e4640 — WBDS, figshare 5722711 ; tapis, évènements de Zeni) :
+ *   0,59 m/s → 0,633 Hz, 0,90 → 0,792, 1,21 → 0,932, 1,51 → 1,032, 1,78 → 1,082 (hier « 1,4 m/s → 0,93 Hz » et une puissance 0,25 dessous) ;
  *   la course des coureurs AMATEURS (Fukuchi, Fukuchi & Duarte 2017, PeerJ 5:e3298 — RBDS, figshare 4543435 ; fréquence dominante de
  *   l'altitude du talon, 14 coureurs sur tapis) : 2,5 m/s → 1,286 Hz (154 pas/min), 3,5 → 1,358, 4,5 → 1,433 ;
  *   la course rapide et le sprint (Dorn, Schache & Pandy 2012, J Exp Biol 215:1944, table 2 — relue dans le texte du PDF) :
@@ -41,16 +42,15 @@
  * (2026-09-24 : la loi d'avant se disait « Dorn table 2, relue dans le papier » et valait 1,88 / 2,21 / 2,63 Hz — 1,43 à 1,50 × la
  * table : 281 pas/min à 4 m/s, des pas de marche à vitesse de course, sans vol — « ils collent au sol ».)
  */
+export const WBDS_2018 = [[0.586, 0.633, 0.707], [0.898, 0.792, 0.679], [1.207, 0.932, 0.662], [1.506, 1.032, 0.646], [1.778, 1.082, 0.635]];   // [v m/s, f Hz, appui] — la marche
 export const RBDS_2017 = [[2.5, 1.286, 0.338], [3.5, 1.358, 0.299], [4.5, 1.433, 0.275]];   // [v m/s, f Hz, appui : contact (force > 50 N) × f]
 export const DORN_2012 = [[3.52, 1.31, 0.243], [5.2, 1.47, 0.188], [7.0, 1.75, 0.145], [8.95, 2.18, 0.118]];   // [v m/s, f Hz, contact s]
-const LAW = [[0, 0], [1.4, 0.93], ...RBDS_2017.map(([v, f]) => [v, f]), ...DORN_2012.slice(1).map(([v, f]) => [v, f])];
+const LAW = [...WBDS_2018.map(([v, f]) => [v, f]), ...RBDS_2017.map(([v, f]) => [v, f]), ...DORN_2012.slice(1).map(([v, f]) => [v, f])];
 export function strideLaw(v) {
   const x = Math.max(0, Math.min(8.95, Math.abs(v)));
-  // SOUS LA MARCHE (< 1,4 m/s) : la foulée RACCOURCIT avec l'allure (S ∝ v^0,75 — 0,59 m à 0,4 m/s,
-  // 0,28 m à 0,15) au lieu de garder les 1,5 m du segment linéaire (f ∝ v ⇒ S constante : un joueur
-  // qui se replace à 0,4 m/s faisait des enjambées de 1,5 m au ralenti — mesuré avec la foulée
-  // générée du lot A7, où le chemin de pied suit la loi à la lettre). Continu en 1,4.
-  if (x < 1.4) return 0.93 * Math.pow(x / 1.4, 0.25);
+  // SOUS LA MARCHE MESURÉE (< 0,59 m/s) : la foulée continue de RACCOURCIR, à la pente des marcheurs entre 0,59 et 0,90 m/s (f ∝ v^0,52 :
+  // S ∝ v^0,48) — un joueur qui se replace à 0,3 m/s ne fait pas d'enjambées de marche au ralenti. Continu en 0,586.
+  if (x < 0.586) return 0.633 * Math.pow(x / 0.586, 0.52);
   for (let i = 1; i < LAW.length; i++) {
     if (x <= LAW[i][0]) {
       const [x0, y0] = LAW[i - 1], [x1, y1] = LAW[i];

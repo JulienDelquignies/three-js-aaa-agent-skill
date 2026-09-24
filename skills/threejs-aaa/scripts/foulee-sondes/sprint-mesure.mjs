@@ -3,7 +3,7 @@
 // bassin à mi-appui, orteil à la pose et au décollage (en longueurs de jambe) — SOUS CONTRAT (checkGaitGen avec et sans griffé, deux rigs,
 // checkClip sur shanon). Sortie : sprint-mesure.json et le rapport.
 import { readFileSync, writeFileSync } from 'node:fs';
-const S = '/home/delkit/DelkIT/skill-1v1/', E = process.env.ENG || S + 'examples/showcase/src/engine/';
+const S = decodeURI(new URL('../../../../', import.meta.url).pathname) + '', E = process.env.ENG || S + 'examples/showcase/src/engine/';
 const THREE = await import(S + 'examples/showcase/node_modules/three/build/three.webgpu.js');
 const MG = await import(E + 'motion-gait.js');
 const { SHANON_PROFILE } = await import(E + 'motion-profile-shanon.js');
