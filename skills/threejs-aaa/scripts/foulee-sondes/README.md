@@ -24,6 +24,8 @@ Y haut, mm ; forces à 300 Hz (colonne Time = indice d'échantillon).
 - `compare.mjs` : genou, cuisse globale, cheville, appui du générateur contre la référence (`ENG=` pour un autre arbre).
 - `ajusteur.mjs` → `ajuste.json` : descente coordonnée des régimes jog / run sur les courbes, sous contrats, deux rigs.
 - `sprint.mjs` → `sprint.json` : le régime sprint (pas de coureurs mesurés au-delà de 4,5 m/s : sous contrat et vraisemblable).
+- `genou-frein.mjs` : pic du genou en vol, ligne droite contre frein / virage, face au pic des coureurs ; `genou-decomp.mjs` : quel
+  recalage du vol (décollage, pose, Hermite) fait l'excès (c'est lui qui a désigné le recalage cartésien du décollage, 24/09).
 - `gaitlaw.mjs`, `dropprobe.mjs`, `knee2.mjs`, `hipdiag.mjs`, `griffe-speeds.mjs`, `contrat-rb.mjs` : sondes ponctuelles (loi de
   cadence, affaissement du bassin, vitesse du genou, cuisse, vitesses du pied, contrat sur un Rocketbox — checkClip y lit des Euler
   en axes Mixamo, sans valeur sur un Biped).

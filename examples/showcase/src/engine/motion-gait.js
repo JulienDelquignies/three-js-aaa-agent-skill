@@ -302,7 +302,14 @@ function boundCarry(fp, hip, rmax) {
  *  93-116° : le talon qui ne monte pas, c'est « ils collent au sol ». La cheville = hanche de l'instant + FK plane (cuisse θ, jambe
  *  θ − κ, dans le plan de course) ; deux recalages lissés (smoothstep) la font partir EXACTEMENT du point de décollage et arriver
  *  EXACTEMENT au point de pose (la hanche prise à ces deux phases) — la continuité avec l'appui est gardée ; le rappel de la jambe
- *  avant la pose est dans les courbes (la cuisse culmine vers 84 % du cycle puis recule). Le latéral reste celui du chemin. */
+ *  avant la pose est dans les courbes (la cuisse culmine vers 84 % du cycle puis recule). Le latéral reste celui du chemin.
+ *  (2026-09-24) Les recalages sont POLAIRES autour de la hanche : l'écart de DIRECTION (la cuisse) se fond sur tout le vol, l'écart de
+ *  LONGUEUR hanche-cheville (le genou) s'éteint avant le pic de flexion des coureurs (mi-vol, W_GENOU) et celui de la pose n'apparaît
+ *  qu'après. En cartésien, le décollage du frein (pied 18 cm derrière la hanche au lieu de 40 : appui court et avancé) tirait tout le
+ *  début du vol 23 cm vers l'avant, SOUS la hanche — le genou se repliait de +12° au frein, +10° en virage serré, +15° les deux (132-135°
+ *  à 4,5 m/s pour 116 chez les coureurs). */
+/** Le pic de flexion du genou en vol, dans les courbes réalignées des coureurs (foulee-rbds) : w = 0,50 à 2,5 / 3,5 / 4,5 m/s. */
+const W_GENOU = 0.5;
 /** À la pose, le pied des coureurs avance encore au sol à ~0,43·v (talon, médiane — RBDS, foulee-sondes/pied-vitesse.py) : le rappel de
  *  la jambe l'a freiné, sans l'arrêter. Le vol articulaire la tient là par un terme d'Hermite (nul en position aux deux bouts, nul en
  *  pente au décollage) ; sans lui la cheville arrivait à ~0,62·v et s'arrêtait net au contact (le genou claquait au sprint). */
@@ -312,12 +319,23 @@ function volArticulaire(fp, w, wJ, v, L, hipNow, hipTO, hipTD, lift, land, kGeno
   // au sommet, le pied qui dégage encore la pelouse en fin de vol (un genou replié moins tout du long la rasait sous les 4 cm)
   const kAt = (x) => 1 - (1 - kGenou) * (1 - sstep((x - 0.3) / 0.4));
   const fk = (r, x) => { const a = r.cuisse * D2R, b = (r.cuisse - r.genou * kAt(x)) * D2R; return [-L.thigh * Math.cos(a) - L.shank * Math.cos(b), -L.thigh * Math.sin(a) - L.shank * Math.sin(b)]; };   // [y, z] depuis la hanche (avant = −Z)
-  const f0 = fk(volRef(v, 0), 0), f1 = fk(volRef(v, 1), 1), fw = fk(volRef(v, w), w), h = sstep(w);
-  const d0 = [lift[1] - hipTO[1] - f0[0], lift[2] - hipTO[2] - f0[1]], d1 = [land[1] - hipTD[1] - f1[0], land[2] - hipTD[2] - f1[1]];
-  let y = hipNow[1] + fw[0] + d0[0] * (1 - h) + d1[0] * h, z = hipNow[2] + fw[1] + d0[1] * (1 - h) + d1[1] * h;
+  // [longueur, direction] depuis la hanche (direction 0 = à la verticale, + = en arrière)
+  const pol = (q) => [Math.hypot(q[0], q[1]), Math.atan2(q[1], -q[0])];
+  const [r0, a0] = pol(fk(volRef(v, 0), 0)), [r1, a1] = pol(fk(volRef(v, 1), 1));
+  const [rL, aL] = pol([lift[1] - hipTO[1], lift[2] - hipTO[2]]), [rP, aP] = pol([land[1] - hipTD[1], land[2] - hipTD[2]]);
+  const path = (x) => {                                                  // le chemin recalé [y, z] depuis la hanche
+    const [rw, aw] = pol(fk(volRef(v, x), x)), h = sstep(x);
+    const r = rw + (rL - r0) * (1 - sstep(x / W_GENOU)) + (rP - r1) * sstep((x - W_GENOU) / (1 - W_GENOU));
+    const a = aw + (aL - a0) * (1 - h) + (aP - a1) * h;
+    return [-r * Math.cos(a), r * Math.sin(a)];
+  };
+  const pw = path(w);
+  let y = hipNow[1] + pw[0], z = hipNow[2] + pw[1];
   if (Tsw > 0) {                                                        // la vitesse d'arrivée : dz/dw(1) = (1 − POSE_VSOL)·v·Tvol (repère corps, +Z = arrière)
-    const e = 0.02, dzRef = (f1[1] - fk(volRef(v, 1 - e), 1 - e)[1]) / e, want = (1 - POSE_VSOL) * v * Tsw;
-    const t = (want - dzRef) * w * w * (w - 1);
+    const e = 0.02, dzRef = (path(1)[1] - path(1 - e)[1]) / e, want = (1 - POSE_VSOL) * v * Tsw;
+    // la base d'Hermite vit dans la SECONDE moitié du vol (nulle en position et en pente à mi-vol, pente 1 à la pose) : sur tout le vol elle
+    // avançait la cheville jusqu'au pic du genou, +6-7° de flexion en ligne droite (122° à 4,5 m/s pour 116 chez les coureurs)
+    const u = Math.max(0, (w - W_GENOU) / (1 - W_GENOU)), t = (want - dzRef) * u * u * (u - 1) * (1 - W_GENOU);
     // …borné par la portée (genou 12°, REACH_K) : au sprint le rappel faisait passer le pied devant, jambe tendue à 0° (85 rad/s au genou)
     const rmax = REACH_K * (L.thigh + L.shank), dx = fp.p[0] - hipNow[0], dy = y - hipNow[1], dz = z - hipNow[2], room = rmax * rmax - dx * dx - dy * dy;
     let lam = 1;
