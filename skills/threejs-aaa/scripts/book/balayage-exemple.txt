@@ -1,0 +1,6 @@
+base|{}
+rushed8|{"rushedRadius":8}
+reach2|{"strikeReach":2.0}
+recv1.4|{"receiveRadius":1.4}
+combo|{"rushedRadius":5,"strikeReach":1.6,"receiveRadius":1.1,"speeds":{"press":5.2,"support":4.9,"carry":4.2,"chase":5.5,"mark":5.6,"keeper":6.4,"walk":2.6}}
+combo+|{"rushedRadius":8,"strikeReach":2.0,"receiveRadius":1.4,"speeds":{"press":5.2,"support":4.9,"carry":4.2,"chase":5.5,"mark":5.6,"keeper":6.4,"walk":2.6}}
