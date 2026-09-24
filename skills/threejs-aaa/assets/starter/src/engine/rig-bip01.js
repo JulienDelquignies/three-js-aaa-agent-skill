@@ -123,18 +123,16 @@ export function adaptBip01(root, { ref = SHANON_PROFILE, faces = '+Z', main = tr
 }
 
 /**
- * Les matériaux Rocketbox : la texture ORM porte l'occlusion en R (le glTF ne la déclare pas — on la branche,
- * c'est l'ombre des plis et des aisselles, gratuite) ; les cartes découpées (cheveux, cils : BLEND) passent en
- * alphaTest — mêlées par tri elles clignotent sous TRAA et projettent une ombre pleine.
+ * Les matériaux Rocketbox (conversion tidewater, tools/characters) : les cartes découpées (cheveux, cils : BLEND) passent en
+ * alphaTest — mêlées par tri elles clignotent sous TRAA et projettent une ombre pleine. (L'ORM de tidewater porte R = 1 : pas
+ * d'occlusion à brancher — la version du 24/09 la branchait, sans effet ; retirée.)
  */
 export function prepareRocketboxMaterials(root) {
-  const n = { ao: 0, cutout: 0 };
+  const n = { cutout: 0 };
   root.traverse((o) => {
     if (!o.isMesh) return;
     for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-      if (m.roughnessMap && !m.aoMap) { m.aoMap = m.roughnessMap; m.aoMapIntensity = 1; n.ao++; }
-      if (m.transparent && m.map) { m.transparent = false; m.alphaTest = 0.45; m.depthWrite = true; n.cutout++; }
-      m.needsUpdate = true;
+      if (m.transparent && m.map) { m.transparent = false; m.alphaTest = 0.45; m.depthWrite = true; n.cutout++; m.needsUpdate = true; }
     }
   });
   return n;
