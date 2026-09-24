@@ -21,6 +21,8 @@ const tirer = (base) => base ? {} : {
   passeMarque: { ...B.passeMarque, remiseF: +U(0.35, 1).toFixed(2) },
   avantContact: { ...B.avantContact, seuil: +U(0.6, 1.3).toFixed(2) },
   holdMax: +U(2, 4).toFixed(2), dribble: { ...B.dribble, volume: +U(0.15, 0.35).toFixed(3) },
+  uneToucheVive: { ...B.uneToucheVive, base: +U(0.1, 0.7).toFixed(2), press: +U(2.2, 3.4).toFixed(2) },   // la une-touche au calme (216 : base 0,7) et le réflexe pressé
+  passe: { ...B.passe, tClean: +U(0.25, 0.4).toFixed(3) },   // le budget du contrôle propre : 0,25 s au book (Modèle 09 § 6.1), 0,4 au moteur
 };
 const jobs = []; for (let i = 0; i <= N; i++) { const cfg = tirer(i === 0); for (const s of seedsArg.split(',')) jobs.push({ i, cfg, s }); }
 const res = {};
