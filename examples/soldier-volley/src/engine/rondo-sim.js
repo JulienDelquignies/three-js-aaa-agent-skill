@@ -1,3 +1,4 @@
+import { respireDe } from './porte-respire.js';
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
@@ -629,7 +630,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const SR = st.full && cfg.conduiteSerree ? serrePorteurDe(st, c, cfg.conduiteSerree, cfg) : null;   /* (290) LA CONDUITE SE SERRE SOUS PRESSION (serre.js) */ const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF, ...(SR ? { serreK: SR.k, serreV: SR.dv } : {}), ...(st.full && cfg.toucheCorps ? { corps: heading, corpsK: cfg.toucheCorps } : {}),
       touchF: (c.touchF ?? 1) * (st.full && cfg.locomoteur ? (cfg.locomoteur.touche ?? 0.8) : 1), coneOk: coneP(),   /* (260) la touche poussée se calibre sur le corps qui la suit : un démarrage mono-exponentiel ne rattrape pas la poussée d'hier */   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp, ...(st.full && cfg.toucheAxe ? { axe: cfg.toucheAxe, vel: [c.v[0], c.v[1]] } : {}),   /* (302) la touche dosée sur l'allure dans sa direction (dribble.js) */   // le canal VITESSE (l'amorti de préparation — posé par le match)
-      space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
+      space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99), ...(st.full && cfg.rythmeTouche ? { rythme: { ...cfg.rythmeTouche, tMin: (cfg.rythmeTouche.tMin ?? 0.25) * (c.skill?.dribbleLeadF ?? 1) }, vel: [c.v[0], c.v[1]] } : {}), ...(st.full && cfg.repriseControle && c._controleAt != null && st.t - c._controleAt < (cfg.repriseControle.fenetre ?? 1.5) ? { reprise: true } : {}) };   /* (323) la touche au rythme de la foulée (dribble.js) ; (325) la reprise à l'allonge après le contrôle */
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus
     // une négociation (l'historique : quatre autorités en guerre ici, control-at-foot à 33 %).
@@ -649,7 +650,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg); }  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling || tourne || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
-        if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
+        if (coneP()) { c._dosT = 0; const RS = st.full && cfg.porteRespire && !settling && !tourne ? respireDe(st, c, cfg.porteRespire, footPoint(st, c, cfg), pl.space) : null; if (RS?.touche) touchEvent(st, c, null, cfg);   /* (324) le porté respire (porte-respire.js) */
+          st.ball.carry(RS ? RS.pt : footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : RS ? { tau: cfg.porteRespire.tau ?? 0.1, vMax: 8 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
         else { deny(st, 'porte-dos'); st.ball.release('porte-dos'); }   // l'orbite durable : le ballon vit, le corps se retourne
       } else {

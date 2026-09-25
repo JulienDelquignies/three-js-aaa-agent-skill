@@ -106,6 +106,12 @@ export function movePlayers(st, dt, cfg) {
     if (p.act?.payload?.elan) top = Math.min(top, p.act.payload.elan);   // la course d'élan (A9 bis) : un trot vers le ballon, pas un sprint
     // LE VENDANGÉ SE REPREND (cfg.porteAnticipe && st.full — strikeNow pose _reprise au refus stance-au-contact) : le porteur dont la frappe est refusée VISE SON BALLON, sans poussée ni pointe, le temps de le reprendre — hier il filait
     // sur l'élan du glissement (7,5 m/s) pendant que le ballon vendangé mourait derrière lui : 2,2 m, 0,5 s, « il oublie le ballon ». Absente : l'hier au bit.
+    // (325, cfg.repriseControle && st.full) LA REPRISE APRÈS LE CONTRÔLE (l'atelier conduite, note 448) : mesuré, 26 % des contrôles attendaient > 0,9 s leur 2e touche — le
+    // receveur courait à 2,6-3 m/s à côté d'un ballon LIBRE à ~1 m qui roulait à son allure, sans pression (presseur à 8-9 m) : jamais rattrapé. Dans fenetre s après le contrôle,
+    // ballon libre à > d m qui ne revient pas : il vise À TRAVERS le ballon (sa vitesse × avance s, + traverse m) et le reprend en pointe (top × topF). Absente : hier au bit.
+    { const RC = st.full && cfg.repriseControle; if (RC && p.job === 'carry' && !p.keeper && st.possession.carrier === p.id && st.ball.owner == null && p._controleAt != null && st.t - p._controleAt < (RC.fenetre ?? 1.5)) {
+      const bx = st.ball.p[0] - p.p[0], bz = st.ball.p[2] - p.p[2], bd = hyp(bx, bz), vr = bd > 1e-4 ? ((st.ball.v[0] - p.v[0]) * bx + (st.ball.v[2] - p.v[1]) * bz) / bd : 0;
+      if (bd > (RC.d ?? 0.8) && vr > -(RC.revient ?? 0.5)) { p.push = null; p.target = [st.ball.p[0] + st.ball.v[0] * (RC.avance ?? 0.25) + bx / bd * (RC.traverse ?? 1), 0, st.ball.p[2] + st.ball.v[2] * (RC.avance ?? 0.25) + bz / bd * (RC.traverse ?? 1)];   /* il vise À TRAVERS le ballon (traverse m) : l'arrivée ne freine pas sur un point de rendez-vous */ top = Math.max(top, (RC.top ?? 6.0) * (p.skill?.topF ?? 1)); } } }
     if (st.full && cfg.porteAnticipe && (p._reprise ?? -1) > st.t && st.possession.carrier === p.id) { p.push = null; p.target = [st.ball.p[0], 0, st.ball.p[2]]; top = Math.min(top, cfg.speeds.carry ?? 4.2); }   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE DONNE-ET-VA COURT À FOND (218, cfg.unDeux.course — mesuré : le lanceur en pointe plafonnait à
     // 5,8 m/s (support 4,9 × 1,28) quand le presseur court à 7,6 (chase) : une course de une-deux est

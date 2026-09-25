@@ -143,7 +143,7 @@ export function dribbleStep(d, ball, player, dt) {
   const hx = player.heading[0], hz = player.heading[1];
   const wantX = player.want ? player.want[0] : hx, wantZ = player.want ? player.want[1] : hz;
 
-  d.sinceTouch += player.speed * dt;
+  d.sinceTouch += player.speed * dt; d.tSince = (d.tSince ?? 99) + dt;
 
   const bx = ball.p[0] - px, bz = ball.p[2] - pz;
   const dist = hyp(bx, bz);
@@ -159,10 +159,16 @@ export function dribbleStep(d, ball, player, dt) {
   // plus vite qu'on ne le referme se joue à pleine allonge (le poke de la course).
   const prise = c.prise ?? c.reach;
   const bvAway = dist > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dist : 0;
-  const auPied = dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
+  const auPied = dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach) || (player.reprise && dist < c.reach * 0.9);   // (325) après le contrôle, le ballon qui roule À CÔTÉ se reprend à l'allonge
   // …ET LA TOUCHE EXIGE LE CÔNE AVANT (player.coneOk, lot 76 — posé par le match ; absent :
   // bit-près) : un pied ne pousse pas un ballon dans le dos — le corps le contourne d'abord.
-  if (auPied && player.coneOk !== false && d.sinceTouch >= c.minStride) {
+  // (323, player.rythme — cfg.rythmeTouche) LA TOUCHE AU RYTHME DE LA FOULÉE : mesuré (atelier conduite), les touches partaient en RAFALES
+  // (intervalle p50 0,15 s au trot — minStride 0,55 m) sur un ballon qui FILAIT encore : chaque touche re-poussait un ballon déjà poussé, rien ne
+  // changeait, et entre les rafales le ballon restait collé (réel : une touche toutes les 0,6-1 s, le ballon respire). On ne touche que le ballon
+  // qui ne s'échappe plus du pied (vitesse radiale relative ≤ fuite m/s) et jamais deux fois dans la même foulée (tMin s). Absent : hier au bit.
+  const R = player.rythme, vRel = R && dist > 1e-4 ? ((ball.v[0] - (player.vel?.[0] ?? 0)) * bx + (ball.v[2] - (player.vel?.[1] ?? 0)) * bz) / dist : 0;
+  const rythmeOk = !R || (d.tSince >= (R.tMin ?? 0.25) && (vRel <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
+  if (auPied && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
@@ -223,7 +229,7 @@ export function dribbleStep(d, ball, player, dt) {
     const spT = player.corpsK ? toucheCorpsDe(spA, dx, dz, player.corps, player.speed, player.corpsK) : spA;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
       [ball.v[2] / BALL.radius, 0, -(dx * spT) / BALL.radius]);   // le pied la fait rouler : lift avant
-    d.sinceTouch = 0; d.touches++; touched = true;
+    d.sinceTouch = 0; d.tSince = 0; d.touches++; touched = true;
     // LA TOUCHE PORTE SA GÉOMÉTRIE (lot 55) : l'angle entrant→sortant et la vitesse du kick —
     // l'événement les inscrit, la scène en fait un GESTE (une cassure de 110° n'est pas une
     // caresse de course). Calcul pur sur des valeurs déjà là : la physique ne bouge pas d'un bit.
