@@ -292,7 +292,7 @@ export function maybePassement(st, c, cfg) {
   // ballon EST un vol de la foulée. Ici : les `tours` prochains vols (pieds alternés, 1 à 3), le corps MOBILE (movePlayers le mène), le
   // ballon tenu droit devant à la distance de pose (pinRel) — le pied passe devant lui et se pose à côté, le buste vend du côté de la jambe ;
   // la morsure au milieu du dernier vol, la sortie du côté OPPOSÉ à la dernière jambe (le contre-pied), un départ (burst) au bout.
-  if (st.full && cfg.pas && c._pas && c.speed >= 1.4) {
+  if (st.full && cfg.pas && c._pas && c.speed >= 0.8) {   // (2026-09-25) dès le pas de marche : le passement calé (corps à 0 m/s) se lisait « FIFA 95 »
     const n = Math.max(1, Math.min(3, tours)), vols = pasVols(c, 8).filter((v) => v.t0 >= 0.03);
     let seq = vols.slice(0, n);
     const cote = (pd) => (pd === 'right' ? -1 : 1);   // la sortie part du côté opposé à la dernière jambe : droite → à gauche (yaw +)
@@ -300,8 +300,8 @@ export function maybePassement(st, c, cfg) {
     if (sortie === 'contre-pied' && !libre(c.yaw + cote(seq[seq.length - 1].pied) * 0.9) && vols.length > n) seq = vols.slice(1, n + 1);   // commencer d'un vol plus tard : la dernière jambe change de côté
     const last = seq[seq.length - 1], ex = sortie === 'fixe' ? c.yaw : sortie === 'temporise' ? exitYaw : c.yaw + cote(last.pied) * 0.9;
     if (st.ball.owner !== c.id) st.ball.possess(c.id);
-    startGesture(c, { id: 'passementFoulee', contact: (last.t0 + last.t1) / 2, duration: last.t1 + 0.04 }, {
-      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { vols: seq.map((v) => ({ pied: v.pied, t0: +(st.t + v.t0).toFixed(3), t1: +(st.t + v.t1).toFixed(3) })) }, pinRel: pasPose(c) + 0.02, v0: c.speed, foeId: foe.id, ballMax: 0 },
+    startGesture(c, { id: 'passementFoulee', contact: 9, duration: 9 }, {   // les temps de la foulée décident de la morsure et de la fin (pas.js)
+      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { beats: seq.map((v, i) => ({ pied: v.pied, type: 'arc', vend: i === seq.length - 1 })) }, v0: c.speed, foeId: foe.id, ballMax: 0 },
       log: st.gestures,
     });
     (c._skillCd ??= {}).passement = st.t + K.passementCd;
@@ -342,7 +342,7 @@ export function maybeCrochet(st, c, cfg) {
   let foe = null, fd = Infinity;
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0) continue;
-    if (KD && situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing > 75) continue;   // (397) le crochet se joue sur le défenseur DEVANT : le chasseur dans le dos (mesuré : le plus proche à 132° p50) a sa loi (le râteau, le bouclier)
+    if (KD && situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing > (st.full && cfg.pas ? 160 : 75)) continue;   // (2026-09-25, cfg.pas) …la cage : le chasseur de côté ou dans le dos se coupe aussi (le porteur casse, il file)   // (397) le crochet se joue sur le défenseur DEVANT : le chasseur dans le dos (mesuré : le plus proche à 132° p50) a sa loi (le râteau, le bouclier)
     const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
   }
   if (!foe || fd < K.crochetFoe[0] || fd > (KD?.foe ?? K.crochetFoe[1])) return false;
@@ -356,11 +356,12 @@ export function maybeCrochet(st, c, cfg) {
       && q.p[0] * sgnC > st.pitch.hx - st.pitch.dims.box.depth - 1.5 && Math.abs(q.p[2]) < st.pitch.dims.box.width / 2 + 1.5)) return false;
   }
   const sitFoe = situation(c.p, c.yaw, foe.p, [0, 0], 0.11);
-  if (sitFoe.bearing > 75) return false;                          // il ferme DEVANT, pas dans le dos
+  const chasseur = st.full && cfg.pas && sitFoe.bearing > 75;   // (2026-09-25) mesuré dans la cage : le défenseur est derrière ou de côté 70 % du temps
+  if (sitFoe.bearing > (chasseur ? 160 : 75)) return false;       // il ferme DEVANT, pas dans le dos — ou (cage) il CHASSE de côté / de dos
   // …et il FERME vraiment (vitesse de rapprochement) : le jockey posté appartient au passement
   const closingC = KD ? ((c.p[0] - foe.p[0]) * (foe.v[0] - c.v[0]) + (c.p[2] - foe.p[2]) * (foe.v[1] - c.v[1])) / Math.max(1e-4, fd)
     : ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
-  if (closingC < (KD?.closing ?? 0.8)) return false;
+  if (closingC < (chasseur ? 0.3 : KD?.closing ?? 0.8) || (chasseur && fd > 2.5)) return false;
   // on coupe DU CÔTÉ OPPOSÉ au défenseur ; la sortie doit être libre
   const away = sitFoe.side === 'left' ? -1 : 1;                   // side = côté du foe → on part à l'opposé
   const exitYaw = c.yaw + away * (K.crochetTurn ?? 1.4);
@@ -386,6 +387,19 @@ export function maybeCrochet(st, c, cfg) {
   const foot = footFor(byId.crochet, sit);
   const move = MOVE_TIMING[espece];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  if (st.full && cfg.pas && c._pas && c.speed >= 1.4) {   // (2026-09-25) LE CROCHET DANS LA FOULÉE : le prochain pied à voler joue le ballon VERS la sortie (dedans ou dehors du pied), le corps freine et part
+    const A = pasVols(c, 2)[0]; if (!A) return false;
+    if (st.ball.owner !== c.id) st.ball.possess(c.id);
+    startGesture(c, { id: 'crochetFoulee', contact: 9, duration: 9 }, {
+      payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot: A.pied }, mobile: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0, chasseur,
+        foulee: { beats: [{ pied: A.pied, type: 'touche', dir: exitYawE, v: Math.max(2.2, 0.8 * c.speed), frein: espece === 'crochetCourt' ? 0.45 : 0.6, vend: true }] } },
+      log: st.gestures,
+    });
+    (c._skillCd ??= {}).crochet = st.t + K.crochetCd; c.intent = null; c._dribAt = st.t;
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'crochetFoulee', foot: A.pied, skill: 'crochet', foulee: true });
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet', espece, by: c.id, foe: +fd.toFixed(2), dYaw: +((exitYawE - c.yaw) * 180 / Math.PI).toFixed(0), foulee: true, chasseur });
+    return true;
+  }
   startGesture(c, { id: espece, ...move }, {
     payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0, ...(KD ? { pinRel: KD.pinRel ?? 0.4, mobile: c.speed >= (KD.v ?? 2) } : {}) },   // (397) en course : le ballon ramené devant le pied pendant l'armé, le corps qui court sous l'armé (movement : mobile)
     log: st.gestures,
@@ -395,6 +409,33 @@ export function maybeCrochet(st, c, cfg) {
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: espece, foot, skill: 'crochet', anticipation: move.contact });
   c._dribAt = st.t;   // (219) la cadence du dribble
   st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet', espece, by: c.id, foe: +fd.toFixed(2), dYaw: +((exitYawE - c.yaw) * 180 / Math.PI).toFixed(0) });
+  return true;
+}
+
+/** (2026-09-25) LA FEINTE DE CORPS DANS LA FOULÉE (cfg.pas && cfg.dribble1c1 — le duel ; absente : aucun monde ne change) : le face-à-face
+ *  de la cage à 1,1-3 m — un pied se pose LARGE, le buste penche de son côté (le défenseur mord), l'autre pied pousse le ballon de l'extérieur
+ *  du côté OPPOSÉ. La feinte d'hier (maybeFeinte) est une feinte de PASSE — sans coéquipier dans la cage, elle ne partait jamais. */
+export function maybeFeinteCorps(st, c, cfg) {
+  const KF = st.full && cfg.pas && cfg.dribble1c1; if (!KF || c.keeper || !c._pas || c.speed < 1.4) return false;
+  if ((c._skillCd?.feinteCorps ?? -1) > st.t) return false;
+  if (d2(c.p, st.ball.p) > 0.7) return false;
+  let foe = null, fd = Infinity; for (const q of st.players) { if (q.team === c.team || q.down > 0) continue; const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; } }
+  if (!foe || fd < (KF.feinteFoe?.[0] ?? 1.1) || fd > (KF.feinteFoe?.[1] ?? 3.0)) return false;
+  if (situation(c.p, c.yaw, foe.p, [0, 0], 0.11).bearing > (KF.feinteCone ?? 55)) return false;   // de FACE
+  const V = pasVols(c, 3), cote = (pd) => (pd === 'right' ? 1 : -1), libre = (a) => { const ex = c.p[0] + Math.cos(a) * 1.6, ez = c.p[2] + Math.sin(a) * 1.6; return Math.abs(ex) < st.area[0] / 2 - 0.6 && Math.abs(ez) < st.area[1] / 2 - 0.6 && hyp(foe.p[0] - ex, foe.p[2] - ez) > 1.0; };
+  let i0 = 0; if (V.length > 2 && !libre(c.yaw + cote(V[1].pied) * 0.7)) i0 = 1;
+  const Pa = V[i0], Pb = V[i0 + 1]; if (!Pa || !Pb) return false;
+  const exY = c.yaw + cote(Pb.pied) * 0.7; if (!libre(exY)) return deny(st, 'feinte-corps-sans-issue');
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KF.plancher ?? 0.3, dribM(st, c, cfg)) * ((0.2 + 0.45 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) { (c._skillCd ??= {}).feinteCorps = st.t + 1.5; return false; }
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'feinteCorpsFoulee', contact: 9, duration: 9 }, {
+    payload: { kind: 'skill', skill: 'feinteCorps', pick: { foot: Pa.pied }, mobile: true, yaw0: c.yaw, exitYaw: exY, v0: c.speed, foeId: foe.id, ballMax: 0,
+      foulee: { beats: [{ pied: Pa.pied, type: 'vend', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: Math.max(2.6, c.speed + 0.8) }] } },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).feinteCorps = st.t + (KF.feinteCd ?? 6); c.intent = null; c._dribAt = st.t;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'feinteCorpsFoulee', foot: Pa.pied, skill: 'feinteCorps', foulee: true });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'feinteCorps', by: c.id, foe: +fd.toFixed(2), foulee: true });
   return true;
 }
 
@@ -416,9 +457,10 @@ export function maybeDoubleContact(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
   }
-  if (!foe || fd < K.doubleFoe[0] || fd > K.doubleFoe[1]) return false;
+  if (!foe || fd < K.doubleFoe[0] || fd > (st.full && cfg.pas ? 2.5 : K.doubleFoe[1])) return false;
   const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
-  if (closing < (K.doubleClosing ?? 2.2)) return false;           // il SE JETTE — pas une dérive, pas un jockey
+  const PS = st.full && cfg.pas && c._pas && c.speed >= 1.4;       // (2026-09-25) dans la foulée, la fenêtre de la cage : il VIENT (≥ 0,9 m/s), pas forcément se jeter
+  if (closing < (PS ? 0.5 : K.doubleClosing ?? 2.2)) return false;   // il SE JETTE — pas une dérive, pas un jockey
   const sitFoe = situation(c.p, c.yaw, foe.p, [0, 0], 0.11);
   if (sitFoe.bearing > (K.doubleCone ?? 55)) return false;        // de FACE (le dos appartient à la tenure)
   // la sortie garde le cap, à peine décalée du CÔTÉ OPPOSÉ au foe — et elle doit être libre
@@ -434,13 +476,28 @@ export function maybeDoubleContact(st, c, cfg) {
   // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
   // fenêtres leur arrivent plus souvent, et la part de tirs élite tombait de 49 à 33 % sur
   // un jeu de graines ; le joueur limité ne tente pas la croqueta, il dégage)
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(PS ? (cfg.dribble1c1?.plancher ?? 0.3) : 0, dribM(st, c, cfg)) * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
     (c._skillCd ??= {}).double = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId.crochet, sit);                        // le même choix de patte que la coupe
   const move = MOVE_TIMING.doubleContact;
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  if (PS) {   // (2026-09-25) LA CROQUETA DANS LA FOULÉE : le premier pied pousse le ballon DE CÔTÉ jusque devant l'autre pied (dedans), l'autre le reprend vers la sortie — de SON côté
+    const V = pasVols(c, 3), cote = (pd) => (pd === 'right' ? 1 : -1), libre = (a) => { const ex2 = c.p[0] + Math.cos(a) * 1.6, ez2 = c.p[2] + Math.sin(a) * 1.6; return Math.abs(ex2) < st.area[0] / 2 - 0.6 && Math.abs(ez2) < st.area[1] / 2 - 0.6 && !st.players.some((q) => q.team !== c.team && q !== foe && q.down <= 0 && hyp(q.p[0] - ex2, q.p[2] - ez2) < (K.doubleClear ?? 1.1)); };
+    let i0 = 0; if (V.length > 2 && !libre(c.yaw + cote(V[1].pied) * (K.doubleTurn ?? 0.45))) i0 = 1;   // la sortie est du côté du SECOND pied : un vol plus tard si elle est bouchée
+    const Pa = V[i0], Pb = V[i0 + 1]; if (!Pa || !Pb) return false;
+    const exY = c.yaw + cote(Pb.pied) * (K.doubleTurn ?? 0.45);
+    startGesture(c, { id: 'doubleContactFoulee', contact: 9, duration: 9 }, {
+      payload: { kind: 'skill', skill: 'doubleContact', pick: { foot: Pa.pied }, mobile: true, yaw0: c.yaw, exitYaw: exY, away: cote(Pb.pied), v0: c.speed, foeId: foe.id, ballMax: 0,
+        foulee: { beats: [{ pied: Pa.pied, type: 'touche', cible: 'suivant', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: Math.max(2.6, c.speed + 0.6) }] } },
+      log: st.gestures,
+    });
+    (c._skillCd ??= {}).double = st.t + (K.doubleCd ?? 8); c.intent = null; c._dribAt = st.t;
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'doubleContactFoulee', foot: Pa.pied, skill: 'doubleContact', foulee: true });
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'doubleContact', by: c.id, foe: +fd.toFixed(2), closing: +closing.toFixed(1), foulee: true });
+    return true;
+  }
   startGesture(c, { id: 'doubleContact', ...move }, {
     payload: { kind: 'skill', skill: 'doubleContact', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, away, v0: c.speed, foeId: foe.id, ballMax: 0 },
     log: st.gestures,
@@ -679,6 +736,11 @@ export function skillContactNow(st, p, cfg) {
       p._dribAt = st.t;   // (219) la cadence du dribble
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'petitPont', by: p.id, reussi: false, foot: A.pick.foot });
     }
+  } else if (A.skill === 'feinteCorps') {   // (2026-09-25) le buste a vendu : le défenseur mord du côté de la jambe posée large
+    const foe = st.players[A.foeId ?? -1], bitten = [];
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (cfg.dribble1c1?.feinteBite ?? 0.5) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.5, kind: 'sortie' };
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'feinteCorps-vendu', by: p.id, bitten, foot: A.pick.foot });
   } else if (A.skill === 'roulette') {
     // le poursuivant PREND L'ÉPAULE : le corps s'interpose tout le tour — sa course se casse
     const K = cfg.skill;

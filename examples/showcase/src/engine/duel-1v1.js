@@ -51,6 +51,13 @@ export function duelCfg(overrides = {}) {
     ...base,
     duel: { ...DUEL_KEYS, ...(overrides.duel ?? {}) },
     pas: overrides.pas ?? true,   // (2026-09-24) l'horloge de foulée dans la sim, la touche au pied qui la joue (pas.js)
+    // (2026-09-25) LE RÉPERTOIRE DU 1c1 dans la foulée : la feinte de corps (face-à-face à 1,1-3 m), et le plancher d'envie des gestes de la cage
+    dribble1c1: overrides.dribble1c1 ?? { plancher: 0.45, feinteFoe: [1.1, 3.0], feinteCone: 55, feinteCd: 6, feinteBite: 0.5 },
+    // …et L'ÉQUILIBRE du répertoire (mesuré, 16 min : 22 passements, 8 crochets, 6 feintes, 1 croqueta — le passement, testé AVANT les autres
+    // avec une envie doublée, prenait toutes les fenêtres de face) : l'envie du passement ramenée à celle des autres, le crochet relevé
+    passements: { ...base.passements, envie: 1, plancher: 0.2 },
+    bouclier: base.bouclier ? { ...base.bouclier, pas: 0.8 } : base.bouclier,   // la tenue dos au presseur VIT au pas (match-sim) : plantée, elle gelait le porteur 1-1,7 s
+    decalage: base.decalage ? { ...base.decalage, plancher: 0.45 } : base.decalage,
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),
     assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); },
   };

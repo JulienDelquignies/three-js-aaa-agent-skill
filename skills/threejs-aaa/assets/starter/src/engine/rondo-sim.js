@@ -9,7 +9,7 @@ import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js'; import { pasDecision } from './cadence.js';   // (263) le pas de décision
-import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js'; import { pasStep, pasContact, pasEtat, pasProchains } from './pas.js';   // (2026-09-24) l'horloge de foulée dans la sim
+import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint , maybeFeinteCorps} from './skills-sim.js'; import { pasStep, pasContact, pasEtat, pasProchains, gesteFouleeStep } from './pas.js';   // (2026-09-24) l'horloge de foulée dans la sim
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
@@ -100,7 +100,7 @@ function stepGestures(st, dt, cfg) {
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     }
     // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI — movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
-    if ((following(p) || p.act?.payload?.skill === 'plongeon') && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);
+    if (p.act?.payload?.foulee) gesteFouleeStep(st, p, dt, cfg); else if ((following(p) || p.act?.payload?.skill === 'plongeon') && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);   // (2026-09-25) un geste DANS LA FOULÉE s'exécute sur les vols (pas.js), armé comme accompagnement
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
@@ -582,7 +582,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       st.hold += dt;
       if (c.act.fired) {
         // un geste ownsBody (râteau, semelle) écrit son ballon dans skillFollowStep — une autorité ; la feinte, elle, garde le porté au pied ordinaire pendant sa rétraction
-        if (!c.act.payload?.ownsBody) { if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt); else st.ball.integrate(dt); }
+        if (!c.act.payload?.ownsBody && !c.act.payload?.foulee) { if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt); else st.ball.integrate(dt); }   // (foulée) le geste écrit son ballon (pas.js)
       }
       return st;
     }
@@ -836,7 +836,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // disjointes du râteau (la charge frontale) ; leurs clés n'existent qu'au match
     // …le passement s'enchaîne LIBREMENT sur un contrôle (l'assise bloquait pile la fenêtre du jockey posté, 6 fenêtres/4 matchs)
     if (decide && maybePassement(st, c, cfg)) return st;
-    if (decide && !settleGate && maybeCrochet(st, c, cfg)) return st; const porte = reachNow || gachetteNear || gachetteCentre;   // (263) LA PORTE D'EXÉCUTION : le ballon au pied (ou la gâchette près du but / du centre) — sous cfg.cadence, le bloc s'ouvre aussi au tick de décision SANS le ballon au pied, pour CHOISIR ; l'exécution (tir, centre, beginPass) attend la porte au pas physique. Sans la clé : la porte d'hier au bit
+    if (decide && !settleGate && (maybeCrochet(st, c, cfg) || maybeFeinteCorps(st, c, cfg))) return st; const porte = reachNow || gachetteNear || gachetteCentre;   // (263) LA PORTE D'EXÉCUTION : le ballon au pied (ou la gâchette près du but / du centre) — sous cfg.cadence, le bloc s'ouvre aussi au tick de décision SANS le ballon au pied, pour CHOISIR ; l'exécution (tir, centre, beginPass) attend la porte au pas physique. Sans la clé : la porte d'hier au bit
     if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (porte || (decide && st.full && cfg.cadence)) && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon

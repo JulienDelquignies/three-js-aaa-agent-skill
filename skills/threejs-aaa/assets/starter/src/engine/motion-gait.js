@@ -509,7 +509,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // (2026-09-24) LE GESTE DANS LA FOULÉE (opts.geste — le passement lancé, character-controller._gesteFouleeOpts ; absent : hier au bit) : le buste
   // VEND du côté de la jambe qui cercle — un faux virage (roulis du bassin et du tronc, bassin qui glisse) de 5 m/s² au plus fort du vol.
   const GV = opts.geste, wVol = (k) => { const u = k === 'Left' ? ((phi % 1) + 1) % 1 : ((phi + 0.5) % 1 + 1) % 1; return u < p.s ? null : (u - p.s) / (1 - p.s); };   // le vol RENDU de ce pied
-  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k]?.arc && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;
+  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + ((GV[k]?.arc || GV[k]?.vend) && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) * (GV[k]?.vend ? 1.4 : 1) : 0), 0) : 0;   // (feinte de corps) la vente sans arc, plus appuyée
   const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp((opts.turn ?? 0) + 5 * vend, -9, 9);
   // LE GRIFFÉ (footPath) — absent : hier au bit. Plein jusqu'à 6 m/s, ramené à 0,3 dès 7 : au sprint le genou de la foulée
   // tourne déjà à la limite (checkClip, 30 rad/s — 9 m/s le dépasse sans griffé) ; mesuré, griffé plein à 8 m/s = 32 rad/s.

@@ -33,3 +33,13 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   même action SANS le pied qui va au ballon (A/B).
 - `contact-debug.mjs` (SECS=…) : le cou-de-pied rendu contre le ballon à l'image de la touche, par mode, en virage / droit, et si le pied
   qui joue est celui que la sim avait VISÉ. Après : toutes les touches à 0,14-0,15 m (p50), p90 0,28-0,38 (hier 0,37-0,51) ; en virage 0,09-0,18.
+
+## Le répertoire du 1c1 dans la foulée (2026-09-25)
+- `geo-1c1.mjs` (sans navigateur) : la géométrie de la cage aux instants de décision du porteur — le défenseur est DERRIÈRE ou de côté 70 %
+  du temps (relèvement p50 130°), de face à < 3 m 11 % ; les fenêtres des gestes d'hier (réglées pour le 11c11) ouvertes 0,6-12 % du temps.
+- `repertoire.mjs` : quels gestes partent, dans la foulée ou non, la vitesse du corps pendant, la durée, gardé ou tir à +1,5 s (et ce qui
+  s'est passé quand c'est perdu). Hier : 23 passements, 8 crochets en 12 min, rien d'autre, passements plantés ; après : passement 11,
+  crochet 9 (+ 7 sur chasseur), feinte de corps 9, croqueta 5 en 16 min, tous en courant (1,7-2,4 m/s au plus bas), 57-100 % gardés ou tirés.
+- `gestes-duel.mjs <url> [s]` : les gestes de la page (à filmer : `capture-face.mjs`).
+- `bouclier-tenue.mjs [moteur] [graines]` (sans navigateur) : la tenue dos au presseur — issues, durées, vitesse du porteur pendant (plantée
+  elle gelait le duel 1-1,7 s ; au pas, cfg.bouclier.pas, il tourne autour du presseur en pas chassés), distance presseur-ballon.

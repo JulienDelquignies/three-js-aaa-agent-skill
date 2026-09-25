@@ -13,7 +13,7 @@ const r = await pg.evaluate((SECS) => {
       if (a && !open[j]) open[j] = { t0: t, j, key, vAvant: +vHist[j][Math.max(0, vHist[j].length - 20)].toFixed(1), vs: [], gl: pl.gestureLayer?.clip?.name ?? pl.gestureLayer?.name ?? null };
       if (open[j]) open[j].vs.push(v);
       if (!a && open[j]) { const o = open[j]; out.push({ t: +o.t0.toFixed(2), j, act: o.key, dur: +(t - o.t0).toFixed(2), vAvant: o.vAvant, vMin: +Math.min(...o.vs).toFixed(1), vMoy: +(o.vs.reduce((x, y) => x + y, 0) / o.vs.length).toFixed(1) }); open[j] = null; } });
-    while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === "skill" || e.type === "feinte" || /dribble|geste/.test(e.type)) out.push({ t: e.t, ev: e.type, kind: e.kind, by: e.by, reussi: e.reussi, foot: e.foot, foulee: e.foulee, tours: e.tours }); }
+    while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === "skill" || e.type === "feinte" || /dribble|geste/.test(e.type)) out.push({ t: e.t, ev: e.type, kind: e.kind, by: e.by, reussi: e.reussi, foot: e.foot, foulee: e.foulee, tours: e.tours, chasseur: e.chasseur }); }
   }
   return out;
 }, +SECS);

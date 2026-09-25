@@ -441,7 +441,7 @@ export class CharacterController {
    *  personnage (celui de gaitPose). Le calendrier survit au geste le temps du retour du couloir. */
   _gesteFouleeOpts() {
     const G = this.gesteFoulee; if (!G) return undefined;
-    if (G.foulee && this._gesteMem?.vols !== G.foulee.vols) this._gesteMem = { vols: G.foulee.vols, file: G.foulee.vols.map((v) => v.pied), fin: Math.max(...G.foulee.vols.map((v) => v.t1)) + 1.5 * (this.pasFinal?.T ?? 0.7) };
+    if (G.foulee && this._gesteMem?.beats !== G.foulee.beats) this._gesteMem = { beats: G.foulee.beats, file: G.foulee.beats.map((b) => ({ pied: b.pied, type: b.type })), fin: G.t + (G.foulee.beats.length + 2) * (this.pasFinal?.T ?? 0.7) };   // les TEMPS du geste (pas.js), dans l'ordre des vols
     const M = this._gesteMem, S = this._gesteEtat ??= { Left: { e: 'idle', vol: null }, Right: { e: 'idle', vol: null } };
     if (!M || G.t > M.fin) { if (S.Left.e === 'idle' && S.Right.e === 'idle' && !G.vise) { this._gesteMem = null; return undefined; } }
     // L'ÉTAT DE CHAQUE PIED, sur ses VRAIS vols (la phase rendue — celle de la sim, mais la durée d'un vol dérive si l'allure change : un
@@ -451,13 +451,13 @@ export class CharacterController {
     for (const k of ['Left', 'Right']) {
       const F = this._gaitFeet?.[k], vol = F?.phase === 'swing', w = vol ? Math.max(0, Math.min(1, ((F.u ?? 0) - s) / Math.max(1e-3, 1 - s))) : 0, E = S[k];
       if (vol && !E.vol) {                                                   // un vol commence : est-ce le PROCHAIN de la file du geste ?
-        const cote = k === 'Left' ? 'left' : 'right', v = M?.file?.[0] === cote;   // L'ORDRE des vols, pas leurs instants prédits (l'allure qui change les décale de 0,1-0,2 s)
-        if (v) M.file.shift();
-        E.e = v ? 'arc' : E.e === 'pose' ? 'retour' : 'idle';
-      } else if (!vol && E.vol) E.e = E.e === 'arc' ? 'pose' : E.e === 'retour' ? 'idle' : E.e;   // un vol finit
+        const cote = k === 'Left' ? 'left' : 'right', b = M?.file?.[0]?.pied === cote ? M.file.shift() : null;   // L'ORDRE des vols, pas leurs instants prédits (l'allure qui change les décale de 0,1-0,2 s)
+        E.e = b?.type === 'arc' ? 'arc' : b?.type === 'vend' ? 'vend' : E.e === 'pose' ? 'retour' : 'idle';   // un temps 'touche' : le pied qui vise (pas.js) l'amène au ballon
+      } else if (!vol && E.vol) E.e = E.e === 'arc' || E.e === 'vend' ? 'pose' : E.e === 'retour' ? 'idle' : E.e;   // un vol finit
       E.vol = vol;
-      out[k].arc = E.e === 'arc';
-      out[k].elargi = E.e === 'arc' ? Math.min(1, w / 0.6) : E.e === 'pose' ? 1 : E.e === 'retour' ? 1 - Math.min(1, w / 0.7) : 0;
+      out[k].arc = E.e === 'arc'; out[k].vend = E.e === 'vend';
+      out[k].elargi = E.e === 'arc' || E.e === 'vend' ? Math.min(1, w / 0.6) * (E.e === 'vend' ? 1.6 : 1) : E.e === 'pose' ? (S[k].large ?? 1) : E.e === 'retour' ? (S[k].large ?? 1) * (1 - Math.min(1, w / 0.7)) : 0;
+      if (E.e === 'arc' || E.e === 'vend') S[k].large = E.e === 'vend' ? 1.6 : 1;   // la vente se pose PLUS large (le pas qui ment)
     }
     const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
     const dx = G.ball[0] - ox, dz = G.ball[1] - oz;

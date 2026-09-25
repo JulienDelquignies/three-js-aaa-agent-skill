@@ -39,7 +39,8 @@ export function pasStep(st, dt) {
     // LE REGISTRE DES TOUCHES (une par VOL) se rouvre quand un vol COMMENCE — pas quand le pied « est au sol » à l'échantillon le plus proche :
     // à la pose, la touche balayée sur la fin du vol et la remise à zéro se chevauchaient (60 doublons sur 219 touches, même pied à 0,02-0,12 s)
     { const g = geo(P.v), i = Math.floor(P.phi * N_GEO) % N_GEO; P.joue ??= {}; P.volAvant ??= {};
-      for (const k of ['left', 'right']) { const vol = g[i][k].vol; if (vol && P.volAvant[k] === false) P.joue[k] = false; P.volAvant[k] = vol; } }
+      P.evt = { left: null, right: null };   // le vol qui COMMENCE ('debut') ou FINIT ('fin') à ce pas de temps — les temps d'un geste dans la foulée
+      for (const k of ['left', 'right']) { const vol = g[i][k].vol; if (vol && P.volAvant[k] === false) { P.joue[k] = false; P.evt[k] = 'debut'; } else if (!vol && P.volAvant[k] === true) P.evt[k] = 'fin'; P.volAvant[k] = vol; } }
     // (2026-09-25) LE PIED QUI VISE : le porteur en course nomme le pied qui va jouer le ballon — celui du rendez-vous planifié tant qu'il court,
     // sinon (première touche après le porté ou une prise, ballon à portée) le prochain pied à se poser — et le rendu l'AMÈNE au ballon sur la fin
     // de son vol (gaitPose, opts.vise) : sans lui, 47 des 57 touches de rattrapage (sans plan) se jouaient pied à ~0,35 m du ballon, surtout en virage
@@ -162,3 +163,61 @@ export function pasVols(p, n = 6) {
 }
 /** La distance devant le corps où se pose le pied (le cou-de-pied à la pose, m) — où le ballon attend la jambe qui le cercle. */
 export function pasPose(p) { const r = pasProchains(p, { cycles: 1 }); return r.length ? Math.max(...r.map((x) => x.avant)) : 0.35; }
+
+/** (2026-09-25) LES GESTES DANS LA FOULÉE — un geste est une suite de TEMPS posés sur les prochains vols du porteur, un par vol (pieds dans
+ *  leur ordre naturel). Un temps est :
+ *    'arc'    la jambe cercle le ballon (le passement) — le rendu dessine l'arc (arcPassement) ;
+ *    'vend'   le pied se pose large, le buste penche de son côté, le ballon n'est pas touché (la feinte de corps) ;
+ *    'touche' le pied qui ATTEINT le ballon le joue : vers `dir` (lacet monde) à `v` m/s, ou vers la pose du pied du temps suivant (`cible:
+ *             'suivant'`, la croqueta) ; `frein` : le corps freine (× la vitesse) et part vers `dir` (le crochet).
+ *  `vend: true` sur un temps : la MORSURE du défenseur (le contact du geste, skillContactNow) tombe à son milieu. Le ballon est tenu devant
+ *  le pied du temps en cours tant qu'il n'est pas joué ; joué, il roule libre. La sim d'un geste de la couche (un clip sur un corps
+ *  arrêté) devient une affaire de foulée — le rendu ne joue plus de clip. Appelé à chaque pas de temps pendant l'acte (stepGestures). */
+export function gesteFouleeStep(st, p, dt, cfg, contactNow) {
+  const A = p.act?.payload, F = A?.foulee, P = p._pas; if (!F || !P) return;
+  const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw), Bs = F.beats;
+  for (const b of Bs) b.etat ??= 'attente';
+  const vendre = () => { if (!F.vendu) { F.vendu = true; if (!p.act.fired) p.act.anticipation = p.act.t; } };
+  // LES TEMPS SE CHEVAUCHENT : en course, le pied suivant décolle AVANT que le précédent ne se pose (le vol) — un temps s'arme au décollage de SON
+  // pied dès que le temps d'avant a COMMENCÉ (hier : quand il avait fini — le décollage était manqué, un cycle perdu, la feinte durait 1,5 s)
+  for (const k of ['left', 'right']) if (P.evt?.[k] === 'debut') {
+    const i = Bs.findIndex((b) => b.etat === 'attente'); if (i >= 0 && Bs[i].pied === k && (i === 0 || Bs[i - 1].etat !== 'attente')) { Bs[i].etat = 'vol'; Bs[i].t0 = st.t; }
+  }
+  P.vise = null;
+  for (let i = 0; i < Bs.length; i++) {
+    const B = Bs[i]; if (B.etat !== 'vol') continue;
+    if (B.type === 'touche' && !B.joue) P.vise = B.pied;                // le rendu amène ce pied au ballon
+    if (B.vend && B.type !== 'touche' && st.t - B.t0 >= 0.22 * P.T) vendre();   // la morsure au milieu du vol (≈ ¼ de cycle après le décollage)
+    if (B.type === 'touche' && !B.joue) {
+      const bx = st.ball.p[0] - p.p[0], bz = st.ball.p[2] - p.p[2], ct = pasContact(p, bx * fx + bz * fz, -bx * fz + bz * fx);
+      const fin = P.evt?.[B.pied] === 'fin';
+      if ((ct && ct.pied === B.pied && ct.d <= 0.2) || (fin && Math.hypot(bx, bz) < 0.9)) {   // au cou-de-pied, sinon à la pose (ballon à portée)
+        let dirX, dirZ, v; const suiv = Bs[i + 1];
+        if (B.cible === 'suivant' && suiv) {                             // la croqueta : le ballon va se poser devant le pied suivant
+          const r = pasProchains(p, { cycles: 2 }).find((x) => x.pied === suiv.pied && x.t > 0.08);
+          const tx = r ? p.p[0] + p.v[0] * r.t + fx * r.avant - fz * r.droite * 1.2 : p.p[0] + fx * 0.5, tz = r ? p.p[2] + p.v[1] * r.t + fz * r.avant + fx * r.droite * 1.2 : p.p[2] + fz * 0.5;
+          const ex = tx - st.ball.p[0], ez = tz - st.ball.p[2], el = Math.hypot(ex, ez) || 1, tt = r?.t ?? 0.3, a = 1.2;
+          dirX = ex / el; dirZ = ez / el; v = Math.max(0.8, el / tt + a * tt / 2);
+        } else { dirX = Math.cos(B.dir); dirZ = Math.sin(B.dir); v = B.v ?? 3; }
+        if (st.ball.owner === p.id) st.ball.release('conduite');   // une touche de geste est une touche de conduite (le ballon libre, interceptable)
+        st.ball.impulse([dirX * v - st.ball.v[0], 0, dirZ * v - st.ball.v[2]]);
+        st.lastTouch = p.team; B.joue = true; P.joue[B.pied] = true;
+        st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: p.id, dev: 0, spd: +v.toFixed(1), foot: B.pied, pas: 'geste', geste: A.skill });
+        if (B.frein != null) { p.v = [p.v[0] * B.frein, p.v[1] * B.frein]; p.speed = Math.hypot(p.v[0], p.v[1]); }
+        if (B.dir != null) p.push = [Math.cos(B.dir), Math.sin(B.dir)];
+        if (B.vend) vendre();
+      }
+    }
+    if (P.evt?.[B.pied] === 'fin' && (B.type !== 'touche' || B.joue || st.t - B.t0 > 0.6)) B.etat = 'fait';
+  }
+  if (p.act.t > 2.5 || P.v < 0.4) for (const b of Bs) b.etat = 'fait';   // le porteur arrêté (l'horloge ne tourne plus) ou un geste qui traîne : il se termine
+  if (Bs.every((b) => b.etat === 'fait')) { vendre(); if (p.act.fired) p.act.total = Math.min(p.act.total, p.act.t + 1e-3); }
+  const B = Bs.find((b) => b.etat !== 'fait');
+  // LE BALLON TANT QU'IL N'EST PAS JOUÉ : tenu devant le pied qui va le jouer (sa pose, dans son couloir), ou droit devant à la pose (l'arc,
+  // la vente) ; joué, il roule — personne d'autre ne l'écrit pendant l'acte (la branche occupée de la sim s'efface devant un geste en foulée)
+  if (st.ball.owner === p.id) {
+    const Bc = Bs.find((b) => b.type === 'touche' && !b.joue && b.etat !== 'fait') ?? B, r = Bc && pasProchains(p, { cycles: 1 }).find((x) => x.pied === Bc.pied);
+    const av = (r ? r.avant : 0.4) + 0.08, dr = Bc?.type === 'touche' && r ? r.droite * 1.1 : 0;
+    st.ball.carry([p.p[0] + fx * av - fz * dr, p.p[2] + fz * av + fx * dr], dt, { tau: 0.08, vMax: 7 });
+  } else st.ball.integrate(dt);
+}
