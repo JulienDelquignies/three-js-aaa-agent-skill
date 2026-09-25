@@ -7642,7 +7642,10 @@ if (__bloc()) {
           if (e.type === 'control' && e.pousse && !e.miss) O = { id: e.by, t: st.t, max: 0 }; } } }
     const q = (a, f) => { const x = [...a].sort((u, v) => u - v); return x[Math.floor(f * (x.length - 1))] ?? 0; };
     return { t2: q(T2, 0.5), mx: q(MX, 0.9), n: T2.length, passes }; };
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, locomoteur: K0, toucheOrientee: T0 }));
+  // DATÉ 313 : les deux mondes sans porteePasse.retrait — vert à HEAD~ ; le 313 re-tire le monde (4 × 900 s : passes 507 c. 666, balle p90
+  // 2,04 c. 1,90) — la clause mesure la touche orientée et la poussée du 310, pas la passe en retrait.
+  const PP310 = { ...matchCfg({}).porteePasse }; delete PP310.retrait;
+  const mA = monde(matchCfg({ shotRange: 20, porteePasse: PP310 })), mN = monde(matchCfg({ shotRange: 20, locomoteur: K0, toucheOrientee: T0, porteePasse: PP310 }));
   ok(`lot 310 — …et LE MONDE : 4 × 900 s, 2e action après la touche orientée p50 ${mA.t2.toFixed(2)} s (${mA.n}) ≤ 0,8 × ${mN.t2.toFixed(2)} ; balle au plus loin p90 ${mA.mx.toFixed(2)} ≤ ${mN.mx.toFixed(2)} m ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`,
     mA.t2 <= 0.8 * mN.t2 && mA.mx <= mN.mx && mA.passes >= 0.85 * mN.passes);
 }
@@ -7671,6 +7674,25 @@ if (__bloc()) {
     V.sort((a, b) => a - b); return { v1: V[Math.floor(V.length / 2)] ?? 0, n: V.length, passes }; };
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T0 }));
   ok(`lot 312 — …et LE MONDE : 4 × 900 s, le lancé à +1 s ${mA.v1.toFixed(2)} m/s p50 (${mA.n}) ≥ ${mN.v1.toFixed(2)} + 0,4 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.v1 >= mN.v1 + 0.4 && mA.passes >= 0.85 * mN.passes);
+}
+
+if (__bloc()) {
+  // JAMAIS LEVÉE VERS SON PROPRE BUT (313 — trouvé en décomposant les buts, sonde-313 : 9,3 buts par match dont 10 / 4 matchs SANS tir,
+  // la dernière touche une PASSE de l'équipe qui encaisse). Le 296 (porteePasse.leve 32) levait TOUTE passe ≥ 32 m — aussi la passe en
+  // retrait au gardien à 33-45 m (talonnade, passe-pivot) : la cloche rebondissait devant le gardien et entrait (6 CSC / 6 × 45 min ; 0
+  // au 295). porteePasse.retrait { marge 6 } : vers le gardien ou dans sa propre surface (+ 6 m), la passe longue se joue au sol ou tendue.
+  // Mesuré : CSC sur passe 6 → 0, buts par match 9,3 → 6,3. Le monde, 4 × 900 s : aucune passe levée vers son propre but sous la clé,
+  // au moins une sans (le sabotage attrapé), aucun but contre son camp sur passe au gardien sous la clé.
+  const monde = (cfg) => { let leve = 0, csc = 0; for (const seed of [3, 7, 11, 19]) { const st = makeMatch({ full: true, seed }); let seen = 0, P = null;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen];
+        if (P && e.type === 'but') { csc++; P = null; } else if (P && (e.type === 'sortie' || (['control', 'receive', 'dive', 'turnover'].includes(e.type) && e.by != null))) P = null;
+        if (e.type === 'pass' && e.to >= 0 && st.pass && !e.clear) { const r = st.players[e.to], c = st.players[e.by]; if (!r || !c || r.team !== c.team) continue;
+          const og = st.pitch.ownGoal(c.team), L = st.pass.lead, vers = r.keeper || Math.abs(og.x - L[0]) < st.pitch.dims.box.depth + 6;
+          if (vers && st.pass.style === 'lofted' && Math.hypot(L[0] - c.p[0], L[2] - c.p[2]) >= 32) leve++; if (r.keeper) P = { t: st.t }; } } } }
+    return { leve, csc }; };
+  const PP = { ...matchCfg({}).porteePasse }; delete PP.retrait;
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, porteePasse: PP }));
+  ok(`lot 313 — JAMAIS LEVÉE VERS SON PROPRE BUT : 4 × 900 s, passes longues levées vers son but ${mA.leve} (= 0 ; sans la clé ${mN.leve} ≥ 1) ; buts contre son camp sur passe au gardien ${mA.csc} (= 0)`, mA.leve === 0 && mN.leve >= 1 && mA.csc === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

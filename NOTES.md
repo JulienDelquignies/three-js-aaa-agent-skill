@@ -13999,6 +13999,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      312 au bloc 199 : la clause 309 se joue sans les clés du 312 (vert à HEAD~) — sous 310+ l'apport propre de l'alignement est devenu
      marginal (monde 312 : 11,9 c. 10,8 %) : DETTE, l'utilité résiduelle de la loi 309 (le 309b, la cible qui ne fuit plus, reste).
      Jumeau au bit (= le défaut du 310) ; défaut du 312 : `6d4fc2f7ebdfc58a / a24dedd044894530`.
+- 440: JAMAIS LEVÉE VERS SON PROPRE BUT (313, rondo.js, porteePasse.retrait) — ET CE QUE LA DÉCOMPOSITION DES BUTS A MONTRÉ. En
+     cherchant les centres (voir plus bas), la sonde du jeu a sorti 9 à 11 BUTS PAR MATCH. Décomposés (sonde-buts, 4 × 90 min, un tir
+     dans les 5 s ? la dernière touche ?) : au 295 (5e3e58c) 11,5 buts / 42 tirs, presque tous APRÈS un tir, le gardien qui plonge
+     battu (conversion ~27 %, réel ~10 %) — un défaut ANCIEN ; au 306 et à HEAD, 6,5-9,3 buts / 19 tirs dont 8-10 / 4 matchs SANS
+     tir, la dernière touche une PASSE de l'équipe qui encaisse — NOUVEAU depuis le 295. Tracés : la passe en retrait au gardien, levée
+     (talonnade, passe-pivot) à 33-45 m, rebondissait devant lui et entrait. La cause : le 296 (porteePasse.leve 32) lève TOUTE passe
+     ≥ 32 m. La loi : porteePasse.retrait { marge 6 } — vers son gardien ou dans sa propre surface (+ 6 m), la passe longue se joue au
+     sol ou tendue (la ligne décide). Mesuré (6 × 45 min) : passes au gardien levées 15 → 0, CSC 6 → 0 ; 4 × 90 min : buts 9,3 → 6,3
+     par match, « sans tir / passe adverse » 10 → 1. Bloc 313 (index 202) : 0 levée vers son but sous la clé, 5 sans (sabotage), 0 CSC.
+     Épingle DATÉE 313 au bloc 200 (le monde du 310 sans la clé : vert à HEAD~). L'empreinte ne bouge pas (aucune passe longue en retrait
+     sur les graines 3 et 7) : jumeau = défaut = `6d4fc2f7ebdfc58a / a24dedd044894530`.
+     DETTES NOMMÉES par la même décomposition : (1) LES BUTS — encore 6,3 par match (réel ~2,7), le gardien battu sur 16 / 25 buts ;
+     (2) la passe en retrait de 30-45 m jouée en TALONNADE (42 / 88 passes au gardien) — la technique choisie ne lit pas la distance.
+     LES CENTRES (même session, rien de scellé) : sonde-centres (4 × 900 s) — 59 séjours de porteurs dans la zone de centre (portes de
+     tryCross), 109 s de porté, 4 centres ; un coéquipier DANS la surface 30 % du temps ; l'arbitre (menace.js) au centre 9 % des images,
+     score 0,05 p50 (« boîte-vide »), et sa géométrie plus stricte que le geste (9 m / 38 % contre 13 m / 30 %). Le coéquipier le plus
+     avancé vit à 21 m du but p50, 5,5 m DERRIÈRE la ligne de hors-jeu (15,8 m). Essayés et NON retenus (centres par match inchangés sur
+     8 × 90 min, 8,5-9,5 contre 9,0-9,5) : l'attente du 123 (postes hors de la surface, présence 20 %), l'appel DANS la surface sprinté
+     (présence 25-39 % selon le déclencheur), l'arbitre aligné sur la géométrie du geste. RESTE : l'attaque vit trop bas quand le ballon
+     est sur l'aile — un chantier de STRUCTURE (la ligne d'attaque, les rôles), pas du geste du centre.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

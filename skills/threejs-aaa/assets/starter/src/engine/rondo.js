@@ -324,7 +324,7 @@ export function choosePass(st, cfg = RONDO) {
     const recvPressure = Math.min(...foesL.map((o) => hyp(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
     let style = bascule ? 'lofted'                                 // la diagonale VOLE par-dessus le bloc
-      : st.full && cfg.porteePasse && d >= (cfg.porteePasse.leve ?? 32) ? 'lofted'   // (296) le ballon long vole
+      : st.full && cfg.porteePasse && d >= (cfg.porteePasse.leve ?? 32) && !(cfg.porteePasse.retrait && st.pitch && (m.keeper || Math.abs(st.pitch.ownGoal(c.team).x - lead[0]) < st.pitch.dims.box.depth + (cfg.porteePasse.retrait.marge ?? 6))) ? 'lofted'   // (296) le ballon long vole — (313, porteePasse.retrait) JAMAIS VERS SON PROPRE BUT : la passe longue au gardien ou dans sa propre surface levée à 43-45 m rebondissait devant le gardien et entrait (2 CSC / 4 × 45 min, 0 au 295) ; elle se joue au sol, tendue (la ligne décide)
       : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     // LA LIGNE FERMÉE (243, cfg.ligneFermee && st.full — retour utilisateur : « un adversaire sur la ligne de passe ») : une cloche ne passe pas un corps
     // collé au pied — le bloqueur doit être à ≥ cloche m du passeur et à ≥ retombee m du point visé, sinon la ligne est fermée pour de bon (le candidat tombe).
