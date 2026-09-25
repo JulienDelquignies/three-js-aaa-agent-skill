@@ -733,7 +733,7 @@ export class Rondo {
       const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
       if (d < dBest) { dBest = d; side = f; }
     }
-    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot] && !planted(pl._touchFoot)) side = pl._touchFoot;
+    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) { if (planted(pl._touchFoot)) return; side = pl._touchFoot; }   // (2026-09-24) le pied NOMMÉ vient de se poser au ballon (la foulée de la sim l'y a mené) : pas de warp — jamais l'AUTRE pied tiré vers un contact déjà joué
     if (!side) return;
     const leg = pl.legs[side], lens = pl.legLens[side];
     leg.foot.getWorldPosition(this._wf);
@@ -857,7 +857,7 @@ export class Rondo {
         // boot and the ball together was to start the clip AT its contact frame, throwing away the
         // entire backswing. That is why there was no visible movement — you were watching the second
         // half of a gesture whose first half had been deleted. Now the simulation waits for the leg.
-        if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], e);   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
+        if (e.foulee) this.players[e.by]?.gestureLayer.end(); else if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], e);   // (2026-09-24) e.foulee : le geste EST la foulée (le passement lancé) — pas de clip (et le clip d'avant se tait : la couche le rejouait sur l'horloge du geste, jambes figées), le contrôleur le dessine   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
       } else if (e.type === 'pass') {
         // the ball leaving is no longer a cue to animate: the swing that sent it started earlier and is
         // still running, and it will finish on its own follow-through
@@ -930,11 +930,11 @@ export class Rondo {
 
     // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)
     for (const pl of this.players) {
-      pl.ctrl.gestureHold = !!pl.sim.act || pl.gestureLayer.active;
+      pl.ctrl.gestureHold = (!!pl.sim.act && !pl.sim.act.payload?.foulee) || pl.gestureLayer.active;   // (2026-09-24) un geste DANS LA FOULÉE n'est pas un geste de la couche : la foulée dessine tout le corps
       // la fenêtre de PLANT : dernier quart de l'armé — la locomotion retourne à l'idle (double
       // appui) pendant que les jambes du geste finissent d'arriver (voir character-controller)
       const a = pl.sim.act;
-      pl.ctrl.plantHold = !!(a && a.anticipation && !a.fired && a.t > a.anticipation * 0.75);
+      pl.ctrl.plantHold = !!(a && a.anticipation && !a.fired && !a.payload?.foulee && a.t > a.anticipation * 0.75);
     }
 
     // ---- dress the simulation: the sim owns positions, the controller owns the locomotion state
@@ -969,7 +969,7 @@ export class Rondo {
         continue;
       }
       const dtP = pl._lodAcc; pl._lodAcc = 0;
-      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))];       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
+      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))]; pl.ctrl.pasFinal = s._pas ? { phi: s._pas.phi, T: s._pas.T } : null; s.legK ??= pl.ctrl._gaitGen?.legK; pl.ctrl.gesteFoulee = { foulee: s.act?.payload?.foulee ?? null, t: this.state.t, ball: [this.state.ball.p[0], this.state.ball.p[2]] };   // (2026-09-24) pasFinal : la phase de foulée de la SIM (pas.js), la jambe du rig à la sim       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);

@@ -15,10 +15,12 @@ import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
+import { pasPointPorte, pasVols, pasPose } from './pas.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 export const footPoint = (st, p, cfg) => {
+  const PP = st.full && cfg?.pas ? pasPointPorte(st, p) : null; if (PP) return PP;   // (2026-09-24) en course sous cfg.pas : le point où le pied préféré se pose (pas.js)
   const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
   const lat = p.foot === 'left' ? 1 : -1;
   const m = BALL.radius + 0.02;
@@ -284,6 +286,30 @@ export function maybePassement(st, c, cfg) {
   else if (fd < 1.25) { sortie = 'temporise'; exitYaw = c.yaw + (diag > c.yaw ? 2.4 : -2.4); }
   else if (fd >= 1.5 && uT > 0.62) { sortie = 'fixe'; exitYaw = c.yaw; }
   else { sortie = 'contre-pied'; exitYaw = diag; }
+  // (2026-09-24) LE PASSEMENT DANS LA FOULÉE (cfg.pas, en course ≥ 1,4 m/s ; absent : hier) : mesuré au duel, les 4 passements de 120 s
+  // PLANTAIENT le corps (vitesse au plus bas 0 m/s, 0,6 à 1,6 s) — le clip est joué sur place, et un corps qui court efface ses jambes (la
+  // couche de geste cède les jambes à la vitesse). Le vrai passement se fait EN COURANT (Mancini, Ronaldo, Neymar) : la jambe qui cercle le
+  // ballon EST un vol de la foulée. Ici : les `tours` prochains vols (pieds alternés, 1 à 3), le corps MOBILE (movePlayers le mène), le
+  // ballon tenu droit devant à la distance de pose (pinRel) — le pied passe devant lui et se pose à côté, le buste vend du côté de la jambe ;
+  // la morsure au milieu du dernier vol, la sortie du côté OPPOSÉ à la dernière jambe (le contre-pied), un départ (burst) au bout.
+  if (st.full && cfg.pas && c._pas && c.speed >= 1.4) {
+    const n = Math.max(1, Math.min(3, tours)), vols = pasVols(c, 8).filter((v) => v.t0 >= 0.03);
+    let seq = vols.slice(0, n);
+    const cote = (pd) => (pd === 'right' ? -1 : 1);   // la sortie part du côté opposé à la dernière jambe : droite → à gauche (yaw +)
+    const libre = (a) => sides.some((x) => Math.abs(wrapA(x - a)) < 0.3);
+    if (sortie === 'contre-pied' && !libre(c.yaw + cote(seq[seq.length - 1].pied) * 0.9) && vols.length > n) seq = vols.slice(1, n + 1);   // commencer d'un vol plus tard : la dernière jambe change de côté
+    const last = seq[seq.length - 1], ex = sortie === 'fixe' ? c.yaw : sortie === 'temporise' ? exitYaw : c.yaw + cote(last.pied) * 0.9;
+    if (st.ball.owner !== c.id) st.ball.possess(c.id);
+    startGesture(c, { id: 'passementFoulee', contact: (last.t0 + last.t1) / 2, duration: last.t1 + 0.04 }, {
+      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { vols: seq.map((v) => ({ pied: v.pied, t0: +(st.t + v.t0).toFixed(3), t1: +(st.t + v.t1).toFixed(3) })) }, pinRel: pasPose(c) + 0.02, v0: c.speed, foeId: foe.id, ballMax: 0 },
+      log: st.gestures,
+    });
+    (c._skillCd ??= {}).passement = st.t + K.passementCd;
+    if (KP) { c._regard = null; c._regardUntil = null; }
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'passementFoulee', foot: seq[0].pied, skill: 'passement', foulee: true, anticipation: +((last.t0 + last.t1) / 2).toFixed(3) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: seq.length, sortie, enCourse: true, foulee: true, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+    return true;
+  }
   const clip = tours >= 2 && !enCourse ? 'passementJambes' + Math.min(tours, 6) : 'passementJambes';   // le multiple exige le ballon calé
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId['passement-jambes'], sit);
@@ -614,6 +640,7 @@ export function skillContactNow(st, p, cfg) {
     // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
     // de burst, on ressort en marchant, ballon sous la semelle
     if (A.sortie !== 'temporise') p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + (A.sortie === 'fixe' ? 0.65 : 0.5) };
+    if (A.foulee) p.push = [Math.cos(A.exitYaw), Math.sin(A.exitYaw)];   // (pas) la touche suivante part du côté de la sortie
   } else if (A.skill === 'crochet') {
     A.from = [st.ball.p[0], st.ball.p[2]];
     // le CHALOUPÉ a menti pendant 0,42 s : le défenseur qui fermait s'assoit sur la feinte de
@@ -696,7 +723,7 @@ export function touchEvent(st, c, ev = null, cfg = null) {
   // vitesse du kick — la scène en fait un geste (crochet court au demi-tour), un projet aval
   // n'a rien à recalculer. Champs additifs : les mondes d'hier lisent les mêmes types, au bit près.
   st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id,
-    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}), ...conduiteNommee(st, c, cfg) });
+    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}), ...conduiteNommee(st, c, cfg, ev?.foot), ...(ev?.foot ? { foot: ev.foot } : {}), ...(ev?.pas ? { pas: ev.pas } : {}) });   // (pas) le pied que la foulée a mis au ballon, et comment (contact exact, fin de vol, lent)
 }
 
 /** (note 388) LA CONDUITE NOMMÉE (cfg.conduiteNommee, st.full) : chaque touche dit son PIED (le côté du ballon dans le regard) et sa
@@ -704,10 +731,10 @@ export function touchEvent(st, c, ev = null, cfg = null) {
  *  pour le droit) est l'EXTÉRIEUR, vers le dedans l'INTÉRIEUR ; droit devant (± droit °) c'est le COU-DE-PIED en course (≥ vite m/s),
  *  l'intérieur au trot ; un porteur presque arrêté (< lent m/s) garde le ballon sous la SEMELLE. Champs additifs (tech, foot, surface,
  *  virage °) : clé absente, la touche d'hier au bit. */
-export function conduiteNommee(st, c, cfg) {
+export function conduiteNommee(st, c, cfg, piedPas = null) {
   const K = st.full && cfg ? cfg.conduiteNommee : null; if (!K) return {};
   const b = st.ball.p, lat = (b[0] - c.p[0]) * Math.sin(c.yaw) - (b[2] - c.p[2]) * Math.cos(c.yaw);   // > 0 : le ballon à gauche
-  const foot = lat > 0 ? 'left' : 'right';
+  const foot = piedPas ?? (lat > 0 ? 'left' : 'right');   // (pas) le pied qui joue est celui que la foulée a amené
   const vx = st.ball.v[0], vz = st.ball.v[2], sp = hyp(vx, vz);
   let virage = sp > 0.2 ? wrapA(Math.atan2(vz, vx) - c.yaw) * 180 / Math.PI : 0;   // > 0 : vers la droite
   const dehors = foot === 'right' ? virage : -virage;                                    // > 0 : vers le dehors du pied qui touche
@@ -773,7 +800,9 @@ export function skillFollowStep(st, p, dt, cfg) {
     // le corps reste PLANTÉ sur son appui, le ballon est FIGÉ sous le cercle de la jambe — la
     // sortie se joue après le geste (le burst posé au contact rend la première touche lancée)
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-passement', { log: st.gestures }); return; }
-    if (A.enCourse) {
+    if (A.foulee) {
+      // DANS LA FOULÉE (cfg.pas) : le corps court (mobile — movePlayers le mène), le ballon est tenu à la pose (pinRel) — rien à écrire ici
+    } else if (A.enCourse) {
       // LANCÉ : le corps glisse sur son élan (freiné à 45 %), le ballon roule libre sous le
       // cercle — sa friction le garde devant le pied (conduite protégée en amont)
       const vG = (A.v0 ?? 3) * 0.45;

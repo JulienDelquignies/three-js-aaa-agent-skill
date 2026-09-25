@@ -9,7 +9,7 @@ import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js'; import { pasDecision } from './cadence.js';   // (263) le pas de décision
-import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
+import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js'; import { pasStep, pasContact, pasEtat, pasProchains } from './pas.js';   // (2026-09-24) l'horloge de foulée dans la sim
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
@@ -544,7 +544,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
   resolveSlideL(st, cfg);              // …et sur ballon libre (aucun _slideL hors match)
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
   // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement d'armé) — projetées avant, le dernier écrivain les défaisait (voir separatePlayers)
-  separatePlayers(st, cfg);
+  separatePlayers(st, cfg); if (st.full && cfg.pas) pasStep(st, dt);   // (2026-09-24) L'HORLOGE DE FOULÉE dans la sim, sur le déplacement final du pas de temps (pas.js) — le rendu la suit
   // LA MESURE DU CONTRÔLE ARRIVE QUAND LE BALLON ARRIVE. Un contrôle continu n'a pas de résultat à
   // l'instant du contact ; l'écrire là reviendrait à noter l'intention. On remplit l'événement quand
   // le geste est fini, c'est-à-dire quand le fait existe.
@@ -629,7 +629,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const SR = st.full && cfg.conduiteSerree ? serrePorteurDe(st, c, cfg.conduiteSerree, cfg) : null;   /* (290) LA CONDUITE SE SERRE SOUS PRESSION (serre.js) */ const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF, ...(SR ? { serreK: SR.k, serreV: SR.dv } : {}), ...(st.full && cfg.toucheCorps ? { corps: heading, corpsK: cfg.toucheCorps } : {}),
       touchF: (c.touchF ?? 1) * (st.full && cfg.locomoteur ? (cfg.locomoteur.touche ?? 0.8) : 1), coneOk: coneP(),   /* (260) la touche poussée se calibre sur le corps qui la suit : un démarrage mono-exponentiel ne rattrape pas la poussée d'hier */   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
-      space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
+      space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99),
+      ...(st.full && cfg.pas ? { yaw: c.yaw, pas: { contact: (a, b) => pasContact(c, a, b), prochains: pasProchains(c), joue: c._pas ? (c._pas.joue ??= {}) : null, ...pasEtat(c) }, vel: [c.v[0], c.v[1]] } : {}) };   // (2026-09-24) la touche au pied qui la joue (pas.js)
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus
     // une négociation (l'historique : quatre autorités en guerre ici, control-at-foot à 33 %).

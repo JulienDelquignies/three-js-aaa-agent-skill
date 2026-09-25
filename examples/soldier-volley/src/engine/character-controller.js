@@ -260,10 +260,10 @@ export class CharacterController {
       const gen = this._gaitGen && this.locomotion === 'generee';
       const vb = gen ? this._bodyVelocity(vGait) : null;
       const kClock = gen ? gaitCadenceFactor(vb[0], vb[1]) * gaitLegFactor(this._gaitGen.legK ?? 1, vGait) * gaitBrakeCadence(this._brake) * gaitTurnCadence(this._turn) : 1;
-      if (this.gait) this.gait.advance(vGait, dt * kClock);
+      if (this.gait) { if (this.pasFinal) this.gait.phi = this.pasFinal.phi; else this.gait.advance(vGait, dt * kClock); }   // (2026-09-24) pasFinal : la phase de la SIM (pas.js) — une horloge, la sim la tient, le rendu la suit
       // (2026-09-24) LE PIVOT : le corps qui tourne presque sur place change d'appui au moins à gaitPivotCadence (la foulée prend la même durée, opts.pivotHz)
       const fPiv = gen ? gaitPivotCadence(this._yawRate) : 0, fNow = this.gait ? this.gait.law(vGait) * kClock : 0;
-      if (this.gait && fPiv > fNow) this.gait.phi = (this.gait.phi + (fPiv - fNow) * dt) % 1;   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe, du frein et du virage serré (motion-gait : une phase, une durée)
+      if (this.gait && !this.pasFinal && fPiv > fNow) this.gait.phi = (this.gait.phi + (fPiv - fNow) * dt) % 1;   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe, du frein et du virage serré (motion-gait : une phase, une durée)
       // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
       // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
       // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
@@ -381,11 +381,11 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, pivotHz: gaitPivotCadence(this._yawRate) || undefined, boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
+      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, pivotHz: gaitPivotCadence(this._yawRate) || undefined, pasT: this.pasFinal?.T, geste: this._gesteFouleeOpts(), boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
       gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, this._lastGaitOpts);
       gait = this._anchorStance(gait, (plant, plantYaw) => gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { ...this._lastGaitOpts, plant, plantYaw }));
     }
-    this._gaitFeet = gait ? gait.feet : null;                  // la phase et la cible de chaque pied (instruments, ancrage de l'appui)
+    this._gaitFeet = gait ? gait.feet : null; this._gaitS = gait?.meta?.s;   // la phase et la cible de chaque pied (instruments, ancrage de l'appui) ; l'appui du cycle (le vol du geste dans la foulée)
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;
     for (const name in pose.q) {
@@ -433,6 +433,36 @@ export class CharacterController {
       any = true;
     }
     return any ? repose(plant, plantYaw) : gait;
+  }
+
+  /** (2026-09-24) LE GESTE DANS LA FOULÉE (Rondo : gesteFoulee = { foulee: { vols: [{ pied, t0, t1 }] }, t, ball } — temps de la sim) : pour
+   *  chaque pied, le vol en cours s'il est un vol du geste (w ∈ [0,1]) et l'ÉLARGI de son couloir — la jambe qui a cerclé le ballon se pose À
+   *  CÔTÉ de lui (+9 cm), l'appui qui suit garde ce couloir (l'ancre le tient), il se referme pendant le vol suivant ; le ballon dans le repère
+   *  personnage (celui de gaitPose). Le calendrier survit au geste le temps du retour du couloir. */
+  _gesteFouleeOpts() {
+    const G = this.gesteFoulee; if (!G) return undefined;
+    if (G.foulee && this._gesteMem?.vols !== G.foulee.vols) this._gesteMem = { vols: G.foulee.vols, file: G.foulee.vols.map((v) => v.pied), fin: Math.max(...G.foulee.vols.map((v) => v.t1)) + 1.5 * (this.pasFinal?.T ?? 0.7) };
+    const M = this._gesteMem, S = this._gesteEtat ??= { Left: { e: 'idle', vol: null }, Right: { e: 'idle', vol: null } };
+    if (!M || G.t > M.fin) { if (S.Left.e === 'idle' && S.Right.e === 'idle') { this._gesteMem = null; return undefined; } }
+    // L'ÉTAT DE CHAQUE PIED, sur ses VRAIS vols (la phase rendue — celle de la sim, mais la durée d'un vol dérive si l'allure change : un
+    // arc piloté par l'horloge du calendrier se coupait à mi-vol, le pied tombait de 37 cm en une image) : un vol qui COMMENCE dans la
+    // fenêtre d'un vol du geste est un ARC ; l'appui qui suit garde le couloir élargi (POSE) ; le vol suivant le referme (RETOUR).
+    const s = this._gaitS ?? 0.4, out = { Left: { arc: false, elargi: 0 }, Right: { arc: false, elargi: 0 } };
+    for (const k of ['Left', 'Right']) {
+      const F = this._gaitFeet?.[k], vol = F?.phase === 'swing', w = vol ? Math.max(0, Math.min(1, ((F.u ?? 0) - s) / Math.max(1e-3, 1 - s))) : 0, E = S[k];
+      if (vol && !E.vol) {                                                   // un vol commence : est-ce le PROCHAIN de la file du geste ?
+        const cote = k === 'Left' ? 'left' : 'right', v = M?.file?.[0] === cote;   // L'ORDRE des vols, pas leurs instants prédits (l'allure qui change les décale de 0,1-0,2 s)
+        if (v) M.file.shift();
+        E.e = v ? 'arc' : E.e === 'pose' ? 'retour' : 'idle';
+      } else if (!vol && E.vol) E.e = E.e === 'arc' ? 'pose' : E.e === 'retour' ? 'idle' : E.e;   // un vol finit
+      E.vol = vol;
+      out[k].arc = E.e === 'arc';
+      out[k].elargi = E.e === 'arc' ? Math.min(1, w / 0.6) : E.e === 'pose' ? 1 : E.e === 'retour' ? 1 - Math.min(1, w / 0.7) : 0;
+    }
+    const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
+    const dx = G.ball[0] - ox, dz = G.ball[1] - oz;
+    out.balle = [c * dx - sn * dz, sn * dx + c * dz];
+    return out;
   }
 
   /** Forcer une espèce d'attente (la planche-contact, un test) — null : la politique décide. */

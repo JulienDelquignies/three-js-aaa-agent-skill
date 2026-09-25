@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+// verify-pas — L'HORLOGE DE FOULÉE DANS LA SIM (engine/pas.js, cfg.pas — le duel l'allume) : la conduite touche le ballon avec le pied
+// qui l'ATTEINT (le cou-de-pied des pieds du générateur, tabulés), une fois par vol au plus ; le passement se fait DANS la foulée (le
+// corps court, le ballon est tenu devant). Mesuré avant (sonde de rendu, duel, 60 s) : le pied « qui jouait » à 0,7 m du ballon (p50)
+// à l'instant de la touche, deux touches par pas ; les passements plantaient le corps (0 m/s, 0,6-1,6 s).
+// Sabotage : cfg.pas false — la conduite d'hier (aucune touche au contact du pied), le passement planté.
+// Usage : node verify-pas.mjs   (sans navigateur ; ~1 min)
+import { makeDuel, duelCfg } from '../assets/starter/src/engine/duel-1v1.js';
+import { matchStep } from '../assets/starter/src/engine/match-sim.js';
+
+let pass = 0, fail = 0;
+const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
+const q = (xs, f) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(f * (s.length - 1))] : NaN; };
+
+function jouer(pas, seeds = [1, 2, 3, 4], secs = 120) {
+  const R = { touches: 0, enCourse: 0, contact: 0, parVol: 0, passFoulee: 0, passCale: 0, vMin: [], ballMax: [], buts: 0 };
+  for (const seed of seeds) {
+    const st = makeDuel({ seed }), cfg = duelCfg({ pas }), dt = 1 / 60; let ne = 0; const open = {}, dernier = {};
+    for (let i = 0; i < secs * 60; i++) {
+      matchStep(st, dt, cfg);
+      while (ne < st.events.length) {
+        const e = st.events[ne++];
+        if (e.type === 'touche') {
+          R.touches++; const c = st.players[e.by];
+          if (c.speed >= 1.2) { R.enCourse++; if (e.pas === 'contact' || e.pas === 'porté') R.contact++; }
+          // une touche par VOL : deux touches du même pied à moins d'un demi-cycle
+          if (e.foot && c._pas && e.pas !== 'lent') { R.synchro = (R.synchro ?? 0) + 1; const k = `${e.by}${e.foot}`; if (dernier[k] != null && st.t - dernier[k] < 0.5 * c._pas.T) R.parVol++; dernier[k] = st.t; }   // (les touches lentes, < 1 m/s, sont celles d'hier : cadencées à la distance)
+        }
+        if (e.type === 'skill' && e.kind === 'passement') { if (e.foulee) R.passFoulee++; else R.passCale++; open[e.by] = { vs: [], bm: 0, foulee: !!e.foulee }; }
+        if (e.type === 'but' || e.type === 'goal') R.buts++;
+      }
+      for (const [id, o] of Object.entries(open)) {
+        const p = st.players[id];
+        if (p.act?.payload?.skill === 'passement') { o.vs.push(p.speed); o.bm = Math.max(o.bm, Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2])); }
+        else { if (o.vs.length) { R.vMin.push(Math.min(...o.vs)); if (o.foulee) R.ballMax.push(o.bm); } delete open[id]; }
+      }
+    }
+  }
+  return R;
+}
+
+console.log('— la conduite au pied qui l\'atteint, le passement dans la foulée (duel, 4 graines × 120 s) —');
+const A = jouer(true), H = jouer(false);
+const part = A.contact / Math.max(1, A.enCourse);
+ok(part >= 0.7, `en course (≥ 1,2 m/s), ${(100 * part).toFixed(0)} % des touches se jouent AU CONTACT d'un pied qui vole (${A.contact}/${A.enCourse} ; plancher 70 %)`);
+ok(A.parVol <= 0.01 * A.synchro, `une touche par vol au plus : ${A.parVol} doublons sur ${A.synchro} touches synchronisées au pas (plafond 1 %)`);
+ok(A.passFoulee >= 4 && q(A.vMin, 0.5) >= 1.2 && q(A.ballMax, 0.9) <= 0.8, `le passement se fait DANS la foulée : ${A.passFoulee} lancés (${A.passCale} calés sous 1,4 m/s), le corps court encore à ${q(A.vMin, 0.5).toFixed(1)} m/s au plus bas (p50 ; plancher 1,2), le ballon reste devant (≤ ${q(A.ballMax, 0.9).toFixed(2)} m au p90 ; plafond 0,8)`);
+ok(A.buts >= 0.6 * H.buts, `le jeu vit : ${A.buts} buts (hier ${H.buts})`);
+ok(H.contact === 0 && q(H.vMin, 0.5) < 0.5, `sabotage — sans l'horloge (cfg.pas false) : ${H.contact} touches au contact d'un pied, les passements plantés (${q(H.vMin, 0.5).toFixed(1)} m/s au plus bas) : les clauses mordent`);
+console.log(`\n${pass} ✓ / ${fail} ✗`);
+process.exit(fail ? 1 : 0);

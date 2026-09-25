@@ -50,6 +50,7 @@ export function duelCfg(overrides = {}) {
   return {
     ...base,
     duel: { ...DUEL_KEYS, ...(overrides.duel ?? {}) },
+    pas: overrides.pas ?? true,   // (2026-09-24) l'horloge de foulée dans la sim, la touche au pied qui la joue (pas.js)
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),
     assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); },
   };

@@ -155,10 +155,30 @@ export function dribbleStep(d, ball, player, dt) {
   // plus vite qu'on ne le referme se joue à pleine allonge (le poke de la course).
   const prise = c.prise ?? c.reach;
   const bvAway = dist > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dist : 0;
-  const auPied = dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
+  // (2026-09-24) LA TOUCHE AU PIED QUI LA JOUE (player.pas — pas.js, cfg.pas ; absent : la touche d'hier au bit). La touche « au pied »
+  // à la distance ne savait pas où étaient les pieds : deux touches par pas, le pied rendu à 0,7 m du ballon (p50) à l'instant du
+  // contact. Ici le ballon n'est touché que par un pied EN FIN DE VOL (w ≥ pasW) dont la balle du pied l'atteint — dans son couloir
+  // (± pasLat du centre du pied), rejoint (le ballon au plus pasAvant devant elle, pas plus de 0,3 m derrière) — une fois par vol.
+  // …EN MOUVEMENT seulement (≥ pasV m/s, la foulée générée pleine) : à l'arrêt l'horloge ne tourne pas, aucun pied ne vole — le porteur
+  // garé derrière un ballon mort ne le toucherait jamais (le gel du duel) ; là, la touche de semelle / d'intérieur d'hier.
+  let piedPas = null, pasMode = null;
+  const pasOn = !!player.pas && player.speed >= (c.pasV ?? 1.0);
+  d.horloge = (d.horloge ?? 0) + dt;
+  const rdvEnCours = pasOn && d.rdv && d.horloge < d.rdv.t + 0.15;   // un ballon ENVOYÉ au pied qui va se poser : on le laisse arriver
+  if (pasOn) {
+    const fx = Math.cos(player.yaw ?? Math.atan2(hz, hx)), fz = Math.sin(player.yaw ?? Math.atan2(hz, hx)), bA = bx * fx + bz * fz, bD = -bx * fz + bz * fx;
+    d.pasJoue = player.pas.joue ?? (d.pasJoue ??= {});   // le registre du JOUEUR (pas.js : partagé avec la touche du porté, rouvert à chaque vol qui commence — une touche par vol)
+    const ct = player.pas.contact(bA, bD);
+    if (ct && ct.d <= (c.pasR ?? 0.16) && !d.pasJoue[ct.pied]) { piedPas = ct.pied; pasMode = 'contact'; }          // le ballon (rayon 0,11) au contact du cou-de-pied (±5 cm)
+    // …sinon, un ballon À PORTÉE (la prise d'hier) se joue avec le pied qui FINIT son vol — le plus en avant, à l'instant où il se pose :
+    // le porteur qui tourne autour d'un ballon mort sans qu'un pied le rejoigne exactement le gardait à 0,15 m d'un défenseur figé 1 s
+    // (graine 1) ; le rendu n'a plus qu'un reste à corriger, et c'est toujours un pied, une fois par vol
+    else if (dist < prise && !rdvEnCours) { const fv = ['left', 'right'].filter((k) => player.pas.finVol?.[k] && !d.pasJoue[k]); if (fv.length) { piedPas = fv.length === 1 ? fv[0] : (bD < 0 ? 'left' : 'right'); pasMode = 'fin'; } }
+  }
+  const auPied = pasOn ? !!piedPas || (!rdvEnCours && bvAway > player.speed + 0.3 && dist < c.reach) : dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
   // …ET LA TOUCHE EXIGE LE CÔNE AVANT (player.coneOk, lot 76 — posé par le match ; absent :
   // bit-près) : un pied ne pousse pas un ballon dans le dos — le corps le contourne d'abord.
-  if (auPied && player.coneOk !== false && d.sinceTouch >= c.minStride) {
+  if (auPied && player.coneOk !== false && (piedPas || d.sinceTouch >= c.minStride)) {   // (pas) un vol, une touche : la foulée cadence, plus la distance
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
@@ -210,16 +230,32 @@ export function dribbleStep(d, ball, player, dt) {
     // UNE TOUCHE EST UNE VITESSE, JAMAIS UNE POSITION. `setVelocity` passe par le corps du ballon
     // quand il y en a un (ball-body.js), et reste compatible avec un objet nu pour les prédicteurs et
     // les harnais qui simulent des futurs sur une copie.
-    const spT = player.corpsK ? toucheCorpsDe(sp, dx, dz, player.corps, player.speed, player.corpsK) : sp;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
+    let spT = player.corpsK ? toucheCorpsDe(sp, dx, dz, player.corps, player.speed, player.corpsK) : sp;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
+    // (2026-09-24) LA TOUCHE PLANIFIÉE SUR LA FOULÉE (player.pas.prochains — pas.js ; absent : hier au bit) : la longueur voulue (lead,
+    // la loi d'hier) devient un RENDEZ-VOUS — la fin de vol d'un des prochains pieds la plus proche de l'intervalle de reprise (touchInterval),
+    // et le ballon part vers le point où CE pied sera alors (le corps à sa vitesse, le pied dans son couloir), à la vitesse qui l'y amène
+    // freiné par la pelouse (s = v₀t − at²/2). Poussé « à x m » sans égard aux pieds, le ballon traversait le couloir de l'autre pied et
+    // arrivait entre deux poses : la moitié des touches se jouaient à 0,45 m du pied rendu (mode « fin »).
+    if (piedPas && player.pas?.prochains && player.speed >= (c.pasV ?? 1.0)) {
+      const tVoulu = touchInterval(player.speed, lead), R = player.pas.prochains.filter((r) => r.t > 0.12);
+      const rdv = R.reduce((b, r) => (!b || Math.abs(r.t - tVoulu) < Math.abs(b.t - tVoulu) ? r : b), null);
+      if (rdv) {
+        const fx = Math.cos(player.yaw ?? Math.atan2(hz, hx)), fz = Math.sin(player.yaw ?? Math.atan2(hz, hx)), vpx = (player.vel ?? [hx * player.speed, hz * player.speed])[0], vpz = (player.vel ?? [hx * player.speed, hz * player.speed])[1];
+        const lat = rdv.droite * 1.25;                                                   // dans SON couloir, un peu dehors : l'autre pied passe à côté
+        const tx = px + vpx * rdv.t + fx * rdv.avant - fz * lat, tz = pz + vpz * rdv.t + fz * rdv.avant + fx * lat;
+        const ex = tx - ball.p[0], ez = tz - ball.p[2], el = hyp(ex, ez), a = touchDecel(player.speed);
+        if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2; dx = ex / el; dz = ez / el; spT = v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el); d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t }; }
+      }
+    }
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
       [ball.v[2] / BALL.radius, 0, -(dx * spT) / BALL.radius]);   // le pied la fait rouler : lift avant
-    d.sinceTouch = 0; d.touches++; touched = true;
+    d.sinceTouch = 0; d.touches++; touched = true; if (piedPas) d.pasJoue[piedPas] = true;
     // LA TOUCHE PORTE SA GÉOMÉTRIE (lot 55) : l'angle entrant→sortant et la vitesse du kick —
     // l'événement les inscrit, la scène en fait un GESTE (une cassure de 110° n'est pas une
     // caresse de course). Calcul pur sur des valeurs déjà là : la physique ne bouge pas d'un bit.
     // …un ballon RASSEMBLÉ (quasi posé au pied — la prise du lot 58) n'a plus de ligne : sa
     // cassure se lit contre le CAP DU CORPS (heading → kick), le vrai angle du demi-tour.
-    ev = { dev: Math.acos(Math.max(-1, Math.min(1, (cl > 0.2 ? curX : hx) * dx + (cl > 0.2 ? curZ : hz) * dz))) * 180 / Math.PI, spd: sp };
+    ev = { dev: Math.acos(Math.max(-1, Math.min(1, (cl > 0.2 ? curX : hx) * dx + (cl > 0.2 ? curZ : hz) * dz))) * 180 / Math.PI, spd: sp, ...(piedPas ? { foot: piedPas, pas: pasMode } : player.pas ? { pas: 'lent' } : {}) };
   }
 
   advance(ball, dt);

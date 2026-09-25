@@ -506,7 +506,11 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // viennent devant et s'ouvrent. LE VIRAGE (`opts.turn`, accélération latérale mesurée en m/s², + = vers la droite du corps) : le bassin
   // et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au plus), le bassin glisse vers l'intérieur, le pied extérieur se pose
   // plus large, la tête reste d'aplomb (contre-roulis). Absents : la foulée d'hier au bit.
-  const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp(opts.turn ?? 0, -9, 9);
+  // (2026-09-24) LE GESTE DANS LA FOULÉE (opts.geste — le passement lancé, character-controller._gesteFouleeOpts ; absent : hier au bit) : le buste
+  // VEND du côté de la jambe qui cercle — un faux virage (roulis du bassin et du tronc, bassin qui glisse) de 5 m/s² au plus fort du vol.
+  const GV = opts.geste, wVol = (k) => { const u = k === 'Left' ? ((phi % 1) + 1) % 1 : ((phi + 0.5) % 1 + 1) % 1; return u < p.s ? null : (u - p.s) / (1 - p.s); };   // le vol RENDU de ce pied
+  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k].arc && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;
+  const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp((opts.turn ?? 0) + 5 * vend, -9, 9);
   // LE GRIFFÉ (footPath) — absent : hier au bit. Plein jusqu'à 6 m/s, ramené à 0,3 dès 7 : au sprint le genou de la foulée
   // tourne déjà à la limite (checkClip, 30 rad/s — 9 m/s le dépasse sans griffé) ; mesuré, griffé plein à 8 m/s = 32 rad/s.
   if (opts.griffe) p.griffe = clamp(opts.griffe, 0, 1) * clamp(1 - (Math.hypot(vF, vR) - 6) * 0.7, 0.3, 1);
@@ -519,6 +523,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 6 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
   if (aT !== 0) p.T /= gaitTurnCadence(aT);
   if (opts.pivotHz > 1 / p.T) p.T = 1 / opts.pivotHz;                   // le pivot : la cadence minimale du corps qui tourne sur place (gaitPivotCadence)
+  if (opts.pasT > 0) p.T = opts.pasT;                                    // (2026-09-24) la durée du cycle de l'horloge de la SIM (pas.js) : la phase qu'elle impose et la durée de la pose sont UNE
   const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);
   if (aT !== 0) p.swingH *= 1 - 0.15 * Math.min(1, Math.abs(aT) / 9);   // la jambe intérieure, hanche plus basse, passe plus ras (le genou reste sous 140°) ; les pas de frein rasent aussi
   const L = P.lengths, R = L.thigh + L.shank;
@@ -556,6 +561,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // jamais (le contrat) ; sans virage : la foulée d'hier au bit.
   const kX = clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // …atténué au sprint (la foulée longue sature la hanche)
   if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
+  if (GV) { cL[0] -= 0.09 * GV.Left.elargi; cR[0] += 0.09 * GV.Right.elargi; }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui
   const pYawTurn = -6 * kX * sX;
   if (kX > 0) p.swingH *= 1 - 0.12 * kX;                                 // (A7 ter) le vol rase un peu plus dans le pas croisé (le genou reste sous 140°)
   const listAt = (x) => -p.pList * Math.cos(TAU * (x - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 12 * B.k * (0.5 + 0.5 * Math.cos(TAU * (x - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // (2026-09-24) 12° (hier 10) : sur l'appui réel, plus court, le plongeon se perdait dans le roulis normal   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
@@ -656,6 +662,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     if (fp.phase === 'swing' && wJ > 0) volArticulaire(fp, (u - pS(side).s) / (1 - pS(side).s), wJ, p.v, L, hipW,
       hipJointAt(((side === 'Left' ? 0 : 0.5) + pS(side).s) % 1, side), hipJointAt(side === 'Left' ? 0 : 0.5, side),
       ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot, axeDe(side)), b = footPath(0, pS(side), c, vC, ankleY, L.foot, axeDe(side)); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch, porteeK(p.v, p.recul), { ...axeDe(side), orteil0: P.bones[`${side}Foot`].bindP[1] - axeDe(side).L * Math.sin(axeDe(side).a0 * D2R) }, p.recul]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
+    if (GV && GV[side].arc && fp.phase === 'swing') arcPassement(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, ankleY);   // (geste) la jambe CERCLE le ballon, sur SON vol (−sgn : +1 = couloir droit)
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
@@ -668,6 +675,23 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const q = {};
   for (const [bone, Rb] of Object.entries(J)) { const s = jointToSpec(P, bone, Rb); if (s) q[bone] = s; }
   return { q, hips, J, feet, meta: { s: p.s, T: p.T, drop, bob, lean: p.lean, params: p } };
+}
+
+/** (2026-09-24) L'ARC DU PASSEMENT : le pied qui vole passe DEDANS derrière le ballon, DEVANT lui (levé à 22 cm pour le franchir), puis
+ *  DEHORS, et revient se poser dans son couloir (élargi) — des points de contrôle RELATIFS AU BALLON (repère personnage : +X droite, +Z
+ *  arrière), une courbe de Catmull-Rom sur w, fondue au chemin normal aux deux bouts (le décollage et la pose restent ceux de la foulée). */
+function arcPassement(fp, w, balle, sgn, ankleY) {
+  const [bx, bz] = balle, base = [fp.p[0], fp.p[1], fp.p[2]];
+  const K = [[0.15, null], [0.36, [bx - sgn * 0.12, ankleY + 0.16, bz + 0.1]], [0.56, [bx - sgn * 0.03, ankleY + 0.22, bz - 0.21]], [0.76, [bx + sgn * 0.21, ankleY + 0.14, bz - 0.12]], [1.0, null]];
+  if (w <= K[0][0] || w >= 1) return;
+  const pts = K.map(([, q]) => q ?? base);                            // les bouts : le chemin normal de l'instant (fondu, pas de saut)
+  let i = 0; while (i < K.length - 2 && w > K[i + 1][0]) i++;
+  const t = (w - K[i][0]) / (K[i + 1][0] - K[i][0]), P0 = pts[Math.max(0, i - 1)], P1 = pts[i], P2 = pts[i + 1], P3 = pts[Math.min(pts.length - 1, i + 2)];
+  const cr = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t * t + (-a + 3 * b - 3 * c + d) * t * t * t);
+  const arc = [0, 1, 2].map((j) => cr(P0[j], P1[j], P2[j], P3[j]));
+  const env = sstep((w - 0.15) / 0.15) * (1 - sstep((w - 0.85) / 0.15));
+  for (let j = 0; j < 3; j++) fp.p[j] = base[j] + (arc[j] - base[j]) * env;
+  fp.pitch = fp.pitch * (1 - env) + 8 * env;                          // le pied franchit le ballon pointe relevée, à plat
 }
 
 /** Un CYCLE en spec animkit (une clé par 1/fps s sur la durée T, loop) — la planche-contact, checkClip. */
