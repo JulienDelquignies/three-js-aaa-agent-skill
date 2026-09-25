@@ -7778,5 +7778,27 @@ if (__bloc()) {
   ok(`lot 318 — …et LE MONDE : échappées ${mA.esc} ≤ 0,75 × ${mN.esc} ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.esc <= 0.75 * mN.esc && mA.passes >= 0.9 * mN.passes);
 }
 
+if (__bloc()) {
+  // LA CONDUITE ET LE CONTRÔLE (323-325 — retour utilisateur : « les joueurs ne sont pas du tout amis avec le ballon » ; l'atelier ?atelier=conduite,
+  // note 448). Mesuré : les touches de conduite partaient en RAFALES (intervalle p50 0,15 s au trot : chaque touche re-poussait un ballon qui filait),
+  // 36-50 % du temps de conduite le ballon était PORTÉ soudé à un point fixe sans une touche, et 10 % des contrôles attendaient > 1,5 s leur 2e touche
+  // (la touche orientée poussait le ballon 1,7 m/s plus vite que le corps, qui courait à côté sans le rattraper, freinant sur le point de rendez-vous).
+  // Les lois : 323 la touche au rythme de la foulée, 324 le porté respire (une touche par cycle, × gesteF, dribbleLeadF, l'espace), 325 la reprise
+  // après le contrôle (à travers le ballon, à l'allonge) et la touche orientée courte (0,6 / 0,4-1,0 m). Le monde, 1 match (graine 3, 2 × 900 s)
+  // contre hier : l'intervalle de conduite au trot p50 ≥ 2 × hier ; le délai contrôle → 1re action p90 ≤ 0,85 × hier ; passes ≥ 0,9 × hier.
+  const TO0 = { ...matchCfg({}).toucheOrientee, lead: 1.0, leadMin: 0.6, leadMax: 1.6 };
+  const monde = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let seen = 0, K = null, passes = 0; const I = [], D = [], last = {};
+    for (let i = 0; i < 900 * 60 * 2.2; i++) { matchStep(st, 1 / 60, cfg); if (st.restart?.type === 'fin') break;
+      for (; seen < st.events.length; seen++) { const e = st.events[seen]; const p = e.by != null ? st.players[e.by] : null; if (!p) continue;
+        if (e.type === 'pass' && !e.clear && e.to >= 0 && !p.keeper) passes++;
+        if (e.type === 'touche' && !p.keeper) { const v = Math.hypot(p.v[0], p.v[1]); if (v >= 2 && v < 5 && last[p.id] != null && st.t - last[p.id] < 3) I.push(st.t - last[p.id]); last[p.id] = st.t; }
+        if (K && e.by === K.id && ['touche', 'windup', 'pass', 'shot', 'skill'].includes(e.type)) { D.push(st.t - K.t); K = null; } else if (K && st.possession.carrier !== K.id) K = null;
+        if (e.type === 'control' && !e.miss && !p.keeper && !st.restart) K = { id: p.id, t: st.t }; } }
+    I.sort((a, b) => a - b); D.sort((a, b) => a - b); return { i50: I[Math.floor(I.length / 2)] ?? 0, d90: D[Math.floor(D.length * 0.9)] ?? 9, nI: I.length, nD: D.length, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 900, pause: 10 } })), mN = monde(matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 900, pause: 10 }, rythmeTouche: null, porteRespire: null, repriseControle: null, toucheOrientee: TO0 }));
+  ok(`lot 323-325 — LA CONDUITE AU RYTHME DE LA FOULÉE : intervalle entre deux touches au trot p50 ${mA.i50.toFixed(2)} s (${mA.nI}) ≥ 2 × hier ${mN.i50.toFixed(2)} s (${mN.nI})`, mA.i50 >= 2 * mN.i50);
+  ok(`lot 323-325 — LE CONTRÔLE ENCHAÎNE : délai contrôle → 1re action p90 ${mA.d90.toFixed(2)} s (${mA.nD}) ≤ 0,85 × hier ${mN.d90.toFixed(2)} s ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.d90 <= 0.85 * mN.d90 && mA.passes >= 0.9 * mN.passes);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
