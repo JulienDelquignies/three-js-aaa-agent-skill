@@ -62,6 +62,9 @@ export function dribM(st, c, cfg) {
   m *= Math.abs(c.p[2]) > hz * 0.6 ? (D.aile ?? 1.3) : (D.axe ?? 0.85);
   const sg = Math.sign(st.pitch?.attackGoal?.(c.team)?.x ?? 1) || 1, adv = c.p[0] * sg;
   if (adv < -hx / 3) m *= (D.propreTiers ?? 0.5); else if (adv > hx / 3) m *= (D.adverseTiers ?? 1.15);
+  // (321) PAS DE DRIBBLE DEVANT SON BUT (D.devantBut — le chantier des échappées, note 447 : des centraux perdaient le ballon sur un passement
+  // à 16 m de leur but, l'attaquant seul) : à < d m de sa ligne la porte × f × (2 − composureF) — le sang-froid ose un peu plus. Absente : hier.
+  if (D.devantBut) { const og = st.pitch?.ownGoal?.(c.team); if (og && Math.hypot(og.x - c.p[0], c.p[2]) < (D.devantBut.d ?? 25)) m *= (D.devantBut.f ?? 0.1) * (2 - (c.skill?.composureF ?? 1)); }
   if (D.cadence && (c._dribAt ?? -99) > st.t - D.cadence * axe(rd, 1.5, 0.5)) m = 0;
   if (cfg.nature?.specialiste) m *= specialisteF(c, cfg.nature.specialiste);   // LE SPÉCIALISTE (269, doc nature.js) : la FRÉQUENCE de tentative, pas le taux
   return m;

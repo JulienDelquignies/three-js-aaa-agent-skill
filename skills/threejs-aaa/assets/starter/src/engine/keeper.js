@@ -314,10 +314,11 @@ export function relancerGardien(st, gk, cfg, deps) {
   if (styleSB === 'court') {
     // LA MAIN D'ABORD : un coéquipier LIBRE (aucun adversaire à < 4 m) à portée de bras
     const porteeM = 14 * (gk.skill?.throwF ?? 1);
+    const RS0 = st.full && cfg.relanceSure ? cfg.relanceSure : null;   // (319) …et la main ne sert pas un receveur qu'un adversaire ATTEINT avant le ballon (etaCourse au point servi < vol + marge × visionF)
     const libre = mates.filter((m) => {
       const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
       return dm > 4 && dm < porteeM && !st.players.some((q) => q.team !== gk.team && q.down <= 0
-        && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4);
+        && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4) && !(RS0 && menaceDe(st, gk, m, dm / (RS0.vMain ?? 11), RS0, cfg));
     }).sort((a, b) => hyp(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - hyp(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[0];
     if (libre) {
       const dm = hyp(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
@@ -355,7 +356,7 @@ export function relancerGardien(st, gk, cfg, deps) {
   // personne de libre : le punt d'hier. Absente : le barème d'hier au bit.
   const RS = st.full && cfg.relanceSure ? cfg.relanceSure : null;
   const rM = RS ? (RS.marque ?? 5) * (0.8 + 0.4 * (st.tactics?.[gk.team]?.style ?? 0.5)) * (gk.skill?.visionF ?? 1) : 0;
-  for (const { m, dm } of (RS ? scored.filter(({ m }) => !st.players.some((q) => q.team !== gk.team && !q.keeper && q.down <= 0 && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < rM)) : scored).slice(0, 3)) {
+  for (const { m, dm } of (RS ? scored.filter(({ m, dm }) => !st.players.some((q) => q.team !== gk.team && !q.keeper && q.down <= 0 && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < rM) && !menaceDe(st, gk, m, dm / (dm > 11 ? (RS.vPied ?? 16) : (RS.vMain ?? 11)), RS, cfg)) : scored).slice(0, 3)) {
     const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
     const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
     if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true, mains: dm > 11 ? volee : undefined })) return true;
@@ -507,5 +508,7 @@ export function gkHeldBall(st, c, dt, cfg) {
     && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
   return false;
 }
-import { hyp } from './hyp.js'; import { decisionEnveloppe } from './enveloppe.js';
+import { hyp } from './hyp.js'; import { decisionEnveloppe } from './enveloppe.js'; import { etaCourse } from './ball-predict.js';
+/** (319) Un adversaire atteint-il le point servi (le receveur + 0,35 s de sa course) avant le ballon (vol T s) + marge × visionF du gardien ? Pure. */
+function menaceDe(st, gk, m, T, K, cfg) { const L = [m.p[0] + m.v[0] * 0.35, 0, m.p[2] + m.v[1] * 0.35], mg = (K.marge ?? 0.5) * (gk.skill?.visionF ?? 1); return st.players.some((q) => q.team !== gk.team && !q.keeper && q.down <= 0 && etaCourse(q.p, q.v, L, { accel: (cfg.accel ?? 7.5) * (q.skill?.accelF ?? 1), top: (cfg.speeds?.chase ?? 6.4) * (q.skill?.topF ?? 1) }) < T + mg); }
 const BALL_R = 0.11;   // le rayon du ballon (ball.js BALL.radius) — le point bas de la chute de la volée
