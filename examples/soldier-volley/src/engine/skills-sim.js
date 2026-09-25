@@ -15,7 +15,7 @@ import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
-import { pasPointPorte, pasVols, pasPose, sortieFoulee, vSortie } from './pas.js';
+import { pasPointPorte, pasVols, pasPose, sortieFoulee, vSortie, freinCoupe } from './pas.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
@@ -394,7 +394,7 @@ export function maybeCrochet(st, c, cfg) {
     if (st.ball.owner !== c.id) st.ball.possess(c.id);
     startGesture(c, { id: 'crochetFoulee', contact: 9, duration: 9 }, {
       payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot: A.pied }, mobile: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0, chasseur,
-        foulee: { beats: [{ pied: A.pied, type: 'touche', dir: exitYawE, v: Math.max(2.2, 0.8 * c.speed), frein: espece === 'crochetCourt' ? 0.45 : 0.6, vend: true }] } },
+        foulee: { beats: [{ pied: A.pied, type: 'touche', dir: exitYawE, ...(cfg.dribble1c1?.sortie ? { v: 'sortie', frein: freinCoupe(((exitYawE - Math.atan2(c.v[1], c.v[0]) + 3 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI) } : { v: Math.max(2.2, 0.8 * c.speed), frein: espece === 'crochetCourt' ? 0.45 : 0.6 }), vend: true }] } },
       log: st.gestures,
     });
     (c._skillCd ??= {}).crochet = st.t + K.crochetCd; c.intent = null; c._dribAt = st.t;

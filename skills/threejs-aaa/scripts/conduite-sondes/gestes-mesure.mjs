@@ -83,7 +83,7 @@ const r = await pg.evaluate((SECS) => {
     const f = { t, pen: +pire.p.toFixed(3), paire: `${pire.a}/${pire.b}`, dSim: +Math.hypot(sp[0].p[0] - sp[1].p[0], sp[0].p[2] - sp[1].p[2]).toFixed(3),
       ecart: H.map((h, j) => +Math.hypot(h[0] - sp[j].p[0], h[2] - sp[j].p[2]).toFixed(3)), restart: !!st.restart,
       os: J.map((x) => Object.fromEntries(['Hips', 'Neck', 'Head', 'LeftArm', 'RightArm', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase'].map((k) => [k, W(x.bone[k]).map((u) => +u.toFixed(3))]))),
-      ball: st.ball.p.map((u) => +u.toFixed(3)), v: sp.map((s) => [+s.v[0].toFixed(2), +s.v[1].toFixed(2)]), act: sp.map((s) => s.act?.payload?.skill ?? s.act?.payload?.kind ?? (s.act ? 'act' : null)) };
+      ball: st.ball.p.map((u) => +u.toFixed(3)), v: sp.map((s) => [+s.v[0].toFixed(2), +s.v[1].toFixed(2)]), ph: J.map((x) => ['Left', 'Right'].map((k) => x.pl.ctrl?._gaitFeet?.[k]?.phase ?? null)), act: sp.map((s) => s.act?.payload?.skill ?? s.act?.payload?.kind ?? (s.act ? 'act' : null)) };
     const act = sp.map((q) => q.act ? (q.act.payload?.foulee ? 'geste-foulee' : q.act.kind ?? q.act.payload?.skill ?? q.act.payload?.kind ?? 'act') : null);
     const rel = (() => { const [a, c] = sp, dx = c.p[0] - a.p[0], dz = c.p[2] - a.p[2], d = Math.hypot(dx, dz) || 1; return Math.round(Math.acos(Math.max(-1, Math.min(1, (Math.cos(a.yaw) * dx + Math.sin(a.yaw) * dz) / d))) * 180 / Math.PI); })();
     out.pen.push([t, f.pen, f.paire, f.dSim, f.ecart[0], f.ecart[1], f.restart ? 1 : 0, act[0], act[1], +Math.hypot(...sp[0].v).toFixed(1), +Math.hypot(...sp[1].v).toFixed(1), rel, st.possession?.carrier ?? -1, J.map((x) => ['Left', 'Right'].map((k) => ({ swing: 'v', stance: 'a', peel: 'd' })[x.pl.ctrl?._gaitFeet?.[k]?.phase] ?? '?').join('')).join('|')]);
@@ -140,6 +140,7 @@ for (const g of R.gestes) {
   const app = F.filter((x) => x.t < g.t && x.t >= g.t - 0.31); if (app.length < 5) continue;
   const vx = app.reduce((s, x) => s + x.v[j][0], 0), vz = app.reduce((s, x) => s + x.v[j][1], 0), n = Math.hypot(vx, vz) || 1, fw = [vx / n, vz / n], rt = [-fw[1], fw[0]];
   const vente = F.filter((x) => x.t >= g.t && x.t <= tT), sortie = F.filter((x) => x.t >= tT && x.t <= tT + 0.3), apres = F.filter((x) => x.t >= tT && x.t <= tT + 0.8);
+  const poussee = F.filter((x) => x.t >= tT - 0.3 && x.t <= tT + 0.05);   // l'APPUI QUI POUSSE vers la sortie précède la touche (le pied qui joue le ballon est en vol pendant qu'il pousse)
   if (!vente.length || sortie.length < 10 || apres.length < 30) continue;
   const vS = apres.slice(-15).reduce((s, x) => [s[0] + x.v[j][0], s[1] + x.v[j][1]], [0, 0]), cote = Math.sign(vS[0] * rt[0] + vS[1] * rt[1]) || 1;
   const O = (x, k) => x.os[j][k], lat = (p, o) => (p[0] - o[0]) * rt[0] + (p[2] - o[2]) * rt[1], av = (p, o) => (p[0] - o[0]) * fw[0] + (p[2] - o[2]) * fw[1];
@@ -148,7 +149,7 @@ for (const g of R.gestes) {
   const yawSeg = (x, L, Rr) => { const a = O(x, L), c = O(x, Rr), dx = c[0] - a[0], dz = c[2] - a[2]; return -deg(ang(Math.atan2(dx * fw[0] + dz * fw[1], dx * rt[0] + dz * rt[1]))); };   // + : tourné à droite
   const genou = (x, S) => { const h = O(x, S + 'UpLeg'), k = O(x, S + 'Leg'), a = O(x, S + 'Foot'), u = [h[0] - k[0], h[1] - k[1], h[2] - k[2]], w = [a[0] - k[0], a[1] - k[1], a[2] - k[2]];
     return 180 - deg(Math.acos(Math.max(-1, Math.min(1, (u[0] * w[0] + u[1] * w[1] + u[2] * w[2]) / (Math.hypot(...u) * Math.hypot(...w)))))); };   // flexion, 0 = tendue
-  const appuiDe = (x) => (O(x, 'LeftFoot')[1] <= O(x, 'RightFoot')[1] ? 'Left' : 'Right');   // le pied le plus bas porte
+  const appuiDe = (x) => { const ph = x.ph?.[j]; if (ph) { const a = ph.map((u) => u === 'stance' || u === 'peel'); if (a[0] !== a[1]) return a[0] ? 'Left' : 'Right'; } return O(x, 'LeftFoot')[1] <= O(x, 'RightFoot')[1] ? 'Left' : 'Right'; };   // la PHASE du pied (le pied qui joue le ballon rase le sol : « le plus bas » le prenait pour l'appui)
   const vit = (L) => q(L.map((x) => Math.hypot(...x.v[j])), 0.5), ext = (L, f, sg) => Math.max(...L.map((x) => sg * f(x)));
   let pointe = 0; for (const x of vente) for (const k of ['Left', 'Right']) { const p = O(x, k + 'ToeBase'); if (Math.hypot(p[0] - x.ball[0], p[2] - x.ball[2]) < 0.12) pointe = Math.max(pointe, p[1]); }
   const H0 = O(vente[0], 'Hips');
@@ -159,8 +160,8 @@ for (const g of R.gestes) {
     roulisV: +ext(vente, roll, -cote).toFixed(0), epaules: +ext(vente, (x) => yawSeg(x, 'LeftArm', 'RightArm'), -cote).toFixed(0), bassinL: +ext(vente, (x) => yawSeg(x, 'LeftUpLeg', 'RightUpLeg'), -cote).toFixed(0),
     comLat: +ext(vente, (x) => lat(O(x, 'Hips'), H0), -cote).toFixed(2), piedExt: +ext(vente, (x) => Math.max(lat(O(x, 'LeftFoot'), O(x, 'Hips')) * -cote, lat(O(x, 'RightFoot'), O(x, 'Hips')) * -cote), 1).toFixed(2),
     // la sortie : vers le côté de sortie (+s)
-    tangage: +ext(sortie, pitch, 1).toFixed(0), roulisS: +ext(sortie, roll, cote).toFixed(0), genou: +Math.max(...sortie.map((x) => genou(x, appuiDe(x)))).toFixed(0),
-    pousse: +Math.max(...sortie.map((x) => { const S = appuiDe(x); return -cote * lat(O(x, S + 'Foot'), O(x, 'Hips')); })).toFixed(2),
+    tangage: +ext(sortie, pitch, 1).toFixed(0), roulisS: +ext(sortie, roll, cote).toFixed(0), tangageP: +ext(poussee, pitch, 1).toFixed(0), roulisP: +ext(poussee, roll, cote).toFixed(0), genou: +Math.max(...poussee.map((x) => genou(x, appuiDe(x)))).toFixed(0),
+    pousse: +Math.max(...poussee.map((x) => { const S = appuiDe(x); return -cote * lat(O(x, S + 'Foot'), O(x, 'Hips')); })).toFixed(2),
     bassinS: +ext(apres, (x) => yawSeg(x, 'LeftUpLeg', 'RightUpLeg'), cote).toFixed(0),
     virage: +deg(Math.abs(ang(Math.atan2(vS[1], vS[0]) - Math.atan2(fw[1], fw[0])))).toFixed(0), penMax: +Math.max(...F.map((x) => x.pen)).toFixed(2) });
 }
@@ -170,6 +171,6 @@ for (const [k, L] of Object.entries(parK)) {
   console.log(`\n${k} (${L.length} allés jusqu'à leur touche de sortie, ${R.interrompus?.[k] ?? 0} tranchés avant par le duel) — médiane [p10–p90]${r.note ? ' — réf. ' + r.note : ''}`);
   console.log(`  vitesse du corps : approche ${m((g) => g.vA, 1)}${ref('vA')} → vente ${m((g) => g.vV, 1)}${ref('vV')} → sortie (p90 des 0,3 s) ${m((g) => g.vS, 1)}${ref('vS')} m/s | vente ${m((g) => g.vente)} s${ref('vente')} | virage ${m((g) => g.virage, 0)}°`);
   console.log(`  VENTE (vers le côté feint) : tronc roulis ${m((g) => g.roulisV, 0)}°${ref('roulisV')} | épaules tournées ${m((g) => g.epaules, 0)}°${ref('epaules')} | bassin tourné ${m((g) => g.bassinL, 0)}°${ref('bassinL')} | bassin décalé ${m((g) => g.comLat)} m${ref('comLat')} | pied extérieur ${m((g) => g.piedExt)} m${ref('piedExt')} | pointe au-dessus du ballon ${m((g) => g.pointe)} m${ref('pointe')}`);
-  console.log(`  SORTIE : tronc en avant ${m((g) => g.tangage, 0)}°${ref('tangage')} | roulis vers la sortie ${m((g) => g.roulisS, 0)}°${ref('roulisS')} | flexion du genou d'appui ${m((g) => g.genou, 0)}°${ref('genou')} | pied de poussée à ${m((g) => g.pousse)} m du bassin${ref('pousse')} | bassin tourné vers la sortie ${m((g) => g.bassinS, 0)}° | pénétration max ${m((g) => g.penMax)} m`);
+  console.log(`  SORTIE : tronc en avant ${m((g) => g.tangage, 0)}°${ref('tangage')} | roulis vers la sortie ${m((g) => g.roulisS, 0)}°${ref('roulisS')} | APPUI QUI POUSSE (0,3 s avant la touche) : tronc en avant ${m((g) => g.tangageP, 0)}°${ref('tangage')}, roulis vers la sortie ${m((g) => g.roulisP, 0)}°, genou ${m((g) => g.genou, 0)}°${ref('genou')}, cheville à ${m((g) => g.pousse)} m du bassin côté feint${ref('pousse')} | bassin tourné vers la sortie ${m((g) => g.bassinS, 0)}° | pénétration max ${m((g) => g.penMax)} m`);
 }
 if (OUT) writeFileSync(OUT, JSON.stringify({ gestes: G, pen: R.pen, rayons: R.rayons }));

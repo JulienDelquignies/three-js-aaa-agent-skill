@@ -181,6 +181,13 @@ export function vSortie(p, cfg, dt = 0.5) {
   return Math.max(2.6, Math.min(top, p.speed + (v0 - p.speed) * (1 - Math.exp(-dt / tau))));
 }
 
+/** (2026-09-25) LE FREIN D'UNE COUPE selon son angle (°) : la vitesse à la POSE rapportée à l'approche, mesurée par Dos'Santos et al. 2021
+ *  (J Sports Sci, 27 hommes, sans ballon, tableau 1) — 45° : 5,06/5,22 = 0,97 ; 90° : 3,43/4,51 = 0,76 ; 180° : 2,68/4,00 = 0,67 (linéaire
+ *  entre, 0,97 en deçà de 45°). Le crochet freinait hier à 0,45-0,6 quel que soit l'angle : 1,9 m/s mesurés à la sortie. */
+export function freinCoupe(deg) {
+  const a = Math.abs(deg); return a <= 45 ? 0.97 : a <= 90 ? 0.97 + (0.76 - 0.97) * (a - 45) / 45 : Math.max(0.67, 0.76 + (0.67 - 0.76) * (a - 90) / 90);
+}
+
 export function pasPose(p) { const r = pasProchains(p, { cycles: 1 }); return r.length ? Math.max(...r.map((x) => x.avant)) : 0.35; }
 
 /** (2026-09-25) LES GESTES DANS LA FOULÉE — un geste est une suite de TEMPS posés sur les prochains vols du porteur, un par vol (pieds dans
@@ -217,12 +224,14 @@ export function gesteFouleeStep(st, p, dt, cfg, contactNow) {
           const tx = r ? p.p[0] + p.v[0] * r.t + fx * r.avant - fz * r.droite * 1.2 : p.p[0] + fx * 0.5, tz = r ? p.p[2] + p.v[1] * r.t + fz * r.avant + fx * r.droite * 1.2 : p.p[2] + fz * 0.5;
           const ex = tx - st.ball.p[0], ez = tz - st.ball.p[2], el = Math.hypot(ex, ez) || 1, tt = r?.t ?? 0.3, a = 1.2;
           dirX = ex / el; dirZ = ez / el; v = Math.max(0.8, el / tt + a * tt / 2);
-        } else { dirX = Math.cos(B.dir); dirZ = Math.sin(B.dir); v = B.v ?? 3; }
+        } else { dirX = Math.cos(B.dir); dirZ = Math.sin(B.dir);
+          if (B.v === 'sortie' && B.frein != null) { p.v = [p.v[0] * B.frein, p.v[1] * B.frein]; p.speed = Math.hypot(p.v[0], p.v[1]); B.freine = true; }   // le frein de la pose d'abord…
+          v = B.v === 'sortie' ? vSortie(p, cfg) : (B.v ?? 3); }                                                                                          // …puis le ballon là où le démarrage mène
         if (st.ball.owner === p.id) st.ball.release('conduite');   // une touche de geste est une touche de conduite (le ballon libre, interceptable)
         st.ball.impulse([dirX * v - st.ball.v[0], 0, dirZ * v - st.ball.v[2]]);
         st.lastTouch = p.team; B.joue = true; P.joue[B.pied] = true;
         st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: p.id, dev: 0, spd: +v.toFixed(1), foot: B.pied, pas: 'geste', geste: A.skill, contact: !!(ct && ct.pied === B.pied && ct.d <= 0.2) });   // contact : au cou-de-pied (sinon à la pose)
-        if (B.frein != null) { p.v = [p.v[0] * B.frein, p.v[1] * B.frein]; p.speed = Math.hypot(p.v[0], p.v[1]); }
+        if (B.frein != null && !B.freine) { p.v = [p.v[0] * B.frein, p.v[1] * B.frein]; p.speed = Math.hypot(p.v[0], p.v[1]); }
         if (B.dir != null) sortieFoulee(st, p, cfg, B.dir);
         if (B.vend) vendre();
       }

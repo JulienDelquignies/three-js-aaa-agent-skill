@@ -12,7 +12,7 @@ let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
 const q = (xs, f) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(f * (s.length - 1))] : NaN; };
 
-function jouer(pas, seeds = [1, 2, 3, 4], secs = 120, drb = null) {
+function jouer(pas, seeds = [1, 2, 3, 4, 5, 6, 7, 8], secs = 120, drb = null) {   // 8 graines : sur 4 le double contact (8 en 32 min) pouvait manquer — la clause du répertoire tombait par l'échantillon
   const R = { gestes: {}, gV: [], gOk: 0, gN: 0, portee: [], touches: 0, enCourse: 0, contact: 0, parVol: 0, passFoulee: 0, passCale: 0, vMin: [], ballMax: [], buts: 0 };
   for (const seed of seeds) {
     const st = makeDuel({ seed }), cfg = duelCfg({ pas, ...(drb ?? {}) }), dt = 1 / 60; let ne = 0; const open = {}, dernier = {};   // (sabotage) des clés de dribble changées
@@ -42,15 +42,15 @@ function jouer(pas, seeds = [1, 2, 3, 4], secs = 120, drb = null) {
   return R;
 }
 
-console.log('— la conduite au pied qui l\'atteint, le passement dans la foulée (duel, 4 graines × 120 s) —');
+console.log('— la conduite au pied qui l\'atteint, le passement dans la foulée (duel, 8 graines × 120 s) —');
 const A = jouer(true), H = jouer(false);
 const part = A.contact / Math.max(1, A.enCourse);
 ok(part >= 0.7, `en course (≥ 1,2 m/s), ${(100 * part).toFixed(0)} % des touches se jouent AU CONTACT d'un pied qui vole (${A.contact}/${A.enCourse} ; plancher 70 %)`);
 ok(A.parVol <= 0.01 * A.synchro, `une touche par vol au plus : ${A.parVol} doublons sur ${A.synchro} touches synchronisées au pas (plafond 1 %)`);
 ok(A.passFoulee >= 4 && q(A.vMin, 0.5) >= 1.2 && q(A.ballMax, 0.9) <= 0.8, `le passement se fait DANS la foulée : ${A.passFoulee} lancés (${A.passCale} calés sous 1,4 m/s), le corps court encore à ${q(A.vMin, 0.5).toFixed(1)} m/s au plus bas (p50 ; plancher 1,2), le ballon reste devant (≤ ${q(A.ballMax, 0.9).toFixed(2)} m au p90 ; plafond 0,8)`);
-const S = jouer(true, [1, 2, 3, 4, 5, 6, 7, 8], 120, { pasPortee: 9 });   // 8 graines : sur 4 le sabotage ne mordait que dans une (p90 de ~35 touches = la 4e plus grande)
+const S = jouer(true, [1, 2, 3, 4, 5, 6, 7, 8], 120, { pasPortee: 9 });   // (8 graines : sur 4 le sabotage ne mordait que dans une — p90 de ~35 touches = la 4e plus grande)
 ok(q(A.portee, 0.9) <= 0.55 && q(S.portee, 0.9) > 0.55, `la touche de rattrapage (fin de vol, sans rendez-vous) ne part que si le pied PEUT atteindre le ballon : sa pose à ≤ ${q(A.portee, 0.9).toFixed(2)} m du ballon au p90 (${A.portee.length} touches ; plafond 0,55 — le rendu l'y amène, ≤ 0,4 m) ; sabotage sans l'attente : ${q(S.portee, 0.9).toFixed(2)} m, la clause mord`);
-const kinds = Object.keys(A.gestes), Z = jouer(true, [1, 2, 3, 4], 120, { dribble1c1: false, passements: { ...duelCfg().passements, envie: 2, plancher: 0.35 } });
+const kinds = Object.keys(A.gestes), Z = jouer(true, [1, 2, 3, 4, 5, 6, 7, 8], 120, { dribble1c1: false, passements: { ...duelCfg().passements, envie: 2, plancher: 0.35 } });
 ok(kinds.length >= 4 && q(A.gV, 0.5) >= 1.2 && A.gOk >= 0.6 * A.gN, `le RÉPERTOIRE de la cage dans la foulée : ${A.gN} gestes, ${kinds.length} espèces (${kinds.map((k) => `${k} ${A.gestes[k]}`).join(', ')} ; plancher 4), le corps court pendant (${q(A.gV, 0.5).toFixed(1)} m/s au plus bas, p50), ${(100 * A.gOk / Math.max(1, A.gN)).toFixed(0)} % gardés ou tirés à +1,5 s (plancher 60 %)`);
 ok(Object.keys(Z.gestes).length < kinds.length, `sabotage — sans le répertoire de la cage (dribble1c1 false, le passement d'hier en tête) : ${Object.keys(Z.gestes).length} espèces (${Object.entries(Z.gestes).map(([k, v]) => `${k} ${v}`).join(', ')}) : la clause mord`);
 ok(A.buts >= 0.6 * H.buts, `le jeu vit : ${A.buts} buts (hier ${H.buts})`);

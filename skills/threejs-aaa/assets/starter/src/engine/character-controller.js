@@ -442,7 +442,7 @@ export class CharacterController {
    *  personnage (celui de gaitPose). Le calendrier survit au geste le temps du retour du couloir. */
   _gesteFouleeOpts() {
     const G = this.gesteFoulee; if (!G) return undefined;
-    if (G.foulee && this._gesteMem?.beats !== G.foulee.beats) this._gesteMem = { beats: G.foulee.beats, file: G.foulee.beats.map((b) => ({ pied: b.pied, type: b.type })), fin: G.t + (G.foulee.beats.length + 2) * (this.pasFinal?.T ?? 0.7) };   // les TEMPS du geste (pas.js), dans l'ordre des vols
+    if (G.foulee && this._gesteMem?.beats !== G.foulee.beats) this._gesteMem = { beats: G.foulee.beats, file: G.foulee.beats.map((b) => ({ pied: b.pied, type: b.type, vend: !!b.vend })), fin: G.t + (G.foulee.beats.length + 2) * (this.pasFinal?.T ?? 0.7) };   // les TEMPS du geste (pas.js), dans l'ordre des vols
     const M = this._gesteMem, S = this._gesteEtat ??= { Left: { e: 'idle', vol: null }, Right: { e: 'idle', vol: null } };
     if (!M || G.t > M.fin) { if (S.Left.e === 'idle' && S.Right.e === 'idle' && !G.vise) { this._gesteMem = null; return undefined; } }
     // L'ÉTAT DE CHAQUE PIED, sur ses VRAIS vols (la phase rendue — celle de la sim, mais la durée d'un vol dérive si l'allure change : un
@@ -453,12 +453,13 @@ export class CharacterController {
       const F = this._gaitFeet?.[k], vol = F?.phase === 'swing', w = vol ? Math.max(0, Math.min(1, ((F.u ?? 0) - s) / Math.max(1e-3, 1 - s))) : 0, E = S[k];
       if (vol && !E.vol) {                                                   // un vol commence : est-ce le PROCHAIN de la file du geste ?
         const cote = k === 'Left' ? 'left' : 'right', b = M?.file?.[0]?.pied === cote ? M.file.shift() : null;   // L'ORDRE des vols, pas leurs instants prédits (l'allure qui change les décale de 0,1-0,2 s)
-        E.e = b?.type === 'arc' ? 'arc' : b?.type === 'vend' ? 'vend' : E.e === 'pose' ? 'retour' : 'idle';   // un temps 'touche' : le pied qui vise (pas.js) l'amène au ballon
+        E.e = b?.type === 'arc' ? 'arc' : b?.type === 'vend' ? 'vend' : E.e === 'pose' ? 'retour' : 'idle';
+        E.large = b?.type === 'vend' ? 4.2 : b?.type === 'arc' && b.vend ? 2.6 : 1;   // (2026-09-25) le DERNIER arc du passement se pose large : la base de la poussée de sortie (cheville ≈ 0,35-0,55 m du bassin, Taga et al. 2026 ; 0,09 m hier, 4,0 → 0,65 m mesurés)   // un temps 'touche' : le pied qui vise (pas.js) l'amène au ballon
       } else if (!vol && E.vol) E.e = E.e === 'arc' || E.e === 'vend' ? 'pose' : E.e === 'retour' ? 'idle' : E.e;   // un vol finit
       E.vol = vol;
       out[k].arc = E.e === 'arc'; out[k].vend = E.e === 'vend';
-      out[k].elargi = E.e === 'arc' || E.e === 'vend' ? Math.min(1, w / 0.6) * (E.e === 'vend' ? 4.2 : 1) : E.e === 'pose' ? (S[k].large ?? 1) : E.e === 'retour' ? (S[k].large ?? 1) * (1 - Math.min(1, w / 0.7)) : 0;
-      if (E.e === 'arc' || E.e === 'vend') S[k].large = E.e === 'vend' ? 4.2 : 1;   // la vente se pose LARGE : 0,09 × 4,2 = 0,38 m de plus (le pied extérieur ≈ 0,6 m du bassin, Brault et al. 2010 ; 1,6 hier : 0,30 m mesurés)
+      out[k].elargi = E.e === 'arc' || E.e === 'vend' ? Math.min(1, w / 0.6) * (E.large ?? 1) : E.e === 'pose' ? (S[k].large ?? 1) : E.e === 'retour' ? (S[k].large ?? 1) * (1 - Math.min(1, w / 0.7)) : 0;
+      if (E.e === 'arc' || E.e === 'vend') S[k].large = E.large ?? 1;   // la vente se pose LARGE : 0,09 × 4,2 = 0,38 m de plus (le pied extérieur ≈ 0,6 m du bassin, Brault et al. 2010 ; 1,6 hier : 0,30 m mesurés)
     }
     const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
     const dx = G.ball[0] - ox, dz = G.ball[1] - oz;
@@ -490,7 +491,7 @@ export class CharacterController {
       const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);
       const aF = Math.max(-14, Math.min(14, ax * fx + az * fz));       // accélération le long du regard
       const aL = Math.max(-14, Math.min(14, ax * fz - az * fx));       // latérale (le virage)
-      const k = 1 - Math.exp(-dtc / 0.12);
+      const k = 1 - Math.exp(-dtc / (this.leanPhys ? 0.08 : 0.12));   // (leanPhys) le tronc répond en 0,08 s (100-200°/s : 30° en 0,15-0,3 s)
       // (2026-09-25, leanPhys — le duel) L'ACCÉLÉRATION PENCHE LE CORPS COMME LA PHYSIQUE LE DEMANDE : la réaction du sol passe par le centre de
       // masse, la ligne corps penche de atan(a/g), le tronc un peu plus (hanches fléchies : × 1,25, calé sur la sortie du passement — Taga et al.
       // 2026 : ≈ 41° de tronc à ≈ 4,7 m/s² ; atan(4,7/9,81) × 1,25 = 32° + la course ≈ 8-10°). Borné 35°. Le freinage garde la loi d'hier.
@@ -500,10 +501,13 @@ export class CharacterController {
       // …LISSÉE avant la loi (τ 0,15 s) : la loi ne garde que le positif, et le bruit de position (deux corps collés que la séparation repousse à
       // chaque image) redressé en penchée donnait 30° à un porteur qui ralentissait
       const vl = Math.hypot(vx, vz), aTan = Math.max(-14, Math.min(14, vl > 0.5 ? (ax * vx + az * vz) / vl : aF));
-      this._aTanS = (this._aTanS ?? 0) + (Math.min(aTan, aF) - (this._aTanS ?? 0)) * (1 - Math.exp(-dtc / 0.15));
+      this._aTanS = (this._aTanS ?? 0) + (Math.min(aTan, aF) - (this._aTanS ?? 0)) * (1 - Math.exp(-dtc / (Vs ? 0.06 : 0.15)));   // la vitesse propre de la sim est nette : 0,06 s (0,15 retardait la penchée de la sortie au-delà de sa fenêtre)
       const pitchV = this.leanPhys ? (this._aTanS > 0 ? Math.min(35, Math.atan(this._aTanS / 9.81) * 180 / Math.PI * 1.25) : Math.max(-9, Math.min(9, aF * 0.85))) : Math.max(-9, Math.min(9, aF * 0.85));
       this._lean[0] += (pitchV - this._lean[0]) * k;
-      this._lean[1] += (Math.max(-7, Math.min(7, aL * 0.7)) - this._lean[1]) * k;
+      // (leanPhys) LE ROULIS AUSSI SUIT LA PHYSIQUE : le corps penche dans le virage de atan(a_c/g) — une part pour le tronc (le générateur roule déjà le
+      // bassin), borné 22° ; Dos'Santos et al. 2021 mesurent 18-21° de tronc à la pose des coupes de 45-90° (hier ±7° au plus : 11° mesurés au crochet)
+      const rollV = this.leanPhys ? Math.max(-22, Math.min(22, Math.atan(aL / 9.81) * 180 / Math.PI * 0.45)) : Math.max(-7, Math.min(7, aL * 0.7));   // × 0,45 calé au crochet (× 0,6 : 24° à la sortie, 35° à la poussée du passement)
+      this._lean[1] += (rollV - this._lean[1]) * k;
       const spL = this._gaitBones.get('Spine');
       if (spL && this.leanPhys) {
         // (2026-09-25) …autour des axes du MONDE (l'axe latéral pour le tangage, l'axe avant pour le roulis — vers l'accélération) : sur le rig
