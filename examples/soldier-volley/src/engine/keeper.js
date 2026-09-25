@@ -348,7 +348,14 @@ export function relancerGardien(st, gk, cfg, deps) {
       : (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15;
     return { m, s, dm };
   }).sort((a, b) => b.s - a.s);
-  for (const { m, dm } of scored.slice(0, 3)) {
+  // LA RELANCE SÛRE (319, cfg.relanceSure && st.full — le chantier des échappées, note 447) : le barème d'hier servait le PLUS PROCHE (court) ou
+  // le plus avancé, marqué ou non — mesuré (sonde-relance, monde 318) : la moitié des pertes à < 22 m de son but vient d'une relance du gardien,
+  // interceptée à 13 m par le marqueur du receveur, l'attaquant seul devant le but. Ici le gardien ne sert pas un coéquipier dont un adversaire
+  // est à < rM du point servi (rM = marque × axe style [possession 0,8 → direct 1,2] × visionF : le lucide voit l'homme dans le dos du receveur) ;
+  // personne de libre : le punt d'hier. Absente : le barème d'hier au bit.
+  const RS = st.full && cfg.relanceSure ? cfg.relanceSure : null;
+  const rM = RS ? (RS.marque ?? 5) * (0.8 + 0.4 * (st.tactics?.[gk.team]?.style ?? 0.5)) * (gk.skill?.visionF ?? 1) : 0;
+  for (const { m, dm } of (RS ? scored.filter(({ m }) => !st.players.some((q) => q.team !== gk.team && !q.keeper && q.down <= 0 && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < rM)) : scored).slice(0, 3)) {
     const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
     const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
     if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true, mains: dm > 11 ? volee : undefined })) return true;

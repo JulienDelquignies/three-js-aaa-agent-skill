@@ -68,6 +68,9 @@ export function pSuccDe(st, c, m, o, lead, d, style, f, foesL, K, cfg, Pc) {
 
 /** Le terme au barème : poids × ρ(consigne, décisions) × (logit P̂ − logit p0). Pure. */
 export function termeDe(sel, c, st, K) {
-  const rho = axe(tac(st, c.team).mentalite ?? 0.5, K.rhoDef ?? 1.5, K.rhoOff ?? 0.5) * (c.skill?.decF ?? 1);
+  let rho = axe(tac(st, c.team).mentalite ?? 0.5, K.rhoDef ?? 1.5, K.rhoOff ?? 0.5) * (c.skill?.decF ?? 1);
+  // (320) LE RISQUE A UNE ADRESSE (K.zone — le chantier des échappées, note 447) : la passe perdue devant son but coûte un but, au milieu une
+  // possession — l'aversion croît vers sa ligne : ρ × (1 + gain × max(0, 1 − d_but_propre / portee)). Absente : le ρ d'hier au bit.
+  if (K.zone && st.pitch) { const og = st.pitch.ownGoal(c.team), dO = hyp(og.x - c.p[0], c.p[2]); rho *= 1 + (K.zone.gain ?? 2) * Math.max(0, 1 - dO / (K.zone.portee ?? 35)); }
   return (K.poids ?? 2.5) * rho * (logit(sel.pHat) - logit(K.p0 ?? 0.8));
 }
