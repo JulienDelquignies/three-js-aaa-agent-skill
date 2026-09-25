@@ -43,8 +43,8 @@ export function touchDistance(speed, { close = 0.5, perSpeed = 0.36, max = 3.0 }
  * a multiplier is what makes the dribble self-correcting at every pace: too strong and the ball
  * runs away, too weak and it never leaves the foot.
  */
-export function touchDecel(speed) {
-  return PITCH.rollResist * PITCH.gravity + BALL.k * 0.42 * Math.max(2, speed) ** 2 * 0.35;
+export function touchDecel(speed, sol = null) {
+  return (sol ? sol.dec0 + sol.decV * Math.min(Math.max(0.5, speed), sol.vMax ?? 3.2) : PITCH.rollResist * PITCH.gravity) + BALL.k * 0.42 * Math.max(2, speed) ** 2 * 0.35;   // (sol) la loi du ballon (ball.js), sinon hier
 }
 // LE CONTRAT DES DEUX RÉGIMES (mesuré par le consommateur carrière, consigné lot 146) : la
 // conduite N'EST PAS « un ballon qui revient au pied » — c'est un SERVO qui le REPREND. Deux
@@ -53,12 +53,12 @@ export function touchDecel(speed) {
 // seul, −0,07 m/s). pushSpeed dose la touche EN SUPPOSANT la reprise servo ~0,2 s plus tard ;
 // porter cette formule SANS le mécanisme de carry aggrave la conduite (1,06 → 1,35 m mesuré
 // chez eux). Qui vendorise la loi doit vendoriser le servo.
-export function pushSpeed(speed, lead) {
-  return speed + Math.sqrt(2 * touchDecel(speed) * Math.max(0.05, lead));
+export function pushSpeed(speed, lead, sol = null) {
+  return speed + Math.sqrt(2 * touchDecel(speed, sol) * Math.max(0.05, lead));
 }
 /** Seconds until the player is back on the ball after a touch of `lead` metres. */
-export function touchInterval(speed, lead) {
-  return 2 * Math.sqrt(2 * Math.max(0.05, lead) / touchDecel(speed));
+export function touchInterval(speed, lead, sol = null) {
+  return 2 * Math.sqrt(2 * Math.max(0.05, lead) / touchDecel(speed, sol));
 }
 
 /**
@@ -204,13 +204,17 @@ export function dribbleStep(d, ball, player, dt) {
     // temps de conduite à > 2 m du ballon — le temps s'accumule sur le PLATEAU lointain de
     // chaque poussée (homme et ballon filent à la même allure, la fermeture n'arrive qu'en fin
     // de roulement). Mesuré : bursts nommés = 0,1 % du porté — le geste long était devenu la règle.
-    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1) * (player.serreK ?? 1);   // (290) × serreK : la touche se serre sous la pression lue (serre.js ; absent : 1)
+    // (2026-09-25, player.vPlan — cfg.conduite.couple) LA TOUCHE SE DOSE SUR L'ALLURE VOULUE (au plus +0,6 m/s au-dessus de l'allure) : le porteur couplé à
+    // son ballon (movement) ne le dépasse plus ; dosée sur l'allure couplée, chaque touche resservait la même lenteur et la conduite s'enrayait
+    // (mesuré : le temps de conduite à 1-2 m/s triplé). Absent : l'allure de l'instant, hier au bit.
+    const vP = player.vPlan != null ? Math.max(player.speed, Math.min(player.vPlan, player.speed + (player.vPlanPas ?? 0.6))) : player.speed;   // +0,6 m/s par touche : +1,5 poussait le ballon à 0,9 m devant et 0,9 touche/s (mesuré 1,4-2,3/s en conduite droite)
+    const lead = (touchDistance(vP) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1) * (player.serreK ?? 1);   // (290) × serreK : la touche se serre sous la pression lue (serre.js ; absent : 1)
     // …et le canal VITESSE (player.touchDamp, absent = 1 : bit-près) : une touche d'AMORTI EN
     // COURSE absorbe au lieu de relancer — le ballon roule SOUS l'allure du corps et se cale
     // pour la frappe. Mesuré sans lui : pushSpeed lit la vitesse du porteur, donc chaque touche
     // « courte » RELANÇAIT le ballon à v+1 (7,0 mesuré à 6,1 de course) — le ballon de course ne
     // se posait jamais, le tir jamais armé (l'empalement sur le gardien).
-    const sp0 = Math.max(2.0, Math.max(c.minPush, pushSpeed(player.speed, lead)) * (player.touchDamp ?? 1)), sp = player.serreV != null ? Math.min(sp0, Math.max(2.0, player.speed + player.serreV)) : sp0;   // (290) pressé : le ballon pas plus vite que le corps de plus de serreV
+    const sp0 = Math.max(2.0, Math.max(c.minPush, pushSpeed(vP, lead, c.sol)) * (player.touchDamp ?? 1)), sp = player.serreV != null ? Math.min(sp0, Math.max(2.0, player.speed + player.serreV)) : sp0;   // (290) pressé : le ballon pas plus vite que le corps de plus de serreV
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction
     const cvx = ball.v[0], cvz = ball.v[2];
@@ -230,7 +234,7 @@ export function dribbleStep(d, ball, player, dt) {
       // rotate by HALF the turn the player will complete before catching this touch — aim at the
       // middle of the arc. Using an eyeballed fraction of a stride instead was 13× too small and
       // left the ball drifting to the outside of every curve.
-      const a = (player.turnRate || 0) * touchInterval(player.speed, lead) * 0.5;
+      const a = (player.turnRate || 0) * touchInterval(player.speed, lead, c.sol) * 0.5;
       const ca = Math.cos(a), sa = Math.sin(a);
       const rx = dx * ca - dz * sa, rz = dx * sa + dz * ca;
       dx = rx; dz = rz;
@@ -245,14 +249,14 @@ export function dribbleStep(d, ball, player, dt) {
     // freiné par la pelouse (s = v₀t − at²/2). Poussé « à x m » sans égard aux pieds, le ballon traversait le couloir de l'autre pied et
     // arrivait entre deux poses : la moitié des touches se jouaient à 0,45 m du pied rendu (mode « fin »).
     if (piedPas && player.pas?.prochains && player.speed >= (c.pasV ?? 1.0)) {
-      const tVoulu = touchInterval(player.speed, lead), R = player.pas.prochains.filter((r) => r.t > 0.12);
+      const tVoulu = touchInterval(vP, lead, c.sol), R = player.pas.prochains.filter((r) => r.t > 0.12);
       const rdv = R.reduce((b, r) => (!b || Math.abs(r.t - tVoulu) < Math.abs(b.t - tVoulu) ? r : b), null);
       if (rdv) {
         // (2026-09-25) …LE CORPS SUIT SON ARC : en virage, le rendez-vous calculé sur la tangente (le corps tout droit à sa vitesse) envoyait le
         // ballon DEHORS — mesuré : lacet ≥ 2,5 rad/s, 11 % de touches au contact d'un pied, 46 % au rattrapage de fin de vol (pied à 0,35 m).
         // Le corps tourne à son lacet de l'instant (pas.js) jusqu'au cap voulu (sans le dépasser) ; la vitesse tourne avec lui, le pied se
         // pose dans le repère du corps TOURNÉ.
-        const yaw0 = player.yaw ?? Math.atan2(hz, hx), vel = player.vel ?? [hx * player.speed, hz * player.speed], om = player.pas.lacet ?? 0;
+        const kP = vP / Math.max(0.5, player.speed), vel0 = player.vel ?? [hx * player.speed, hz * player.speed], vel = [vel0[0] * kP, vel0[1] * kP], yaw0 = player.yaw ?? Math.atan2(hz, hx), om = player.pas.lacet ?? 0;   // le corps à l'allure voulue
         const dPsi = Math.atan2(Math.sin(Math.atan2(wantZ, wantX) - yaw0), Math.cos(Math.atan2(wantZ, wantX) - yaw0));
         const rot = (tt) => { const a = om * tt; return Math.sign(om) === Math.sign(dPsi) ? Math.sign(a) * Math.min(Math.abs(a), Math.abs(dPsi)) : a * Math.exp(-tt / 0.2); };
         let bxp = px, bzp = pz; const N = 8, h = rdv.t / N;
@@ -260,7 +264,7 @@ export function dribbleStep(d, ball, player, dt) {
         const yT = yaw0 + rot(rdv.t), fx = Math.cos(yT), fz = Math.sin(yT);
         const lat = rdv.droite * 1.25;                                                   // dans SON couloir, un peu dehors : l'autre pied passe à côté
         const tx = bxp + fx * rdv.avant - fz * lat, tz = bzp + fz * rdv.avant + fx * lat;
-        const ex = tx - ball.p[0], ez = tz - ball.p[2], el = hyp(ex, ez), a = touchDecel(player.speed);
+        const ex = tx - ball.p[0], ez = tz - ball.p[2], el = hyp(ex, ez), a = touchDecel(vP, c.sol);
         if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2; dx = ex / el; dz = ez / el; spT = v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el); d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t }; if (player.pas.P) player.pas.P.rdv = { pied: rdv.pied, reste: rdv.t }; }
       }
     }

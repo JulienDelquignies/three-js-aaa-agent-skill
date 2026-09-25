@@ -339,6 +339,22 @@ export function movePlayers(st, dt, cfg) {
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
     if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1)); if (st.full && cfg.orientationPasse && (p._ouvre ?? -1) > st.t && st.possession.carrier === p.id) top = Math.min(top, cfg.orientationPasse.vTour ?? 1.2);   /* (395) LE PORTEUR QUI S'OUVRE FREINE : sous vTour le cône du porté ne joue pas, le ballon tourne avec lui */   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
+    // (2026-09-25, cfg.conduite.couple — le duel) LE PORTEUR NE DÉPASSE PAS SON BALLON : sa vitesse voulue est celle du ballon devant lui plus
+    // l'écart à combler jusqu'au point de touche (d0 devant le bassin, en τ s) — un dribbleur court AVEC son ballon. Mesuré avant (conduite-ballon,
+    // 8 × 120 s) : le ballon libre DERRIÈRE le bassin 23 % du temps de conduite (58 épisodes, jusqu'à 1,9 m) — la sortie d'un geste montait le
+    // corps à 5 m/s pendant que le ballon, poussé à 4,2, ralentissait sur l'herbe ; la cible restait 3 m devant le corps, pas sur le ballon.
+    const KC = st.full && cfg.conduite?.couple;
+    if (KC && p.job === 'carry' && st.possession.carrier === p.id) p._vVoulue = top;
+  // l'allure VOULUE, avant le couplage : la touche se dose sur elle (dribble.js vPlan) — dosée sur l'allure couplée, la conduite s'enrayait
+    // …FILET DE SÉCURITÉ seulement : pendant un RENDEZ-VOUS planifié (pas.js P.rdv — le ballon envoyé au pied qui se pose, plus lent que le corps à l'arrivée)
+    // le couplage freinait le corps avant le rendez-vous et le pied se posait trop tard (touches de rattrapage de fin de vol : 40 → 55 %)
+    if (KC && p.job === 'carry' && st.possession.carrier === p.id && st.ball.owner == null && st.ball.p[1] < 0.3 && !p.act && !((p._prepShot ?? -1) > st.t) && p.target && !(p._pas?.rdv && p._pas.rdv.reste > -0.05)) {
+      // l'avance du ballon se lit le long de la COURSE (la vitesse), pas de la cible : un ballon mort à 1,5 m sur le côté n'est pas « devant » — lu vers la
+      // cible, il laissait le porteur à 3-4 m/s ORBITER autour (5 s sans touche, mesuré) ; lu sur la course, il ralentit et peut tourner dessus
+      const vv = hyp(p.v[0], p.v[1]), hx0 = vv > 0.5 ? p.v[0] : p.target[0] - p.p[0], hz0 = vv > 0.5 ? p.v[1] : p.target[2] - p.p[2], hl = hyp(hx0, hz0) || 1, hx = hx0 / hl, hz = hz0 / hl;
+      const ahead = (st.ball.p[0] - p.p[0]) * hx + (st.ball.p[2] - p.p[2]) * hz, vb = st.ball.v[0] * hx + st.ball.v[2] * hz;
+      top = Math.min(top, Math.max(KC.vMin ?? 0.8, vb + (ahead - (KC.d0 ?? 0.35)) / (KC.tau ?? 0.4)));
+    }
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];

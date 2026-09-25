@@ -56,3 +56,13 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   leur touche de sortie sont jugés (les autres, le duel les a tranchés au contact — noyau).
 - `capture-geste.mjs <url> <dossier> <graine> <t0> <durée> [joueur] [lent] [dist]` : un geste filmé CORPS ENTIERS (caméra latérale à 4 m),
   au ralenti si `lent` < 1 ; l'image au sol gris du rendu logiciel est refaite (le GPU n'a pas ce défaut).
+
+## La conduite : le ballon mené par les pieds, pas par une force (2026-09-25)
+- `conduite-ballon.mjs <url> [s] [graines] [sortie.json]` : dans le rendu, le porteur en course — le ballon TENU au servo ou LIBRE, sa place
+  devant le bassin, son pied le plus proche, la FORCE INVISIBLE (le ballon qui accélère au-delà du roulement sans pied à 0,2 m), les touches
+  (intervalle, par foulée, par mètre), pourquoi le porté, le ballon libre derrière le porteur. Avant : tenu 30 % du temps (force invisible
+  17 % — « le contrôle qui se pose » 74 % du porté), libre derrière 23 % (le porteur lancé à 5 m/s dépassait un ballon qui ralentissait, et
+  orbitait 5 s autour d'un ballon mort). Après (cfg.conduite, cfg.surface, pasPortee 0,4) : tenu 2-4 % (la tenue dos au presseur), force
+  invisible 1-2 %, derrière 8-10 %, une touche toutes les 1,3-1,5 foulée.
+- `capture-geste.mjs … porteur` : la caméra suit le porteur du moment. Filmer depuis un BUILD servi à part (le serveur de dev recharge la page à
+  chaque édition d'une source : la capture meurt — « __seekFrame is not a function »).

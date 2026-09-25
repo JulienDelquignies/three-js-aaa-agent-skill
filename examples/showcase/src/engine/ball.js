@@ -141,10 +141,13 @@ function resolveGround(s, { restitution, friction, grassTangent = 1, grassSpin =
  * forgetting the air here is not a rounding error: at 15 m/s drag alone is ~2.6 m/s², more than
  * the grass contributes, and without it a firm pass rolls 150 m across the pitch.
  */
-function rollGround(s, dt, { gravity, rollResist, drag = true }) {
+function rollGround(s, dt, { gravity, rollResist, drag = true, sol = null }) {
   const sp = hyp(s.v[0], s.v[2]);
   if (sp < 1e-6) { s.v[0] = s.v[2] = 0; s.w[0] = s.w[1] = s.w[2] = 0; return; }
-  const dec = (rollResist * gravity + (drag ? BALL.k * dragCoefficient(sp) * sp * sp : 0)) * dt;
+  // (2026-09-25, sol — le duel, sa cage en synthétique) LA LOI MESURÉE DU GAZON SYNTHÉTIQUE : dec = dec0 + decV·v (Kolitzus, ISSS — 0,40 + 0,17·v m/s²,
+  // mesurée de 0,5 à 3,2 m/s ; au-delà le terme de fibre plafonne à vMax, l'air reprend). La résistance constante (0,12·g = 1,18 m/s²) freinait
+  // le ballon lent deux fois trop (0,57 mesurés à 1 m/s) : la conduite s'éteignait avec lui. Absente : hier au bit.
+  const dec = ((sol ? sol.dec0 + sol.decV * Math.min(sp, sol.vMax ?? 3.2) : rollResist * gravity) + (drag ? BALL.k * dragCoefficient(sp) * sp * sp : 0)) * dt;
   const f = Math.max(0, sp - dec) / sp;
   s.v[0] *= f; s.v[2] *= f;
   s.w[2] = -s.v[0] / BALL.radius;                           // rolling without slipping

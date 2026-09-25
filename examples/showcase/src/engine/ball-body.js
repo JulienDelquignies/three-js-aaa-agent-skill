@@ -149,6 +149,7 @@ export class BallBody {
    * sur un second intégrateur n'audite pas le jeu, il audite sa copie.
    */
   integrate(dt, opts = {}) {
+    if (this.sol && opts.sol === undefined) opts = Object.keys(opts).length ? { ...opts, sol: this.sol } : (this._oSol ??= { sol: this.sol });   // (sol) la surface du terrain (le duel : synthétique mesuré)
     const s = this.#s;
     let left = dt;
     let guard = 0;

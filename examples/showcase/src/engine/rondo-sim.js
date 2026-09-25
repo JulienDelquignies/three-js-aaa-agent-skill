@@ -591,7 +591,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (cfg.heldBall?.(st, c, dt, cfg)) { st.hold += dt; return st; }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
-    if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62, ...(cfg.pasPortee ? { pasPortee: cfg.pasPortee } : {}) } : {}); // la touche au pied (lot 58) — doc : match-config
+    if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62, ...(cfg.pasPortee ? { pasPortee: cfg.pasPortee } : {}), ...(cfg.surface ? { sol: cfg.surface } : {}) } : {}); // la touche au pied (lot 58) — doc : match-config
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
     // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
     let want = c.push || (c.target ? (() => {
@@ -626,7 +626,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // semelle tourne avec (réel — sinon hold jamais > 0,6, zéro appel). Talent : ±7°. false : hier.
     const coneP = () => !st.full || cfg.porteCone === false || c.speed < 1.5
       || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], (cfg.porteCone ?? 120) * (2 - (c.skill?.dribbleLeadF ?? 1)));
-    const SR = st.full && cfg.conduiteSerree ? serrePorteurDe(st, c, cfg.conduiteSerree, cfg) : null;   /* (290) LA CONDUITE SE SERRE SOUS PRESSION (serre.js) */ const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF, ...(SR ? { serreK: SR.k, serreV: SR.dv } : {}), ...(st.full && cfg.toucheCorps ? { corps: heading, corpsK: cfg.toucheCorps } : {}),
+    const SR = st.full && cfg.conduiteSerree ? serrePorteurDe(st, c, cfg.conduiteSerree, cfg) : null;   /* (290) LA CONDUITE SE SERRE SOUS PRESSION (serre.js) */ const pl = { p: [c.p[0], c.p[2]], speed: c.speed, vPlan: st.full && cfg.conduite?.couple ? c._vVoulue : undefined, heading, want, turnRate: 0, leadF: (c.skill?.dribbleLeadF ?? 1) * (st.full && cfg.conduite?.lead ? cfg.conduite.lead : 1), ...(SR ? { serreK: SR.k, serreV: SR.dv } : {}), ...(st.full && cfg.toucheCorps ? { corps: heading, corpsK: cfg.toucheCorps } : {}),
       touchF: (c.touchF ?? 1) * (st.full && cfg.locomoteur ? (cfg.locomoteur.touche ?? 0.8) : 1), coneOk: coneP(),   /* (260) la touche poussée se calibre sur le corps qui la suit : un démarrage mono-exponentiel ne rattrape pas la poussée d'hier */   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99),
@@ -648,7 +648,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (contested) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg); }  // il tente de l'emmener hors du duel
-      } else if (intentFresh || settling || tourne || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
+      } else if (((intentFresh || settling || tourne) && !(st.full && cfg.conduite?.libre && c.speed >= cfg.conduite.libre && !intentFresh)) || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   /* (cfg.conduite.libre) EN COURSE LE BALLON N'EST PLUS TENU AU SERVO (le contrôle qui se pose, le retournement) : il roule, un pied le relance — 17 % du temps de conduite il bougeait sans pied (conduite-ballon) */   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
@@ -660,7 +660,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LE RAMASSAGE DU BALLON MORT (lot 107, cfg.ramasse && st.full — « des ballons qui traînent » :
     // mesuré, des loose de 2+ s avec un corps à 0,1 m — la re-capture exigeait une INTENTION ;
     // le vrai joueur POSE le pied sur un ballon lent à portée). Le cône et le prenable tiennent.
-    } else if ((intentFresh || (st.full && cfg.ramasse && !st.restart && hyp(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
+    } else if (!(st.full && cfg.conduite?.libre && c.speed >= cfg.conduite.libre && !intentFresh && hyp(st.ball.v[0], st.ball.v[2]) >= 0.8) && (intentFresh || (st.full && cfg.ramasse && !st.restart && hyp(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
       && dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.ramasse.cone ?? 80))) && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
       st.ball.possess(c.id);
       // …le ramassage SE POSE (lot 107 — sans ça la branche du porté re-lâchait la frame d'après, cap non aligné : touches dos) ; jamais pendant une remise (le taker court-circuitait le CF).

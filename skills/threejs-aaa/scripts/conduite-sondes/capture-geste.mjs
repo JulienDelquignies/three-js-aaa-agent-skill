@@ -2,7 +2,7 @@
 // visée au bassin, fov 40 — les deux joueurs de la tête aux pieds), au ralenti si `lent` < 1 (le pas de simulation par image = lent / 60 s).
 // Le rendu logiciel (SwiftShader, sans GPU) sort par moments un sol GRIS (le gazon absent, 26 % des images mesurées ; le GPU n'a pas ce
 // défaut) : chaque image est vérifiée sur une bande du sol et RE-RENDUE (sans avancer la sim) tant qu'elle est grise, 6 essais au plus.
-// Usage : node capture-geste.mjs <url> <dossier> <graine> <t0> <durée s> [joueur=0] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
+// Usage : node capture-geste.mjs <url> <dossier> <graine> <t0> <durée s> [joueur=0 | porteur] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
 import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -26,7 +26,7 @@ const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-un
 const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
 await pg.goto(`${URL}${URL.includes('?') ? '&' : '?'}seed=${SEED}&webgl&capture`, { waitUntil: 'load', timeout: 240000 });
 await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 });
-const P = { T: Number(T0), i: Number(I), dist: Number(DIST), cam: process.env.CAM ?? 'cote' };
+const P = { T: Number(T0), i: I === 'porteur' ? -1 : Number(I), dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard
     const k = 1 - Math.exp(-dt / 0.8), vx = s.v[0], vz = s.v[1]; if (Math.hypot(vx, vz) > 0.5) { c.dir[0] += (vx - c.dir[0]) * k; c.dir[1] += (vz - c.dir[1]) * k; }
@@ -37,11 +37,12 @@ await pg.evaluate((P) => {
     const want = [s.p[0] + ux * P.dist, 1.15, s.p[2] + uz * P.dist], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
     c.pos = c.pos ? c.pos.map((x, j) => x + (want[j] - x) * kp) : want; c.tgt = c.tgt ? c.tgt.map((x, j) => x + (tg[j] - x) * kp) : tg; };
   const sc = window.__scene; window.__cam = null;
-  for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) window.__majCam(sc.players[P.i].sim, 1 / 60); }
+  window.__suivi = (sc) => { if (P.i >= 0) return sc.players[P.i].sim; const c = sc.state.possession?.carrier; const pl = sc.players.find((q) => q.sim.id === c); if (pl) window.__dernier = pl.sim; return window.__dernier ?? sc.players[0].sim; };
+  for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) window.__majCam(window.__suivi(sc), 1 / 60); }
 }, P);
 const N = Math.round(Number(DUR) * 60 / Number(LENT)); let refaits = 0;
 for (let f = 0; f < N; f++) {
-  await pg.evaluate(async ({ i, dt }) => { const sc = window.__scene, e = window.__engine; sc.update(dt); window.__majCam(sc.players[i].sim, dt); const c = window.__cam;
+  await pg.evaluate(async ({ i, dt }) => { const sc = window.__scene, e = window.__engine; sc.update(dt); window.__majCam(window.__suivi(sc), dt); const c = window.__cam;
     e.camera.position.set(...c.pos); e.controls.target.set(...c.tgt); e.camera.fov = 40; e.camera.updateProjectionMatrix(); await window.__seekFrame(); }, { i: P.i, dt: Number(LENT) / 60 });
   for (let k = 0; k < 6; k++) {   // la bande du sol sous les joueurs : verte, ou l'image est refaite
     if (vert(await pg.screenshot({ type: 'png', clip: { x: 80, y: 470, width: 800, height: 50 } })) > 12) break;

@@ -41,8 +41,13 @@ export function makeDuel({ seed = 7, cage = CAGE } = {}) {
   a.p = [-0.6, 0, 0]; a.yaw = 0;                          // le botteur au ballon (engagement posé par makeMatch)
   d.p = [DUEL_KEYS.recul, 0, 0]; d.yaw = Math.PI;
   st._duel = { cage };
+  st.ball.sol = SOL_CAGE;                                  // le ballon roule sur le synthétique mesuré (ball.js rollGround)
   return st;
 }
+
+/** LE SOL DE LA CAGE : un gazon synthétique — la décélération du ballon qui roule mesurée par Kolitzus (ISSS, « Ball roll behaviour ») :
+ *  0,40 + 0,17·v m/s² de 0,5 à 3,2 m/s (le terme de fibre plafonné au-delà). Le ballon (ball.js) et le dosage des touches (dribble.js) la partagent. */
+export const SOL_CAGE = Object.freeze({ dec0: 0.40, decV: 0.17, vMax: 3.2 });
 
 /** La configuration : celle du match, plus la cage. */
 export function duelCfg(overrides = {}) {
@@ -57,6 +62,9 @@ export function duelCfg(overrides = {}) {
     // avec une envie doublée, prenait toutes les fenêtres de face) : l'envie du passement ramenée à celle des autres, le crochet relevé
     passements: { ...base.passements, envie: 1, plancher: 0.2 },
     bouclier: base.bouclier ? { ...base.bouclier, pas: 0.8 } : base.bouclier,
+    pasPortee: overrides.pasPortee ?? 0.4,   // la touche de rattrapage (fin de vol) n'attend que le pied que le rendu PEUT amener au ballon (viseBallon ≤ 0,4 m) : 0,55 laissait un quart des touches à 0,27-0,35 m du pied rendu
+    conduite: overrides.conduite ?? { couple: { d0: 0.35, tau: 0.4, vMin: 0.8 }, libre: 1.0, lead: 0.5 },   // lead : la touche plus courte — une par foulée (Zago 2016 : 2,3-3 touches/s en slalom ; 1,4-2,3/s en conduite droite à 5,7 m/s)   // le porteur court AVEC son ballon (movement), en course le ballon n'est plus tenu au servo (rondo-sim)
+    surface: SOL_CAGE,   // le dosage des touches sur la loi du ballon (dribble.js touchDecel)
     leanPhys: true,   // l'accélération penche le tronc selon atan(a/g) (character-controller._applyLean, via la scène)
     locomoteur: base.locomoteur ? { ...base.locomoteur, sortie: true } : base.locomoteur,   // la sortie d'un geste démarre à pleine capacité force-vitesse (locomoteur.pasLoco)
     corps: overrides.corps ?? { portee: 1.8, marge: 0.01 },   // les corps RENDUS ne se traversent pas (contact-corps.js, appelé par la scène)
