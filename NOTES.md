@@ -13952,6 +13952,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tient (vert). Jumeaux au bit ; défaut du 310 : `c7cf9f1a1d889660 / 3281907dcf676612`.
      RESTE (vu à l'atelier) : l'écart à la ligne 0,3 s avant la prise p50 ~0,5 m (un pas — le receveur prend en marchant sur la ligne) ;
      les passes perdues de l'échantillon filmé (4/14) à décomposer à l'atelier.
+- 438: LA 2e TOUCHE, ET L'ATELIER PAR TYPE DE PASSE (rendu scenes/rondo-atelier.js ; deux lois RÉFUTÉES, aucune loi moteur scellée).
+     « Continue le délai avant la 2e touche, et fais le même travail pour les passes longues, lobées, en profondeur, les centres. »
+     L'ATELIER PAR TYPE : ?atelier=long|lob|prof|centre (liste : long,lob) ne suit que ces passes (long ≥ 32 m, lob = levée, prof = en
+     profondeur, centre), le type au HUD, la CHUTE PRÉVUE (magenta, au départ : première image du vol prédit < 0,5 m après 1,2 m), la
+     pause « chute » à la retombée réelle (écart au point visé, receveur au ballon) ; ?vitesse=N accélère l'attente entre deux passes
+     suivies, la passe suivie se joue à 1 (puis au ralenti).
+     LA 2e TOUCHE (sonde-311, la touche de conduite RÉELLE — st._drb.touches — et plus l'impulsion du ballon) : délai p50 0,58 s, p90
+     1,53 ; > 1,2 s dans 15 % des contrôles, 57-63 % de ce temps le ballon LIBRE hors du pied. Trois cas tracés : (1) le PLATEAU — ballon
+     à 1,1 m devant, les deux à ~3,3 m/s, la demande (l'arrivée 2,6·d vers « ballon + 0,4 m ») réglée sur la vitesse du ballon ; (2) le
+     PORTÉ immobile 1 s — réel (il lève la tête) ; (3) le DÉPASSEMENT — le ballon passé derrière, le porteur « roule » à 1,5 m/s²
+     (seuilFrein 3) et file 0,6 m au-delà. Et la majorité des 2e actions lentes finissent en PASSE (windup) : une part du délai est la
+     décision, pas la mécanique (réel : 1,1-1,5 s de temps au ballon).
+     RÉFUTÉ 311 (rejoindreTouche : la demande ≥ vitesse du ballon + 0,8 ; freinPorteur 0,5 : le porteur freine à dMax) : lents 111 → 95
+     sur 4 graines, mais contrôles manqués 3,9 → 6,6 % sur les graines du bloc (chaque moitié seule : 4,8 et 5,6 %). Retiré. Aussi
+     réfutés : le plafond seul (111 → 108), la demande au plafond (la touche suivante part plus loin — pushSpeed lit la vitesse du corps),
+     le virage vif du porteur (viragesLisses × 2 : 88 ; × 4 : 109).
+     PAR TYPE (sonde-types, 8 graines × 900 s, le PREMIER CONTACT compté sur tous les gestes — tête, volée, contre… — la première sonde
+     les ignorait et lisait des têtes en vol comme des « chutes à 14-31 m ») : la frappe AÉRIENNE est précise (la chute prédite au départ
+     à 1,0 m p50 du point visé, 1,9 p90) ; LONGUES ≥ 32 m (123) gardées 71-75 %, le destinataire au ballon au 1er contact 0,9 m p50,
+     prise à 2,5-2,8 m du point visé, amorti de retombée / tête / poitrine, 2e action 0,7-0,8 s ; LOBÉES (114) gardées 72-81 %, idem,
+     2e action 0,7-1,4 s ; EN PROFONDEUR (45) gardées 72-85 % (réel ~50), prise à 3,8-6,2 m du point visé (le receveur la prend dans sa
+     course, au-delà) ; CENTRES : 15 en 2 h de jeu — 3 à 4 × trop rares —, 25-43 % gardés, la tête adverse d'abord.
+     Filmé à l'atelier : la lobée de 45 m propre (receveur au point, amorti de retombée à 1,04 m du corps, 2e touche 0,35 s) ; la
+     profondeur de 14,5 m prise lancée à 6,2 m/s… et retombée à 3,2 m/s en 0,5 s.
+     RÉFUTÉ 312 (elanPrise : le plafond garde la vitesse de prise 1,5 s dans l'espace) : +0,5 s 3,7 → 3,9 m/s seulement, passes 573 →
+     442, manqués 4,5 → 6,4 %. Retiré — ce n'est pas le plafond qui arrête le lancé, c'est sa DÉCISION (cible, intention) après la prise.
+     RESTE : la décision du porteur lancé (la course continue dans l'espace) ; les centres (volume, précision au sol 5 m p50) ; le jeu
+     trop propre depuis 309-310 (complétion 88-90 %, pertes 99-127 c. 110-140).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

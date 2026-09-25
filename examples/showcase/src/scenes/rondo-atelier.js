@@ -12,9 +12,11 @@ import { predictPath } from '../engine/ball-predict.js';
 const h = Math.hypot;
 
 export function atelierInit(scene) {
-  const A = { log: [], arret: false, gele: null, cur: null, ralenti: 0.4, go() { A.gele = null; } };
+  // ?atelier=long|lob|prof|centre (plusieurs : long,lob) : ne suivre que ces passes — long ≥ 32 m, lob = levée, prof = en profondeur, centre
+  const filtre = typeof location !== 'undefined' ? (new URLSearchParams(location.search).get('atelier') || '').split(',').filter(Boolean) : [];
+  const A = { log: [], arret: false, gele: null, cur: null, ralenti: 0.4, filtre, go() { A.gele = null; } };
   const ring = (c, r) => { const m = new THREE.Mesh(new THREE.RingGeometry(r * 0.72, r, 32), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.85, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.visible = false; scene.scene.add(m); return m; };
-  A.vise = ring(0xffd400, 0.45); A.cible = ring(0x21e0ff, 0.32); A.prise = ring(0xff4060, 0.3);
+  A.vise = ring(0xffd400, 0.45); A.cible = ring(0x21e0ff, 0.32); A.prise = ring(0xff4060, 0.3); A.chute = ring(0xff40ff, 0.55);
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3 * 90), 3));
   A.ligne = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 })); A.ligne.visible = false; A.ligne.frustumCulled = false; scene.scene.add(A.ligne);
   if (typeof document !== 'undefined') {
@@ -27,9 +29,20 @@ export function atelierInit(scene) {
   return A;
 }
 
+/** Le type d'une passe (et le filtre) : centre, prof (en profondeur), lob (levée), long (≥ 32 m), court sinon. Liste vide : tout passe. */
+function typeDe(st, e, filtre) {
+  const P = st.pass, c = st.players[e.by], d = P && c ? h(P.lead[0] - c.p[0], P.lead[2] - c.p[2]) : 0;
+  const t = P?.cross ? 'centre' : P?.through ? 'prof' : P?.style === 'lofted' ? 'lob' : d >= 32 ? 'long' : 'court';
+  if (!filtre) return t;
+  if (!filtre.length) return t;
+  return filtre.includes(t) || (filtre.includes('long') && d >= 32) ? t : null;
+}
+
 /** Le pas de temps de l'atelier : 0 quand le monde est suspendu, ralenti pendant une passe suivie. */
 export function atelierDt(scene, dt) {
   const A = scene._atelier; if (!A) return dt;
+  // ?vitesse=N accélère l'attente entre deux passes suivies ; la passe suivie se joue à vitesse 1 (puis au ralenti)
+  if (A.v0 == null) A.v0 = scene.vitesse ?? 1; scene.vitesse = A.cur || A.gele || (A.dernier && A.now - (A.dernier.tFin ?? -9) < 1.2) ? 1 : A.v0;
   if (A.gele) return 0;
   return A.cur ? dt * A.ralenti : dt;
 }
@@ -39,13 +52,15 @@ function geler(A, quand) { if (A.arret) A.gele = quand; if (A.cur) A.cur.moments
 /** Les événements du pas : une passe de jeu ouvre un suivi, le contrôle du receveur le marque. */
 export function atelierEvent(scene, e) {
   const A = scene._atelier, st = scene.state; if (!A) return;
-  if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && st.pass && !st.restart && !st.players[e.by]?.keeper) {
+  if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && st.pass && !st.restart && !st.players[e.by]?.keeper && typeDe(st, e, A.filtre)) {
     const r = st.players[e.to], c = st.players[e.by], L = st.pass.lead;
     A.cur = { n: A.log.length + 1, by: e.by, to: e.to, t: st.t, style: e.style ?? '-', d: h(L[0] - c.p[0], L[2] - c.p[2]), lead: [L[0], L[2]], vol: st.pass.flight ?? 1,
-      dLead0: h(L[0] - r.p[0], L[2] - r.p[2]), moments: [], pv: [st.ball.v[0], st.ball.v[2]] };
+      dLead0: h(L[0] - r.p[0], L[2] - r.p[2]), moments: [], pv: [st.ball.v[0], st.ball.v[2]], type: typeDe(st, e, []), hMax: 0 };
     const path = predictPath(st.ball, { dt: 1 / 20, maxT: Math.min(4.4, (st.pass.flight ?? 2) + 0.5) }), pos = A.ligne.geometry.attributes.position;
     for (let i = 0; i < 90; i++) { const s = path[Math.min(i, path.length - 1)]; pos.setXYZ(i, s.p[0], Math.max(0.03, s.p[1]), s.p[2]); }
     pos.needsUpdate = true; A.ligne.visible = true; A.vise.visible = true; A.vise.position.set(L[0], 0.03, L[2]);
+    { let haut = false; A.cur.chuteP = null; for (const s of path) { if (s.p[1] > 1.2) haut = true; else if (haut && s.p[1] < 0.5) { A.cur.chuteP = [s.p[0], s.p[2]]; break; } }
+      A.chute.visible = !!A.cur.chuteP; if (A.cur.chuteP) A.chute.position.set(A.cur.chuteP[0], 0.03, A.cur.chuteP[1]); }
     geler(A, 'départ');
   } else if (A.cur && e.by === A.cur.to && (e.type === 'control' || e.type === 'receive') && A.cur.tPrise == null) {
     const r = st.players[e.by], b = st.ball.p;
@@ -59,7 +74,7 @@ export function atelierEvent(scene, e) {
 
 function clore(A, fin) {
   const c = A.cur; if (!c) return; c.fin = fin; c.tFin = A.now; A.log.push(c); A.cur = null;
-  A.vise.visible = A.cible.visible = A.prise.visible = A.ligne.visible = false;
+  A.vise.visible = A.cible.visible = A.prise.visible = A.ligne.visible = A.chute.visible = false;
 }
 
 /** Chaque image : les marqueurs, le relevé −0,3 s, la 2e touche, la caméra de l'atelier, le HUD. Rend true si la caméra est prise. */
@@ -70,6 +85,9 @@ export function atelierUpdate(scene) {
     const r = st.players[c.to], b = st.ball.p, dt = st.t - c.t;
     if (r.target) { A.cible.visible = true; A.cible.position.set(r.target[0], 0.035, r.target[2]); }
     if (c.tPrise == null) {
+      // la CHUTE (ballon aérien) : première image sous 0,5 m après 1,2 m — l'écart au point visé, le receveur au ballon
+      c.hMax = Math.max(c.hMax, b[1]);
+      if (c.chute == null && c.hMax > 1.2 && b[1] < 0.5 && st.ball.v[1] < 0) { c.chute = [b[0], b[2]]; c.errChute = h(b[0] - c.lead[0], b[2] - c.lead[1]); c.recChute = h(r.p[0] - b[0], r.p[2] - b[2]); geler(A, 'chute'); }
       // l'instant « −0,3 s » : le ballon est à 0,3 s du receveur à sa vitesse actuelle (le vol prédit ment sous les lois de réception)
       const vb = h(st.ball.v[0], st.ball.v[2]), dR = h(b[0] - r.p[0], b[2] - r.p[2]);
       if (c.lat03 == null && vb > 1 && dR / vb <= 0.3) {
@@ -106,10 +124,10 @@ export function atelierUpdate(scene) {
   if (A.hud) {
     const fmt = (x, k = 2) => x == null ? '—' : x.toFixed(k), L = A.log, last = L[L.length - 1];
     const ok = L.filter((x) => x.tPrise != null), q = (a, p) => { const s = a.filter((x) => x != null).sort((x, y) => x - y); return s.length ? s[Math.floor(p * (s.length - 1))] : null; };
-    const ligneC = c ? `passe ${c.n} en cours : ${c.style}, ${fmt(c.d, 1)} m, receveur à ${fmt(c.dLead0, 1)} m du point visé${c.lat03 != null ? `, à ${fmt(c.lat03)} m de la ligne à −0,3 s` : ''}${c.tPrise != null ? ` · prise ${c.tech} à ${fmt(c.priseCorps)} m du corps` : ''}` : 'en attente d\'une passe…';
+    const ligneC = c ? `passe ${c.n} en cours [${c.type}] : ${c.style}, ${fmt(c.d, 1)} m, receveur à ${fmt(c.dLead0, 1)} m du point visé${c.lat03 != null ? `, à ${fmt(c.lat03)} m de la ligne à −0,3 s` : ''}${c.chute ? ` · chute à ${fmt(c.errChute)} m du point visé, receveur à ${fmt(c.recChute)} m` : ''}${c.tPrise != null ? ` · prise ${c.tech} à ${fmt(c.priseCorps)} m du corps` : ''}` : 'en attente d\'une passe…';
     const ligneL = last ? `dernière (${last.n}) : ${last.style} ${fmt(last.d, 1)} m · −0,3 s ${fmt(last.lat03)} m · prise ${last.tech ?? '—'} ${fmt(last.priseCorps)} m · +0,5 s ${fmt(last.a05)} m · max ${fmt(last.maxApres)} m · 2e ${last.deux ?? '—'} ${fmt(last.t2)} s · ${last.fin}` : '';
     const ligneS = ok.length ? `sur ${ok.length} réceptions : −0,3 s p50/p90 ${fmt(q(ok.map((x) => x.lat03), 0.5))}/${fmt(q(ok.map((x) => x.lat03), 0.9))} m · balle max après p90 ${fmt(q(ok.map((x) => x.maxApres), 0.9))} m · 2e p50/p90 ${fmt(q(ok.map((x) => x.t2), 0.5))}/${fmt(q(ok.map((x) => x.t2), 0.9))} s` : '';
-    A.hud.textContent = `ATELIER PASSES & CONTRÔLES${A.gele ? ` — suspendu : ${A.gele}` : ''}\n● jaune : point visé   ● cyan : cible du receveur   ● rouge : prise   — blanc : trajectoire prédite\n${ligneC}\n${ligneL}\n${ligneS}`;
+    A.hud.textContent = `ATELIER PASSES & CONTRÔLES${A.filtre.length ? ` [${A.filtre.join(', ')}]` : ''}${A.gele ? ` — suspendu : ${A.gele}` : ''}\n● jaune : point visé   ● cyan : cible du receveur   ● rouge : prise   ● magenta : chute prévue   — blanc : trajectoire prédite\n${ligneC}\n${ligneL}\n${ligneS}`;
   }
   return pris;
 }
