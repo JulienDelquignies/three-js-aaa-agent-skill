@@ -591,7 +591,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (cfg.heldBall?.(st, c, dt, cfg)) { st.hold += dt; return st; }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
-    if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62 } : {}); // la touche au pied (lot 58) — doc : match-config
+    if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62, ...(cfg.pasPortee ? { pasPortee: cfg.pasPortee } : {}) } : {}); // la touche au pied (lot 58) — doc : match-config
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
     // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
     let want = c.push || (c.target ? (() => {
@@ -630,7 +630,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       touchF: (c.touchF ?? 1) * (st.full && cfg.locomoteur ? (cfg.locomoteur.touche ?? 0.8) : 1), coneOk: coneP(),   /* (260) la touche poussée se calibre sur le corps qui la suit : un démarrage mono-exponentiel ne rattrape pas la poussée d'hier */   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99),
-      ...(st.full && cfg.pas ? { yaw: c.yaw, pas: { contact: (a, b) => pasContact(c, a, b), prochains: pasProchains(c), joue: c._pas ? (c._pas.joue ??= {}) : null, ...pasEtat(c) }, vel: [c.v[0], c.v[1]] } : {}) };   // (2026-09-24) la touche au pied qui la joue (pas.js)
+      ...(st.full && cfg.pas ? { yaw: c.yaw, pas: { contact: (a, b) => pasContact(c, a, b), prochains: pasProchains(c), joue: c._pas ? (c._pas.joue ??= {}) : null, lacet: c._pas?.yawRate ?? 0, P: c._pas, ...pasEtat(c) }, vel: [c.v[0], c.v[1]] } : {}) };   // (2026-09-24) la touche au pied qui la joue (pas.js)
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus
     // une négociation (l'historique : quatre autorités en guerre ici, control-at-foot à 33 %).

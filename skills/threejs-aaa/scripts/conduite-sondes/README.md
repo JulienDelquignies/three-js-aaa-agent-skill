@@ -24,3 +24,12 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - `arc-probe.mjs <url>` : pendant un passement dans la foulée, le pied qui cercle relativement au ballon (devant, dedans → dehors, hauteur).
 - Films : `capture-face.mjs <url> <dossier> <t0> <durée> [joueur]` (caméra de trois-quarts face qui suit), `tapis-video.mjs` (un joueur
   mené en ligne droite à vitesse fixe, sans la sim).
+
+## Les virages serrés (2026-09-25)
+- `virages.mjs` (sans navigateur) : les touches par lacet du corps — au-delà de 2,5 rad/s, 11 % se jouaient au contact d'un pied, 46 % au
+  rattrapage de fin de vol (pied prédit à 0,35 m du ballon) ; `fin-cause.mjs` : d'où viennent ces rattrapages — 47 sur 57 SANS plan (la
+  première touche après le porté ou une prise : le ballon est où il est, personne ne l'a envoyé à un pied).
+- `virage-fenetres.mjs <url> [s]` : les fenêtres de conduite en virage de la page (à filmer) ; `capture-face.mjs` avec `SAB=vise` filme la
+  même action SANS le pied qui va au ballon (A/B).
+- `contact-debug.mjs` (SECS=…) : le cou-de-pied rendu contre le ballon à l'image de la touche, par mode, en virage / droit, et si le pied
+  qui joue est celui que la sim avait VISÉ. Après : toutes les touches à 0,14-0,15 m (p50), p90 0,28-0,38 (hier 0,37-0,51) ; en virage 0,09-0,18.

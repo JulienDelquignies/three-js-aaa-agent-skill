@@ -723,7 +723,7 @@ export function touchEvent(st, c, ev = null, cfg = null) {
   // vitesse du kick — la scène en fait un geste (crochet court au demi-tour), un projet aval
   // n'a rien à recalculer. Champs additifs : les mondes d'hier lisent les mêmes types, au bit près.
   st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id,
-    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}), ...conduiteNommee(st, c, cfg, ev?.foot), ...(ev?.foot ? { foot: ev.foot } : {}), ...(ev?.pas ? { pas: ev.pas } : {}) });   // (pas) le pied que la foulée a mis au ballon, et comment (contact exact, fin de vol, lent)
+    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}), ...conduiteNommee(st, c, cfg, ev?.foot), ...(ev?.foot ? { foot: ev.foot } : {}), ...(ev?.pas ? { pas: ev.pas } : {}), ...(ev?.portee != null ? { portee: ev.portee } : {}) });   // (fin de vol) la distance de la pose du pied au ballon   // (pas) le pied que la foulée a mis au ballon, et comment (contact exact, fin de vol, lent)
 }
 
 /** (note 388) LA CONDUITE NOMMÉE (cfg.conduiteNommee, st.full) : chaque touche dit son PIED (le côté du ballon dans le regard) et sa

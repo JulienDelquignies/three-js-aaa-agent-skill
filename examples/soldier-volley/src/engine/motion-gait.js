@@ -509,7 +509,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // (2026-09-24) LE GESTE DANS LA FOULÉE (opts.geste — le passement lancé, character-controller._gesteFouleeOpts ; absent : hier au bit) : le buste
   // VEND du côté de la jambe qui cercle — un faux virage (roulis du bassin et du tronc, bassin qui glisse) de 5 m/s² au plus fort du vol.
   const GV = opts.geste, wVol = (k) => { const u = k === 'Left' ? ((phi % 1) + 1) % 1 : ((phi + 0.5) % 1 + 1) % 1; return u < p.s ? null : (u - p.s) / (1 - p.s); };   // le vol RENDU de ce pied
-  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k].arc && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;
+  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k]?.arc && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;
   const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp((opts.turn ?? 0) + 5 * vend, -9, 9);
   // LE GRIFFÉ (footPath) — absent : hier au bit. Plein jusqu'à 6 m/s, ramené à 0,3 dès 7 : au sprint le genou de la foulée
   // tourne déjà à la limite (checkClip, 30 rad/s — 9 m/s le dépasse sans griffé) ; mesuré, griffé plein à 8 m/s = 32 rad/s.
@@ -561,7 +561,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // jamais (le contrat) ; sans virage : la foulée d'hier au bit.
   const kX = clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // …atténué au sprint (la foulée longue sature la hanche)
   if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
-  if (GV) { cL[0] -= 0.09 * GV.Left.elargi; cR[0] += 0.09 * GV.Right.elargi; }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui
+  if (GV) { cL[0] -= 0.09 * (GV.Left?.elargi ?? 0); cR[0] += 0.09 * (GV.Right?.elargi ?? 0); }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui
   const pYawTurn = -6 * kX * sX;
   if (kX > 0) p.swingH *= 1 - 0.12 * kX;                                 // (A7 ter) le vol rase un peu plus dans le pas croisé (le genou reste sous 140°)
   const listAt = (x) => -p.pList * Math.cos(TAU * (x - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 12 * B.k * (0.5 + 0.5 * Math.cos(TAU * (x - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // (2026-09-24) 12° (hier 10) : sur l'appui réel, plus court, le plongeon se perdait dans le roulis normal   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
@@ -662,7 +662,8 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     if (fp.phase === 'swing' && wJ > 0) volArticulaire(fp, (u - pS(side).s) / (1 - pS(side).s), wJ, p.v, L, hipW,
       hipJointAt(((side === 'Left' ? 0 : 0.5) + pS(side).s) % 1, side), hipJointAt(side === 'Left' ? 0 : 0.5, side),
       ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot, axeDe(side)), b = footPath(0, pS(side), c, vC, ankleY, L.foot, axeDe(side)); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch, porteeK(p.v, p.recul), { ...axeDe(side), orteil0: P.bones[`${side}Foot`].bindP[1] - axeDe(side).L * Math.sin(axeDe(side).a0 * D2R) }, p.recul]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
-    if (GV && GV[side].arc && fp.phase === 'swing') arcPassement(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, ankleY);   // (geste) la jambe CERCLE le ballon, sur SON vol (−sgn : +1 = couloir droit)
+    if (GV && GV.vise === side && fp.phase === 'swing' && !GV[side]?.arc) viseBallon(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, hipW);   // (2026-09-25) le pied qui va jouer le ballon y va
+    if (GV && GV[side]?.arc && fp.phase === 'swing') arcPassement(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, ankleY);   // (geste) la jambe CERCLE le ballon, sur SON vol (−sgn : +1 = couloir droit)
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
@@ -675,6 +676,21 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const q = {};
   for (const [bone, Rb] of Object.entries(J)) { const s = jointToSpec(P, bone, Rb); if (s) q[bone] = s; }
   return { q, hips, J, feet, meta: { s: p.s, T: p.T, drop, bob, lean: p.lean, params: p } };
+}
+
+/** (2026-09-25) LE PIED QUI VA JOUER LE BALLON Y VA (opts.geste.vise — la sim nomme le pied, pas.js) : sur la seconde moitié de son vol, le
+ *  pied se décale vers le ballon — la cheville à côté de lui du côté de son propre couloir (le ballon contre le dedans ou le dehors du pied)
+ *  et un peu derrière (le cou-de-pied le rencontre) — au plus 0,4 m, puis revient se poser à son point (l'appui ancré ne saute pas). C'est le
+ *  réglage des derniers pas du joueur réel qui vient chercher son ballon : sans lui, les touches sans plan (la première après le porté, après
+ *  une prise, en virage) se jouaient pied à ~0,35 m du ballon. */
+function viseBallon(fp, w, balle, cote, hip) {
+  const [bx, bz] = balle, cx = fp.p[0], cz = fp.p[2], sb = Math.sign(cx - bx) || cote;   // le pied garde son côté du ballon
+  let tx = bx + sb * 0.13, tz = bz + 0.06;                              // cheville : 13 cm à côté du centre du ballon, 6 cm derrière (+Z = arrière)
+  tx = cote > 0 ? Math.max(tx, 0.03) : Math.min(tx, -0.03);            // …sans passer dans le couloir de l'autre jambe (les jambes ne se croisent pas)
+  const dx = tx - cx, dz = tz - cz, d = Math.hypot(dx, dz); if (d < 1e-4) return;
+  const k = Math.min(1, 0.4 / d);                                        // au plus 40 cm de détour (la jambe qui s'allonge vers un ballon qui file)
+  const env = sstep((w - 0.35) / 0.35) * (1 - sstep((w - 0.9) / 0.1));
+  fp.p[0] += dx * k * env; fp.p[2] += dz * k * env;
 }
 
 /** (2026-09-24) L'ARC DU PASSEMENT : le pied qui vole passe DEDANS derrière le ballon, DEVANT lui (levé à 22 cm pour le franchir), puis

@@ -443,7 +443,7 @@ export class CharacterController {
     const G = this.gesteFoulee; if (!G) return undefined;
     if (G.foulee && this._gesteMem?.vols !== G.foulee.vols) this._gesteMem = { vols: G.foulee.vols, file: G.foulee.vols.map((v) => v.pied), fin: Math.max(...G.foulee.vols.map((v) => v.t1)) + 1.5 * (this.pasFinal?.T ?? 0.7) };
     const M = this._gesteMem, S = this._gesteEtat ??= { Left: { e: 'idle', vol: null }, Right: { e: 'idle', vol: null } };
-    if (!M || G.t > M.fin) { if (S.Left.e === 'idle' && S.Right.e === 'idle') { this._gesteMem = null; return undefined; } }
+    if (!M || G.t > M.fin) { if (S.Left.e === 'idle' && S.Right.e === 'idle' && !G.vise) { this._gesteMem = null; return undefined; } }
     // L'ÉTAT DE CHAQUE PIED, sur ses VRAIS vols (la phase rendue — celle de la sim, mais la durée d'un vol dérive si l'allure change : un
     // arc piloté par l'horloge du calendrier se coupait à mi-vol, le pied tombait de 37 cm en une image) : un vol qui COMMENCE dans la
     // fenêtre d'un vol du geste est un ARC ; l'appui qui suit garde le couloir élargi (POSE) ; le vol suivant le referme (RETOUR).
@@ -462,6 +462,7 @@ export class CharacterController {
     const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
     const dx = G.ball[0] - ox, dz = G.ball[1] - oz;
     out.balle = [c * dx - sn * dz, sn * dx + c * dz];
+    out.vise = globalThis.__sabotage === 'vise' ? null : G.vise === 'left' ? 'Left' : G.vise === 'right' ? 'Right' : null;   // (2026-09-25) le pied que la sim envoie au ballon (pas.js) ; sabotage nommé 'vise' : le pied n'y va plus
     return out;
   }
 

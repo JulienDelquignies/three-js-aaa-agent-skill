@@ -161,7 +161,7 @@ export function dribbleStep(d, ball, player, dt) {
   // (± pasLat du centre du pied), rejoint (le ballon au plus pasAvant devant elle, pas plus de 0,3 m derrière) — une fois par vol.
   // …EN MOUVEMENT seulement (≥ pasV m/s, la foulée générée pleine) : à l'arrêt l'horloge ne tourne pas, aucun pied ne vole — le porteur
   // garé derrière un ballon mort ne le toucherait jamais (le gel du duel) ; là, la touche de semelle / d'intérieur d'hier.
-  let piedPas = null, pasMode = null;
+  let piedPas = null, pasMode = null, pasPorteeV = null;
   const pasOn = !!player.pas && player.speed >= (c.pasV ?? 1.0);
   d.horloge = (d.horloge ?? 0) + dt;
   const rdvEnCours = pasOn && d.rdv && d.horloge < d.rdv.t + 0.15;   // un ballon ENVOYÉ au pied qui va se poser : on le laisse arriver
@@ -173,7 +173,15 @@ export function dribbleStep(d, ball, player, dt) {
     // …sinon, un ballon À PORTÉE (la prise d'hier) se joue avec le pied qui FINIT son vol — le plus en avant, à l'instant où il se pose :
     // le porteur qui tourne autour d'un ballon mort sans qu'un pied le rejoigne exactement le gardait à 0,15 m d'un défenseur figé 1 s
     // (graine 1) ; le rendu n'a plus qu'un reste à corriger, et c'est toujours un pied, une fois par vol
-    else if (dist < prise && !rdvEnCours) { const fv = ['left', 'right'].filter((k) => player.pas.finVol?.[k] && !d.pasJoue[k]); if (fv.length) { piedPas = fv.length === 1 ? fv[0] : (bD < 0 ? 'left' : 'right'); pasMode = 'fin'; } }
+    // …(2026-09-25) mais seulement si ce pied PEUT l'atteindre : sa pose (pasProchains) à ≤ pasPortee du ballon — le rendu l'y amène (viseBallon,
+    // ≤ 0,4 m) ; plus loin, on attend le vol suivant (le corps s'approche), un cycle au plus (jamais de porteur figé). Mesuré sans : la queue
+    // des touches de rattrapage à 0,4-0,57 m (p75-p90) du cou-de-pied rendu.
+    else if (dist < prise && !rdvEnCours) { const fv = ['left', 'right'].filter((k) => player.pas.finVol?.[k] && !d.pasJoue[k]); if (fv.length) {
+      const cand = fv.length === 1 ? fv[0] : (bD < 0 ? 'left' : 'right'), pose = player.pas.prochains?.filter((r) => r.pied === cand).sort((a, b) => a.t - b.t)[0];
+      const dPose = pose ? Math.hypot(bA - pose.avant, bD - pose.droite) : 0, loin = dPose > (c.pasPortee ?? 0.55);
+      if (!loin || d.horloge - (d.pasAttente ??= d.horloge) > (player.pas.P?.T ?? 0.6)) { piedPas = cand; pasMode = 'fin'; pasPorteeV = +dPose.toFixed(2); }
+    } }
+    if (piedPas || !(dist < prise)) d.pasAttente = null;
   }
   const auPied = pasOn ? !!piedPas || (!rdvEnCours && bvAway > player.speed + 0.3 && dist < c.reach) : dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
   // …ET LA TOUCHE EXIGE LE CÔNE AVANT (player.coneOk, lot 76 — posé par le match ; absent :
@@ -240,11 +248,20 @@ export function dribbleStep(d, ball, player, dt) {
       const tVoulu = touchInterval(player.speed, lead), R = player.pas.prochains.filter((r) => r.t > 0.12);
       const rdv = R.reduce((b, r) => (!b || Math.abs(r.t - tVoulu) < Math.abs(b.t - tVoulu) ? r : b), null);
       if (rdv) {
-        const fx = Math.cos(player.yaw ?? Math.atan2(hz, hx)), fz = Math.sin(player.yaw ?? Math.atan2(hz, hx)), vpx = (player.vel ?? [hx * player.speed, hz * player.speed])[0], vpz = (player.vel ?? [hx * player.speed, hz * player.speed])[1];
+        // (2026-09-25) …LE CORPS SUIT SON ARC : en virage, le rendez-vous calculé sur la tangente (le corps tout droit à sa vitesse) envoyait le
+        // ballon DEHORS — mesuré : lacet ≥ 2,5 rad/s, 11 % de touches au contact d'un pied, 46 % au rattrapage de fin de vol (pied à 0,35 m).
+        // Le corps tourne à son lacet de l'instant (pas.js) jusqu'au cap voulu (sans le dépasser) ; la vitesse tourne avec lui, le pied se
+        // pose dans le repère du corps TOURNÉ.
+        const yaw0 = player.yaw ?? Math.atan2(hz, hx), vel = player.vel ?? [hx * player.speed, hz * player.speed], om = player.pas.lacet ?? 0;
+        const dPsi = Math.atan2(Math.sin(Math.atan2(wantZ, wantX) - yaw0), Math.cos(Math.atan2(wantZ, wantX) - yaw0));
+        const rot = (tt) => { const a = om * tt; return Math.sign(om) === Math.sign(dPsi) ? Math.sign(a) * Math.min(Math.abs(a), Math.abs(dPsi)) : a * Math.exp(-tt / 0.2); };
+        let bxp = px, bzp = pz; const N = 8, h = rdv.t / N;
+        for (let k = 0; k < N; k++) { const a = rot((k + 0.5) * h), ca = Math.cos(a), sa = Math.sin(a); bxp += (vel[0] * ca - vel[1] * sa) * h; bzp += (vel[0] * sa + vel[1] * ca) * h; }
+        const yT = yaw0 + rot(rdv.t), fx = Math.cos(yT), fz = Math.sin(yT);
         const lat = rdv.droite * 1.25;                                                   // dans SON couloir, un peu dehors : l'autre pied passe à côté
-        const tx = px + vpx * rdv.t + fx * rdv.avant - fz * lat, tz = pz + vpz * rdv.t + fz * rdv.avant + fx * lat;
+        const tx = bxp + fx * rdv.avant - fz * lat, tz = bzp + fz * rdv.avant + fx * lat;
         const ex = tx - ball.p[0], ez = tz - ball.p[2], el = hyp(ex, ez), a = touchDecel(player.speed);
-        if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2; dx = ex / el; dz = ez / el; spT = v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el); d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t }; }
+        if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2; dx = ex / el; dz = ez / el; spT = v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el); d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t }; if (player.pas.P) player.pas.P.rdv = { pied: rdv.pied, reste: rdv.t }; }
       }
     }
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
@@ -255,7 +272,7 @@ export function dribbleStep(d, ball, player, dt) {
     // caresse de course). Calcul pur sur des valeurs déjà là : la physique ne bouge pas d'un bit.
     // …un ballon RASSEMBLÉ (quasi posé au pied — la prise du lot 58) n'a plus de ligne : sa
     // cassure se lit contre le CAP DU CORPS (heading → kick), le vrai angle du demi-tour.
-    ev = { dev: Math.acos(Math.max(-1, Math.min(1, (cl > 0.2 ? curX : hx) * dx + (cl > 0.2 ? curZ : hz) * dz))) * 180 / Math.PI, spd: sp, ...(piedPas ? { foot: piedPas, pas: pasMode } : player.pas ? { pas: 'lent' } : {}) };
+    ev = { dev: Math.acos(Math.max(-1, Math.min(1, (cl > 0.2 ? curX : hx) * dx + (cl > 0.2 ? curZ : hz) * dz))) * 180 / Math.PI, spd: sp, ...(piedPas ? { foot: piedPas, pas: pasMode, ...(pasPorteeV != null ? { portee: pasPorteeV } : {}) } : player.pas ? { pas: 'lent' } : {}) };
   }
 
   advance(ball, dt);

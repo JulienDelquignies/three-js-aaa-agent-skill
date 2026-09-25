@@ -7,6 +7,7 @@ const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-un
 const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
 await pg.goto(URL, { waitUntil: 'load', timeout: 240000 });
 await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 });
+if (process.env.SAB) await pg.evaluate((s) => { window.__sabotage = s; }, process.env.SAB);
 await pg.evaluate(({ T, i }) => { const sc = window.__scene; window.__cam = null;
   for (let t = 0; t < T - 1e-6; t += 1 / 60) { sc.update(1 / 60); const s = sc.players[i].sim; if (t > T - 1.5) window.__majCam?.(s, 1 / 60); }
 }, { T: Number(T0), i: Number(I) }).catch(() => {});
