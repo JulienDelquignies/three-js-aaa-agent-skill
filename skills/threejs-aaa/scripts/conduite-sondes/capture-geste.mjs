@@ -2,7 +2,7 @@
 // visée au bassin, fov 40 — les deux joueurs de la tête aux pieds), au ralenti si `lent` < 1 (le pas de simulation par image = lent / 60 s).
 // Le rendu logiciel (SwiftShader, sans GPU) sort par moments un sol GRIS (le gazon absent, 26 % des images mesurées ; le GPU n'a pas ce
 // défaut) : chaque image est vérifiée sur une bande du sol et RE-RENDUE (sans avancer la sim) tant qu'elle est grise, 6 essais au plus.
-// Usage : node capture-geste.mjs <url> <dossier> <graine> <t0> <durée s> [joueur=0 | porteur] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
+// Usage : node capture-geste.mjs <url> <dossier> <graine> <t0 | conduite> <durée s> [joueur=0 | porteur] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
 import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -23,10 +23,38 @@ function png(buf) {
 const vert = (b) => { const { w, h, bpp, px } = png(b); let s = 0; for (let i = 0; i < w * h; i++) s += px[i * bpp + 1] - (px[i * bpp] + px[i * bpp + 2]) / 2; return s / (w * h); };
 
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const pg = await b.newPage({ viewport: { width: 960, height: 540 } });
-await pg.goto(`${URL}${URL.includes('?') ? '&' : '?'}seed=${SEED}&webgl&capture`, { waitUntil: 'load', timeout: 240000 });
-await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 });
-const P = { T: Number(T0), i: I === 'porteur' ? -1 : Number(I), dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
+let pg = await b.newPage({ viewport: { width: 960, height: 540 } });
+const ouvre = async () => { await pg.goto(`${URL}${URL.includes('?') ? '&' : '?'}seed=${SEED}&webgl&capture`, { waitUntil: 'load', timeout: 240000 });
+  await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 }); };
+await ouvre();
+// T0 = 'conduite' : la partie de CETTE page (la même config que le film) est d'abord parcourue sans rendu jusqu'à 90 s ; la plus longue conduite en
+// course (≥ 1,8 m/s, au moins une touche) est retenue, la page rechargée, la fenêtre filmée de 0,6 s avant son début.
+let T0n = Number(T0);
+if (T0 === 'conduite') {
+  const best = await pg.evaluate(() => { const sc = window.__scene, st = sc.state; let cur = null, best = null, ne = 0; const tch = [];
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'touche') tch.push([e.t, e.by]); }
+      const car = st.possession?.carrier ?? -1, c = st.players[car], ok = c && st.phase === 'carry' && !st.restart && Math.hypot(...c.v) >= 1.8;
+      if (ok && cur && cur.by === car) cur.t1 = st.t; else if (ok) cur = { by: car, t0: st.t, t1: st.t }; else cur = null;
+      if (cur && cur.t1 - cur.t0 > 1.5) { const n = tch.filter(([t, by]) => by === cur.by && t >= cur.t0 && t <= cur.t1).length; if (n >= 1 && (!best || cur.t1 - cur.t0 > best.t1 - best.t0)) best = { ...cur, n }; } }
+    return best; });
+  console.log('conduite retenue :', JSON.stringify(best));
+  if (!best) { console.log('aucune conduite trouvée'); process.exit(1); }
+  T0n = Math.max(0.05, best.t0 - 0.6); await ouvre();
+}
+// T0 = 'recup[:k]' : la k-ième prise d'un ballon LIBRE (au sol, par un joueur lancé ≥ 1,5 m/s, le ballon à plus de 1 m de lui 0,8 s avant) — filmée
+// de 1,2 s avant la prise ; `I = porteur` suit alors le récupérateur.
+if (String(T0).startsWith('recup')) {
+  const k = Number(String(T0).split(':')[1] ?? 0);
+  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = [], hist = []; let ne = 0;
+    while (st.t < 90) { const libre = st.phase === 'loose'; sc.update(1 / 60); hist.push({ t: st.t, b: [...st.ball.p], p: st.players.map((q) => [q.p[0], q.p[2]]) }); if (hist.length > 60) hist.shift();
+      while (ne < st.events.length) { const e = st.events[ne++]; if ((e.type === 'control' || e.type === 'loose-kept') && libre && !st.restart && st.ball.p[1] < 0.3) { const q = st.players[e.by], h0 = hist[0];
+        if (Math.hypot(...q.v) >= 1.5 && h0 && Math.hypot(h0.b[0] - h0.p[e.by][0], h0.b[2] - h0.p[e.by][1]) > 1) out.push({ t: st.t, by: e.by, v: +Math.hypot(...q.v).toFixed(1) }); } } }
+    return out; });
+  console.log('récupérations trouvées :', L.length, JSON.stringify(L.slice(0, 6)));
+  if (!L[k]) { console.log('pas de récupération n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - 1.2); await ouvre();
+}
+const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard
     const k = 1 - Math.exp(-dt / 0.8), vx = s.v[0], vz = s.v[1]; if (Math.hypot(vx, vz) > 0.5) { c.dir[0] += (vx - c.dir[0]) * k; c.dir[1] += (vz - c.dir[1]) * k; }
@@ -40,7 +68,7 @@ await pg.evaluate((P) => {
   window.__suivi = (sc) => { if (P.i >= 0) return sc.players[P.i].sim; const c = sc.state.possession?.carrier; const pl = sc.players.find((q) => q.sim.id === c); if (pl) window.__dernier = pl.sim; return window.__dernier ?? sc.players[0].sim; };
   for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) window.__majCam(window.__suivi(sc), 1 / 60); }
 }, P);
-const N = Math.round(Number(DUR) * 60 / Number(LENT)); let refaits = 0;
+const N = Math.round(Number(DUR) * 60 / Number(LENT)); let refaits = 0;   // DUR : la durée filmée (avec T0 = 'conduite', à partir de 0,6 s avant la conduite)
 for (let f = 0; f < N; f++) {
   await pg.evaluate(async ({ i, dt }) => { const sc = window.__scene, e = window.__engine; sc.update(dt); window.__majCam(window.__suivi(sc), dt); const c = window.__cam;
     e.camera.position.set(...c.pos); e.controls.target.set(...c.tgt); e.camera.fov = 40; e.camera.updateProjectionMatrix(); await window.__seekFrame(); }, { i: P.i, dt: Number(LENT) / 60 });

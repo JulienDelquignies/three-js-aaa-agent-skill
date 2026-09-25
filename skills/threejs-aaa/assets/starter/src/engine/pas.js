@@ -47,7 +47,9 @@ export function pasStep(st, dt) {
     // de son vol (gaitPose, opts.vise) : sans lui, 47 des 57 touches de rattrapage (sans plan) se jouaient pied à ~0,35 m du ballon, surtout en virage
     if (P.rdv) { P.rdv.reste -= dt; if (P.rdv.reste < -0.15) P.rdv = null; }
     P.vise = null;
-    if (st.phase === 'carry' && st.possession?.carrier === p.id && !p.act && P.v >= 1.0) {
+    // (2026-09-25) …et le RÉCUPÉRATEUR d'un ballon libre au sol (le plus près, ballon devant à < 0,8 m) nomme aussi son pied : le rendu l'amène au ballon
+    const recup = st._recupPied && st.phase === 'loose' && !p.act && P.v >= 1.0 && st.ball.p[1] < 0.4 && p.id === st._recupPied;
+    if ((st.phase === 'carry' && st.possession?.carrier === p.id && !p.act && P.v >= 1.0) || recup) {
       if (P.rdv) P.vise = P.rdv.pied;
       else if (Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]) < 0.8) {
         const g = geo(P.v), i = Math.floor(P.phi * N_GEO) % N_GEO, fin = (k) => { for (let j = 1; j <= N_GEO; j++) if (!g[(i + j) % N_GEO][k].vol) return g[i][k].vol ? j : 99; return 99; };
@@ -186,6 +188,38 @@ export function vSortie(p, cfg, dt = 0.5) {
  *  entre, 0,97 en deçà de 45°). Le crochet freinait hier à 0,45-0,6 quel que soit l'angle : 1,9 m/s mesurés à la sortie. */
 export function freinCoupe(deg) {
   const a = Math.abs(deg); return a <= 45 ? 0.97 : a <= 90 ? 0.97 + (0.76 - 0.97) * (a - 45) / 45 : Math.max(0.67, 0.76 + (0.67 - 0.76) * (a - 90) / 90);
+}
+
+/** (2026-09-25, cfg.recup) LE BALLON LIBRE SE PREND AU PIED : un ballon au sol n'est pris que si un pied l'ATTEINT — la cheville ou la pointe d'un pied
+ *  (là où l'horloge de foulée les met, pasPositions) à ≤ K.pied m, ou le cou-de-pied d'un pied en vol qui le balaie ; quasi arrêté (< K.lent m/s), le
+ *  ballon juste devant (≤ K.semelle m) — la semelle se pose. Mesuré avant (recuperation.mjs, 8 × 120 s) : la prise tombait au RAYON du corps (0,85 m),
+ *  le ballon à 0,53 m du pied rendu le plus proche (p50), 6 % seulement à ≤ 0,2 m — le joueur aspirait le ballon. */
+export function pasPiedAtteint(p, bp, K = {}) {
+  const dx = bp[0] - p.p[0], dz = bp[2] - p.p[2], c = Math.cos(p.yaw), s = Math.sin(p.yaw), av = dx * c + dz * s, dr = -dx * s + dz * c, v = hyp(p.v[0], p.v[1]);
+  if (!p._pas || v < (K.lent ?? 0.8)) return hyp(dx, dz) <= (K.semelle ?? 0.45) && av > -0.05;
+  const F = pasPositions(p); let m = 9;
+  for (const k of ['left', 'right']) for (const q of [F[k].ch, F[k].or]) m = Math.min(m, hyp(av - q[0], dr - q[1]));
+  const ct = pasContact(p, av, dr);
+  return m <= (K.pied ?? 0.25) || (ct && ct.d <= (K.contact ?? 0.2));
+}
+/** …et LA PRISE N'EST PAS UN AIMANT : pris en course, le ballon amorti est lâché au pied (il roule, la conduite le
+ *  reprend : la touche suivante est planifiée sur le pied qui se pose) ; pris au pas, il s'arrête sous la semelle LÀ OÙ IL EST. Hier le contrôle le déclarait possédé et le servo le tirait jusqu'au point du pied
+ *  (glissé sans pied > 0,1 m sur 37 % des récupérations, jusqu'à 0,84 m). */
+export function recupTouche(st, p, K = {}) {
+  const v = hyp(p.v[0], p.v[1]), bv = st.ball.v;
+  if (v < (K.lent ?? 0.8)) { st.ball.impulse([-bv[0], 0, -bv[2]]); return; }
+  // en course la prise JOUE UNE TOUCHE PLANIFIÉE, comme la conduite : le ballon part au point où se posera le pied qui atterrit dans ~0,4 s (freiné par le
+  // sol : v₀ = d/t + a·t/2) et le rendez-vous est déclaré (P.rdv — dribble.js le reconnaît, le rendu y amène ce pied). Une poussée maison hors plan
+  // faisait de la touche suivante un rattrapage (53 % au cou-de-pied) ; le ballon amorti lâché tel quel finissait derrière le porteur (15 %).
+  const P = p._pas, R = P ? pasProchains(p, { cycles: 2 }).filter((x) => x.t > 0.2 && x.t < 0.8) : [];
+  const r = R.reduce((b, x) => (!b || Math.abs(x.t - 0.4) < Math.abs(b.t - 0.4) ? x : b), null);
+  if (r) {
+    const c = Math.cos(p.yaw), sn = Math.sin(p.yaw), tx = p.p[0] + p.v[0] * r.t + c * r.avant - sn * r.droite * 1.2, tz = p.p[2] + p.v[1] * r.t + sn * r.avant + c * r.droite * 1.2;
+    const ex = tx - st.ball.p[0], ez = tz - st.ball.p[2], el = hyp(ex, ez) || 1e-3, sol = st.ball.sol, a = sol ? sol.dec0 + sol.decV * Math.min(2, sol.vMax ?? 3.2) : 1.2;
+    const v0 = Math.max(0.3, el / r.t + a * r.t / 2);
+    st.ball.impulse([ex / el * v0 - bv[0], 0, ez / el * v0 - bv[2]]); P.rdv = { pied: r.pied, reste: r.t };
+  }
+  if (st.ball.owner === p.id) st.ball.release('conduite');
 }
 
 export function pasPose(p) { const r = pasProchains(p, { cycles: 1 }); return r.length ? Math.max(...r.map((x) => x.avant)) : 0.35; }

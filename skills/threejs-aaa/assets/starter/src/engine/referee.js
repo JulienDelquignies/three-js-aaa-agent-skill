@@ -561,7 +561,8 @@ export function onOut(st, cfg) {
       // fenêtre 6 s) file au coin le plus proche, les n coéquipiers les PLUS PROCHES le
       // rejoignent en courant, le reste marche à l'engagement ; l'engagement attend dur s
       // (le chrono les compte déjà en arrêts de jeu). Événement nommé — le ticker le lit.
-      if (st.full && cfg.celebration) {
+      const byC = st.full && cfg.celebration ? [...st.events].reverse().find((e) => e.type === 'shot' && st.t - e.t < 6 && st.players[e.by]?.team === r.scorer)?.by ?? nearTaker(r.scorer) : null;
+      if (st.full && cfg.celebration && st.players[byC]) {   // (2026-09-25) sans buteur trouvé (le but d'un ballon roulé, le seul joueur de l'équipe au sol — nearTaker vide), pas de célébration : c'était un plantage
         const C = cfg.celebration;
         st.restart.at += C.dur ?? 6;
         const shot = [...st.events].reverse().find((e) => e.type === 'shot' && st.t - e.t < 6 && st.players[e.by]?.team === r.scorer);

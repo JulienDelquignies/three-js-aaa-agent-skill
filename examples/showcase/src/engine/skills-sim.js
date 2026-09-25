@@ -292,7 +292,8 @@ export function maybePassement(st, c, cfg) {
   // ballon EST un vol de la foulée. Ici : les `tours` prochains vols (pieds alternés, 1 à 3), le corps MOBILE (movePlayers le mène), le
   // ballon tenu droit devant à la distance de pose (pinRel) — le pied passe devant lui et se pose à côté, le buste vend du côté de la jambe ;
   // la morsure au milieu du dernier vol, la sortie du côté OPPOSÉ à la dernière jambe (le contre-pied), un départ (burst) au bout.
-  if (st.full && cfg.pas && c._pas && c.speed >= 0.8) {   // (2026-09-25) dès le pas de marche : le passement calé (corps à 0 m/s) se lisait « FIFA 95 »
+  if (st.full && cfg.dribble1c1?.passementV && cfg.pas && c.speed < cfg.dribble1c1.passementV) return false;   // (le duel) sous l'allure du passement DANS la foulée, pas de passement du tout : le calé (0 m/s) se lit « FIFA 95 »
+  if (st.full && cfg.pas && c._pas && c.speed >= (cfg.dribble1c1?.passementV ?? 0.8)) {   // (2026-09-25) dès le pas de marche : le passement calé (corps à 0 m/s) se lisait « FIFA 95 » ; le duel : dès 1,1 m/s (dribble1c1.passementV — Taga 2026 : approche ≈ 2,2 m/s ; lancé au pas, le corps tombait sous 1,2), et dessous RIEN (ligne précédente)
     const n = Math.max(1, Math.min(3, tours)), vols = pasVols(c, 8).filter((v) => v.t0 >= 0.03);
     let seq = vols.slice(0, n);
     const cote = (pd) => (pd === 'right' ? -1 : 1);   // la sortie part du côté opposé à la dernière jambe : droite → à gauche (yaw +)

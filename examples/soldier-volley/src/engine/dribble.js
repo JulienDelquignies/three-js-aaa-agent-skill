@@ -164,7 +164,7 @@ export function dribbleStep(d, ball, player, dt) {
   let piedPas = null, pasMode = null, pasPorteeV = null;
   const pasOn = !!player.pas && player.speed >= (c.pasV ?? 1.0);
   d.horloge = (d.horloge ?? 0) + dt;
-  const rdvEnCours = pasOn && d.rdv && d.horloge < d.rdv.t + 0.15;   // un ballon ENVOYÉ au pied qui va se poser : on le laisse arriver
+  const rdvEnCours = pasOn && ((d.rdv && d.horloge < d.rdv.t + 0.15) || (player.pas?.P?.rdv && player.pas.P.rdv.reste > -0.15));   // un ballon ENVOYÉ au pied qui va se poser : on le laisse arriver (le rendez-vous de la foulée aussi — la prise d'un ballon libre le déclare, pas.recupTouche)
   if (pasOn) {
     const fx = Math.cos(player.yaw ?? Math.atan2(hz, hx)), fz = Math.sin(player.yaw ?? Math.atan2(hz, hx)), bA = bx * fx + bz * fz, bD = -bx * fz + bz * fx;
     d.pasJoue = player.pas.joue ?? (d.pasJoue ??= {});   // le registre du JOUEUR (pas.js : partagé avec la touche du porté, rouvert à chaque vol qui commence — une touche par vol)

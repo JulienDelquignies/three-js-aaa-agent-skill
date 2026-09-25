@@ -57,11 +57,12 @@ export function duelCfg(overrides = {}) {
     duel: { ...DUEL_KEYS, ...(overrides.duel ?? {}) },
     pas: overrides.pas ?? true,   // (2026-09-24) l'horloge de foulée dans la sim, la touche au pied qui la joue (pas.js)
     // (2026-09-25) LE RÉPERTOIRE DU 1c1 dans la foulée : la feinte de corps (face-à-face à 1,1-3 m), et le plancher d'envie des gestes de la cage
-    dribble1c1: overrides.dribble1c1 ?? { plancher: 0.45, feinteFoe: [1.1, 3.0], feinteCone: 55, feinteCd: 6, feinteBite: 0.5, sortie: { duree: 0.6 } },
+    dribble1c1: overrides.dribble1c1 ?? { plancher: 0.45, feinteFoe: [1.1, 3.0], feinteCone: 55, feinteCd: 6, feinteBite: 0.5, sortie: { duree: 0.6 }, passementV: 1.1 },
     // …et L'ÉQUILIBRE du répertoire (mesuré, 16 min : 22 passements, 8 crochets, 6 feintes, 1 croqueta — le passement, testé AVANT les autres
     // avec une envie doublée, prenait toutes les fenêtres de face) : l'envie du passement ramenée à celle des autres, le crochet relevé
     passements: { ...base.passements, envie: 1, plancher: 0.2 },
     bouclier: base.bouclier ? { ...base.bouclier, pas: 0.8 } : base.bouclier,
+    recup: overrides.recup ?? { pied: 0.30, contact: 0.22, lent: 0.8, semelle: 0.45, devant: 0.6 },   // pied 0,30 : entre le pied du générateur (0,25 — au rendu 0,21 m p50 à la prise, mais le ballon libre 33 % du temps) et la portée que le rendu plie (0,35 — 0,27 m au rendu)   // le ballon libre se prend AU PIED, sans aimant (rondo-sim receive / prise, pas.pasPiedAtteint, recupTouche)
     pasPortee: overrides.pasPortee ?? 0.4,   // la touche de rattrapage (fin de vol) n'attend que le pied que le rendu PEUT amener au ballon (viseBallon ≤ 0,4 m) : 0,55 laissait un quart des touches à 0,27-0,35 m du pied rendu
     conduite: overrides.conduite ?? { couple: { d0: 0.35, tau: 0.4, vMin: 0.8 }, libre: 1.0, lead: 0.5 },   // lead : la touche plus courte — une par foulée (Zago 2016 : 2,3-3 touches/s en slalom ; 1,4-2,3/s en conduite droite à 5,7 m/s)   // le porteur court AVEC son ballon (movement), en course le ballon n'est plus tenu au servo (rondo-sim)
     surface: SOL_CAGE,   // le dosage des touches sur la loi du ballon (dribble.js touchDecel)

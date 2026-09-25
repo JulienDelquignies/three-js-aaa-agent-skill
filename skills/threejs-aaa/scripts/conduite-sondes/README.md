@@ -66,3 +66,9 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   invisible 1-2 %, derrière 8-10 %, une touche toutes les 1,3-1,5 foulée.
 - `capture-geste.mjs … porteur` : la caméra suit le porteur du moment. Filmer depuis un BUILD servi à part (le serveur de dev recharge la page à
   chaque édition d'une source : la capture meurt — « __seekFrame is not a function »).
+- `recuperation.mjs <url> [s] [graines] [sortie.json]` : la prise d'un ballon LIBRE — l'approche, le ballon au pied RENDU à l'instant de la prise,
+  le ballon tenu sans pied dans les 0,6 s qui suivent, et pourquoi. Avant : prise au rayon du corps (0,85 m), ballon à 0,53 m du pied rendu
+  (6 % à ≤ 0,2 m), puis tiré au pied par le servo (glissé > 0,1 m sur 37 % des prises). Après (cfg.recup) : prise quand un pied l'atteint,
+  ballon à 0,20-0,25 m du pied rendu, la prise en course joue une touche PLANIFIÉE vers le pied qui se pose (rendez-vous déclaré). Reste :
+  l'armé de passe et la feinte de corps tiennent le ballon au servo pendant leur geste.
+- `capture-geste.mjs … recup[:k] …` : filme la k-ième prise d'un ballon libre par un joueur lancé, trouvée dans la partie de la page même.

@@ -9,7 +9,7 @@ import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js'; import { pasDecision } from './cadence.js';   // (263) le pas de décision
-import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint , maybeFeinteCorps} from './skills-sim.js'; import { pasStep, pasContact, pasEtat, pasProchains, gesteFouleeStep } from './pas.js';   // (2026-09-24) l'horloge de foulée dans la sim
+import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint , maybeFeinteCorps} from './skills-sim.js'; import { pasStep, pasContact, pasEtat, pasProchains, gesteFouleeStep, pasPiedAtteint, recupTouche } from './pas.js';   // (2026-09-24) l'horloge de foulée dans la sim
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
@@ -225,7 +225,7 @@ export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (
  *  scores the pass; any other shirt-mate is a scuffed ball kept in the family. Opponent = turnover. */
 const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null); // l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
 function receive(st, id, cfg = RONDO) {
-  const p = st.players[id];
+  const p = st.players[id], recupLibre = st.full && cfg.recup && !(st.pass && st.pass.to === id) && st.ball.p[1] < 0.4;   // (cfg.recup) un ballon libre au sol pris : pas d'aimant (pas.recupTouche)
   // LE SIFFLET DE LA LOI 11 : photographié hors-jeu au départ (st.pass.off), son PREMIER toucher
   // est l'infraction — le drapeau se lève ICI, l'administration est le métier du match
   // (st._whistle). La position n'est pas une faute, la participation l'est ; le toucher
@@ -339,7 +339,7 @@ function receive(st, id, cfg = RONDO) {
       // La note au contrôle vit à pMiss (le manqué) — le « 4 m de première touche » du 179 s'instruira au FILM, pas à ce site.)
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
       if (!toucheOrientee(st, p, cfg, RC)) st.ball.possess(id); if (RC) { p._protege = st.t + RC.protege; p._issue = RC.issue; }   /* (399) LA TOUCHE ORIENTÉE (cfg.toucheOrientee) : le receveur libre en course ou dos au jeu EMMÈNE le ballon du côté ouvert au lieu de le capturer */   // (265) la touche propre est SIENNE pendant le budget du contrôle
-      p._controleAt = st.t; st._settling = { ev: st.events.length, id, at: st.t + T, ...(st._pousse ? { pousse: true } : {}) };   /* (286) la date du contrôle : la touche qui engage la lit */
+      p._controleAt = st.t; st._settling = recupLibre ? null : { ev: st.events.length, id, at: st.t + T, ...(st._pousse ? { pousse: true } : {}) }; if (recupLibre && st.ball.owner === id) recupTouche(st, p, cfg.recup);   /* (286) la date du contrôle : la touche qui engage la lit */
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
@@ -661,11 +661,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // mesuré, des loose de 2+ s avec un corps à 0,1 m — la re-capture exigeait une INTENTION ;
     // le vrai joueur POSE le pied sur un ballon lent à portée). Le cône et le prenable tiennent.
     } else if (!(st.full && cfg.conduite?.libre && c.speed >= cfg.conduite.libre && !intentFresh && hyp(st.ball.v[0], st.ball.v[2]) >= 0.8) && (intentFresh || (st.full && cfg.ramasse && !st.restart && hyp(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
-      && dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.ramasse.cone ?? 80))) && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
+      && dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.ramasse.cone ?? 80))) && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && !(st.full && cfg.recup && !intentFresh && !pasPiedAtteint(c, st.ball.p, cfg.recup)) && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
       st.ball.possess(c.id);
       // …le ramassage SE POSE (lot 107 — sans ça la branche du porté re-lâchait la frame d'après, cap non aligné : touches dos) ; jamais pendant une remise (le taker court-circuitait le CF).
-      if (st.full && cfg.ramasse && !intentFresh) st._settling = { ev: st.events.length, id: c.id, at: st.t + (cfg.ramasse.pose ?? 0.3) };
-      st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
+      if (st.full && cfg.ramasse && !intentFresh && !cfg.recup) st._settling = { ev: st.events.length, id: c.id, at: st.t + (cfg.ramasse.pose ?? 0.3) };
+      if (st.full && cfg.recup && !intentFresh) recupTouche(st, c, cfg.recup); else st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});   // (cfg.recup) le ballon ramassé AU PIED : une touche (en course) ou la semelle (au pas), pas le servo — possess/carry/relâche à chaque image faisait un aimant intermittent
     } else {
       const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg);
     }
@@ -1028,14 +1028,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (cfg.coach && st.full) coachStep(st, cfg);
     // LE CIEL SE JOUE (lot 34 tête / 182a poitrine / 40 volée — tete.js) : le vol sur un corps se reprend à SA hauteur — tête, buste (la fenêtre morte 1,15-1,55 fermée), pied
     if (st.full && (st.phase === 'flight' || (st._enchaine && st.t < st._enchaine.until)) && released) { if (cfg.tete) { teteArmerStep(st, cfg); teteStep(st, cfg); }   /* (note 386) le ballon remonté par la poitrine reste du CIEL jusqu'à sa reprise */ if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); if (cfg.retournee) retourneeArmerStep(st, cfg); }   // (C1) la retournée armée, après la volée : le ciel au-dessus de la tête debout
-    let taker = -1, bestD = Infinity;
+    let taker = -1, bestD = Infinity; st._recupPied = st.full && cfg.recup && released && st.phase === 'loose' ? st.players.filter((q) => q.down <= 0 && d2(q.p, st.ball.p) < 0.8).sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0]?.id ?? null : null;
     if (released) {
       const ayant = st.full && cfg.preneurCPA && st.restart && st.restart.taker >= 0 ? st.restart.taker : null;   // la remise a un AYANT DROIT (193) : l'élection ne teste que lui — le plus-proche collé gelait canTake
       for (const p of st.players) {
         // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON (3 prises par corps couchés post-tacle mesurées) — possession = homme DEBOUT au ballon, le temps au sol est le prix du plongeon.
         if (p.down > 0 || (ayant != null && p.id !== ayant)) continue;
         const d = d2(p.p, st.ball.p);
-        if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d < bestD && !(st.full && cfg.enchainement && p.team === st.lastTouch && st.ball.p[1] >= (cfg.poitrine?.min ?? 1.15) && st.pitch.inBox(p.p[0], p.p[2], Math.sign(st.pitch.attackGoal(p.team).x || 1)))) { bestD = d; taker = p.id; }   /* (note 386) un ballon à hauteur de poitrine dans la surface adverse est à la POITRINE (chestStep), pas au pied : la prise le volait avant l'enchaînement (mesuré en page : 'amorti-poitrine' possédé) */
+        if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d < bestD && !(st.full && cfg.recup && !st.restart && st.ball.p[1] < 0.4 && !pasPiedAtteint(p, st.ball.p, cfg.recup)) && !(st.full && cfg.enchainement && p.team === st.lastTouch && st.ball.p[1] >= (cfg.poitrine?.min ?? 1.15) && st.pitch.inBox(p.p[0], p.p[2], Math.sign(st.pitch.attackGoal(p.team).x || 1)))) { bestD = d; taker = p.id; }   /* (note 386) un ballon à hauteur de poitrine dans la surface adverse est à la POITRINE (chestStep), pas au pied : la prise le volait avant l'enchaînement (mesuré en page : 'amorti-poitrine' possédé) */
       }
       // LE DUEL DU CONTACT (lot 154, cfg.prise5050 && st.full) : dans la fenêtre du simultané (~12 cm)
       // la prise revient au plus VIF (reaction STRICTEMENT meilleure) ; à notes égales, l'ancien chemin
