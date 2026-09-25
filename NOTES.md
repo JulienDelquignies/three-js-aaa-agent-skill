@@ -14041,6 +14041,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      une perte, levée à 37 m vers un défenseur devant sa surface, vient d'un autre chemin sans danger de but.
      Épingle DATÉE 314 au bloc 200 (porteeGeste null dans les deux mondes du 310 : vert à HEAD~). Jumeau au bit (= 313) ; défaut du
      314 : `24e502b9937e1c3c / 05cd9ad8298b5db5`.
+- 442: LA TALONNADE EST RARE (315, strike-sim.js, cfg.orientationPasse.talonP). « 30 talonnades c'est trop, c'est rare en vrai. »
+     Sous le 314 : 30 talonnades par heure de jeu (5,3 % des passes) — TOUTES planifiées (aucune urgente), pressé à 2,2 m p50, la
+     sortie à > 150° : le 401 (orientationPasse.talon) force le talon quand le pressé doit jouer derrière lui, et le plan d'approche le
+     prend au score. Le réel : une poignée par match, un geste de technicien. La loi : talonP 0,03 — le talon n'est candidat (au 401
+     comme au plan) qu'avec la probabilité talonP × gesteF ; sinon le geste qui tourne le plus parmi les prompts. UN TIRAGE PAR
+     POSSESSION (c._controleAt) : tiré à chaque tentative de passe, il finissait par passer (5 / heure à 0,03 comme à 0,05 — le porteur
+     retente image après image). Mesuré 4 × 900 s : 30 → 3 (0,5 % des passes, ~4 par match) ; talonP 0 : 0 ; 0,1 : 7 ; 0,2 : 11.
+     8 × 90 min : séquences 3,57 / 3,53, complétion 87,7 / 88,3 %, pertes 126 / 111, manqués 5,7 / 4,5 %. Bloc 315 (index 204) : 3 c. 30.
+     Épingles DATÉES 315 aux blocs 201 (le 312 : +0,16 m/s sur 52 lancés dans le monde re-tiré) et 203 (le 314 : le sabotage ne
+     faisait plus que 3 talonnades longues) — leurs deux mondes sans talonP, verts à HEAD~. Jumeau au bit (= 314) ; défaut du 315 :
+     `a56d133b9d63f5ed / 1680a7a87b4777b4`.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

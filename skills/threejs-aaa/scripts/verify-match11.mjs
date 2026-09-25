@@ -7672,7 +7672,8 @@ if (__bloc()) {
         for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && !st.players[e.by]?.keeper) passes++;
           if (e.type === 'control' && !e.miss && !O) { const c = st.players[e.by]; if (!c.keeper && c.speed > 4.5) O = { id: e.by, t: st.t }; } } } }
     V.sort((a, b) => a - b); return { v1: V[Math.floor(V.length / 2)] ?? 0, n: V.length, passes }; };
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T0 }));
+  const O312 = { ...matchCfg({}).orientationPasse }; delete O312.talonP;   // DATÉ 315 : sans la rareté du talon dans les deux mondes (vert à HEAD~) — le monde re-tiré : +0,16 m/s sur 52 lancés
+  const mA = monde(matchCfg({ shotRange: 20, orientationPasse: O312 })), mN = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T0, orientationPasse: O312 }));
   ok(`lot 312 — …et LE MONDE : 4 × 900 s, le lancé à +1 s ${mA.v1.toFixed(2)} m/s p50 (${mA.n}) ≥ ${mN.v1.toFixed(2)} + 0,4 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.v1 >= mN.v1 + 0.4 && mA.passes >= 0.85 * mN.passes);
 }
 
@@ -7708,8 +7709,25 @@ if (__bloc()) {
         if (e.type === 'windup') W[e.by] = e.tech;
         if (e.type === 'pass' && e.to >= 0 && st.pass && !e.mains) { passes++; const c = st.players[e.by], L = st.pass.lead; if (W[e.by] === 'talonnade' && Math.hypot(L[0] - c.p[0], L[2] - c.p[2]) > 13) loin++; } } } }
     return { loin, passes }; };
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, porteeGeste: null }));
+  const O314 = { ...matchCfg({}).orientationPasse }; delete O314.talonP;   // DATÉ 315 : sans la rareté du talon dans les deux mondes (vert à HEAD~) — sous le 315 le sabotage ne fait plus que 3 talonnades longues
+  const mA = monde(matchCfg({ shotRange: 20, orientationPasse: O314 })), mN = monde(matchCfg({ shotRange: 20, porteeGeste: null, orientationPasse: O314 }));
   ok(`lot 314 — LE GESTE DE DOS A SA PORTÉE : 4 × 900 s, talonnades à plus de 13 m ${mA.loin} ≤ 0,2 × ${mN.loin} ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.loin <= 0.2 * mN.loin && mN.loin > 0 && mA.passes >= 0.9 * mN.passes);
+}
+
+if (__bloc()) {
+  // LA TALONNADE EST RARE (315 — « 30 talonnades c'est trop, c'est rare en vrai »). Sous le 314 : 30 par heure de jeu (5,3 % des passes),
+  // TOUTES planifiées, pressé à 2,2 m p50, la sortie à > 150° — le 401 force le talon, le plan d'approche le prend au score.
+  // cfg.orientationPasse.talonP 0,03 : le talon n'est candidat qu'avec la probabilité talonP × gesteF, UN tirage par possession (tiré à
+  // chaque tentative il finissait par passer : 5 / heure à 0,03 comme à 0,05) ; sinon le geste qui tourne le plus parmi les prompts.
+  // Mesuré 4 × 900 s : 30 → 3 (0,5 %) ; 8 × 90 min : séquences 3,57 / 3,53, complétion 87,7 / 88,3 %, pertes 126 / 111. Le monde,
+  // 4 × 900 s contre hier : talonnades ≤ 0,25 × hier ; passes ≥ 0,9 × hier.
+  const monde = (cfg) => { let tal = 0, passes = 0; for (const seed of [3, 7, 11, 19]) { const st = makeMatch({ full: true, seed }); let seen = 0; const W = {};
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen];
+        if (e.type === 'windup') W[e.by] = e.tech; if (e.type === 'pass' && e.to >= 0 && st.pass && !e.mains) { passes++; if (W[e.by] === 'talonnade') tal++; } } } }
+    return { tal, passes }; };
+  const O0 = { ...matchCfg({}).orientationPasse }; delete O0.talonP;
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, orientationPasse: O0 }));
+  ok(`lot 315 — LA TALONNADE EST RARE : 4 × 900 s, talonnades ${mA.tal} ≤ 0,25 × ${mN.tal} ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.tal <= 0.25 * mN.tal && mN.tal > 0 && mA.passes >= 0.9 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

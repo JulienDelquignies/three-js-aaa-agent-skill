@@ -195,7 +195,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
         // (mesuré : 0,85 rad/s — l'EMA et le mélange d'évasion freinent la rotation). Le talon n'est pas un geste de confort : il ne remplace pas le tour.
         c._regard = outYaw; c._regardUntil = st.t + (KO.ouvre ?? 0.3); c._regardOri = true; c._ouvre = st.t + (KO.ouvre ?? 0.3);
         return deny(st, 'orientation');
-      } else if (KO.talon && cands.some((cd) => cd.data?.surface === 'heel') && dY >= (130 - 15) * Math.PI / 180) {   // (401) PRESSÉ, la sortie derrière : le talon HONNÊTE (le corps dos à la cible, sans tour) — l'A/B du 395 le donnait meilleur (361 passes / 134 pertes) quand son corps claquait ; honnête, il vaut
+      } else if (KO.talon && cands.some((cd) => cd.data?.surface === 'heel') && dY >= (130 - 15) * Math.PI / 180 && !(KO.talonP != null && !talonOse(st, c, KO.talonP))) {   /* (315, orientationPasse.talonP) LA TALONNADE EST RARE : 30 par heure de jeu (5,3 % des passes, toutes par ce chemin — pressé à 2,2 m p50, la sortie à > 150°) contre une poignée par match au réel ; tentée avec la probabilité talonP × gesteF (le technicien ose), sinon le geste qui tourne le plus parmi les prompts (la branche d'après). Absente : hier au bit */   // (401) PRESSÉ, la sortie derrière : le talon HONNÊTE (le corps dos à la cible, sans tour) — l'A/B du 395 le donnait meilleur (361 passes / 134 pertes) quand son corps claquait ; honnête, il vaut
         cands = cands.filter((cd) => cd.data?.surface === 'heel');
       } else {   // PRESSÉ et rien ne tient : le geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse : la passe posée, 0,38 s, 87° de tour) — le plan d'hier élisait la rapide (0,22 s, 48°) et frappait à 70-140° du regard (12 sur 73 mesurés) ; le pivot (0,52 s) coûtait −20 % de passes sur 8 graines (l'ancre et l'urgence) ; « le talon si la sortie est derrière » claquait le corps vers la cible (vu en page)
         const cap = (cd) => Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic;
@@ -209,6 +209,8 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // se nomme, le cerveau choisit autre chose (se retourner, une autre ligne). Absente : hier au bit.
     if (st.full && cfg.porteeGeste && !mains && !opts.shot && !opts.clear) { const dP = hyp(choice.lead[0] - c.p[0], choice.lead[2] - c.p[2]);
       cands = cands.filter((cd) => !(dP > (cfg.porteeGeste[cd.data?.id] ?? Infinity))); if (!cands.length) return deny(st, 'portee-geste'); }
+    if (st.full && cfg.orientationPasse?.talonP != null && !mains && cands.some((cd) => cd.data?.surface === 'heel') && cands.some((cd) => cd.data?.surface !== 'heel')
+      && !talonOse(st, c, cfg.orientationPasse.talonP)) cands = cands.filter((cd) => cd.data?.surface !== 'heel');   // (315) …PAR TOUS LES CHEMINS : le plan d'approche aussi (le talon au score)
     const talonDos = !!(st.full && cfg.orientationPasse?.talon && !mains);   // (401) LA TALONNADE HONNÊTE (cfg.orientationPasse.talon) : le corps dos à la cible
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
       { rushed: nearFoe < cfg.rushedRadius, talonDos, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
@@ -784,3 +786,11 @@ export function strikeNow(st, c, cfg) {
   });
 }
 import { hyp } from './hyp.js';
+
+/** (315) LE TALON SE DÉCIDE UNE FOIS PAR POSSESSION : tiré à chaque tentative de passe, il finissait par passer (le porteur retente
+ *  image après image — 5 talonnades / heure à talonP 0,03 comme à 0,05) ; un tirage par prise (c._controleAt), tenu jusqu'à la suivante. */
+function talonOse(st, c, p) {
+  const k = c._controleAt ?? -1;
+  if (c._talonK !== k) { c._talonK = k; c._talonOk = tirage(st, 'geste', 700 + c.id, st.rnd ?? (() => 0.5))() < p * (c.skill?.gesteF ?? 1); }
+  return c._talonOk;
+}
