@@ -15,7 +15,7 @@ import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
-import { pasPointPorte, pasVols, pasPose } from './pas.js';
+import { pasPointPorte, pasVols, pasPose, sortieFoulee, vSortie } from './pas.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
@@ -299,9 +299,11 @@ export function maybePassement(st, c, cfg) {
     const libre = (a) => sides.some((x) => Math.abs(wrapA(x - a)) < 0.3);
     if (sortie === 'contre-pied' && !libre(c.yaw + cote(seq[seq.length - 1].pied) * 0.9) && vols.length > n) seq = vols.slice(1, n + 1);   // commencer d'un vol plus tard : la dernière jambe change de côté
     const last = seq[seq.length - 1], ex = sortie === 'fixe' ? c.yaw : sortie === 'temporise' ? exitYaw : c.yaw + cote(last.pied) * 0.9;
+    // (2026-09-25, cfg.dribble1c1.sortie) …et LA SORTIE EST UNE TOUCHE : l'autre pied, au vol qui suit le dernier arc, pousse le ballon vers la sortie à la vitesse
+    // que le porteur aura en démarrant (vSortie) — sans elle la conduite reprenait à son allure : 3,2 m/s mesurés à la sortie (Taga et al. 2026 : ≈ 4,3).
     if (st.ball.owner !== c.id) st.ball.possess(c.id);
     startGesture(c, { id: 'passementFoulee', contact: 9, duration: 9 }, {   // les temps de la foulée décident de la morsure et de la fin (pas.js)
-      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { beats: seq.map((v, i) => ({ pied: v.pied, type: 'arc', vend: i === seq.length - 1 })) }, v0: c.speed, foeId: foe.id, ballMax: 0 },
+      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { beats: [...seq.map((v, i) => ({ pied: v.pied, type: 'arc', vend: i === seq.length - 1 })), ...(cfg.dribble1c1?.sortie && sortie !== 'temporise' ? [{ pied: last.pied === 'right' ? 'left' : 'right', type: 'touche', dir: ex, v: vSortie(c, cfg) }] : [])] }, v0: c.speed, foeId: foe.id, ballMax: 0 },
       log: st.gestures,
     });
     (c._skillCd ??= {}).passement = st.t + K.passementCd;
@@ -430,7 +432,7 @@ export function maybeFeinteCorps(st, c, cfg) {
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: 'feinteCorpsFoulee', contact: 9, duration: 9 }, {
     payload: { kind: 'skill', skill: 'feinteCorps', pick: { foot: Pa.pied }, mobile: true, yaw0: c.yaw, exitYaw: exY, v0: c.speed, foeId: foe.id, ballMax: 0,
-      foulee: { beats: [{ pied: Pa.pied, type: 'vend', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: Math.max(2.6, c.speed + 0.8) }] } },
+      foulee: { beats: [{ pied: Pa.pied, type: 'vend', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: cfg.dribble1c1?.sortie ? vSortie(c, cfg) : Math.max(2.6, c.speed + 0.8) }] } },
     log: st.gestures,
   });
   (c._skillCd ??= {}).feinteCorps = st.t + (KF.feinteCd ?? 6); c.intent = null; c._dribAt = st.t;
@@ -490,7 +492,7 @@ export function maybeDoubleContact(st, c, cfg) {
     const exY = c.yaw + cote(Pb.pied) * (K.doubleTurn ?? 0.45);
     startGesture(c, { id: 'doubleContactFoulee', contact: 9, duration: 9 }, {
       payload: { kind: 'skill', skill: 'doubleContact', pick: { foot: Pa.pied }, mobile: true, yaw0: c.yaw, exitYaw: exY, away: cote(Pb.pied), v0: c.speed, foeId: foe.id, ballMax: 0,
-        foulee: { beats: [{ pied: Pa.pied, type: 'touche', cible: 'suivant', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: Math.max(2.6, c.speed + 0.6) }] } },
+        foulee: { beats: [{ pied: Pa.pied, type: 'touche', cible: 'suivant', vend: true }, { pied: Pb.pied, type: 'touche', dir: exY, v: cfg.dribble1c1?.sortie ? vSortie(c, cfg) : Math.max(2.6, c.speed + 0.6) }] } },
       log: st.gestures,
     });
     (c._skillCd ??= {}).double = st.t + (K.doubleCd ?? 8); c.intent = null; c._dribAt = st.t;
@@ -697,7 +699,7 @@ export function skillContactNow(st, p, cfg) {
     // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
     // de burst, on ressort en marchant, ballon sous la semelle
     if (A.sortie !== 'temporise') p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + (A.sortie === 'fixe' ? 0.65 : 0.5) };
-    if (A.foulee) p.push = [Math.cos(A.exitYaw), Math.sin(A.exitYaw)];   // (pas) la touche suivante part du côté de la sortie
+    if (A.foulee) sortieFoulee(st, p, cfg, A.exitYaw);   // (pas) la touche suivante part du côté de la sortie
   } else if (A.skill === 'crochet') {
     A.from = [st.ball.p[0], st.ball.p[2]];
     // le CHALOUPÉ a menti pendant 0,42 s : le défenseur qui fermait s'assoit sur la feinte de

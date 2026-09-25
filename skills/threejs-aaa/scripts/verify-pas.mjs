@@ -22,7 +22,7 @@ function jouer(pas, seeds = [1, 2, 3, 4], secs = 120, drb = null) {
         const e = st.events[ne++];
         if (e.type === 'touche') {
           R.touches++; const c = st.players[e.by]; if (e.portee != null) R.portee.push(e.portee);
-          if (c.speed >= 1.2) { R.enCourse++; if (e.pas === 'contact' || e.pas === 'porté') R.contact++; }
+          if (c.speed >= 1.2) { R.enCourse++; if (e.pas === 'contact' || e.pas === 'porté' || (e.pas === 'geste' && e.contact)) R.contact++; }   // (2026-09-25) la touche d'un geste au cou-de-pied est une touche au contact
           // une touche par VOL : deux touches du même pied à moins d'un demi-cycle
           if (e.foot && c._pas && e.pas !== 'lent') { R.synchro = (R.synchro ?? 0) + 1; const k = `${e.by}${e.foot}`; if (dernier[k] != null && st.t - dernier[k] < 0.5 * c._pas.T) R.parVol++; dernier[k] = st.t; }   // (les touches lentes, < 1 m/s, sont celles d'hier : cadencées à la distance)
         }
@@ -48,7 +48,7 @@ const part = A.contact / Math.max(1, A.enCourse);
 ok(part >= 0.7, `en course (≥ 1,2 m/s), ${(100 * part).toFixed(0)} % des touches se jouent AU CONTACT d'un pied qui vole (${A.contact}/${A.enCourse} ; plancher 70 %)`);
 ok(A.parVol <= 0.01 * A.synchro, `une touche par vol au plus : ${A.parVol} doublons sur ${A.synchro} touches synchronisées au pas (plafond 1 %)`);
 ok(A.passFoulee >= 4 && q(A.vMin, 0.5) >= 1.2 && q(A.ballMax, 0.9) <= 0.8, `le passement se fait DANS la foulée : ${A.passFoulee} lancés (${A.passCale} calés sous 1,4 m/s), le corps court encore à ${q(A.vMin, 0.5).toFixed(1)} m/s au plus bas (p50 ; plancher 1,2), le ballon reste devant (≤ ${q(A.ballMax, 0.9).toFixed(2)} m au p90 ; plafond 0,8)`);
-const S = jouer(true, [1, 2, 3, 4], 120, { pasPortee: 9 });
+const S = jouer(true, [1, 2, 3, 4, 5, 6, 7, 8], 120, { pasPortee: 9 });   // 8 graines : sur 4 le sabotage ne mordait que dans une (p90 de ~35 touches = la 4e plus grande)
 ok(q(A.portee, 0.9) <= 0.55 && q(S.portee, 0.9) > 0.55, `la touche de rattrapage (fin de vol, sans rendez-vous) ne part que si le pied PEUT atteindre le ballon : sa pose à ≤ ${q(A.portee, 0.9).toFixed(2)} m du ballon au p90 (${A.portee.length} touches ; plafond 0,55 — le rendu l'y amène, ≤ 0,4 m) ; sabotage sans l'attente : ${q(S.portee, 0.9).toFixed(2)} m, la clause mord`);
 const kinds = Object.keys(A.gestes), Z = jouer(true, [1, 2, 3, 4], 120, { dribble1c1: false, passements: { ...duelCfg().passements, envie: 2, plancher: 0.35 } });
 ok(kinds.length >= 4 && q(A.gV, 0.5) >= 1.2 && A.gOk >= 0.6 * A.gN, `le RÉPERTOIRE de la cage dans la foulée : ${A.gN} gestes, ${kinds.length} espèces (${kinds.map((k) => `${k} ${A.gestes[k]}`).join(', ')} ; plancher 4), le corps court pendant (${q(A.gV, 0.5).toFixed(1)} m/s au plus bas, p50), ${(100 * A.gOk / Math.max(1, A.gN)).toFixed(0)} % gardés ou tirés à +1,5 s (plancher 60 %)`);

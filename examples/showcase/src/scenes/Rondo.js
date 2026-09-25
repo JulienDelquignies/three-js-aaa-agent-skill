@@ -25,7 +25,7 @@ import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWar
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
-import { makeTicker } from './ticker.js';
+import { makeTicker } from './ticker.js'; import { contactCorps } from '../engine/contact-corps.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
 
@@ -969,7 +969,7 @@ export class Rondo {
         continue;
       }
       const dtP = pl._lodAcc; pl._lodAcc = 0;
-      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))]; pl.ctrl.pasFinal = s._pas ? { phi: s._pas.phi, T: s._pas.T } : null; s.legK ??= pl.ctrl._gaitGen?.legK; pl.ctrl.gesteFoulee = { foulee: s.act?.payload?.foulee ?? null, vise: s._pas?.vise ?? null, t: this.state.t, ball: [this.state.ball.p[0], this.state.ball.p[2]] };   // (2026-09-24) pasFinal : la phase de foulée de la SIM (pas.js), la jambe du rig à la sim       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
+      pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))]; pl.ctrl.leanPhys = !!this._mcfg?.leanPhys; pl.ctrl.simV = s.v; pl.ctrl.pasFinal = s._pas ? { phi: s._pas.phi, T: s._pas.T } : null; s.legK ??= pl.ctrl._gaitGen?.legK; pl.ctrl.gesteFoulee = { foulee: s.act?.payload?.foulee ?? null, vise: s._pas?.vise ?? null, t: this.state.t, ball: [this.state.ball.p[0], this.state.ball.p[2]] };   // (2026-09-24) pasFinal : la phase de foulée de la SIM (pas.js), la jambe du rig à la sim       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);
@@ -1147,7 +1147,7 @@ export class Rondo {
       this._applyTouchWarp(pl);
     }
 
-    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, stepV, top);
+    if (this._mcfg?.corps) contactCorps(this.players, stepV, this._mcfg.corps); if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, stepV, top);   // (cfg.corps) les corps rendus ne se traversent pas (contact-corps.js)
 
     // ---- the ball, spun by its own angular velocity
     const b = this.state.ball;

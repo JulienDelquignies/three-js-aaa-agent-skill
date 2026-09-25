@@ -7,6 +7,7 @@ import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor
 import { idlePose, idlePolicy, idleStyleFromSeed, NEUTRAL_IDLE_STYLE } from './motion-idle.js';
 import { profileFromBones } from './motion-rig.js';
 import { UP_BONES } from './gesture-layer.js';
+import { jambesContact, tourneMonde } from './contact-corps.js';
 
 // CharacterController — turn input into believable, correct movement. This is the point of the skill:
 // good controls. It couples player intent (a world-space move vector, 0..1) to:
@@ -296,7 +297,7 @@ export class CharacterController {
       this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
       this.mixer.update(dt);
     }
-    this.model.updateWorldMatrix(true, true);
+    this.model.updateWorldMatrix(true, true); jambesContact(this);   // (cfg.corps) la jambe en vol qui contournait l'adversaire à l'image précédente (contact-corps.js), avant le verrou d'appui
     // mode HABILLÉ (rondo) : la scène replaque position/yaw sim APRÈS cet update, donc le verrou
     // interne travaillerait sur une position que la scène va déplacer une ligne plus bas — mesuré :
     // 97 % des appuis glissaient. `lockExternal` : la scène appelle footLock.solve() en toute fin
@@ -456,8 +457,8 @@ export class CharacterController {
       } else if (!vol && E.vol) E.e = E.e === 'arc' || E.e === 'vend' ? 'pose' : E.e === 'retour' ? 'idle' : E.e;   // un vol finit
       E.vol = vol;
       out[k].arc = E.e === 'arc'; out[k].vend = E.e === 'vend';
-      out[k].elargi = E.e === 'arc' || E.e === 'vend' ? Math.min(1, w / 0.6) * (E.e === 'vend' ? 1.6 : 1) : E.e === 'pose' ? (S[k].large ?? 1) : E.e === 'retour' ? (S[k].large ?? 1) * (1 - Math.min(1, w / 0.7)) : 0;
-      if (E.e === 'arc' || E.e === 'vend') S[k].large = E.e === 'vend' ? 1.6 : 1;   // la vente se pose PLUS large (le pas qui ment)
+      out[k].elargi = E.e === 'arc' || E.e === 'vend' ? Math.min(1, w / 0.6) * (E.e === 'vend' ? 4.2 : 1) : E.e === 'pose' ? (S[k].large ?? 1) : E.e === 'retour' ? (S[k].large ?? 1) * (1 - Math.min(1, w / 0.7)) : 0;
+      if (E.e === 'arc' || E.e === 'vend') S[k].large = E.e === 'vend' ? 4.2 : 1;   // la vente se pose LARGE : 0,09 × 4,2 = 0,38 m de plus (le pied extérieur ≈ 0,6 m du bassin, Brault et al. 2010 ; 1,6 hier : 0,30 m mesurés)
     }
     const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
     const dx = G.ball[0] - ox, dz = G.ball[1] - oz;
@@ -478,10 +479,10 @@ export class CharacterController {
     // comme des translations de statue. Accélération lissée (τ 0,12 s), bornée (±9° tangage,
     // ±7° roulis), exprimée dans le repère du CORPS (le lacet du modèle, pas celui du monde).
     {
-      const now = this.pos ?? this.model.position;
+      const now = this.leanPhys && this.rootFinal ? { x: this.rootFinal[0], z: this.rootFinal[1] } : (this.pos ?? this.model.position);   // (leanPhys) la position de la SIM : le contrôleur suit avec retard — son rattrapage au virage se lisait comme une accélération
       if (!this._leanPrevV) { this._leanPrevV = [0, 0]; this._leanPrevP = [now.x, now.z]; this._lean = [0, 0]; }
       const dtc = Math.max(1e-3, this._leanDt ?? 1 / 60);
-      const vx = (now.x - this._leanPrevP[0]) / dtc, vz = (now.z - this._leanPrevP[1]) / dtc;
+      const Vs = this.leanPhys && this.simV, vx = Vs ? Vs[0] : (now.x - this._leanPrevP[0]) / dtc, vz = Vs ? Vs[1] : (now.z - this._leanPrevP[1]) / dtc;   // (leanPhys) la vitesse PROPRE de la sim : la séparation déplace le corps collé sans propulsion (poussé, on ne plonge pas en avant)
       const ax = (vx - this._leanPrevV[0]) / dtc, az = (vz - this._leanPrevV[1]) / dtc;
       this._leanPrevP = [now.x, now.z]; this._leanPrevV = [vx, vz];
       // repère corps : le REGARD du modèle (WORLD.facingDir, avec son axe de face `fa` — le rig shanon regarde selon +Z, fa = π :
@@ -490,10 +491,27 @@ export class CharacterController {
       const aF = Math.max(-14, Math.min(14, ax * fx + az * fz));       // accélération le long du regard
       const aL = Math.max(-14, Math.min(14, ax * fz - az * fx));       // latérale (le virage)
       const k = 1 - Math.exp(-dtc / 0.12);
-      this._lean[0] += (Math.max(-9, Math.min(9, aF * 0.85)) - this._lean[0]) * k;
+      // (2026-09-25, leanPhys — le duel) L'ACCÉLÉRATION PENCHE LE CORPS COMME LA PHYSIQUE LE DEMANDE : la réaction du sol passe par le centre de
+      // masse, la ligne corps penche de atan(a/g), le tronc un peu plus (hanches fléchies : × 1,25, calé sur la sortie du passement — Taga et al.
+      // 2026 : ≈ 41° de tronc à ≈ 4,7 m/s² ; atan(4,7/9,81) × 1,25 = 32° + la course ≈ 8-10°). Borné 35°. Le freinage garde la loi d'hier.
+      // Hier ±9° au plus (aF × 0,85) : la sortie du passement se faisait tronc droit (9° mesurés).
+      // …la TANGENTIELLE seule (le long de la vitesse : on accélère) : la centripète d'un virage serré (7-9 m/s²) projetée sur un corps qui a déjà
+      // pivoté penchait le tronc de 30° pendant qu'il ralentissait (mesuré au crochet, 50° avec le contact) — le virage roule (générateur), il ne plonge pas
+      // …LISSÉE avant la loi (τ 0,15 s) : la loi ne garde que le positif, et le bruit de position (deux corps collés que la séparation repousse à
+      // chaque image) redressé en penchée donnait 30° à un porteur qui ralentissait
+      const vl = Math.hypot(vx, vz), aTan = Math.max(-14, Math.min(14, vl > 0.5 ? (ax * vx + az * vz) / vl : aF));
+      this._aTanS = (this._aTanS ?? 0) + (Math.min(aTan, aF) - (this._aTanS ?? 0)) * (1 - Math.exp(-dtc / 0.15));
+      const pitchV = this.leanPhys ? (this._aTanS > 0 ? Math.min(35, Math.atan(this._aTanS / 9.81) * 180 / Math.PI * 1.25) : Math.max(-9, Math.min(9, aF * 0.85))) : Math.max(-9, Math.min(9, aF * 0.85));
+      this._lean[0] += (pitchV - this._lean[0]) * k;
       this._lean[1] += (Math.max(-7, Math.min(7, aL * 0.7)) - this._lean[1]) * k;
       const spL = this._gaitBones.get('Spine');
-      if (spL && (Math.abs(this._lean[0]) > 0.05 || Math.abs(this._lean[1]) > 0.05)) {
+      if (spL && this.leanPhys) {
+        // (2026-09-25) …autour des axes du MONDE (l'axe latéral pour le tangage, l'axe avant pour le roulis — vers l'accélération) : sur le rig
+        // Rocketbox (Biped) l'X local de Spine est VERTICAL — le tangage d'hier (rx local, les axes de shanon) y était une TORSION (mesuré :
+        // 30° de « tangage » n'avançaient pas le cou d'un millimètre) et le roulis un tangage.
+        this.model.updateWorldMatrix(true, true);
+        tourneMonde(spL, [fz, 0, -fx], this._lean[0] * D); tourneMonde(spL, [-fx, 0, -fz], this._lean[1] * D);
+      } else if (spL && (Math.abs(this._lean[0]) > 0.05 || Math.abs(this._lean[1]) > 0.05)) {
         this._gaitE.set(this._lean[0] * D, 0, -this._lean[1] * D, 'XYZ');
         this._gaitQ.setFromEuler(this._gaitE);
         spL.quaternion.multiply(this._gaitQ);
@@ -501,7 +519,11 @@ export class CharacterController {
     }
     // …et la SIGNATURE DE SILHOUETTE : une inclinaison propre du buste (1-3°) et une asymétrie
     // d'épaules constantes — c'est ce qui fait reconnaître un joueur de loin sans lire son numéro
-    if (this.persona?.posture) {
+    if (this.persona?.posture && this.leanPhys) {   // (2026-09-25) les mêmes axes MONDE (voir le tangage ci-dessus) : l'inclinaison propre penche, l'asymétrie roule
+      const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa), sp = this._gaitBones.get('Spine1'), sh = this._gaitBones.get('Spine2');
+      if (sp) { tourneMonde(sp, [fz, 0, -fx], this.persona.posture.lean * D); tourneMonde(sp, [-fx, 0, -fz], this.persona.posture.shoulder * D * 0.4); }
+      if (sh) tourneMonde(sh, [-fx, 0, -fz], this.persona.posture.shoulder * D * 0.6);
+    } else if (this.persona?.posture) {
       const sp = this._gaitBones.get('Spine1');
       if (sp) { this._gaitE.set(this.persona.posture.lean * D, 0, this.persona.posture.shoulder * D * 0.4, 'XYZ'); this._gaitQ.setFromEuler(this._gaitE); sp.quaternion.multiply(this._gaitQ); }
       const sh = this._gaitBones.get('Spine2');

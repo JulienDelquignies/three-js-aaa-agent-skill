@@ -43,3 +43,16 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - `gestes-duel.mjs <url> [s]` : les gestes de la page (à filmer : `capture-face.mjs`).
 - `bouclier-tenue.mjs [moteur] [graines]` (sans navigateur) : la tenue dos au presseur — issues, durées, vitesse du porteur pendant (plantée
   elle gelait le duel 1-1,7 s ; au pas, cfg.bouclier.pas, il tourne autour du presseur en pas chassés), distance presseur-ballon.
+
+## Les gestes contre les mesures, les corps qui ne se traversent pas (2026-09-25)
+- `gestes-mesure.mjs <url> [s] [graines] [sortie.json]` (CFG='{json}' : une clé du duel changée, A/B) : dans le RENDU, image par image.
+  (1) LE CONTACT : chaque corps en capsules AJUSTÉES sur son maillage (axe principal des sommets de chaque os ; le torse en trois capsules
+  verticales — plus large que profond) ; pénétration, paires, contexte (acts), phases des jambes. Avant : > 5 cm sur 4,5 % des images de jeu
+  (têtes, avant-bras dans le ventre, pieds) ; après contact-corps.js : 1,0 % (> 10 cm : 2,3 → 0,3 %). Piège : un rayon unique autour du
+  segment os → os gonflait le pied (la semelle est 12 cm sous la cheville) et l'avant-bras (la main au-delà) ; le torse en une capsule, 20 cm.
+  (2) LES GESTES contre leurs RÉFÉRENCES : passement — Taga et al. 2026 (vente 0,65 s, 2,2 → 2,9 → 4,3 m/s, pointe 0,24 m, tronc ≈ 41° en
+  avant et ≈ 18° de côté à la sortie, genou ≈ 67°) ; feinte de corps — Brault et al. 2010 (épaules ≈ 25°, bassin ≈ 5°, roulis ≈ 15°, pied
+  extérieur ≈ 0,6 m, centre de masse ≈ ±0,10 m) ; crochet — Dos'Santos et al. 2021 (sans ballon, 45/90/180°). Seuls les gestes allés jusqu'à
+  leur touche de sortie sont jugés (les autres, le duel les a tranchés au contact — noyau).
+- `capture-geste.mjs <url> <dossier> <graine> <t0> <durée> [joueur] [lent] [dist]` : un geste filmé CORPS ENTIERS (caméra latérale à 4 m),
+  au ralenti si `lent` < 1 ; l'image au sol gris du rendu logiciel est refaite (le GPU n'a pas ce défaut).

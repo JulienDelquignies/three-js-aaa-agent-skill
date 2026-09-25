@@ -12,6 +12,7 @@ import { strideLaw } from './gait.js';
 import { gaitCadenceFactor, gaitLegFactor, gaitBrakeCadence, gaitTurnCadence, gaitPivotCadence, gaitPortrait, LEG_REF } from './motion-gait.js';
 import { SHANON_PROFILE } from './motion-profile-shanon.js';
 import { hyp } from './hyp.js';
+import { profilDe } from './locomoteur.js';
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -162,6 +163,24 @@ export function pasVols(p, n = 6) {
   return out.sort((a, b) => a.t0 - b.t0).slice(0, n);
 }
 /** La distance devant le corps où se pose le pied (le cou-de-pied à la pose, m) — où le ballon attend la jambe qui le cercle. */
+/** (2026-09-25, cfg.dribble1c1.sortie) LA SORTIE D'UN GESTE TIENT SA DIRECTION : la touche de sortie fixe la poussée du porteur pour `duree` s
+ *  (_pace 'sortie' avec dir — match-sim la tient contre l'intention, locomoteur y ouvre la capacité force-vitesse). Mesuré avant (rendu,
+ *  gestes-mesure, 12 graines) : après la feinte de corps le corps ne tournait que de 8° (médiane) — la conduite le ramenait à son cap dès
+ *  la fin du geste ; la vraie réorientation part 0,15-0,22 s après la pose et s'engage (Brault et al. 2010). Clé absente : la poussée seule. */
+export function sortieFoulee(st, p, cfg, yaw) {
+  p.push = [Math.cos(yaw), Math.sin(yaw)];
+  const K = cfg?.dribble1c1?.sortie; if (!st.full || !K) return;
+  p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + (K.duree ?? 0.6), kind: 'sortie', dir: [Math.cos(yaw), Math.sin(yaw)] };
+}
+/** La vitesse du ballon de SORTIE : celle que le porteur aura dans `dt` s en démarrant à pleine capacité (profil force-vitesse, locomoteur :
+ *  v + (V₀ − v)(1 − e^(−dt/τ)), plafonnée à son allure de conduite) — le ballon part là où le corps le rattrape. Taga et al. 2026 : 2,9 → 4,3 m/s
+ *  en 0,3 s à la sortie du passement. */
+export function vSortie(p, cfg, dt = 0.5) {
+  const L = cfg?.locomoteur; if (!L) return Math.max(2.6, p.speed + 0.8);
+  const { v0, tau } = profilDe(p, L), top = (cfg.speeds?.carry ?? 4.2) * (p.skill?.topF ?? p.persona?.paceBias ?? 1);
+  return Math.max(2.6, Math.min(top, p.speed + (v0 - p.speed) * (1 - Math.exp(-dt / tau))));
+}
+
 export function pasPose(p) { const r = pasProchains(p, { cycles: 1 }); return r.length ? Math.max(...r.map((x) => x.avant)) : 0.35; }
 
 /** (2026-09-25) LES GESTES DANS LA FOULÉE — un geste est une suite de TEMPS posés sur les prochains vols du porteur, un par vol (pieds dans
@@ -202,9 +221,9 @@ export function gesteFouleeStep(st, p, dt, cfg, contactNow) {
         if (st.ball.owner === p.id) st.ball.release('conduite');   // une touche de geste est une touche de conduite (le ballon libre, interceptable)
         st.ball.impulse([dirX * v - st.ball.v[0], 0, dirZ * v - st.ball.v[2]]);
         st.lastTouch = p.team; B.joue = true; P.joue[B.pied] = true;
-        st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: p.id, dev: 0, spd: +v.toFixed(1), foot: B.pied, pas: 'geste', geste: A.skill });
+        st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: p.id, dev: 0, spd: +v.toFixed(1), foot: B.pied, pas: 'geste', geste: A.skill, contact: !!(ct && ct.pied === B.pied && ct.d <= 0.2) });   // contact : au cou-de-pied (sinon à la pose)
         if (B.frein != null) { p.v = [p.v[0] * B.frein, p.v[1] * B.frein]; p.speed = Math.hypot(p.v[0], p.v[1]); }
-        if (B.dir != null) p.push = [Math.cos(B.dir), Math.sin(B.dir)];
+        if (B.dir != null) sortieFoulee(st, p, cfg, B.dir);
         if (B.vend) vendre();
       }
     }

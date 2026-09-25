@@ -48,7 +48,11 @@ export function pasLoco(p, st, K, vAlong, vWant, dt) {
   if (dv >= 0 && vWant < (K.vLent ?? 1.5)) return Math.min(dv, (K.aLent ?? 4) * dt);   // la petite demande (le pas vers un ballon à portée, le recalage) n'est pas un sprint : le mono-exponentiel y tend vers zéro et clouait le gardien à 0,8 m de son ballon
   if (dv >= 0) {
     const eps = epsilonDe(p, st, K), vEff = Math.min(v0 * F.kV, Math.max(vWant, 0));
-    const a = eps * Math.max(0, vEff - Math.max(0, vAlong)) / (tau * F.kTau);
+    // (2026-09-25, K.sortie — le duel) LA SORTIE D'UN GESTE EST UN DÉMARRAGE : toute la capacité force-vitesse jusqu'à la vitesse voulue
+    // (a = (V₀ − v)/τ : 4,6 m/s² à 2,9 m/s ; Taga et al. 2026 mesurent ≈ 4,7 à la sortie du passement), pas l'approche exponentielle de
+    // l'allure voulue ((4,2 − v)/τ : 1,6 m/s² à 2,3 m/s — mesuré 2,7 à la sortie, le porteur ne partait pas). Absente : hier au bit.
+    const vCap = K.sortie && p._pace?.kind === 'sortie' && (p._pace.until ?? -1) > st.t ? v0 * F.kV : vEff;
+    const a = eps * Math.max(0, vCap - Math.max(0, vAlong)) / (tau * F.kTau);
     return Math.min(dv, a * dt);
   }
   // le freinage est une INTENTION aussi : sous seuilFrein m/s d'écart on ROULE (−roule m/s²), au-delà on freine fort

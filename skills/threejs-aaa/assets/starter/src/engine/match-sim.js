@@ -502,7 +502,7 @@ function assignMatchJobs(st, cfg) {
       if (aimR && p.push) { const cur = Math.atan2(p.push[1], p.push[0]); let dA = Math.atan2(pz, px) - cur; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const step = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) / hzDecision(cfg); const ang = cur + Math.sign(dA) * Math.min(Math.abs(dA), step); px = Math.cos(ang); pz = Math.sin(ang); }
       const pl = hyp(px, pz) || 1;
       // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion 60 Hz zigzaguait — l'intention d'abord.
-      const raw = [px / pl, pz / pl];
+      const raw = st.full && p._pace?.dir && p._pace.kind === 'sortie' && p._pace.until > st.t ? (p._pushS = [p._pace.dir[0], p._pace.dir[1]]) : [px / pl, pz / pl];   // (pas.sortieFoulee) la sortie d'un geste tient sa direction
       const a = 1 - Math.exp(-(1 / hzDecision(cfg)) / 0.35);   // (263) τ en secondes quelle que soit la cadence du cerveau (10 Hz sous cfg.cadence, 60 hier)
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = hyp(p._pushS[0], p._pushS[1]) || 1;

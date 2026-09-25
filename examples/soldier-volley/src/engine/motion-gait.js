@@ -509,8 +509,12 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // (2026-09-24) LE GESTE DANS LA FOULÉE (opts.geste — le passement lancé, character-controller._gesteFouleeOpts ; absent : hier au bit) : le buste
   // VEND du côté de la jambe qui cercle — un faux virage (roulis du bassin et du tronc, bassin qui glisse) de 5 m/s² au plus fort du vol.
   const GV = opts.geste, wVol = (k) => { const u = k === 'Left' ? ((phi % 1) + 1) % 1 : ((phi + 0.5) % 1 + 1) % 1; return u < p.s ? null : (u - p.s) / (1 - p.s); };   // le vol RENDU de ce pied
-  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + ((GV[k]?.arc || GV[k]?.vend) && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) * (GV[k]?.vend ? 1.4 : 1) : 0), 0) : 0;   // (feinte de corps) la vente sans arc, plus appuyée
-  const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp((opts.turn ?? 0) + 5 * vend, -9, 9);
+  const vend = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k]?.arc && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;   // l'arc du passement : le faux virage
+  // (2026-09-25) LA VENTE DE LA FEINTE DE CORPS, mesurée (Brault et al. 2010, rugby 1c1, feintes réussies) : le HAUT DU TRONC tourne vers le
+  // côté feint (≈ 25° au pic), la tête (≈ 10°), le bassin peu (≈ 5°), le roulis ≈ 15° ; le pied extérieur se pose ≈ 0,6 m sur le côté ;
+  // le centre de masse reste (≈ ±0,10 m). Mesuré avant chez nous : roulis 23°, épaules 10°, pied 0,30 m — la vente penchait au lieu de tourner.
+  const vente = GV ? ['Left', 'Right'].reduce((a, k) => a + (GV[k]?.vend && wVol(k) != null ? (k === 'Right' ? 1 : -1) * Math.sin(Math.PI * wVol(k)) : 0), 0) : 0;   // (feinte de corps) la vente sans arc, plus appuyée
+  const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp((opts.turn ?? 0) + 5 * vend + 2.5 * vente, -9, 9);   // la vente : 2,5 m/s² de faux virage (≈ 8° ; avec la course et l'accélération ≈ 15-18° mesurés), le reste en rotation
   // LE GRIFFÉ (footPath) — absent : hier au bit. Plein jusqu'à 6 m/s, ramené à 0,3 dès 7 : au sprint le genou de la foulée
   // tourne déjà à la limite (checkClip, 30 rad/s — 9 m/s le dépasse sans griffé) ; mesuré, griffé plein à 8 m/s = 32 rad/s.
   if (opts.griffe) p.griffe = clamp(opts.griffe, 0, 1) * clamp(1 - (Math.hypot(vF, vR) - 6) * 0.7, 0.3, 1);
@@ -612,7 +616,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   }
   const rabais = (x) => { const t = ((x % 0.5) + 0.5) % 0.5; let e = 0; for (const [tb, n] of besoins) { let d = Math.abs(t - tb); d = Math.max(0, Math.min(d, 0.5 - d) - 0.03) / 0.08; if (d < 1) e = Math.max(e, n * (0.5 + 0.5 * Math.cos(Math.PI * d))); } return e; };   // plateau ±0,03 (la jambe qui vient se poser est déjà tendue), puis cosinus
   const hips = [hipX, -drop + bob - rabais(ph), 0];                    // (A7 bis) le bassin glisse vers l'intérieur du virage
-  const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn;               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
+  const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn - 5 * vente;   // (la vente) le bassin tourne peu vers le côté feint               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
   const pList = listAt(ph);
   const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
   // la hanche (articulation) à une autre phase du cycle — les deux bouts du vol articulaire
@@ -628,10 +632,11 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // ---- le tronc : inclinaison avant, contre-rotation des épaules (déphasage Pontzer), tête stable
   const girdle = p.girdle * Math.sin(TAU * ph - Math.PI / 2 - p.psi * D2R);
   const leanQ = (k) => rx(-p.lean * k);
-  J.Spine = chain(rx(0.15 * p.pTilt), leanQ(0.4), ry(girdle * 0.2 - pYawTurn / 3));   // (2026-09-24) rx(+0,15·pTilt) : la lordose compense 15 % de l'antéversion du bassin — le tronc penche de lean + 0,85·pTilt : 16,5° au sprint, le sprinter mesuré 16° (Dorn 2012, C7-sacrum à 9,5 m/s), 12° à 3,5 m/s (11°) ; plus de compensation (0,2 : 1 foulée rouge, ¼ : 1, ½ : 10, entière : 78), l'opposition bras-jambe au contact cassait sous le frein en virage (le buste qui se redresse ramène les mains l'une vers l'autre)
-  J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35 - pYawTurn / 3));
-  J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45 - pYawTurn / 3));
-  const head = clamp(-girdle * 0.75, -6, 6);
+  const tV = -13 * vente;   // (la vente) le haut du tronc tourne vers le côté feint : 13° ici, + le bassin 5° et le contre-balancier de la course — mesuré au rendu ≈ 25° au pic (20° ici : 37°) (ry + : à gauche)
+  J.Spine = chain(rx(0.15 * p.pTilt), leanQ(0.4), ry(girdle * 0.2 - pYawTurn / 3 + tV * 0.2));   // (2026-09-24) rx(+0,15·pTilt) : la lordose compense 15 % de l'antéversion du bassin — le tronc penche de lean + 0,85·pTilt : 16,5° au sprint, le sprinter mesuré 16° (Dorn 2012, C7-sacrum à 9,5 m/s), 12° à 3,5 m/s (11°) ; plus de compensation (0,2 : 1 foulée rouge, ¼ : 1, ½ : 10, entière : 78), l'opposition bras-jambe au contact cassait sous le frein en virage (le buste qui se redresse ramène les mains l'une vers l'autre)
+  J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35 - pYawTurn / 3 + tV * 0.35));
+  J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45 - pYawTurn / 3 + tV * 0.45));
+  const head = clamp(-girdle * 0.75, -6, 6) - 10 * vente;   // (la vente) la tête ≈ 10° de plus vers le côté feint
   J.Neck = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.4), ry(head * 0.4), rz(rollIn * 0.4));   // (A11) opts.headDown : la tête basse (l'abattu) ; (A7 bis) la tête reste d'aplomb dans le virage
   J.Head = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.6), ry(head * 0.6), rz(rollIn * 0.6));
 
