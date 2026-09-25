@@ -202,6 +202,13 @@ export function beginPass(st, choice, cfg, opts = {}) {
         const prompts = cands.filter((cd) => cd.data?.surface !== 'heel' && cd.antic <= (KO.anticPresse ?? 0.4)); if (prompts.length) cands = [prompts.reduce((b, cd) => (cap(cd) > cap(b) ? cd : b), prompts[0])];
       }
     }
+    // (314, cfg.porteeGeste) LE GESTE A SA PORTÉE : la table choisissait la surface sur la géométrie seule — 42 des 88 passes au gardien
+    // (sonde-313) partaient en TALONNADE à 30-45 m (le 401 la force, pressé et la sortie derrière). Un geste ne sert que la passe à sa
+    // portée, nommée par geste (cfg.porteeGeste { talonnade 12, 'passe-pivot' 22 } — les gestes DE DOS ; les autres n'ont pas de borne :
+    // lue sur la puissance, la borne tuait la passe longue, passes 546 → 455) ; aucun geste à portée : on ne la joue pas ainsi — le refus
+    // se nomme, le cerveau choisit autre chose (se retourner, une autre ligne). Absente : hier au bit.
+    if (st.full && cfg.porteeGeste && !mains && !opts.shot && !opts.clear) { const dP = hyp(choice.lead[0] - c.p[0], choice.lead[2] - c.p[2]);
+      cands = cands.filter((cd) => !(dP > (cfg.porteeGeste[cd.data?.id] ?? Infinity))); if (!cands.length) return deny(st, 'portee-geste'); }
     const talonDos = !!(st.full && cfg.orientationPasse?.talon && !mains);   // (401) LA TALONNADE HONNÊTE (cfg.orientationPasse.talon) : le corps dos à la cible
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
       { rushed: nearFoe < cfg.rushedRadius, talonDos, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
@@ -229,8 +236,9 @@ export function beginPass(st, choice, cfg, opts = {}) {
     const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
     const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
     const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
-    const topts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
-    if (!topts.length) return deny(st, 'technique');
+    const topts0 = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing }), dP314 = hyp(tx, tz);
+    const topts = st.full && cfg.porteeGeste && !mains && !opts.shot && !opts.clear ? topts0.filter((o) => !(dP314 > (cfg.porteeGeste[o.tech.id] ?? Infinity))) : topts0;   // (314) l'improvisation aussi : la talonnade ne sert pas 40 m
+    if (!topts.length) return deny(st, topts0.length ? 'portee-geste' : 'technique');
     // MÊME L'URGENCE NE FRAPPE PAS UN BALLON QUI FILE. L'improvisation choisit sa surface sur la
     // géométrie RÉELLE de l'engagement — mais le ballon libre d'un duel bouge encore pendant
     // l'armé, et la géométrie du contact n'est plus celle du choix : mesuré (verify-approach),

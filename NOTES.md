@@ -14019,6 +14019,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      8 × 90 min, 8,5-9,5 contre 9,0-9,5) : l'attente du 123 (postes hors de la surface, présence 20 %), l'appel DANS la surface sprinté
      (présence 25-39 % selon le déclencheur), l'arbitre aligné sur la géométrie du geste. RESTE : l'attaque vit trop bas quand le ballon
      est sur l'aile — un chantier de STRUCTURE (la ligne d'attaque, les rôles), pas du geste du centre.
+- 441: LE GESTE DE DOS A SA PORTÉE (314, strike-sim.js, cfg.porteeGeste) ; 313b ; ET LE GARDIEN N'EST PAS EN CAUSE. « Enchaîne sur ces
+     2 points » (les buts en trop, la talonnade de 40 m).
+     LES BUTS (sondes gardien / gkpos / cadre, 4 × 90 min) : 6,3 buts, 25 tirs par match. (1) Le gardien ARRÊTE 69 % des tirs CADRÉS
+     (cadré = le vol prédit à la frappe croise le but entre les poteaux, sous la barre) — le réel ~70 % : il n'est pas en cause. (2) 72 %
+     des tirs sont CADRÉS (réel ~45-50 % en comptant les contrés, ~33 % « on target ») et tirés à 12 m p50 (réel 16-17) : conversion
+     22-25 % contre ~10,5. Essayés et NON retenus : la sortie en 1c1 bornée au ballon proche (sortie1v1 zMax −1 : le gardien à 1,8 m de sa
+     ligne au lieu de 4,4 sur les tirs de 8-16 m — buts inchangés, 27 / 100 et 21 / 91 contre 24 / 101) ; l'ellipse de finition élargie
+     (σ0 2 → 3 / 4 : cadrés 62-70 %, buts 6,0-8,3 — la précision angulaire ne décide pas à 12 m). Vus en chemin : le journal de l'enveloppe
+     (276) exige st.pass — têtes, volées, retournées (tete.js remet st.pass à null) sont DÉCIDÉES à l'enveloppe mais jamais journalisées,
+     et leur tirage réutilise celui de la passe d'avant. RESTE, NOMMÉ : le CHOIX de tirer — trop près, trop cadré (la sélection de tir,
+     la défense qui laisse l'occasion) ; ce n'est pas le gant.
+     314 — LA TALONNADE DE 40 m : la table des gestes choisit la surface sur la géométrie seule (où est le ballon, où il doit partir),
+     jamais sur la DISTANCE de la passe, et le 401 force le talon pressé, sortie derrière : 102 talonnades par heure, 15,8 m p50, 65
+     au-delà de 12 m (42 des 88 passes au gardien). cfg.porteeGeste { talonnade 12, 'passe-pivot' 22 } : un geste de DOS ne sert que la
+     passe à sa portée, au plan comme en improvisation ; aucun à portée → refus nommé 'portee-geste'. Réfuté d'abord : la portée lue sur
+     la puissance pour tous les gestes (power × 25 m) — elle tuait la passe longue (546 → 455 passes). Mesuré 4 × 900 s : talonnades
+     102 → 30, 8,1 m p50, > 12 m 65 → 4 ; passes 546 → 570. Bloc 314 (index 203) : talonnades > 13 m 2 c. 61.
+     313b (porteePasse.retrait.tous) : la diagonale (bascule) et la ligne bouchée levaient AUSSI la passe longue vers sa surface — la loi
+     couvre tous les chemins du choix de passe. Le bloc 313 compte le DANGER (vers le gardien ou dans sa surface) : une passe URGENTE après
+     une perte, levée à 37 m vers un défenseur devant sa surface, vient d'un autre chemin sans danger de but.
+     Épingle DATÉE 314 au bloc 200 (porteeGeste null dans les deux mondes du 310 : vert à HEAD~). Jumeau au bit (= 313) ; défaut du
+     314 : `24e502b9937e1c3c / 05cd9ad8298b5db5`.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
