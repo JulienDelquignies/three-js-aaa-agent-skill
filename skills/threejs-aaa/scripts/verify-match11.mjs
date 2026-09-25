@@ -7477,7 +7477,7 @@ if (__bloc()) {
   // LA PRISE SE JUGE EN RELATIF (300 — « creuse, on doit trouver » : 38 % des intentions de passe adoptées mouraient sans passe, le
   // ballon de conduite roulant à 1,1 m à l'allure de l'homme ; lu au sol il « fuyait » à 3 m/s et balPrenable refusait la reprise
   // hors du pied). (a) la loi pure : le ballon qui roule avec son homme est prenable en relatif, pas au sol ; celui qui s'en va plus
-  // vite que lui ne l'est dans aucun des deux ; (b) le monde, 4 × 900 s contre hier (priseRelative null) : la part des intentions qui
+  // vite que lui ne l'est dans aucun des deux ; (b) le monde, 4 × 1800 s contre hier (priseRelative null) : la part des intentions qui
   // deviennent une passe dans 1,2 s ≥ hier + 5 points (mesuré 2 × 45 min : 62 → 79 %).
   const bR = { p: [0.8, 0.11, 0], v: [3, 0, 0] }, bV = { p: [0.8, 0.11, 0], v: [5, 0, 0] };
   ok(`lot 300 — LA PRISE EN RELATIF : ballon à 0,8 m roulant à 3 m/s devant un corps à 3 m/s — au sol ${balPrenable(bR, 0, 0, 0.5, 0.5)}, en relatif ${balPrenable(bR, 0, 0, 0.5, 0.5, [3, 0])} ; à 5 m/s ${balPrenable(bV, 0, 0, 0.5, 0.5, [3, 0])}`,
@@ -7518,7 +7518,7 @@ if (__bloc()) {
   // mesuré : 22 % des contrôles propres rendaient le ballon libre ~0,5 s après, le porteur retiré à 2,2 m sans événement — la touche
   // de retournement partait à la vitesse SCALAIRE du corps, puis le corps (virages lisses) tournait en arc 1,1 s à 140° de sa cible).
   // (a) la loi pure : un porteur à 3 m/s qui touche à 90° de sa course — la touche d'hier ≥ 4 m/s, celle du 302 ≤ 2 m/s ; dans
-  // l'axe, les deux égales ; (b) le monde, 4 × 900 s contre hier (toucheAxe null, demiTour absent) : les retraits silencieux du
+  // l'axe, les deux égales ; (b) le monde, 4 × 1800 s contre hier (toucheAxe null, demiTour absent) : les retraits silencieux du
   // porteur (carry → loose sans événement) ≤ 0,6 × hier, passes ≥ 0,97 × hier (mesuré 45 min : 43 → 17 ; 4 × 900 s : 57 → 13, passes 539 → 533 — le seuil posé après la mesure, le gain des passes vit au monde de 90 min ; 4 × 90 min : passes par
   // possession 2,90 → 3,51, passes 432 → 462, pertes 146 → 132).
   const pousse = (axe, vel) => { const d = makeDribbler({ prise: 0.62 }); d.sinceTouch = 1; const b = { p: [0.3, 0.11, 0], v: [0, 0, 0], w: [0, 0, 0] };
@@ -7752,6 +7752,30 @@ if (__bloc()) {
     D.sort((a, b) => a - b); return { p50: D[Math.floor(D.length / 2)] ?? 0, n: D.length, passes }; };
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, ligneAccrochee: L0 }));
   ok(`lot 316 — …et LE MONDE : 4 × 900 s, le défenseur le plus reculé (ballon adverse à 25-40 m) à ${mA.p50.toFixed(1)} m de son but p50 (${mA.n}) ≤ ${mN.p50.toFixed(1)} − 3 ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.p50 <= mN.p50 - 3 && mA.passes >= 0.9 * mN.passes);
+}
+
+if (__bloc()) {
+  // LE REPLI SUR LA PASSE (318 — le chantier des échappées, notes 443-446 ; repli-passe.js). Sondé (sonde-genese, monde 316) : la moitié
+  // des échappées (porteur à < 25 m du but, aucun défenseur de champ plus près du but) naît d'une passe de 15-23 m vers un receveur EN JEU
+  // (1-4 défenseurs derrière lui au départ) qui court à 4,3 m/s pendant le vol, quand la ligne marche (1,3 m/s — sa cible suit le ballon,
+  // pas sa destination). Réfuté avant : le suivi de l'appel (317, cfg.suiviAppel, non activé — moins d'échappées, plus de buts). La loi :
+  // pendant le vol d'une passe adverse vers mon dos, les n (axe transition, 1-3) défenseurs qui arrivent le plus tôt au point goal-side de
+  // la destination y sprintent (rupture 'repli-passe'), après leur lecture reaction × (2 − anticipF) × (2 − concF). Mesuré 16 × 90 min :
+  // échappées 9,1 → 4,3, buts 6,38 → 4,80, tirs 22,5 → 20,3, complétion 88,0 → 88,8 %, longs 45,5 → 50,3, centres 13,3 → 13,0.
+  // Le mécanisme, 2 matchs de 90 min (graines 3, 7) contre hier : les passes de ≥ 15 m réussies à < 35 m du but adverse ≤ 0,8 × hier (la destination est disputée : 48 contre 67) ;
+  // le monde : échappées ≤ 0,75 × hier ; passes ≥ 0,9 × hier.
+  const monde = (cfg) => { let seul = 0, recus = 0, esc = 0, passes = 0; for (const seed of [3, 7]) { const st = makeMatch({ full: true, seed }); let seen = 0, dedans = false, att = null, prev = -1;
+      for (let i = 0; i < 2700 * 60 * 2.4; i++) { matchStep(st, 1 / 60, cfg); if (st.restart?.type === 'fin') break; for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && e.to >= 0 && !st.players[e.by]?.keeper) { passes++; const r = st.players[e.to]; att = r && Math.hypot(st.ball.p[0] - r.p[0], st.ball.p[2] - r.p[2]) >= 15 ? { to: e.to, t: st.t } : null; } }
+        const id = st.possession.carrier, c = id >= 0 ? st.players[id] : null;
+        if (c && id !== prev && att && att.to === id && st.t - att.t < 4 && !st.restart) { const og = st.pitch.ownGoal(1 - c.team), dC = Math.hypot(og.x - c.p[0], c.p[2]);
+          if (dC < 35) { recus++; if (!st.players.some((q) => q.team !== c.team && !q.keeper && q.down <= 0 && Math.hypot(og.x - q.p[0], q.p[2]) < dC)) seul++; } att = null; }
+        prev = id; if (!c || c.keeper || st.restart) { dedans = false; continue; }
+        const g = st.pitch.attackGoal(c.team), dB = Math.hypot(g.x - c.p[0], c.p[2]), inZ = dB < 25;
+        if (inZ && !dedans && !st.players.some((q) => q.team !== c.team && !q.keeper && q.down <= 0 && Math.hypot(g.x - q.p[0], q.p[2]) < dB)) esc++; dedans = inZ; } }
+    return { seul, recus, esc, passes }; };
+  const CH = { periodes: 2, duree: 2700, pause: 10 }, mA = monde(matchCfg({ shotRange: 20, chrono: CH })), mN = monde(matchCfg({ shotRange: 20, chrono: CH, repliPasse: null }));
+  ok(`lot 318 — LE REPLI SUR LA PASSE : 2 matchs de 90 min, passes de ≥ 15 m RÉUSSIES à < 35 m du but adverse ${mA.recus} ≤ 0,8 × hier ${mN.recus} (dont reçues seul ${mA.seul}, hier ${mN.seul}) — la destination est disputée`, mA.recus <= 0.8 * mN.recus && mN.recus > 0);
+  ok(`lot 318 — …et LE MONDE : échappées ${mA.esc} ≤ 0,75 × ${mN.esc} ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.esc <= 0.75 * mN.esc && mA.passes >= 0.9 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
