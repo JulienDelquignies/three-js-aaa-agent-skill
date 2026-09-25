@@ -338,6 +338,19 @@ export function movePlayers(st, dt, cfg) {
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
     if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1)); if (st.full && cfg.orientationPasse && (p._ouvre ?? -1) > st.t && st.possession.carrier === p.id) top = Math.min(top, cfg.orientationPasse.vTour ?? 1.2);   /* (395) LE PORTEUR QUI S'OUVRE FREINE : sous vTour le cône du porté ne joue pas, le ballon tourne avec lui */   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
+    // (312, cfg.elanConduite.garde) LA COURSE CONTINUE APRÈS LA PRISE : le receveur lancé (6,2 m/s filmés à l'atelier ?atelier=prof)
+    // retombait à 3,2 en 0,5 s — le plafond de conduite (4,2) et l'intention d'effort (261) coupaient l'élan dès la prise — la loi vient APRÈS eux. Pendant garde s après la prise, dans l'espace
+    // (aucun adversaire à moins d'espace m dans le cône avant), le plafond garde la vitesse de prise (bornée à la chasse × topF), décroissant
+    // de moitié sur la fenêtre. Seul (sans l'élan de la poussée, elan-conduite.js) il ne rendait rien : le lancé tournait. Absent : hier.
+    if (st.full && cfg.elanConduite?.garde && p.job === 'carry' && !p.keeper && st.possession.carrier === p.id && p._controleAt != null) {
+      if (p._ctrlVu !== p._controleAt) { p._ctrlVu = p._controleAt; p._vPrise = p.speed; }
+      const EC = cfg.elanConduite, tP = st.t - p._controleAt;
+      if (tP < EC.garde && (p._vPrise ?? 0) > top && p.speed > 0.5) {
+        const ux = p.v[0] / p.speed, uz = p.v[1] / p.speed;
+        const libre = !st.players.some((q) => q.team !== p.team && q.down <= 0 && (() => { const qx = q.p[0] - p.p[0], qz = q.p[2] - p.p[2], dq = hyp(qx, qz); return dq < (EC.espace ?? 8) * 0.5 && (qx * ux + qz * uz) > dq * 0.5; })());
+        if (libre) top = Math.max(top, Math.min(p._vPrise, cfg.speeds.chase * (p.skill?.topF ?? 1)) * (1 - 0.5 * tP / EC.garde));
+      }
+    }
     if (st.full && cfg.sePoser && (p._pose ?? -1) > st.t) top = Math.min(top, cfg.sePoser.v ?? 1.5);   // (303) le receveur face au ballon se pose (match-sim : les appuis avant la réception)
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {

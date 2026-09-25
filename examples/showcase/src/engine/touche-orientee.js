@@ -33,7 +33,7 @@ export function toucheOrientee(st, p, cfg, RC) {
     let champ = 99;
     for (const q of foes) { const qx = q.p[0] - p.p[0], qz = q.p[2] - p.p[2], along = qx * dx + qz * dz; if (along > 0 && along < (K.devant ?? 4) && Math.abs(qx * dz - qz * dx) < 1.5) champ = Math.min(champ, along); }
     if (champ < (K.champ ?? 3)) continue;
-    const s = (dx * sg + dz * gz) * (K.sens ?? 1) + (dx * vx + dz * vz) * (K.elan ?? 0.6) + Math.min(champ, 8) * 0.05;
+    const s = (dx * sg + dz * gz) * (K.sens ?? 1) + (dx * vx + dz * vz) * (K.elan ?? 0.6) * (K.elanV ? Math.max(1, sp / K.elanV) : 1) + Math.min(champ, 8) * 0.05;   // (312, K.elanV) le lancé prend dans sa FOULÉE : le poids de l'élan croît avec la vitesse (× sp / elanV) — à 5 m/s la touche partait à 46° p50 de sa course
     if (!best || s > best.s) best = { s, dx, dz };
   }
   if (!best) return false;

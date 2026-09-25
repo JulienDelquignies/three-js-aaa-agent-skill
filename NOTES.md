@@ -13980,6 +13980,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      442, manqués 4,5 → 6,4 %. Retiré — ce n'est pas le plafond qui arrête le lancé, c'est sa DÉCISION (cible, intention) après la prise.
      RESTE : la décision du porteur lancé (la course continue dans l'espace) ; les centres (volume, précision au sol 5 m p50) ; le jeu
      trop propre depuis 309-310 (complétion 88-90 %, pertes 99-127 c. 110-140).
+- 439: L'ÉLAN DANS L'ESPACE — LE LANCÉ CONTINUE BALLE AU PIED (312 ; elan-conduite.js, movement.js, touche-orientee.js). Suite du 438
+     (« ok continue ») : le receveur d'une passe en profondeur, filmé à l'atelier, prenait le ballon à 6,2 m/s et retombait à 3,2 en
+     0,5 s. Sonde-312 (77 prises à > 4,5 m/s, l'adversaire le plus proche DEVANT à 13 m p50, image par image sur 1 s) : la POUSSÉE voulue
+     (le mélange but × wGoal + évasion, match-sim) partait à 62° p50 de sa course dès la prise, 80-100° ensuite — aucun terme d'élan ; la
+     1re touche orientée à 46° (le côté ouvert : sens 1 contre élan 0,6) ; le plafond de conduite (4,2) et l'intention d'effort (261)
+     à ~4 m/s. Chaque morceau seul est nul ou réfuté (le plafond seul, 438 : +0,2 m/s, passes 573 → 442 ; la poussée seule : +0,2 ;
+     poussée + plafond placé AVANT l'intention d'effort : +0,3) — ensemble :
+     (1) cfg.elanConduite { v 3,5, espace 8, k 0,7 } — en course (≥ 3,5 m/s), l'adversaire devant à plus de 4 m, la poussée se mélange à
+     la course (k × la marge d'espace), jamais s'il court vers son propre but (elan-conduite.js, pur) ;
+     (2) elanConduite.garde 1,5 — pendant 1,5 s après la prise, dans l'espace, le plafond garde la vitesse de prise (bornée à la chasse ×
+     topF), décroissant de moitié ; posé APRÈS l'intention d'effort ;
+     (3) toucheOrientee.elanV 2,5 — le poids de l'élan de la 1re touche × v / 2,5 : le lancé prend dans sa foulée.
+     Mesuré (4 graines × 900 s) : le lancé à +1 s 3,3 → 4,1 m/s p50 (bloc : 2,95 → 4,18). 8 × 90 min : séquences 3,62 / 3,87, complétion
+     89,4 / 89,1 %, passes 445 / 468 (de retour dans 420-475), pertes 99 / 112, manqués 4,7 / 5,0 %, tirs 19-22. Placement du receveur
+     inchangé (sonde ajuste, 4 graines : > 1 m à 0,15 s 11 % sous 310 comme sous 312).
+     Bloc 312 (index 201) : mécanisme (poussée au but à 90° de la course → 23° ; vers son propre but → inchangée) et monde. Épingle DATÉE
+     312 au bloc 199 : la clause 309 se joue sans les clés du 312 (vert à HEAD~) — sous 310+ l'apport propre de l'alignement est devenu
+     marginal (monde 312 : 11,9 c. 10,8 %) : DETTE, l'utilité résiduelle de la loi 309 (le 309b, la cible qui ne fuit plus, reste).
+     Jumeau au bit (= le défaut du 310) ; défaut du 312 : `6d4fc2f7ebdfc58a / a24dedd044894530`.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

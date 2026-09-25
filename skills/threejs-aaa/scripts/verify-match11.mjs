@@ -7609,7 +7609,11 @@ if (__bloc()) {
             if (now[0] - P.t > 0.7 && a) { const bv = Math.hypot(a[5], a[6]) || 1; n++; if (Math.abs((a[1] - a[3]) * a[6] / bv - (a[2] - a[4]) * a[5] / bv) > 1) hors++; } P = null; continue; }
           if (P && (e.type === 'turnover' || st.restart)) P = null; } } }
     return { hors: 100 * hors / Math.max(1, n), n, passes, pm: 100 * pourM / Math.max(1, pour), pour }; };
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, aligneRecev: null }));
+  // DATÉ 312 : les deux mondes sans l'élan dans l'espace (elanConduite, toucheOrientee.elanV) — vert à HEAD~. Sous le 310 le receveur
+  // accélère vers sa demande et l'apport propre de l'alignement devient marginal (monde 312 : 11,9 c. 10,8 % ; sonde : le placement
+  // est le même sous 310 et 312, 11 % > 1 m) — la clause mesure la loi dans le monde de son sceau ; son utilité résiduelle est une dette.
+  const T309 = { ...matchCfg({}).toucheOrientee }; delete T309.elanV;
+  const mA = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T309 })), mN = monde(matchCfg({ shotRange: 20, aligneRecev: null, elanConduite: null, toucheOrientee: T309 }));
   ok(`lot 309 — LE RECEVEUR S'ALIGNE AVANT LA PRISE : 4 × 900 s, hors ligne > 1 m à 0,15 s ${mA.hors.toFixed(1)} % (${mA.n}) ≤ 0,6 × ${mN.hors.toFixed(1)} % ; passe pour lui manquée ${mA.pm.toFixed(1)} % (${mA.pour}) ≤ ${mN.pm.toFixed(1)} + 1 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`,
     mA.hors <= 0.6 * mN.hors && mA.pm <= mN.pm + 1 && mA.passes >= 0.85 * mN.passes);
 }
@@ -7641,6 +7645,32 @@ if (__bloc()) {
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, locomoteur: K0, toucheOrientee: T0 }));
   ok(`lot 310 — …et LE MONDE : 4 × 900 s, 2e action après la touche orientée p50 ${mA.t2.toFixed(2)} s (${mA.n}) ≤ 0,8 × ${mN.t2.toFixed(2)} ; balle au plus loin p90 ${mA.mx.toFixed(2)} ≤ ${mN.mx.toFixed(2)} m ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`,
     mA.t2 <= 0.8 * mN.t2 && mA.mx <= mN.mx && mA.passes >= 0.85 * mN.passes);
+}
+
+if (__bloc()) {
+  // L'ÉLAN DANS L'ESPACE (312 — « le même travail pour les passes en profondeur » ; filmé à l'atelier ?atelier=prof : le receveur lancé
+  // à 6,2 m/s retombait à 3,2 en 0,5 s). Tracé (sonde-312, 77 prises à > 4,5 m/s, l'adversaire devant à 13 m p50) : la poussée voulue à
+  // 62-100° de la course, la touche orientée à 46°, le plafond de conduite et l'intention d'effort à ~4 m/s. Trois morceaux, chacun
+  // seul réfuté ou nul (le plafond seul : +0,2 m/s, passes 573 → 442) : (1) elan-conduite.js — en course et dans l'espace, la poussée se
+  // mélange à la course (k 0,7) ; (2) movement — garde 1,5 s, le plafond garde la vitesse de prise APRÈS l'intention d'effort ; (3)
+  // toucheOrientee.elanV 2,5 — le poids de l'élan de la 1re touche × v / 2,5. Mécanisme : lancé à 5 m/s, espace libre, poussée au but à
+  // 90° de sa course → infléchie à < 45° ; vers son propre but → inchangée. Le monde, 4 × 900 s contre hier : vitesse du lancé à +1 s
+  // ≥ hier + 0,4 m/s ; passes ≥ 0,85 × hier (mesuré 4 graines : 3,3 → 4,1 m/s ; 8 × 90 min : séquences 3,62 / 3,87, manqués 4,7 / 5,0 %).
+  const { elanConduite } = await import('../assets/starter/src/engine/elan-conduite.js');
+  const K = matchCfg({}).elanConduite, pl = (team, x, z, v) => ({ team, p: [x, 0, z], v, speed: Math.hypot(...v), down: 0 });
+  const me = pl(0, 0, 0, [0, 5]), stE = { players: [me, pl(1, 0, 30, [0, 0])] };
+  const [ax, az] = elanConduite(stE, me, K, 1, 0, 1), aDeg = Math.acos(az / Math.hypot(ax, az)) * 57.3;
+  const me2 = pl(0, 0, 0, [-5, 0]), [bx, bz] = elanConduite({ players: [me2] }, me2, K, 1, 0, 1);
+  ok(`lot 312 — L'ÉLAN DANS L'ESPACE : lancé à 5 m/s, poussée au but à 90° de sa course → ${aDeg.toFixed(0)}° (< 45) ; vers son propre but → inchangée (${bx}, ${bz})`, aDeg < 45 && bx === 1 && bz === 0);
+  const T0 = { ...matchCfg({}).toucheOrientee }; delete T0.elanV;
+  const monde = (cfg) => { const V = []; let passes = 0; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, O = null;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        if (O) { const c = st.players[O.id]; if (st.possession.carrier !== O.id) O = null; else if (st.t - O.t >= 1) { V.push(c.speed); O = null; } }
+        for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && !st.players[e.by]?.keeper) passes++;
+          if (e.type === 'control' && !e.miss && !O) { const c = st.players[e.by]; if (!c.keeper && c.speed > 4.5) O = { id: e.by, t: st.t }; } } } }
+    V.sort((a, b) => a - b); return { v1: V[Math.floor(V.length / 2)] ?? 0, n: V.length, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T0 }));
+  ok(`lot 312 — …et LE MONDE : 4 × 900 s, le lancé à +1 s ${mA.v1.toFixed(2)} m/s p50 (${mA.n}) ≥ ${mN.v1.toFixed(2)} + 0,4 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.v1 >= mN.v1 + 0.4 && mA.passes >= 0.85 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
