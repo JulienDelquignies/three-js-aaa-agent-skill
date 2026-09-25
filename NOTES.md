@@ -14077,6 +14077,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      RESTE — un CHANTIER, pas un réglage : le bloc défensif dans les 25 derniers mètres (qui tient l'axe, qui temporise goal-side, qui
      entre dans la ligne de tir), à construire dans un atelier dédié (?atelier=verite : le dernier tiers filmé) avec des mesures non
      rares ; la sélection du tir (le tireur attend la surface : 12 m p50).
+- 444: L'ATELIER DE LA ZONE DE VÉRITÉ, LE BANC DE 16 MATCHS, ET LA LIGNE QUI RECULE (316 ; rendu scenes/rondo-verite.js). « Ok ça me va »
+     (le chantier du bloc défensif, note 443).
+     L'ATELIER (match11.html?match&full&atelier=verite) : chaque attaque dont le porteur entre à < 25 m du but adverse (window.__atelier.
+     verite.zone) — caméra derrière le porteur, le CÔNE de tir (ballon → poteaux, rouge) et l'axe ballon → but (jaune) au sol, pauses à
+     l'entrée / l'armé / le tir / l'issue, le relevé non rare au HUD (défenseurs dans le cône, plus près du but que le ballon, dans le couloir
+     central, le presseur goal-side ou dépassé, la largeur de ligne). Filmé : l'entrée à 19-34 m avec la défense entière DERRIÈRE le ballon.
+     LE BANC DE 16 MATCHS (scratchpad banc16.sh / jeu16.sh : 4 processus × 4 graines × 90 min) : la leçon de la note 443 — sur 4 matchs, les
+     buts ET même les entrées varient du simple au double (échappées 9,3 / 18,8 selon le jeu de graines). Toute décision de ce chantier se
+     prend à 16 matchs par bras.
+     LA MESURE : les ENTRÉES dans la zone de vérité (porteur à < 25 m du but) — 58,7 par match, dont 14,9 ÉCHAPPÉES (aucun défenseur de champ
+     plus près du but ; réel 1-3), 18-21 % marquées, les deux tiers en attaque PLACÉE ; avec 4+ défenseurs goal-side : 2 % de buts. Tracé
+     (sonde-echappee, 82 cas) : reçu 1,5-3 s avant, le porteur conduit à ~5 m/s à travers une ligne à 6 m du ballon — l'accroche du 280.
+     RÉFUTÉS sur 16 matchs : le COUSSIN (la ligne lit aussi le coureur le plus profond qui attaque le but — 14,8, après une inversion de signe
+     corrigée : la loi ne voyait que les coureurs qui s'éloignaient) ; le JOCKEY QUI SUIT le porteur (13,3 — dans le bruit).
+     316 — LES MARGES D'ACCROCHE 8 / 14 / 20 (couvert / entre-deux / découvert, × (2 − anticipF) inchangé ; hier 2 / 6 / 12) : la ligne tient
+     la profondeur devant le dernier tiers. 16 matchs : échappées 14,9 → 9,1 (−39 %), buts 7,15 → 6,38, centres 9,5 → 13,3 (le jeu va sur
+     les ailes), longs 41,8 → 45,5 (dans 45-50), séquences 3,57 → 3,66, complétion 88,0 = 88,0, manqués 4,85 → 4,90, tirs 23,5 → 22,5.
+     (Marges 5 / 10 / 15 : 10,8 échappées, 4,44 buts sur entrée par match.) Bloc 316 (index 205) : ballon à 30 m, entre-deux → la ligne
+     à 16 m (hier 24) ; monde 4 × 900 s : le plus reculé à 14,9 m de son but (hier 21,7). Épingles DATÉES 316 (LA316() : les marges d'hier)
+     aux blocs 1 (le contrat, graine 7 sans tir), 199 (309), 201 (312), 202 (313 : une passe levée vers sa surface par un autre chemin) —
+     verts à HEAD~. Le bloc 179 (281, les receveurs qui font demi-tour : 31,0 c. 36,1 %, seuil 0,75 ×) est rouge AUSSI dans son monde
+     épinglé : rouge HÉRITÉ (la dette du banc complet 296-306, note 438), pas du 316. Jumeau au bit (= 315) ; défaut du 316 :
+     `ac6925246208ec72 / 4a6c512be7223801`.
+     RESTE : 6,4 buts par match (réel ~2,7) — les 9 échappées restantes, le porteur qui traverse (le presseur à 2,9 m/s), la ligne de tir
+     jamais occupée (contrés 8,5 % c. 25-30), le tir trop proche.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -22,6 +22,7 @@ const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // lo
 const RP_0746 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4, sortieBut: { recul: 3, lat: 1.2, vitesse: 3.5 }, toucheLongue: { recul: 4 }, tirImmediat: { cone: 40 } }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 }, mur: { retard: 0.12 } };   // remisesPied de 0746dbd (A9 ter + B2, sans mur.corps ni elan.attente) — DATÉ 16/09 (B4, note 374)
 const B_0746 = { loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null, remisesPied: RP_0746 };   // les clés venues APRÈS 0746dbd, éteintes (B4 murTrot/mur.corps/elan.attente, B5, B6, B10) — DATÉ 16/09 : les clauses non épinglées mesurent le monde de 0746dbd (suite 761/7 sur ce moteur)
 const LEUR_1609 = {"loi12": {"avantage": 1.8, "contact": 0.9, "mur": 9.15, "jaune": 2}, "viragesLisses": null, "plantVitesse": null, "sortieAerienne": null, "tete": {"min": 1.5, "max": 2.2, "reach": 1, "but": 12, "saut": 0.75, "duel": 1.9}, "retournee": null, "enchainement": null, "ramasseurs": null, "boiterie": null, "entrant": null, "petitsGestes": null, "conduiteNommee": null, "passements": null, "arbitreGestes": null, "fete": null, "sol": null, "remisesPied": {"elan": {"recul": 3.5, "lat": 1.5, "vitesse": 4, "patience": 4}, "volee": {"h": 1, "avance": 0.45, "lacher": 0.72}, "touche": {"recul": 0.25}}, "bouclier": null, "ceremonie": null};   // LEURS CLÉS D'HIER — DATÉ fusion 16/09 (278-280 × A2-C3) : les dix-neuf clés que la branche animations a posées depuis f62c3d8, à leurs valeurs du 15/09 (null ou l'objet d'alors) — le monde de mon parent 29c0f95 au bit (3bc007bc74a4355f / 6c592ab9df792a83) sur l'état fusionné e798b47
+const LA316 = () => ({ ...matchCfg({}).ligneAccrochee, marge: { couvert: 2, entreDeux: 6, decouvert: 12 } });   // DATÉ 316 : les marges d'accroche d'hier — pour les clauses qui mesurent une autre loi dans le monde de leur sceau (vert à HEAD~)
 const MES_1609 = { blocPercu: null, enveloppe: null, visee: null, ellipse: null, repertoire: null, arretControle: null, ligneAccrochee: null };   // MES CLÉS D'HIER — DATÉ fusion 16/09 : les sept clés de 275-280 nulles = le monde de la branche animations 5f8870f au bit (bb530de469f21cbc / d5ba9ca701a880fa) sur l'état fusionné e798b47
 import { formationSpots, checkFormation, premierOffensif, blocFor } from '../assets/starter/src/engine/formation.js';
 import { evadeSpot, choosePass, enLance } from '../assets/starter/src/engine/rondo.js';
@@ -178,7 +179,7 @@ if (__bloc()) {
   // 330 → 480 s (238, même doctrine) : à 34 tirs par 100 min, 330 s à zéro tir a 16 % de chance — la graine 7 est
   // sèche dans le monde d'hier aussi (1 tir en 300 s, 2-4 en 600) ; la fenêtre suit le tempo, jamais la graine.
   // 480 → 600 s (300, même doctrine) : la prise en relatif rend les tirs au book (32 → 26 par match, 4 × 90 min) — 480 s à zéro tir a ~10 % de chance ; la graine 7 y tombe.
-  const { st: s2, trace } = playMatch(st2, 600, { cfg: matchCfg({ aligneRecev: null /* DATÉ 309 : vert à HEAD~ ; la graine 7 est sèche dans les deux mondes (hier 2 tirs en 1200 s, sous la loi un but sans tir à 716 puis un tir à 884) — la clause mesure le contrat, pas l'alignement du receveur */, remisePostes: null, rendezVous: null /* remisePostes et rendezVous null DATÉ 281 : vert à HEAD~ (worktree 0f5e292), le plein format remangé (20 passes en 3 min c. ≥ 25) — la clause mesure sa loi, pas la passe au rendez-vous ni les postes de la remise */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, repertoire: null, arretControle: null /* repertoire et arretControle null DATÉ 279 : vert à HEAD~ (worktree 842c118), le plein format de 3 min remangé (18 passes c. 25) — la clause mesure sa loi, pas les vitesses du book ni l'arrêt au journal */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ...LEUR_1609 /* DATÉ fusion 16/09 : la combinaison remange ce flux — vert dans les deux parents (29c0f95, 5f8870f) ; la clause mesure sa loi sur le monde de son parent */, shotRange: 20 }) });
+  const { st: s2, trace } = playMatch(st2, 600, { cfg: matchCfg({ ligneAccrochee: LA316() /* DATÉ 316 */, aligneRecev: null /* DATÉ 309 : vert à HEAD~ ; la graine 7 est sèche dans les deux mondes (hier 2 tirs en 1200 s, sous la loi un but sans tir à 716 puis un tir à 884) — la clause mesure le contrat, pas l'alignement du receveur */, remisePostes: null, rendezVous: null /* remisePostes et rendezVous null DATÉ 281 : vert à HEAD~ (worktree 0f5e292), le plein format remangé (20 passes en 3 min c. ≥ 25) — la clause mesure sa loi, pas la passe au rendez-vous ni les postes de la remise */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, repertoire: null, arretControle: null /* repertoire et arretControle null DATÉ 279 : vert à HEAD~ (worktree 842c118), le plein format de 3 min remangé (18 passes c. 25) — la clause mesure sa loi, pas les vitesses du book ni l'arrêt au journal */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ...LEUR_1609 /* DATÉ fusion 16/09 : la combinaison remange ce flux — vert dans les deux parents (29c0f95, 5f8870f) ; la clause mesure sa loi sur le monde de son parent */, shotRange: 20 }) });
   const r = checkMatch(s2, trace, cfg);
   ok(`le CONTRAT du match tient à 22 (checkMatch : ${r.ok ? 'ok' : r.issues.slice(0, 2).join(' ; ')})`, r.ok);
 }
@@ -7613,7 +7614,7 @@ if (__bloc()) {
   // accélère vers sa demande et l'apport propre de l'alignement devient marginal (monde 312 : 11,9 c. 10,8 % ; sonde : le placement
   // est le même sous 310 et 312, 11 % > 1 m) — la clause mesure la loi dans le monde de son sceau ; son utilité résiduelle est une dette.
   const T309 = { ...matchCfg({}).toucheOrientee }; delete T309.elanV;
-  const mA = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T309 })), mN = monde(matchCfg({ shotRange: 20, aligneRecev: null, elanConduite: null, toucheOrientee: T309 }));
+  const mA = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */,  elanConduite: null, toucheOrientee: T309 })), mN = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */,  aligneRecev: null, elanConduite: null, toucheOrientee: T309 }));
   ok(`lot 309 — LE RECEVEUR S'ALIGNE AVANT LA PRISE : 4 × 900 s, hors ligne > 1 m à 0,15 s ${mA.hors.toFixed(1)} % (${mA.n}) ≤ 0,6 × ${mN.hors.toFixed(1)} % ; passe pour lui manquée ${mA.pm.toFixed(1)} % (${mA.pour}) ≤ ${mN.pm.toFixed(1)} + 1 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`,
     mA.hors <= 0.6 * mN.hors && mA.pm <= mN.pm + 1 && mA.passes >= 0.85 * mN.passes);
 }
@@ -7673,7 +7674,7 @@ if (__bloc()) {
           if (e.type === 'control' && !e.miss && !O) { const c = st.players[e.by]; if (!c.keeper && c.speed > 4.5) O = { id: e.by, t: st.t }; } } } }
     V.sort((a, b) => a - b); return { v1: V[Math.floor(V.length / 2)] ?? 0, n: V.length, passes }; };
   const O312 = { ...matchCfg({}).orientationPasse }; delete O312.talonP;   // DATÉ 315 : sans la rareté du talon dans les deux mondes (vert à HEAD~) — le monde re-tiré : +0,16 m/s sur 52 lancés
-  const mA = monde(matchCfg({ shotRange: 20, orientationPasse: O312 })), mN = monde(matchCfg({ shotRange: 20, elanConduite: null, toucheOrientee: T0, orientationPasse: O312 }));
+  const mA = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */,  orientationPasse: O312 })), mN = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */,  elanConduite: null, toucheOrientee: T0, orientationPasse: O312 }));
   ok(`lot 312 — …et LE MONDE : 4 × 900 s, le lancé à +1 s ${mA.v1.toFixed(2)} m/s p50 (${mA.n}) ≥ ${mN.v1.toFixed(2)} + 0,4 ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.v1 >= mN.v1 + 0.4 && mA.passes >= 0.85 * mN.passes);
 }
 
@@ -7693,7 +7694,7 @@ if (__bloc()) {
           if (vers && st.pass.style === 'lofted' && Math.hypot(L[0] - c.p[0], L[2] - c.p[2]) >= 32) leve++; if (r.keeper) P = { t: st.t }; } } } }
     return { leve, csc }; };
   const PP = { ...matchCfg({}).porteePasse }; delete PP.retrait;
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, porteePasse: PP }));
+  const mA = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */, })), mN = monde(matchCfg({ shotRange: 20, ligneAccrochee: LA316() /* DATÉ 316 */, porteePasse: PP }));
   ok(`lot 313 — JAMAIS LEVÉE VERS SON PROPRE BUT : 4 × 900 s, passes longues levées vers son but ${mA.leve} (= 0 ; sans la clé ${mN.leve} ≥ 1) ; buts contre son camp sur passe au gardien ${mA.csc} (= 0)`, mA.leve === 0 && mN.leve >= 1 && mA.csc === 0);
 }
 
@@ -7728,6 +7729,29 @@ if (__bloc()) {
   const O0 = { ...matchCfg({}).orientationPasse }; delete O0.talonP;
   const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, orientationPasse: O0 }));
   ok(`lot 315 — LA TALONNADE EST RARE : 4 × 900 s, talonnades ${mA.tal} ≤ 0,25 × ${mN.tal} ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.tal <= 0.25 * mN.tal && mN.tal > 0 && mA.passes >= 0.9 * mN.passes);
+}
+
+if (__bloc()) {
+  // LA LIGNE RECULE DEVANT LE DERNIER TIERS (316 — le chantier du bloc défensif, note 443 ; l'atelier ?atelier=verite). Les buts en trop
+  // (7,15 par match sur 16 matchs, réel ~2,7) naissent des ÉCHAPPÉES : le porteur à < 25 m du but sans AUCUN défenseur de champ plus près
+  // du but — 14,9 par match (réel 1-3), 21 % marquées, les deux tiers en attaque PLACÉE. Tracé : reçu 1,5-3 s avant, il conduit à ~5 m/s à
+  // travers une ligne tenue à 6 m du ballon (l'accroche du 280 : marges 2 / 6 / 12 selon l'état du porteur) — un dribble et il est seul.
+  // Réfutés sur le même banc de 16 matchs : le coussin sur les coureurs (14,8), le jockey qui suit le porteur (13,3). La loi : les marges
+  // 8 / 14 / 20 (couvert / entre-deux / découvert, × (2 − anticipF) inchangé) — la ligne tient la profondeur devant le dernier tiers.
+  // Mesuré 16 × 90 min : échappées 14,9 → 9,1, buts 7,15 → 6,38, centres 9,5 → 13,3, longs 41,8 → 45,5, séquences 3,57 → 3,66, manqués
+  // 4,85 → 4,90. Le mécanisme : ballon à 30 m, porteur entre-deux → la ligne à 16 m (hier 24). Le monde, 4 × 900 s contre hier : le
+  // défenseur de champ le plus reculé quand le ballon adverse est à 25-40 m de son but, p50 ≤ hier − 3 m ; passes ≥ 0,9 × hier.
+  const { accrocheDe } = await import('../assets/starter/src/engine/ligne.js');
+  const LA = matchCfg({}).ligneAccrochee, L0 = { ...LA, marge: { couvert: 2, entreDeux: 6, decouvert: 12 } };
+  const xA = accrocheDe(LA, { xBallon: 30, etat: 'entre-deux', hauteurBloc: 0.5, piege: 0.5 }).xLigne, x0 = accrocheDe(L0, { xBallon: 30, etat: 'entre-deux', hauteurBloc: 0.5, piege: 0.5 }).xLigne;
+  ok(`lot 316 — LA LIGNE RECULE DEVANT LE DERNIER TIERS : ballon à 30 m, porteur entre-deux → la ligne à ${xA.toFixed(1)} m (hier ${x0.toFixed(1)})`, Math.abs(xA - 16) < 1e-9 && Math.abs(x0 - 24) < 1e-9);
+  const monde = (cfg) => { const D = []; let passes = 0; for (const seed of [3, 7, 11, 19]) { const st = makeMatch({ full: true, seed }); let seen = 0;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && !st.players[e.by]?.keeper) passes++; }
+        if (i % 12 || st.restart || !(st.possession.team >= 0)) continue; const def = 1 - st.possession.team, og = st.pitch.ownGoal(def), dB = Math.hypot(og.x - st.ball.p[0], st.ball.p[2]);
+        if (dB < 25 || dB > 40) continue; D.push(Math.min(...st.players.filter((q) => q.team === def && !q.keeper && q.down <= 0).map((q) => Math.abs(og.x - q.p[0])))); } }
+    D.sort((a, b) => a - b); return { p50: D[Math.floor(D.length / 2)] ?? 0, n: D.length, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, ligneAccrochee: L0 }));
+  ok(`lot 316 — …et LE MONDE : 4 × 900 s, le défenseur le plus reculé (ballon adverse à 25-40 m) à ${mA.p50.toFixed(1)} m de son but p50 (${mA.n}) ≤ ${mN.p50.toFixed(1)} − 3 ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.p50 <= mN.p50 - 3 && mA.passes >= 0.9 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
