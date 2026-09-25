@@ -14052,6 +14052,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Épingles DATÉES 315 aux blocs 201 (le 312 : +0,16 m/s sur 52 lancés dans le monde re-tiré) et 203 (le 314 : le sabotage ne
      faisait plus que 3 talonnades longues) — leurs deux mondes sans talonP, verts à HEAD~. Jumeau au bit (= 314) ; défaut du 315 :
      `a56d133b9d63f5ed / 1680a7a87b4777b4`.
+- 443: LES BUTS EN TROP — LE DIAGNOSTIC TACTIQUE (rien de scellé). « Oui vas-y, mais ça doit être plus par rapport à la tactique et
+     aux attributs des joueurs. » Mesuré (4 × 90 min, HEAD 315 ; sondes occasions / reception / axe / contres / couv / film) :
+     • LE TIR : 12 m p50 (réel 16-17), 88 % dans la surface (réel ~60), 84 % après une CONDUITE du tireur (réel : ~70 % des tirs
+       suivent une passe) ; 44 % des tirs après une RÉCUPÉRATION (second ballon, rebond) — convertis à 44 %.
+     • LA DÉFENSE AU TIR : 1 défenseur p50 plus près du but que le tireur, 0 dans le cône tireur-poteaux (68 % des tirs) ; à la
+       RÉCEPTION du futur tireur (16,6 m du but p50, 1,3 s avant le tir) déjà 0-1 défenseur plus près du but dans 41 / 62 cas.
+     • LA FORME : ballon adverse axial à 16-25 m — 1 défenseur p50 dans le couloir central devant le ballon (p10 : 0), les quatre plus
+       reculés étalés sur 30 m (p90 38), 75 % des corps devant le ballon au MARQUAGE : les centraux suivent leur homme et vident l'axe.
+       En général (ballon < 30 m) la défense a 3-4 corps plus près du but et 3-4 dans sa surface : c'est au moment de l'occasion
+       qu'elle est battue.
+     • LE PREMIER CONTACT APRÈS LE TIR : gardien 71 % (réel ~33), CONTRÉ 8,5 % (réel 25-30), hors cadre 7 % (réel ~40). Le gardien
+       arrête 69 % des cadrés (réel ~70) — il n'est pas en cause. Le contre (258b) exige un corps DANS la ligne à l'armé : il n'en
+       a presque jamais. Le jockey (95) plafonne le presseur à 2,9 m/s à < 4,2 m : face au porteur qui attaque le but, il est dépassé
+       (filmé : l'attaquant lancé à 18 m traverse des défenseurs à 1,3-2,7 m/s, le presseur « ferme » à 1,8 m/s dès 7 m — le régime
+       d'entretien de l'intention d'effort 261 : le ballon à > 10 m d'eux).
+     ESSAYÉS ET NON RETENUS (4 matchs par essai, puis 8 quand l'essai semblait porter) : la sortie en 1c1 bornée (gardien à 1,8 m au lieu
+     de 4,4 — buts inchangés) ; l'ellipse de finition élargie (σ0 3 / 4) ; l'effort de couverture ε 0,85 ; l'ombre de couverture coupée ;
+     la ZONE DE VÉRITÉ chaude (plus d'entretien près de mon but, R 25 / 32, × compacité × concF) : 8,3 / 7,0 buts ; L'AXE SE PROTÈGE
+     (N écrans sur la ligne ballon-but, × compacité − marquage, choix ÷ posF ; déclenché 10 s / 30 min à 26 m, les écrans à 13,6 m de
+     leur poste ; à 35 m : 6,0 / 6,0) ; le JOCKEY QUI SUIT le porteur (cap ≥ sa vitesse vers le but + 0,3) : 5,3 puis 8,3 (+ 0,8 : 9,8).
+     LEÇON DE MESURE : sur 4 × 90 min les buts varient de ± 1,5 par match — les essais ci-dessus sont DANS le bruit. Il faut ≥ 16 matchs
+     par bras (ou une métrique moins rare : la part de tirs contrés, les défenseurs dans le cône, la distance des tirs).
+     RESTE — un CHANTIER, pas un réglage : le bloc défensif dans les 25 derniers mètres (qui tient l'axe, qui temporise goal-side, qui
+     entre dans la ligne de tir), à construire dans un atelier dédié (?atelier=verite : le dernier tiers filmé) avec des mesures non
+     rares ; la sélection du tir (le tireur attend la surface : 12 m p50).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
