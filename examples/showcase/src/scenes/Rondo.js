@@ -25,7 +25,7 @@ import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWar
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
-import { makeTicker } from './ticker.js';
+import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
 
@@ -331,6 +331,7 @@ export class Rondo {
     this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
+    if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
     // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
     // flash du sifflet, la présentation pure des événements nommés ; le paiement de la dette
     // de volumétrie, la scène avait crevé le plafond des 1250 lignes)
@@ -722,6 +723,7 @@ export class Rondo {
    *  operator pans. Copying that lag buys more perceived realism than any shader. */
   _broadcast(dt) {
     if (this.free || !this.cam) return;
+    if (this._atelier && atelierUpdate(this)) return;
     const b = this.state.ball.p;
     if (!this._look) this._look = new THREE.Vector3(0, 1, 0);
     if (!this._camV) this._camV = 0;
@@ -761,6 +763,7 @@ export class Rondo {
 
   update(dt) {
     if (!this.state) return;
+    if (this._atelier) { dt = atelierDt(this, dt); if (dt === 0) { atelierUpdate(this); return; } }
     // LA RÉSOLUTION SUIT LE TÉLÉPHONE (lot 61 — « toujours saccadé » après le CPU réglé au
     // lot 60) : le tier se choisit à l'ouverture, le GPU réel ne se voit qu'en jouant. Fenêtre
     // de 2 s au chrono MURAL (dt est clampé à 1/30, il ment sous la charge) : < 45 fps → −0,25
@@ -810,7 +813,7 @@ export class Rondo {
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
-      const e = this.state.events[i];
+      const e = this.state.events[i]; if (this._atelier) atelierEvent(this, e);
       if (e.type === 'windup') {
         // THE SWING STARTS HERE, FROM FRAME 0 — and the ball is still at his feet. This event did not
         // exist: the game used to strike the ball and then ask for a pose, so the only way to keep the

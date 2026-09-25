@@ -13923,6 +13923,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      dans les deux mondes : `aligneRecev: null` dans son monde contrat, vert à HEAD~).
      Banc complet 296-306 (worktree b0b422e) : 37 rouges match11 dont 24 absents du banc 295, et 4 annexes nouvelles (decalage,
      moments, renversement, touche-orientee) — à prouver à la base 5e3e58c et épingler, dette du groupe.
+- 437: L'ATELIER PASSES & CONTRÔLES, ET CE QU'IL A MONTRÉ (309b, 310 ; rendu scenes/rondo-atelier.js). « Pour moi on n'est toujours pas
+     bons — crée une scène qui s'appuie sur les mêmes passes et contrôles pour te focaliser sur les captures ; des receveurs pas au top,
+     des contrôles où la balle part super loin, un délai énorme entre le 1er contrôle et la 2e touche. » L'ATELIER (match11.html?match&full
+     &atelier) n'est pas une autre simulation : le même 11c11, les mêmes lois ; il REGARDE. Par passe de jeu : ralenti 0,4, caméra au ras
+     du receveur, perpendiculaire à la passe (le cadre s'ouvre avec l'écart à couvrir), le point VISÉ (jaune), la CIBLE du receveur
+     (cyan), la PRISE (rouge), la trajectoire prédite (blanc) ; le relevé (écart à la ligne à −0,3 s, prise, +0,5 s, balle au plus loin,
+     2e touche) dans le HUD et window.__atelier.log ; window.__atelier.arret suspend le monde aux cinq instants (départ, −0,3 s, prise,
+     +0,5 s, 2e touche), go() repart — les captures deviennent déterministes.
+     Ce qu'il a montré, et que les sondes ne voyaient pas :
+     (1) 309b — LA CIBLE FUYAIT LE BALLON : passe de 6 m, receveur à 1,4 m du point visé, aucun point proche jouable avec 0,3 s
+     d'avance → la loi 309 choisissait un point 4 m EN AVAL, il courait le long de la ligne en s'éloignant du passeur. aligneRecev.aval
+     0,15 : les candidats s'arrêtent au passage du ballon au point visé (+ 0,15 s) ; le plus rapide avec la marge, sinon la plus grande
+     avance ≥ 0 ; l'aval seulement si rien n'est jouable avant.
+     (2) 310 — LE CORPS N'ACCÉLÈRE PAS VERS SA DEMANDE : la poussée du profil (260) visait la DEMANDE (a = ε (demande − v)/τ, τ 1,17 s),
+     mourante près d'elle. Le porteur derrière sa touche orientée demandait 3,6-3,9 m/s et plafonnait à 2,2-2,5 pendant 0,9 s (le
+     ballon à 1,1-1,9 m devant, la 2e touche à 1,0 s p50, > 1,2 s 44 %) ; le receveur passait 43 % de ses images en course à > 1,5 m/s
+     sous sa demande (+1,9 m/s² p50 — tracé image par image à l'atelier : demande 4,2, vitesse 1,6-1,9 tout le vol). locomoteur.plein
+     ['carry', 'receive'] : a = ε (V₀ − v)/τ, plafonnée à la demande (Samozino-Morin : on pousse du profil, on s'arrête à l'allure) —
+     receveur +3,7 m/s² p50, images en retard 43 → 29 %. Et toucheOrientee.tournant 1 (vMin 1) : la touche partait à 46° p50 du regard
+     (116° p90) pour 1 m d'avance ; l'avance × (1 − (1 − cos θ)/2), plancher 0,35 m. Mesuré (graines 3, 7) : 2e action après la touche
+     orientée 1,02 → 0,62 s p50, > 1,2 s 44 → 24 %, balle au plus loin p50 1,15 → 1,03, p90 1,86 → 1,61.
+     Réfutés à la mesure, non retenus : l'arrivée freinée √(2ad) du receveur (écart à 0,3 s 0,48 → 0,47), « se poser » retiré (0,34 →
+     0,28 à 0,15 s — trop peu pour défaire le 303).
+     Jeu, 4 × 90 min × 2 jeux de graines (3, 7, 11, 19 / 23, 29, 31, 37) : séquences 3,82 / 3,97, complétion 88,0 / 89,5 %, pertes
+     127 / 112, manqués 5,0 / 5,3 %, tirs 22-23. Bloc 310 (index 200) : poussée du porteur +1,28 m/s en 0,3 s c. +0,30 ; monde 4 × 900 s,
+     2e action 0,63 c. 0,97 s, balle p90 2,02 c. 2,10, passes 522 c. 533. Bloc 199 re-vert (6,5 c. 18,3 %). L'épingle 309 du bloc 1
+     tient (vert). Jumeaux au bit ; défaut du 310 : `c7cf9f1a1d889660 / 3281907dcf676612`.
+     RESTE (vu à l'atelier) : l'écart à la ligne 0,3 s avant la prise p50 ~0,5 m (un pas — le receveur prend en marchant sur la ligne) ;
+     les passes perdues de l'échantillon filmé (4/14) à décomposer à l'atelier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

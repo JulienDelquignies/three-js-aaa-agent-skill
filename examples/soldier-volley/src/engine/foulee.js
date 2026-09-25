@@ -67,12 +67,21 @@ export function cibleAlignee(st, cfg, r, pitch) {
     const path = predictPath(st.ball, { dt: 1 / 30, maxT: Math.min(3, restant) });
     const opts = { accel: (cfg.accel ?? 7.5) * (r.skill?.accelF ?? 1), top: cfg.speeds.chase * (r.skill?.topF ?? 1), reach: K.reach ?? 0.35 };
     const marge = (K.marge ?? 0.3) * (2 - (r.skill?.anticipF ?? 1)), inside = [pitch.hx - 0.5, pitch.hz - 0.5];
-    let best = null, be = Infinity;
+    // …JAMAIS AU-DELÀ DU POINT VISÉ s'il peut y être à temps (309b, filmé à l'atelier : passe de 6 m, receveur à 1,4 m du point visé,
+    // aucun point proche jouable avec 0,3 s d'avance — la cible sautait 4 m EN AVAL, il fuyait le ballon le long de la ligne). Les
+    // candidats s'arrêtent au passage du ballon au point visé (+ aval s) ; parmi eux, le plus rapide avec la marge, sinon la plus
+    // grande avance ≥ 0 ; l'aval seulement si rien n'est jouable avant.
+    const L = st.pass.lead; let tL = Infinity, dL = Infinity;
+    if (K.aval != null) for (const s of path) { const d = Math.hypot(s.p[0] - L[0], s.p[2] - L[2]); if (d < dL) { dL = d; tL = s.t; } }
+    let best = null, be = Infinity, repli = null, rs = -Infinity;
     for (const s of path) {
       if (s.p[1] > (K.h ?? 0.9) || Math.abs(s.p[0]) > inside[0] || Math.abs(s.p[2]) > inside[1]) continue;
-      const eta = etaCourse(r.p, r.v, s.p, opts);
-      if (s.t - eta >= marge && eta < be) { be = eta; best = s; }
+      if (K.aval != null && s.t > tL + K.aval) break;
+      const eta = etaCourse(r.p, r.v, s.p, opts), sl = s.t - eta;
+      if (sl >= marge && eta < be) { be = eta; best = s; }
+      if (K.aval != null && sl >= 0 && sl > rs) { rs = sl; repli = s; }
     }
+    best ??= repli;
     const rv = best ? { p: best.p } : rendezVous(path, r.p, r.v, { ...opts, reaction: 0, marge: 0, maxHeight: K.h ?? 0.9, inside: [pitch.hx, pitch.hz] });
     st._alg = { pass: st.pass, at: st.t, p: rv ? [rv.p[0], rv.p[2]] : null };
   }

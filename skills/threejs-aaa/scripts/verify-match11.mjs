@@ -7614,5 +7614,34 @@ if (__bloc()) {
     mA.hors <= 0.6 * mN.hors && mA.pm <= mN.pm + 1 && mA.passes >= 0.85 * mN.passes);
 }
 
+if (__bloc()) {
+  // LE PORTEUR SUIT SA TOUCHE (310 — filmé à l'atelier ?atelier : « des contrôles où la balle part super loin, un délai énorme entre le
+  // premier contrôle et la 2e touche »). Mesuré : derrière sa touche orientée, le porteur DEMANDE 3,6-3,9 m/s et plafonne à 2,2-2,5 m/s
+  // pendant 0,9 s — la poussée du profil (260) visait la DEMANDE, a = ε (demande − v) / τ, mourante près d'elle ; la touche partait à
+  // 46° p50 du regard pour 1 m d'avance. (1) locomoteur.plein ['carry', 'receive'] : a = ε (V₀ − v) / τ plafonnée à la demande (le receveur
+  // aussi : 43 % de ses images en course à > 1,5 m/s sous sa demande, +1,9 m/s² p50 → 3,7) ; (2) toucheOrientee.
+  // tournant 1 : l'avance × (1 − (1 − cos θ) / 2), plancher 0,35 m, ballon ≥ vMin 1 m/s. Le mécanisme : 2,3 → demande 3,8 en 0,3 s,
+  // gain ≥ 2 × hier. Le monde, 4 × 900 s contre hier (clés retirées) : 2e action après la touche orientée p50 ≤ 0,8 × hier ; balle au
+  // plus loin p90 ≤ hier ; passes ≥ 0,85 × hier (mesuré 4 × 90 min : 2e action 1,02 → 0,62 s, > 1,2 s 44 → 24 %, séquences 3,67 → 4,18).
+  const K = matchCfg({}).locomoteur, K0 = { ...K }; delete K0.plein;
+  const gain = (KK) => { const p = { job: 'carry', id: 0, skill: {}, wp: 1 }, st = { t: 0, possession: { carrier: 0 } }; let v = 2.3; for (let i = 0; i < 18; i++) v += pasLoco(p, st, KK, v, 3.8, 1 / 60); return v - 2.3; };
+  const gA = gain(K), gN = gain(K0);
+  ok(`lot 310 — LA POUSSÉE PLEINE DU PORTEUR : de 2,3 m/s vers une demande de 3,8, +${gA.toFixed(2)} m/s en 0,3 s ≥ 2 × hier (+${gN.toFixed(2)}) ; jamais au-delà de la demande`, gA >= 2 * gN && 2.3 + gA <= 3.8 + 1e-9);
+  const T0 = { ...matchCfg({}).toucheOrientee }; delete T0.tournant; delete T0.vMin;
+  const monde = (cfg) => { const T2 = [], MX = []; let passes = 0; for (const seed of [3, 7, 11, 13]) { const st = makeMatch({ full: true, seed }); let seen = 0, O = null, pv = [0, 0];
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); const b = st.ball, dv = Math.hypot(b.v[0] - pv[0], b.v[2] - pv[1]); pv = [b.v[0], b.v[2]];
+        if (O) { const r = st.players[O.id], d = Math.hypot(b.p[0] - r.p[0], b.p[2] - r.p[2]), t = st.t - O.t; O.max = Math.max(O.max, d);
+          if (t > 0.1 && dv > 0.8 && b.p[1] < 0.5 && d < 1.3) { T2.push(t); MX.push(O.max); O = null; } else if ((b.owner != null && b.owner !== O.id) || st.restart || t > 3) { T2.push(3); MX.push(O.max); O = null; } }
+        for (; seen < st.events.length; seen++) { const e = st.events[seen];
+          if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && !st.players[e.by]?.keeper) passes++;
+          if (O && e.by === O.id && (e.type === 'pass' || e.type === 'shot' || e.type === 'windup')) { T2.push(st.t - O.t); MX.push(O.max); O = null; }
+          if (e.type === 'control' && e.pousse && !e.miss) O = { id: e.by, t: st.t, max: 0 }; } } }
+    const q = (a, f) => { const x = [...a].sort((u, v) => u - v); return x[Math.floor(f * (x.length - 1))] ?? 0; };
+    return { t2: q(T2, 0.5), mx: q(MX, 0.9), n: T2.length, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, locomoteur: K0, toucheOrientee: T0 }));
+  ok(`lot 310 — …et LE MONDE : 4 × 900 s, 2e action après la touche orientée p50 ${mA.t2.toFixed(2)} s (${mA.n}) ≤ 0,8 × ${mN.t2.toFixed(2)} ; balle au plus loin p90 ${mA.mx.toFixed(2)} ≤ ${mN.mx.toFixed(2)} m ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`,
+    mA.t2 <= 0.8 * mN.t2 && mA.mx <= mN.mx && mA.passes >= 0.85 * mN.passes);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

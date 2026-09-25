@@ -47,7 +47,12 @@ export function pasLoco(p, st, K, vAlong, vWant, dt) {
   const dv = vWant - vAlong;
   if (dv >= 0 && vWant < (K.vLent ?? 1.5)) return Math.min(dv, (K.aLent ?? 4) * dt);   // la petite demande (le pas vers un ballon à portée, le recalage) n'est pas un sprint : le mono-exponentiel y tend vers zéro et clouait le gardien à 0,8 m de son ballon
   if (dv >= 0) {
-    const eps = epsilonDe(p, st, K), vEff = Math.min(v0 * F.kV, Math.max(vWant, 0));
+    // (310, K.plein) …LA POUSSÉE PLEINE, LA DEMANDE COMME PLAFOND : a = ε (V₀ − v) / τ, puis min(dv) — hier (V_eff = la demande) la
+    // poussée mourait en approchant de la demande (2,3 → 3,8 m/s en > 1 s, τ 1,17 s) : filmé à l'atelier, le porteur derrière sa
+    // touche orientée plafonnait à 2,2-2,5 m/s pendant 0,9 s pour une demande à 3,6-3,9, le ballon à 1,1-1,9 m devant, la 2e touche
+    // à 1,0 s p50. Le réel (Samozino-Morin) : on pousse du profil, on s'arrête à l'allure voulue. Les métiers listés seulement.
+    const plein = K.plein && K.plein.includes(p.job);
+    const eps = epsilonDe(p, st, K), vEff = plein ? v0 * F.kV : Math.min(v0 * F.kV, Math.max(vWant, 0));
     const a = eps * Math.max(0, vEff - Math.max(0, vAlong)) / (tau * F.kTau);
     return Math.min(dv, a * dt);
   }

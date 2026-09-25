@@ -21,7 +21,7 @@ export function toucheOrientee(st, p, cfg, RC) {
   const sp = p.speed, vx = sp > 0.5 ? p.v[0] / sp : Math.cos(p.yaw), vz = sp > 0.5 ? p.v[1] / sp : Math.sin(p.yaw);
   const dosJeu = Math.cos(p.yaw) * sg < -(K.dos ?? 0.3);                     // dos au jeu : la touche le retourne
   if (!(sp >= (K.v ?? 1.5) || dosJeu)) return false;
-  const lead = Math.max(K.leadMin ?? 0.6, Math.min(K.leadMax ?? 1.6, (K.lead ?? 1.0) * (0.6 + sp / 5)));
+  let lead = Math.max(K.leadMin ?? 0.6, Math.min(K.leadMax ?? 1.6, (K.lead ?? 1.0) * (0.6 + sp / 5)));
   // LE CÔTÉ OUVERT : douze directions ; le sens du jeu (× sens, un peu vers l'axe), l'élan (× elan), du champ devant (aucun corps à moins de
   // champ m dans le couloir de devant m), jamais vers la craie (le ballon roule lead m et un peu plus)
   const gz = -Math.sign(p.p[2]) * Math.min(0.4, Math.abs(p.p[2]) / (st.pitch.hz || 34));
@@ -37,8 +37,12 @@ export function toucheOrientee(st, p, cfg, RC) {
     if (!best || s > best.s) best = { s, dx, dz };
   }
   if (!best) return false;
+  // …ET LA TOUCHE EN TRAVERS RESTE COURTE (310, K.tournant — filmé à l'atelier : la touche partait à 46° p50 du regard, 116° p90, à
+  // 3 m/s pour 1 m d'avance ; le corps tournait 0,3 s avant de pousser, le ballon à 1,2-2 m, la 2e touche à 1 s). Le vrai joueur qui
+  // pivote sur sa touche la garde sous lui : l'avance × (1 − tournant × (1 − cos θ) / 2), θ l'angle touche / course (regard à l'arrêt).
+  if (K.tournant) { const c = best.dx * vx + best.dz * vz; lead *= 1 - K.tournant * (1 - Math.max(-1, Math.min(1, c))) / 2; lead = Math.max(K.leadCourt ?? 0.35, lead); }
   // LA TOUCHE EST UNE VITESSE (dribble.js) : le ballon gagne lead m sur le corps projeté sur la touche, la grasse le rend ensuite
-  const v = Math.max(1.5, pushSpeed(Math.max(0, sp * (best.dx * vx + best.dz * vz)), lead));
+  const v = Math.max(K.tournant ? (K.vMin ?? 1.5) : 1.5, pushSpeed(Math.max(0, sp * (best.dx * vx + best.dz * vz)), lead));
   st.ball.impulse([best.dx * v - st.ball.v[0], -st.ball.v[1], best.dz * v - st.ball.v[2]],
     [(best.dz * v) / BALL.radius - st.ball.w[0], -st.ball.w[1], -(best.dx * v) / BALL.radius - st.ball.w[2]]);
   p.yawWant = Math.atan2(best.dz, best.dx);                                   // il tourne SUR sa touche — movePlayers slew, jamais un claquement
