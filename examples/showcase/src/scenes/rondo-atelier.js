@@ -9,6 +9,7 @@
 import * as THREE from 'three/webgpu';
 import { predictPath } from '../engine/ball-predict.js';
 import { veriteInit, veriteEvent, veriteUpdate } from './rondo-verite.js';   // ?atelier=verite : la zone de vérité (les 25 derniers mètres)
+import { conduiteInit, conduiteEvent, conduiteUpdate } from './rondo-conduite.js';   // ?atelier=conduite : la conduite et le contrôle contre les repères du réel
 
 const h = Math.hypot;
 
@@ -26,6 +27,7 @@ export function atelierInit(scene) {
     document.body.appendChild(A.hud);
   }
   if (filtre.includes('verite')) veriteInit(scene, A);
+  if (filtre.includes('conduite')) conduiteInit(scene, A);
   if (typeof window !== 'undefined') window.__atelier = A;
   scene._atelier = A;
   return A;
@@ -56,6 +58,7 @@ function geler(A, quand) { if (A.arret) A.gele = quand; if (A.cur) A.cur.moments
 export function atelierEvent(scene, e) {
   const A = scene._atelier, st = scene.state; if (!A) return;
   if (A.verite) { veriteEvent(scene, A, e); return; }
+  if (A.conduite) { conduiteEvent(scene, A, e); return; }
   if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && st.pass && !st.restart && !st.players[e.by]?.keeper && typeDe(st, e, A.filtre)) {
     const r = st.players[e.to], c = st.players[e.by], L = st.pass.lead;
     A.cur = { n: A.log.length + 1, by: e.by, to: e.to, t: st.t, style: e.style ?? '-', d: h(L[0] - c.p[0], L[2] - c.p[2]), lead: [L[0], L[2]], vol: st.pass.flight ?? 1,
@@ -85,6 +88,7 @@ function clore(A, fin) {
 export function atelierUpdate(scene) {
   const A = scene._atelier, st = scene.state; if (!A) return false;
   if (A.verite) return veriteUpdate(scene, A);
+  if (A.conduite) return conduiteUpdate(scene, A);
   const c = A.cur; A.now = st.t;
   if (c) {
     const r = st.players[c.to], b = st.ball.p, dt = st.t - c.t;
