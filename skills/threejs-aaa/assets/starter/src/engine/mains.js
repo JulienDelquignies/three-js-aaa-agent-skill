@@ -20,6 +20,7 @@ export function preparerMains(model) {
   // presque entièrement sur l'os Hand (~1 250 sommets par main) et un seul os de doigt porte des sommets (Ring3, ~175) : plier les
   // phalanges n'y tordait QUE ce morceau d'annulaire. On ne pose les mains que si au moins 3 doigts par main portent ≥ 20 sommets
   // (poids > 0,3) ; sinon null — la main reste celle du modèle.
+  if (!SM.geometry.userData.doigtsRepeses) repeserDoigts(SM);   // (26/09) la peau des doigts reconstruite si le modèle ne la porte pas
   { const si = SM.geometry.attributes.skinIndex, sw = SM.geometry.attributes.skinWeight, n = {};
     if (!si || !sw) return null;
     for (let v = 0; v < si.count; v++) for (let k = 0; k < 4; k++) { if (sw.getComponent(v, k) <= 0.3) continue; const m = DOIGT.exec(S.bones[si.getComponent(v, k)]?.name ?? ''); if (m && m[2] !== 'Thumb') { const key = m[1] + m[2]; n[key] = (n[key] ?? 0) + 1; } }
@@ -57,7 +58,7 @@ export function preparerMains(model) {
 }
 
 /** Pose les mains : flexion par phalange (rad) — { base, milieu, bout } pour les doigts, { pouce } pour le pouce ; `serre` 0..1 module tout. */
-export function poserMains(M, { serre = 1, base = 0.55, milieu = 0.95, bout = 0.6, pouce = 0.3, ecart = 0.1 } = {}) {
+export function poserMains(M, { serre = 1, base = 0.45, milieu = 0.6, bout = 0.3, pouce = 0.3, ecart = 0.1 } = {}) {   // (26/09) relâchée, pas en griffe : la base plie presque autant que le milieu
   if (!M) return;
   for (const P of M) {
     let th = P.doigt === 'Thumb' ? pouce * (P.rang === 1 ? 0.5 : 1) : [0, base, milieu, bout][P.rang];
@@ -66,4 +67,49 @@ export function poserMains(M, { serre = 1, base = 0.55, milieu = 0.95, bout = 0.
     _q.setFromAxisAngle(P.axe, th * serre);
     P.os.quaternion.copy(P.q0).multiply(_q);
   }
+}
+
+/**
+ * LE REPESAGE DES DOIGTS (26/09 — la peau de shanon pèse ses mains sur l'os Hand, un seul os de doigt porte des sommets). Pour chaque
+ * sommet dont l'os dominant est la main ou un doigt : en ESPACE DE LIAISON (bindMatrix × position ; l'origine d'un os = boneInverse⁻¹),
+ * la distance aux SEGMENTS des phalanges (Index1→2, 2→3, 3→4, idem Middle, Ring, Pinky, Thumb) et aux segments de la PAUME (Hand → la
+ * base de chaque doigt). Plus proche d'une phalange : le sommet passe à cet os, PARTAGÉ avec l'os d'avant près de la jointure (poids
+ * 0,5 → 1 sur le premier quart du segment) — la peau plie au lieu de casser ; plus proche de la paume : l'os Hand. Une fois par géométrie
+ * (partagée par les clones), marquée geometry.userData.doigtsRepeses. Rend le nombre de sommets réattribués.
+ */
+export function repeserDoigts(SM) {
+  const g = SM.geometry, S = SM.skeleton, pos = g.attributes.position, si = g.attributes.skinIndex, sw = g.attributes.skinWeight;
+  g.userData.doigtsRepeses = true;
+  if (!pos || !si || !sw) return 0;
+  const idx = new Map(S.bones.map((b, i) => [b.name.replace(/^.*?(Left|Right)Hand/, '$1Hand'), i]));
+  const O = S.boneInverses.map((m) => new THREE.Vector3().setFromMatrixPosition(_m.copy(m).invert()));
+  const segs = [];   // [a, b, os, osParent]
+  for (const side of ['Left', 'Right']) {
+    const H = idx.get(`${side}Hand`); if (H == null) continue;
+    for (const d of ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']) {
+      const ch = [1, 2, 3, 4].map((k) => idx.get(`${side}Hand${d}${k}`)); if (ch.some((x) => x == null)) continue;
+      segs.push({ a: O[H], b: O[ch[0]], os: H, par: null, main: H });                        // la paume (Hand → la base du doigt)
+      for (let k = 0; k < 3; k++) segs.push({ a: O[ch[k]], b: O[ch[k + 1]], os: ch[k], par: k === 0 ? H : ch[k - 1], main: H });
+    }
+  }
+  if (!segs.length) return 0;
+  const mains = new Set(segs.map((x) => x.main)), doigts = new Set(segs.map((x) => x.os));
+  const v = new THREE.Vector3(), ab = new THREE.Vector3(), av = new THREE.Vector3();
+  let n = 0;
+  for (let i = 0; i < pos.count; i++) {
+    let dom = -1, wd = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > wd) { wd = w; dom = si.getComponent(i, k); } }
+    if (!mains.has(dom) && !doigts.has(dom)) continue;
+    v.fromBufferAttribute(pos, i).applyMatrix4(SM.bindMatrix);
+    let best = null, bd = Infinity, bt = 0;
+    for (const sg of segs) {
+      if (sg.main !== dom && !doigts.has(dom)) continue;                                        // la bonne main
+      ab.subVectors(sg.b, sg.a); av.subVectors(v, sg.a); const L2 = ab.lengthSq() || 1e-9, t = Math.max(0, Math.min(1, av.dot(ab) / L2));
+      const d = av.addScaledVector(ab, -t).length(); if (d < bd) { bd = d; best = sg; bt = t; }
+    }
+    if (!best) continue;
+    const wOs = best.par == null ? 1 : Math.min(1, 0.5 + 2 * bt);                              // la jointure partagée sur le premier quart
+    si.setXYZW(i, best.os, best.par ?? best.os, 0, 0); sw.setXYZW(i, wOs, 1 - wOs, 0, 0); n++;
+  }
+  si.needsUpdate = true; sw.needsUpdate = true;
+  return n;
 }
