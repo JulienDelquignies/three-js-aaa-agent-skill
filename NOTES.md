@@ -14152,6 +14152,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   de 10°·w ; la posture ne se COUPE plus au départ d'un geste de touche (fondu τ 0,12 s). Mesure APPARIÉE (même segment rejoué, la couche
   est visuelle) : mains au-dessus des hanches 16,0 → 11,6 cm ; sauts du buste > 6°/image en conduite pure 22 → 24 sur 421 images (le reste
   des sauts : le corps qui tourne en courbe, 234°/s, et le balancier des épaules). ?conduite-nue : hier. Déployé Rondo-BPeYao31.js.
+- 338 ter (26/09, « la jambe est bizarre là » — la capture de la planche de conduite) : rejoué au même instant (t 51,4-51,7, joueur 0),
+  le bassin tombait de 0,864 à 0,752 m (un coureur : 0,89) et le genou du vol sautait 71 → 127° en UNE image. Décomposé : la fente de la
+  touche (rondo-touche.touchLunge) −7 à −10 cm (sans elle 0,86-0,92), la posture du porteur −3,5 cm, le saut du genou indépendant (le
+  décollage, dette du 14). Remèdes : en conduite lancée (porteur > 2 m/s) la fente AVANCE (0,25 m) et ne descend que de 2 cm (hier 14) ;
+  la posture du porteur −4 → −2 cm ; la cuisse et le genou d'une jambe EN VOL, hors geste, ne tournent pas plus vite que 1 000 °/s
+  (rondo-lisse — jamais la jambe au sol). Même instant : le genou monte 71 → 84 → 98 → 112 → 124°, le bassin ne descend plus sous 0,79.
+  Segment apparié 20 s, 22 joueurs : sauts genou/cuisse > 30°/image 342 → 280, appuis identiques au bit. ?fente-hier, ?vol-libre : hier.
+  Déployé Rondo-C3GVsVMH.js.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

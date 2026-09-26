@@ -158,7 +158,8 @@ export function touchLunge(scene, pl) {
   for (const f of ['left', 'right']) { const leg = pl.legs?.[f]; if (!leg?.foot || !leg.up || !pl.legLens?.[f] || planted(f)) continue; leg.foot.getWorldPosition(scene._wf); const d = Math.hypot(scene._wf.x - b[0], scene._wf.z - b[2]); if (d < dBest) { dBest = d; side = f; } }
   if (pl._gestePied && Math.abs(scene._t - (pl._gestePiedT ?? -9)) < 0.2 && pl.legs?.[pl._gestePied]?.up && pl.legLens?.[pl._gestePied] && !planted(pl._gestePied)) side = pl._gestePied;   // la fente sur la jambe du geste (rondo-pied)
   if (!side) return;
-  const L = { lunge: 0.18, drop: 0.14 }, lens = pl.legLens[side], R = (lens.A + lens.B) * 0.97, env = Math.sin(Math.PI * u);
+  const vC = Math.hypot(pl.sim.v[0], pl.sim.v[1]), conduite = !scene._fenteHier && scene.state.possession?.carrier === pl.sim.id && vC > 2;   // (338 ter) en conduite lancée le pied va CHERCHER le ballon, le bassin ne s'écrase plus (retour du 26/09 « la jambe est bizarre » : bassin −10 cm à chaque touche, le porteur s'agenouillait sur son ballon) ; ?fente-hier : hier
+  const L = { lunge: conduite ? 0.25 : 0.18, drop: conduite ? 0.02 : 0.14 }, lens = pl.legLens[side], R = (lens.A + lens.B) * 0.97, env = Math.sin(Math.PI * u);
   pl.legs[side].up.getWorldPosition(scene._wh);
   const dx = b[0] - scene._wh.x, dz = b[2] - scene._wh.z, r = Math.hypot(dx, dz) || 1e-6, h = scene._wh.y - Math.max(0.08, b[1] - 0.05);
   if (Math.hypot(r, h) <= R) return;

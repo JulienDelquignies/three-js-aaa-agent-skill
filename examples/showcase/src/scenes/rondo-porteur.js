@@ -4,7 +4,7 @@
 // rondo-contact) ne se lève que si la sim dit le ballon POSSÉDÉ — entre deux touches de conduite il est libre : il ne joue presque
 // jamais en dribble. Multiplier les clips hache la course (chaque clip prend puis rend les jambes). Ici une COUCHE CONTINUE, poids lissés
 // (τ 0,25 s — elle n'a jamais d'arête) :
-//   en conduite   le bassin descend de 2 cm, le buste penche de 5° au-dessus du ballon ;
+//   en conduite   le bassin descend de 2 cm, le buste penche de 11° au-dessus du ballon (338 bis), bras bas et un peu dehors ;
 //   sous pression (l'adversaire le plus proche à < 3 m, pleine à 1 m) : le bassin encore −4 cm, le buste +5°, il PIVOTE de 12° pour mettre
 //                 le corps entre l'adversaire et le ballon (le dos vers lui), et le bras de son côté s'écarte de 35° — le tient à distance.
 // Rien pendant un geste (la couche de geste possède le corps). Avant le verrou des pieds (qui re-plante sous le bassin descendu).
@@ -49,7 +49,7 @@ export function conduitePose(scene, pl, dt) {
   if (C.w * C.g < 1e-3) return;
   const B = os(pl); if (!B) return;
   const w = C.w * C.g, p = C.pr * w;
-  if (pl.hipsNudge) pl.hipsNudge([0, -(0.04 * w + 0.03 * p), 0]);
+  if (pl.hipsNudge) pl.hipsNudge([0, -(0.02 * w + 0.03 * p), 0]);
   pl.model.updateMatrixWorld(true);
   pl.model.getWorldDirection(_f); _f.y = 0; _f.normalize(); _f.negate();          // l'avant du corps (−z local)
   _ax.crossVectors(_up, _f).normalize();                                            // pencher vers l'avant
