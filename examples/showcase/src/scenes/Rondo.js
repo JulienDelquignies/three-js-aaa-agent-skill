@@ -19,7 +19,7 @@ import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
-import { piedDuControle } from './rondo-pied.js'; import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
+import { piedDuControle } from './rondo-pied.js'; import { appuiPose } from './rondo-appui.js'; import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
@@ -335,7 +335,7 @@ export class Rondo {
     this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
-    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre'); this._controlesHier = q.has('controles-hier');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
+    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre'); this._controlesHier = q.has('controles-hier'); this._appuiMuet = q.has('appui-muet');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
     if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg), tactiques: this._tac?.choix ?? null });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
     if (this._produit && q.get('ralenti') !== '0') { this._ralenti = ralentiInit(this, { onClip: (c) => produitClip(this._produit, c) }); this.revoir = (clip) => ralentiJouer(this._ralenti, this, clip); }   // les RALENTIS (rondo-ralenti.js) : le magnétoscope du rendu, le ralenti après chaque but
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
@@ -1107,7 +1107,7 @@ export class Rondo {
       // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
       // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
       // pied d'appui garde son verrou.
-      strikeWarpPlan(this, pl); touchLunge(this, pl);   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
+      strikeWarpPlan(this, pl); touchLunge(this, pl); appuiPose(this, pl);   /* (336 bis) le geste de l'appui planté (rondo-appui) */   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
         let striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;
