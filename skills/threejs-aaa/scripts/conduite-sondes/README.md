@@ -173,3 +173,15 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - Après (16 graines × 120 s) : 1,2 face-à-face/min, 2,4 s, 2 roulés [1-3], fins mordu 38 % / fente lue 23 % / fente mordue 18 % / au sol 10 % /
   perdu 10 % ; à +2 s : gardé 62 %, défenseur PASSÉ 26 %, perdu 13 % ; jeu : 1,8 tir/min, conversion ≈ 21 % ; verify-duel 22/22, verify-pas
   10/10, matchday 88/88 au bit.
+- Plus fréquents : « le porteur va davantage chercher le défenseur » (2026-09-26). `face-possessions.mjs`, `face-entonnoir.mjs` (image par
+  image), `face-fuite.mjs` (la naissance d'un épisode dos au défenseur) : défenseur côté but dans 76 % des possessions de champ, le porteur
+  lui tournait le DOS 42 % du temps (52-57 % à 2-4 m, le défenseur fermant à 3,4 m/s) ; A/B apparié des couches du cap (décalage,
+  chaloupe, dos fermé, retournement, couloir) : la poussée ne pointait vers l'arrière que 6 % du temps — ce n'était pas l'intention ;
+  face-fuite l'a montré : ballon parti dans son dos (au gain, après une touche), le porteur le chasse, et lancé chaque touche le renvoie
+  DANS sa course (le cône du porté) — il fuit malgré lui. Remèdes : l'approche qui l'attaque même s'il monte presser (le défenseur,
+  attaqué de face, se remet en garde), le DEMI-TOUR SEMELLE (le râteau : dos à lui, le ballon dans sa course, le temps de se retourner
+  → face à lui ; 7 demi-tours sur 8 enchaînent le face-à-face), la GARDE DU 1c1 À L'ÉCHELLE (Headrick 1,15-1,69 m — celle du 105 m
+  tenait le défenseur à 4 m au milieu : 74 % des images d'approche au-delà de 2,6 m, 22 % des approches expiraient), l'envie 0,85.
+  Essayé et RETIRÉ : le cap au but à 0,8 face à un seul défenseur (dos 43 → 46 %, conversion 26 → 45 %). `capture-geste.mjs` : T0 = 'demi[:k]'.
+- Après (16 graines × 120 s) : 1,2 → 1,8 face-à-face/min ; ballon-défenseur tenu 1,27 m (Headrick 1,15-1,69), corps à corps 1,53 m ; à +2 s
+  gardé 62 %, défenseur passé 28 %, perdu 10 % ; 1,75 tir/min, conversion 25 % ; verify-duel 22/22, verify-pas 10/10, matchday 88/88 au bit.

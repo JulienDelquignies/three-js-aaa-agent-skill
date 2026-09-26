@@ -105,11 +105,34 @@ function approche(st, c, K) {
   if (!c._faceApp || c._faceApp.par !== D.q.id) {
     if (D.d < A.d[0]) return;   // on ne s'engage dans l'approche que de loin
     const ux0 = (D.q.p[0] - c.p[0]) / D.d, uz0 = (D.q.p[2] - c.p[2]) / D.d, hx = c.speed > 0.5 ? c.v[0] / c.speed : Math.cos(c.yaw), hz = c.speed > 0.5 ? c.v[1] / c.speed : Math.sin(c.yaw);
-    if (-(D.q.v[0] * ux0 + D.q.v[1] * uz0) > (A.ferme ?? 2) || ux0 * hx + uz0 * hz < Math.cos((A.dos ?? 110) * Math.PI / 180)) return;   // un défenseur qui TIENT (pas une poursuite : mesuré, il fermait à 4,2 m/s dans le dos du porteur qui fuyait), un porteur qui ne le fuit pas
-    c._faceApp = { par: D.q.id, t0: st.t, go: rnd(st, c.id) < E.envie[0] + E.envie[1] * (c.persona?.flair ?? 0.5) };
+    // IL VA LE CHERCHER : le porteur qui va à peu près vers lui (≤ dos °) l'attaque même s'il monte presser (attaqué de face, le défenseur se remet
+    // en garde : cfg.jockeyConduite) ; DOS à lui, il se RETOURNE pour lui faire face s'il en a le temps — le défenseur à ≥ tourne m, à ≥ temps s
+    // de son arrivée. Mesuré avant : défenseur côté but dans 76 % des possessions de champ, le porteur lui tournait le dos 42 % du temps (52 % à
+    // 2-4 m — l'évasion du 11c11) ; la porte « il tient » (fermeture < 2 m/s) refusait 41 % des départs : 1,2 face-à-face/min
+    const ferme = -(D.q.v[0] * ux0 + D.q.v[1] * uz0), vers = ux0 * hx + uz0 * hz >= Math.cos((A.dos ?? 110) * Math.PI / 180);
+    if (!vers && !(D.d >= (A.tourne ?? 3.5) && (D.d - 1.5) / Math.max(0.5, ferme) >= (A.temps ?? 0.8))) return;
+    c._faceApp = { par: D.q.id, t0: st.t, tourne: !vers, go: rnd(st, c.id) < E.envie[0] + E.envie[1] * (c.persona?.flair ?? 0.5) };
   }
   if (!c._faceApp.go || st.t - c._faceApp.t0 > (A.max ?? 3.5)) return;
   const ux = (D.q.p[0] - c.p[0]) / D.d, uz = (D.q.p[2] - c.p[2]) / D.d;
+  // LE DEMI-TOUR SEMELLE : dos à lui, le ballon DANS sa course (≤ demiBallon m devant), assez lent (≤ demiV m/s) et le temps de se retourner avant
+  // son arrivée — la semelle tire le ballon et le corps pivote FACE à lui (le râteau : motion-skill.rateau, skillFollowStep) ; le face-à-face
+  // s'enchaîne. Mesuré (dos-debut) : dos au défenseur, la poussée tournée vers lui ne suffisait pas — lancé, chaque touche renvoyait le ballon
+  // dans sa course (le cône du porté), il fuyait malgré lui, le défenseur aux trousses (57 % du temps à 2-4 m)
+  if (c._faceApp.tourne) {
+    const bx = st.ball.p[0] - c.p[0], bz = st.ball.p[2] - c.p[2], db = hyp(bx, bz), sp = Math.max(0.3, c.speed), dans = (bx * c.v[0] + bz * c.v[1]) / (db * sp || 1);
+    const arrive = (D.d - 1.2) / Math.max(0.5, -(D.q.v[0] * ux + D.q.v[1] * uz));
+    if (db <= (A.demiBallon ?? 0.8) && dans > 0.5 && c.speed <= (A.demiV ?? 2.8) && arrive >= (A.temps ?? 0.65) && st.ball.p[1] < 0.3) {
+      const foot = footFor(byId.rateau, situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1])), move = MOVE_TIMING.rateau, exitYaw = Math.atan2(uz, ux);
+      if (st.ball.owner !== c.id) st.ball.possess(c.id);
+      startGesture(c, { id: 'rateau', ...move }, { payload: { kind: 'skill', skill: 'rateau', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, ballMax: 0, pinRel: 0.32, demiTour: true }, log: st.gestures });
+      (c._skillCd ??= {}).rateau = st.t + 2; c.intent = null; c._dribAt = st.t; c._faceApp.tourne = false;
+      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'rateau', foot, skill: 'rateau', anticipation: move.contact });
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'rateau', by: c.id, foe: +D.d.toFixed(2), demiTour: true });
+      return;
+    }
+    c._faceCap = Math.max(1.2, Math.min(c._faceCap ?? 9, A.demiV ?? 2.8)); return;   // dos à lui : on lève le pied pour pouvoir se retourner (la conduite garde son ballon)
+  }
   c.push = [ux, uz]; c.target = [c.p[0] + ux * 3, 0, c.p[2] + uz * 3];
   c._faceCap = Math.max(A.cap[0], Math.min(A.cap[1], A.cap[0] + (A.pente ?? 0.35) * (D.d - A.d[0])));
 }

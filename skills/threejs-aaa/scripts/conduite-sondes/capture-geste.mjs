@@ -88,6 +88,17 @@ if (String(T0).startsWith('face')) {
   if (!L[k]) { console.log('pas de face-à-face n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.0); suitId = L[k].by; await ouvre();
 }
+// T0 = 'demi[:k]' : le k-ième DEMI-TOUR SEMELLE (face.js : dos au défenseur, la semelle tire le ballon et le corps pivote face à lui) — filmé de
+// 1,2 s avant ; `I = porteur` suit le porteur
+if (String(T0).startsWith('demi')) {
+  const k = Number(String(T0).split(':')[1] ?? 0);
+  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'skill' && e.demiTour) out.push({ t: e.t, by: e.by }); } }
+    return out; });
+  console.log('demi-tours trouvés :', L.length, JSON.stringify(L.slice(0, 8)));
+  if (!L[k]) { console.log('pas de demi-tour n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
+}
 const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), suitId, dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard
