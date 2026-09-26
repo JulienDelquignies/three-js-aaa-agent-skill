@@ -88,3 +88,18 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   Base : poussé sans pied > 0,1 m sur 122/296 prises, p90 1,19 m (armé de passe 1 204 images, feinte 250). Après : 47/295, p90 0,38 m
   (armé 0, feinte 44). Reste : le bouclier (la tenue dos au presseur), la semelle qui pose au pas, le crochet (le ballon au point du clip).
 - `capture-geste.mjs … recup[:k] …` suit le RÉCUPÉRATEUR dès la première image (hier l'ancien porteur jusqu'à la prise).
+
+## Le joueur et le ballon ne font qu'un (2026-09-26)
+- Référence : Zago et al. 2016 (J Sports Sci 34:411) — 2,3-3,0 contacts/s en conduite de slalom, 1,4-2,3/s en conduite droite à 5,7 m/s.
+- `conduite-ballon.mjs` imprime désormais l'UNITÉ : touches par seconde de conduite en course, ballon au pied rendu (p50/p90, > 0,5 / > 0,8 m),
+  respiration (p90 − p10 du ballon devant le bassin), louvoiement (p90 − p10 de côté). Base : 0,98 touche/s, pied 0,53 / 1,11 m, respiration
+  1,07 m, louvoiement 0,99 m, 71 % du temps de conduite dans des trous > 0,8 s sans touche.
+- `rdv-tenu.mjs` (sans navigateur) : chaque rendez-vous de touche est-il tenu par le pied prévu à son échéance, sinon pourquoi ; les trous de
+  conduite et ce que fait le ballon pendant. A trouvé : la touche visait le pied à l'intervalle de ROULEMENT (touchInterval, ≈ 2 s à 3,5 m/s) ;
+  le contact exact du cou-de-pied (0,16 m) laissait passer la moitié des rendez-vous ; le porteur visait 3 m devant SOI (le ballon à 0,75 m de
+  côté, hors du couloir des pieds) ; la chasse du ballon reprenait la main pendant un rendez-vous (47 % des images) ; des rendez-vous prédits
+  au-delà de la grille. `rdv-erreur.mjs` : à l'échéance, le ballon contre sa cible (le roulement — exact depuis dribble.vitesseRdv) et le corps
+  contre le corps prédit (lire en excluant tirs, ballons possédés et rebonds).
+- Après (cfg.conduite.cadence, dribble.toucheCadenceT/vitesseRdv, rendez-vous tenu à 0,25 m, la ligne tenue entre deux touches, la cage) :
+  2,33 touches/s, pied 0,32 / 0,89 m, respiration 0,68 m, louvoiement 0,37 m, trous 20 % ; touches au cou-de-pied 84 % (verify-pas, 16 graines).
+- `capture-geste.mjs` : la caméra prend le côté qui a de la place (borne de la cage), soleil dans le dos en second, jamais au-dessus de 2,2 m.

@@ -65,11 +65,14 @@ await pg.evaluate((P) => {
     const fwd = [c.dir[0] / n, c.dir[1] / n], face = P.cam === 'face';
     const U = (sg) => (face ? [fwd[0] * 0.77 + sg * px * 0.64, fwd[1] * 0.77 + sg * pz * 0.64] : [sg * px, sg * pz]), sol = window.__soleilH ?? [0, 0];
     const ds = (sg) => { const u = U(sg); return u[0] * sol[0] + u[1] * sol[1]; };
-    if (c.sign == null) c.sign = ds(1) >= ds(-1) ? 1 : -1; else if (ds(c.sign) < -0.35 && ds(-c.sign) > ds(c.sign) + 0.3) { c.sign = -c.sign; c.pos = null; c.tgt = null; }
-    const [ux, uz] = U(c.sign), A = window.__cage ?? [99, 99];
-    // …et DANS la cage : derrière la grille la caméra filmait le grillage ; bornée, elle monte d'autant qu'elle s'est rapprochée (vue plongeante)
+    // …et DANS la cage, du côté qui a de la PLACE : bornée contre la grille la caméra se rapprochait et montait (vue de dessus) — le coût d'un côté
+    // = la distance perdue à la borne + le contre-jour ; on change de côté (coupe) seulement si l'autre est nettement meilleur
+    const A = window.__cage ?? [99, 99], place = (sg) => { const u = U(sg), wx = s.p[0] + u[0] * P.dist, wz = s.p[2] + u[1] * P.dist; return Math.hypot(wx - Math.max(-A[0], Math.min(A[0], wx)), wz - Math.max(-A[1], Math.min(A[1], wz))); };
+    const cout = (sg) => place(sg) + 2 * Math.max(0, -ds(sg) - 0.2);
+    if (c.sign == null) c.sign = cout(1) <= cout(-1) ? 1 : -1; else if (cout(-c.sign) + 1.0 < cout(c.sign)) { c.sign = -c.sign; c.pos = null; c.tgt = null; }
+    const [ux, uz] = U(c.sign);
     let wx = s.p[0] + ux * P.dist, wz = s.p[2] + uz * P.dist; const bx = Math.max(-A[0], Math.min(A[0], wx)), bz = Math.max(-A[1], Math.min(A[1], wz)), perdu = Math.hypot(wx - bx, wz - bz);
-    const want = [bx, 1.15 + 0.8 * perdu, bz], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
+    const want = [bx, Math.min(2.2, 1.15 + 0.5 * perdu), bz], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
     c.pos = c.pos ? c.pos.map((x, j) => x + (want[j] - x) * kp) : want; c.tgt = c.tgt ? c.tgt.map((x, j) => x + (tg[j] - x) * kp) : tg; };
   const sc = window.__scene; window.__cam = null;
   { let best = null; window.__engine.scene.traverse((o) => { if (o.isDirectionalLight && (!best || o.intensity > best.intensity)) best = o; });   // le soleil

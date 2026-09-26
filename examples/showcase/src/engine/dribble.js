@@ -56,6 +56,22 @@ export function touchDecel(speed, sol = null) {
 export function pushSpeed(speed, lead, sol = null) {
   return speed + Math.sqrt(2 * touchDecel(speed, sol) * Math.max(0.05, lead));
 }
+/** LA CADENCE DE TOUCHE MESURÉE (cfg.conduite.cadence, le duel) : l'intervalle entre deux touches à l'allure v, interpolé entre deux régimes
+ *  mesurés — Zago et al. 2016 (J Sports Sci 34:411) : 2,3-3,0 contacts/s en conduite de slalom (milieu 2,65, allure ≈ 3 m/s — estimée), 1,4-2,3/s en
+ *  conduite droite à 5,7 m/s (milieu 1,85). K = { v: [v0, v1], f: [f0, f1] } (m/s, touches/s), borné aux extrémités. */
+export function toucheCadenceT(K, v) {
+  const u = Math.max(0, Math.min(1, (v - K.v[0]) / (K.v[1] - K.v[0])));
+  return 1 / (K.f[0] + (K.f[1] - K.f[0]) * u);
+}
+/** LA VITESSE QUI AMÈNE LE BALLON À D MÈTRES EN T SECONDES sur CE sol (le duel) : inversée sur l'intégrateur même (stepBall, la loi du terrain et
+ *  l'air) — la formule v = D/T + a·T/2 prenait la décélération à l'allure du CORPS, pas du ballon (rdv-erreur : ballon à 0,33 m de la cible, p50). */
+export function vitesseRdv(D, T, sol) {
+  if (!(D > 0) || !(T > 0)) return null;
+  const n = Math.max(6, Math.ceil(T * 60)), O = { sol }, va = (v0) => { const s = { p: [0, BALL.radius, 0], v: [v0, 0, 0], w: [0, 0, -v0 / BALL.radius] }; for (let i = 0; i < n; i++) stepBall(s, T / n, O); return s.p[0]; };
+  let lo = 0, hi = 12; if (va(hi) < D) return null;
+  for (let i = 0; i < 28; i++) { const mid = (lo + hi) / 2; if (va(mid) < D) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
 /** Seconds until the player is back on the ball after a touch of `lead` metres. */
 export function touchInterval(speed, lead, sol = null) {
   return 2 * Math.sqrt(2 * Math.max(0.05, lead) / touchDecel(speed, sol));
@@ -176,6 +192,13 @@ export function dribbleStep(d, ball, player, dt) {
     // …(2026-09-25) mais seulement si ce pied PEUT l'atteindre : sa pose (pasProchains) à ≤ pasPortee du ballon — le rendu l'y amène (viseBallon,
     // ≤ 0,4 m) ; plus loin, on attend le vol suivant (le corps s'approche), un cycle au plus (jamais de porteur figé). Mesuré sans : la queue
     // des touches de rattrapage à 0,4-0,57 m (p75-p90) du cou-de-pied rendu.
+    // (c.rdvPied, cfg.conduite.cadence — le duel) LE RENDEZ-VOUS SE TIENT : le pied du rendez-vous qui FINIT son vol joue le ballon s'il est à sa
+    // portée (sa pose à ≤ pasPortee — le rendu l'y amène, viseBallon ≤ 0,4 m) ; exiger le contact exact du cou-de-pied (0,16 m) laissait passer
+    // 54 % des rendez-vous (rdv-tenu.mjs : le ballon arrivé à 0,5 m, le porteur le rattrapait une foulée plus tard — le ballon, un corps à part)
+    else if (c.rdvPied && rdvEnCours && player.pas.P?.rdv && player.pas.finVol?.[player.pas.P.rdv.pied] && !d.pasJoue[player.pas.P.rdv.pied]) {
+      const pr = player.pas.P.rdv.pied, pose = player.pas.prochains?.filter((r) => r.pied === pr).sort((a, b) => a.t - b.t)[0], dPose = pose ? Math.hypot(bA - pose.avant, bD - pose.droite) : 9;
+      if (dPose <= (c.rdvPortee ?? 0.25)) { piedPas = pr; pasMode = 'rdv'; pasPorteeV = +dPose.toFixed(2); }   // 0,25 : au-delà le rendu n'amène pas le pied (contact-debug : touches « rdv » à 0,3-0,5 m du cou-de-pied rendu à pasPortee 0,4)
+    }
     else if (dist < prise && !rdvEnCours) { const fv = ['left', 'right'].filter((k) => player.pas.finVol?.[k] && !d.pasJoue[k]); if (fv.length) {
       const cand = fv.length === 1 ? fv[0] : (bD < 0 ? 'left' : 'right'), pose = player.pas.prochains?.filter((r) => r.pied === cand).sort((a, b) => a.t - b.t)[0];
       const dPose = pose ? Math.hypot(bA - pose.avant, bD - pose.droite) : 0, loin = dPose > (c.pasPortee ?? 0.55);
@@ -183,7 +206,7 @@ export function dribbleStep(d, ball, player, dt) {
     } }
     if (piedPas || !(dist < prise)) d.pasAttente = null;
   }
-  const auPied = pasOn ? !!piedPas || (!rdvEnCours && bvAway > player.speed + 0.3 && dist < c.reach) : dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
+  const auPied = pasOn ? !!piedPas || (!rdvEnCours && bvAway > player.speed + 0.3 && dist < c.reach) : dist < prise || (!c.rdvPied && bvAway > player.speed + 0.3 && dist < c.reach);   // (c.rdvPied, le duel) au pas, plus de touche à pleine allonge sur un ballon qui fuit (1,15 m : le ballon partait à 0,8-1 m du pied rendu) — on le rejoint
   // …ET LA TOUCHE EXIGE LE CÔNE AVANT (player.coneOk, lot 76 — posé par le match ; absent :
   // bit-près) : un pied ne pousse pas un ballon dans le dos — le corps le contourne d'abord.
   if (auPied && player.coneOk !== false && (piedPas || d.sinceTouch >= c.minStride)) {   // (pas) un vol, une touche : la foulée cadence, plus la distance
@@ -249,7 +272,7 @@ export function dribbleStep(d, ball, player, dt) {
     // freiné par la pelouse (s = v₀t − at²/2). Poussé « à x m » sans égard aux pieds, le ballon traversait le couloir de l'autre pied et
     // arrivait entre deux poses : la moitié des touches se jouaient à 0,45 m du pied rendu (mode « fin »).
     if (piedPas && player.pas?.prochains && player.speed >= (c.pasV ?? 1.0)) {
-      const tVoulu = touchInterval(vP, lead, c.sol), R = player.pas.prochains.filter((r) => r.t > 0.12);
+      const tVoulu = player.toucheT ?? touchInterval(vP, lead, c.sol), R = player.pas.prochains.filter((r) => r.t > 0.12);   // (player.toucheT, cfg.conduite.cadence — le duel) LA CADENCE MESURÉE du dribble (Zago 2016) : le rendez-vous au pied de la touche suivante, pas au bout du roulement (≈ 2 s à 3,5 m/s : le ballon partait, roulait, le porteur le rattrapait — un corps à part)
       const rdv = R.reduce((b, r) => (!b || Math.abs(r.t - tVoulu) < Math.abs(b.t - tVoulu) ? r : b), null);
       if (rdv) {
         // (2026-09-25) …LE CORPS SUIT SON ARC : en virage, le rendez-vous calculé sur la tangente (le corps tout droit à sa vitesse) envoyait le
@@ -261,11 +284,13 @@ export function dribbleStep(d, ball, player, dt) {
         const rot = (tt) => { const a = om * tt; return Math.sign(om) === Math.sign(dPsi) ? Math.sign(a) * Math.min(Math.abs(a), Math.abs(dPsi)) : a * Math.exp(-tt / 0.2); };
         let bxp = px, bzp = pz; const N = 8, h = rdv.t / N;
         for (let k = 0; k < N; k++) { const a = rot((k + 0.5) * h), ca = Math.cos(a), sa = Math.sin(a); bxp += (vel[0] * ca - vel[1] * sa) * h; bzp += (vel[0] * sa + vel[1] * ca) * h; }
+        if (player.cage) { const [hx, hz, mc] = player.cage; bxp = Math.max(-hx + mc, Math.min(hx - mc, bxp)); bzp = Math.max(-hz + mc, Math.min(hz - mc, bzp)); }   // (player.cage, le duel) le corps s'arrête à la grille (murCorps) : un rendez-vous prédit au-delà envoyait le ballon dans le mur
         const yT = yaw0 + rot(rdv.t), fx = Math.cos(yT), fz = Math.sin(yT);
         const lat = rdv.droite * 1.25;                                                   // dans SON couloir, un peu dehors : l'autre pied passe à côté
-        const tx = bxp + fx * rdv.avant - fz * lat, tz = bzp + fz * rdv.avant + fx * lat;
+        let tx = bxp + fx * rdv.avant - fz * lat, tz = bzp + fz * rdv.avant + fx * lat;
+        if (player.cage) { const [hx, hz] = player.cage, r = BALL.radius + 0.02; tx = Math.max(-hx + r, Math.min(hx - r, tx)); tz = Math.max(-hz + r, Math.min(hz - r, tz)); }
         const ex = tx - ball.p[0], ez = tz - ball.p[2], el = hyp(ex, ez), a = touchDecel(vP, c.sol);
-        if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2; dx = ex / el; dz = ez / el; spT = v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el); d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t }; if (player.pas.P) player.pas.P.rdv = { pied: rdv.pied, reste: rdv.t }; }
+        if (el > 0.05) { const v0 = el / rdv.t + a * rdv.t / 2, vR = c.rdvPied && c.sol ? vitesseRdv(el, rdv.t, c.sol) : null; dx = ex / el; dz = ez / el; spT = vR ?? (v0 >= a * rdv.t ? v0 : Math.sqrt(2 * a * el)); const aT = rot(rdv.t), vl = hyp(vel[0], vel[1]) || 1; d.rdv = { pied: rdv.pied, t: d.horloge + rdv.t, cible: [tx, tz], corps: [bxp, bzp], cap: [(vel[0] * Math.cos(aT) - vel[1] * Math.sin(aT)) / vl, (vel[0] * Math.sin(aT) + vel[1] * Math.cos(aT)) / vl] };   /* (c.rdvPied) la vitesse inversée sur le sol même ; le corps prédit et son cap d'arrivée — le porteur tient cette ligne jusqu'à la touche (match-sim) */ if (player.pas.P) player.pas.P.rdv = { pied: rdv.pied, reste: rdv.t }; }
       }
     }
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
