@@ -5,7 +5,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { generateStadium, checkStadium } from '../engine/stadium.js';
 import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
-import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js'; import { buildCrowd } from '../engine/crowd.js'; import { preparerMains, poserMains } from '../engine/mains.js'; import { setupStadiumJour } from '../engine/stadium-jour.js';
+import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js'; import { buildCrowd } from '../engine/crowd.js'; import { preparerMains, poserMains } from '../engine/mains.js'; import { osCoudes, coudesDehors } from '../engine/coudes.js'; import { setupStadiumJour } from '../engine/stadium-jour.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
 import { spawnArbitre, updateArbitre } from './arbitre.js';
@@ -293,7 +293,7 @@ export class Rondo {
       const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head'), spine: q.has('buste-fixe') ? null : ['Spine', 'Spine1', 'Spine2'].map((n) => cloneBones.get(n)) });   // le buste suit le regard (?buste-fixe : la tête seule, hier)
       this.players.push({
         sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl, ...cast,
-        gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13), mains: q.has('mains-ouvertes') ? null : preparerMains(model3d),   // les mains relâchées (engine/mains.js) ; ?mains-ouvertes : la pose de liaison d'hier
+        gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13), mains: q.has('mains-ouvertes') ? null : preparerMains(model3d), coudes: q.has('coudes-colles') ? null : osCoudes(model3d),   // les mains relâchées (engine/mains.js) ; ?mains-ouvertes : la pose de liaison d'hier
         legs: { left: legs[0], right: legs[1] },
         legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
         arms: { left: arms[0], right: arms[1] },
@@ -958,6 +958,7 @@ export class Rondo {
       // ré-invente pas — un corps, une autorité, et le lissage est celui de la sim.
       pl.ctrl.yaw = pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw));
       pl.model.rotation.y = pl.ctrl.yaw;
+      if (pl.coudes && !s.act && !pl.gestureLayer.active && !(s.down > 0)) coudesDehors(pl.model, pl.coudes, 18 + 10 * Math.max(0, Math.min(1, (Math.hypot(s.v[0], s.v[1]) - 1) / 3)));   // les coudes dehors (engine/coudes.js) : 18° à l'arrêt → 28° en course (19° restaient contre le maillot ample), plancher sur la pose finale ; ?coudes-colles : hier
 
       const shield = contactShield(this, pl);   // le porteur pressé protège son ballon (lot A10) — puis LA COUCHE DE GESTE, après le mixer. Les poids restent les lois de composition :
       // LE POIDS DES JAMBES = L'ARRIVÉE (corps posé : 1 − v/2,5 sur la vitesse sol MESURÉE — la
