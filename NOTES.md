@@ -14147,6 +14147,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   tirs 25,5 → 22,0, complétion 90,6 → 91,5, pertes 121,8 → 120,0. Budget : la graine 7 sèche 600 s sous le tempo, clause du contrat
   DATÉE. Dettes : le chercheur de ballon après un but engage (la pointe devrait), trop peu de vrais sprints (0,5-4 / 90 c. 10 réels),
   la double touche de l'engageur non arbitrée (0 cas mesuré). Défaut 306d463183184f5a / 9b889eb1e1555dc9.
+- 338 bis (26/09, « la beauté de la conduite ») : filmée de profil, les avant-bras du porteur remontaient à la poitrine (coude 90° et balancier
+  de la foulée de course), buste presque droit. rondo-porteur : buste 5 → 11°, bassin −2 → −4 cm, coude ouvert de 40°·w, haut du bras écarté
+  de 10°·w ; la posture ne se COUPE plus au départ d'un geste de touche (fondu τ 0,12 s). Mesure APPARIÉE (même segment rejoué, la couche
+  est visuelle) : mains au-dessus des hanches 16,0 → 11,6 cm ; sauts du buste > 6°/image en conduite pure 22 → 24 sur 421 images (le reste
+  des sauts : le corps qui tourne en courbe, 234°/s, et le balancier des épaules). ?conduite-nue : hier. Déployé Rondo-BPeYao31.js.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
