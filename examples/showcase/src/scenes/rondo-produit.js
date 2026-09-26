@@ -7,7 +7,8 @@
 // court : < 28 m, corner, penalty, coup franc proche) et quelques secondes après chaque but ; demo — l'ancien format 2 × 3 min.
 // Clavier : Espace pause, 1-4 vitesse (×1 ×2 ×4 ×8), N prochain moment, M la liste des moments.
 
-import { tableauInit, tableauEvent, tableauBut, tableauUpdate } from './rondo-tableau.js';
+import { tableauInit, tableauEvent, tableauBut, tableauUpdate, tableauInfo } from './rondo-tableau.js';
+import { panneauTactiques, libelle } from './rondo-tactiques.js';
 
 const MODES = { complet: 'Match complet', long: 'Résumé long', court: 'Résumé court', demo: 'Démo (6 min)' };
 const h = Math.hypot;
@@ -19,7 +20,7 @@ export function dureeDe(mode) { return mode === 'demo' ? 180 : 2700; }
 const css = (el, s) => { el.style.cssText = s; return el; };
 const hex = (c) => '#' + c.toString(16).padStart(6, '0');
 
-export function produitInit(scene, { teams, nomDe, sauter }) {
+export function produitInit(scene, { teams, nomDe, sauter, tactiques = null }) {
   const P = { mode: scene._mode ?? 'court', teams, nomDe, sauter, pause: false, vUser: 1, turbo: false, moments: [], com: { txt: '', t: -9, prio: 0 }, dernierTir: null, butT: -99, vCur: 1 };
   if (typeof document === 'undefined') return P;
   const old = document.getElementById('score'); if (old) old.style.display = 'none';
@@ -46,6 +47,8 @@ export function produitInit(scene, { teams, nomDe, sauter }) {
   for (const [k, v] of Object.entries({ nuit: 'Nuit', soir: 'Fin de journée', jour: 'Jour' })) { const o = document.createElement('option'); o.value = k; o.textContent = v; if (k === (scene._heure ?? 'nuit')) o.selected = true; P.selH.appendChild(o); }
   P.selH.addEventListener('change', () => { const u = new URL(location.href); u.searchParams.set('heure', P.selH.value); location.href = u.toString(); });
   P.ctl.appendChild(P.selH); document.body.appendChild(P.ctl);
+  // LES TACTIQUES (rondo-tactiques.js) : le panneau de choix, et les compositions sous le tableau au coup d'envoi
+  if (tactiques) { P.tac = panneauTactiques(P.ctl, teams, tactiques); tableauInfo(P.tab, 'COMPOSITIONS', [[libelle(tactiques[0]), '', libelle(tactiques[1])]], 9000); }
   P.bCam.textContent = `Caméra : ${{ rapprochee: 'Rapprochée', tv: 'Télé', tactique: 'Tactique', joueur: 'Joueur' }[scene._plan] ?? 'Télé'}`;
   // LA LISTE DES MOMENTS
   P.list = css(document.createElement('div'), 'position:fixed;right:12px;top:56px;z-index:41;display:none;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:10px 12px;border-radius:10px;background:rgba(12,14,20,.86);color:#e8ebf2;font:500 13px/1.45 system-ui,sans-serif');

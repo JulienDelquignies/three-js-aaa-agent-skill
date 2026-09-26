@@ -117,10 +117,19 @@ export function tableauUpdate(T, scene) {
   for (const i of [0, 1]) if (st.score[i] !== T.score[i]) { T.score[i] = st.score[i]; T.sc[i].textContent = String(st.score[i]); }
   T.live.style.opacity = st.fini ? '0.3' : String(0.65 + 0.35 * Math.abs(Math.sin(performance.now() / 700)));
   if (T.band.classList.contains('on') && performance.now() > T.bandFin) T.band.classList.remove('on');
+  if (!stats && T.infoN > 0) { T.infoN--; if (T.infoN === 0) T.stats.classList.remove('on'); return; }   // le bandeau d'information (les compositions) tient ses images
   if (stats && !T.stats.classList.contains('on')) {
     const p = C.poss, tot = (p[0] + p[1]) || 1, pc = (k) => Math.round(100 * p[k] / tot);
     const L = (a, n, b) => `<div class="l"><span>${a}</span><span>${n}</span><span>${b}</span></div>`;
     T.stats.innerHTML = `<div class="h">${stats}</div>${L(pc(0) + '%', 'Possession', pc(1) + '%')}${L(T.tirs[0], 'Tirs', T.tirs[1])}${L(T.cadres[0], 'Cadrés', T.cadres[1])}`;
     T.stats.classList.add('on');
   } else if (!stats && T.stats.classList.contains('on')) T.stats.classList.remove('on');
+}
+
+/** Un bandeau d'information sous le tableau (ms) : le titre et des lignes [gauche, milieu, droite] — les compositions d'avant-match. */
+export function tableauInfo(T, titre, lignes, ms = 8000) {
+  if (!T) return;
+  const L = (a, n, b) => `<div class="l" style="grid-template-columns:1fr auto 1fr"><span>${a}</span><span>${n}</span><span style="text-align:left">${b}</span></div>`;
+  T.stats.innerHTML = `<div class="h">${titre}</div>` + lignes.map((l) => L(...l)).join('');
+  T.stats.classList.add('on'); T.infoN = Math.round(ms / 1000 * 60);   // compté en IMAGES rendues (un chargement lent ne le mange pas)
 }

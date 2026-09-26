@@ -38,6 +38,8 @@ export const GAZE = {
   // (A12a) L'HORLOGE DE SCAN DE LA SIM (250, p.scan) : la hauteur des yeux sur la cible d'une saccade — un corps
   // se regarde à la tête, un espace à hauteur d'horizon — et la PRISE (m) où les yeux retombent sur le ballon
   scanEyeHead: 1.6, scanEyeSpace: 1.0, prise: 1.5,
+  // LE BUSTE (26/09) : 40 % du lacet relatif, 32° au plus, réparti bas → haut (la colonne se tord surtout en haut), 180°/s
+  torsoShare: 0.4, torsoMax: 32, torsoRate: 180, torsoSplit: [0.25, 0.35, 0.4],
 };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -100,9 +102,14 @@ export function pickGazeTarget(view, st, rng) {
  * (par-dessus mixer + gait + couche de geste, comme le stabilisateur de gait).
  */
 export class Gaze {
-  constructor({ neck, head }) {
+  constructor({ neck, head, spine = null }) {
     this.neck = neck; this.head = head;
+    // LE BUSTE QUI SUIT LE REGARD (26/09, audit animation n°1 : « le buste ne s'ouvre jamais vers le jeu ») — optionnel : les trois
+    // vertèbres [Spine, Spine1, Spine2] portent une part du lacet (le joueur court dans un sens et regarde le jeu de trois-quarts ;
+    // les hanches et les jambes gardent la course). Absent : la tête seule, hier au bit.
+    this.spine = spine?.filter(Boolean).length ? spine.filter(Boolean) : null;
     this.yaw = 0; this.pitch = 0;            // l'état — en ° repère corps
+    this.torso = 0;                          // ° — la part du buste (lissée)
     this._lastTarget = null;
   }
 
@@ -113,8 +120,9 @@ export class Gaze {
    * @param bodyYaw lacet sim du corps (convention sim : avant = [cos, sin] sur x/z)
    * @param w      poids (0..1) — fondu quand un clip possède la tête (amorti tête baissée…)
    */
-  update(dt, p, target, bodyYaw, w = 1) {
+  update(dt, p, target, bodyYaw, w = 1, torsoW = 1) {
     if (!this.neck || !this.head || w <= 1e-3) return;
+    const T = this.spine ? GAZE.torsoMax * Math.max(0, Math.min(1, torsoW)) : 0;   // la part maximale du buste cette image
     const dx = target[0] - p[0], dy = target[1] - p[1], dz = target[2] - p[2];
     const horiz = hyp(dx, dz) || 1e-6;
     // L'ÉTAT EST EN MONDE, et c'est toute la physiologie : le réflexe vestibulo-oculaire compense
@@ -134,8 +142,19 @@ export class Gaze {
     // le repère corps est une PROJECTION clampée de l'état monde ; au-delà du clamp (cible dans le
     // dos), l'état monde est ramené au bord — pas d'enroulement, la tête « lâche » la cible comme
     // un humain qui devrait tourner les épaules
-    this.yaw = clamp(wrapD(this.worldYaw - bodyDeg), -GAZE.yawMax, GAZE.yawMax);
-    this.worldYaw = bodyDeg + this.yaw;
+    const rel = clamp(wrapD(this.worldYaw - bodyDeg), -GAZE.yawMax - T, GAZE.yawMax - 0 + T);
+    this.worldYaw = bodyDeg + rel;
+    // le buste prend sa part (torsoShare du lacet relatif, bornée), rate-limitée (un buste ne claque pas) ; la tête et le cou le reste
+    if (this.spine) {
+      const hors = Math.abs(wrapD(wantYawW - bodyDeg)) > GAZE.yawMax + T;   // la cible dans le dos, hors de portée : le buste ne se tord pas vers le vide (on se retournerait)
+      const want = hors ? 0 : clamp(rel * GAZE.torsoShare, -T, T), r = GAZE.torsoRate * dt;
+      this.torso += clamp(want - this.torso, -r, r);
+      const put1 = (bone, deg) => { const yy = -deg * Math.PI / 360, cy = Math.cos(yy), sy = Math.sin(yy), b = bone.quaternion;
+        // rotation autour du +y LOCAL (l'axe de la vertèbre — même convention sondée que le cou : −y tourne vers la gauche), à droite du local
+        b.set(b.x * cy - b.z * sy, b.y * cy + b.w * sy, b.z * cy + b.x * sy, b.w * cy - b.y * sy); };
+      for (const [i, bone] of this.spine.entries()) put1(bone, this.torso * GAZE.torsoSplit[i % 3] * w);
+    }
+    this.yaw = clamp(rel - (this.spine ? this.torso : 0), -GAZE.yawMax, GAZE.yawMax);
     // application : cou 40 %, tête 60 % — axes SONDÉS (+x = bas, −y = gauche personnage) ;
     // le lacet sim tourne vers +y monde quand yaw croît → le −y local suit le signe du désiré
     const put = (bone, share) => {

@@ -25,7 +25,7 @@ import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWar
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, produitClip, modeDe, dureeDe } from './rondo-produit.js'; import { ralentiInit, ralentiRecord, ralentiBut, ralentiJouer, ralentiUpdate } from './rondo-ralenti.js';
-import { planDe, planSuivant, camerasUpdate, toitsUpdate } from './rondo-cameras.js';
+import { planDe, planSuivant, camerasUpdate, toitsUpdate } from './rondo-cameras.js'; import { tactiquesDe } from './rondo-tactiques.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -152,8 +152,9 @@ export class Rondo {
     // final, feuille. Le réduit garde son monde sans fin (calibré 76 clauses).
     this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: dureeDe(this._mode), pause: 6 }, ...(() => { try { return JSON.parse(q.get('cfg') || '{}'); } catch { return {}; } })() })   /* ?cfg={…} : les clés du moteur surchargées (l'A/B d'une loi dans l'atelier, même match) */
       : this.matchMode ? matchCfg() : null;
+    this._tac = this.fullMode && !q.has('atelier') && q.get('tactiques') !== '0' ? tactiquesDe(q) : null;   // LES TACTIQUES DU PRODUIT (rondo-tactiques.js) — ?tactiques=0 : équilibre contre équilibre, le monde d'hier
     this.state = this.matchMode
-      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
+      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, tactics: this._tac?.tactics ?? null, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : this._tac?.roles ?? null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
@@ -289,7 +290,7 @@ export class Rondo {
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.
       const cloneBones = rigBones(model3d);
-      const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
+      const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head'), spine: q.has('buste-fixe') ? null : ['Spine', 'Spine1', 'Spine2'].map((n) => cloneBones.get(n)) });   // le buste suit le regard (?buste-fixe : la tête seule, hier)
       this.players.push({
         sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl, ...cast,
         gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),
@@ -335,7 +336,7 @@ export class Rondo {
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
     this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this);   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
-    if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg) });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
+    if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg), tactiques: this._tac?.choix ?? null });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
     if (this._produit && q.get('ralenti') !== '0') { this._ralenti = ralentiInit(this, { onClip: (c) => produitClip(this._produit, c) }); this.revoir = (clip) => ralentiJouer(this._ralenti, this, clip); }   // les RALENTIS (rondo-ralenti.js) : le magnétoscope du rendu, le ralenti après chaque but
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
     // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
@@ -1096,7 +1097,7 @@ export class Rondo {
         const gw = (pl.gestureLayer.active && pl.gestureLayer.tracks?.Head) ? 1 - 0.7 * (pl._wUp ?? 0) : 1;
         pl.gaze.neck?.getWorldPosition?.(this._wv);
         const hp = pl.gaze.head?.getWorldPosition ? pl.gaze.head.getWorldPosition(this._wv) : null;
-        pl.gaze.update(dtP, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw);
+        pl.gaze.update(dtP, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw, a || pl.gestureLayer.active || s.down > 0 ? 0 : 1);   // le buste se tait pendant un geste (la frappe, le contrôle, la chute possèdent la colonne)
       }
       // LE VERROU DES PIEDS, en toute fin de pile — après le replaquage sim, la couche de geste et
       // le regard, pour verrouiller la position FINALE (le résoudre dans ctrl.update verrouillait
