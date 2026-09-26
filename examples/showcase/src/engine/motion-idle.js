@@ -42,7 +42,7 @@ const TAU = Math.PI * 2;
  *            vrille est ce qui met une main sur une hanche ou devant le bas-ventre) + armLive : micro-balancier (°)
  */
 export const IDLE_KINDS = {
-  repos:        { hw: 0.11, knee: 5,  lean: 1,  headDown: 0,  sway: 0.035, swayT: 7.5, breath: 1.2, breathT: 4.2, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 9,  fwd: 5,   elbow: 16, twist: 0 },   armLive: 1.5 },
+  repos:        { hw: 0.11, knee: 5,  lean: 1,  headDown: 0,  sway: 0.035, swayT: 7.5, breath: 1.2, breathT: 4.2, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 12,  fwd: 5,   elbow: 16, twist: 0 },   armLive: 1.5 },
   mainsHanches: { hw: 0.13, knee: 4,  lean: 0,  headDown: 0,  sway: 0.03,  swayT: 8.5, breath: 1.0, breathT: 4.6, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 0.6 },
   abattu:       { hw: 0.13, knee: 5,  lean: 5,  headDown: 18, sway: 0.03,  swayT: 8.0, breath: 1.0, breathT: 4.4, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 0.6 },   // (A11) l'adversaire qui a encaissé : mains sur les hanches, la tête basse
   sautillement: { hw: 0.12, knee: 14, lean: 4,  headDown: 2,  sway: 0.012, swayT: 3.0, breath: 1.0, breathT: 3.0, bounce: 0.035, bounceT: 0.42, heel: 14, arms: { elev: 12, fwd: 22,  elbow: 70, twist: 0 },   armLive: 2.5 },
