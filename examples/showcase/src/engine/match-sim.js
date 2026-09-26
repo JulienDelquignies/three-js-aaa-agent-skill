@@ -287,7 +287,7 @@ function assignMatchJobs(st, cfg) {
       }
       gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t);
       // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 = la bouche du but : CSC mesuré ; hors axe il meurt en sortie de but).
-      const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
+      const spotD = [g.x - g.sign * (st.full && cfg.gkPied?.avance ? Math.max(4.5, Math.abs(gk.p[0] - g.x)) : 4.5), (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];   // (26/09, cfg.gkPied.avance) le spot n'est JAMAIS derrière lui : reçu à 5,7 m, il poussait vers son but (CSC mesuré, graine 3 t=505)
       if (bdC > 0.85) {
         // LE GARDIEN AUSSI PASSE PAR SON BALLON (viser le spot en l'abandonnant à 2 m gelait le monde — épisodes de 73 et 84 s mesurés, distribution jamais armable).
         const toS = [spotD[0] - st.ball.p[0], spotD[1] - st.ball.p[2]];
