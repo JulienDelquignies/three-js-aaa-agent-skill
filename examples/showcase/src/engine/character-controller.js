@@ -151,7 +151,8 @@ export class CharacterController {
     const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);
     const mag = this._cur.length();
     let dx = fx, dz = fz;
-    if (mag > 1e-3) { dx = this._cur.x / mag; dz = this._cur.y / mag; }
+    if (this.gaitVraie && this._vW && Math.hypot(this._vW[0], this._vW[1]) > 0.3) { const m = Math.hypot(this._vW[0], this._vW[1]); dx = this._vW[0] / m; dz = this._vW[1] / m; }
+    else if (mag > 1e-3) { dx = this._cur.x / mag; dz = this._cur.y / mag; }
     return [v * (dx * fx + dz * fz), v * (dx * -fz + dz * fx)];
   }
 
@@ -224,6 +225,10 @@ export class CharacterController {
       const cap = this.runSpeed * this.sprintMult * 1.5;      // au-delà : téléport de scène, pas une course
       const inst = Math.min(d / Math.max(1e-4, dt), cap);
       this.groundSpeed = (this.groundSpeed ?? inst) * 0.7 + inst * 0.3;
+      // (chantier foulée, 27/09) LA VITESSE VRAIE EN VECTEUR : la pose de la foulée fait reculer l'appui selon l'INTENTION lissée (_cur) —
+      // le corps, lui, avance à la vitesse de la sim ; en accélération, en virage, sur le porteur qui s'ajuste à son ballon, les deux
+      // divergent et le verrou TRAÎNE le pied (14 % des images d'appui hors de portée, mesuré). gaitVraie : la pose lit le déplacement réel.
+      if (d / Math.max(1e-4, dt) < cap) { const k = 0.35, vx = (wp.x - this._lastW.x) / Math.max(1e-4, dt), vz = (wp.z - this._lastW.z) / Math.max(1e-4, dt); this._vW = this._vW ? [this._vW[0] + (vx - this._vW[0]) * k, this._vW[1] + (vz - this._vW[1]) * k] : [vx, vz]; }
     } else this.groundSpeed = 0;
     this._lastW = { x: wp.x, z: wp.z };
 
@@ -280,7 +285,7 @@ export class CharacterController {
       // l'audit a surpris le pied d'appui à 0,20 m de haut et l'axe du pied à 144° du départ AU
       // CONTACT (un pied de pleine foulée sous un geste de frappe). L'arrêt d'un pas se FINIT en
       // double appui ; le dernier quart de l'armé appartient au plant.
-      const vTarget = this.plantHold ? 0 : this.gestureHold ? Math.min(this.groundSpeed ?? 0, vGait) : vGait;
+      const vTarget = this.plantHold ? 0 : this.gestureHold ? Math.min(this.groundSpeed ?? 0, vGait) : this.gaitVraie ? (this.groundSpeed ?? vGait) : vGait;
       // le PLANT a sa propre constante de temps : pour un armé court (0,22 s) la fenêtre de plant
       // (dernier quart) dure 0,055 s — plus COURT que le lissage de croisière (0,08 s), donc la
       // marche restait ~30 % dans la pose au contact, à une phase arbitraire : l'axe du pied

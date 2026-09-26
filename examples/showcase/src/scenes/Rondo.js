@@ -281,7 +281,7 @@ export class Rondo {
         };
       })();
       const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite }), cast = castStrikes(entry, p, Number(q.get('seed')) || 7, this._reports.gestes);
-      ctrl.lockExternal = true; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
+      ctrl.lockExternal = true; ctrl.gaitVraie = !q.has('foulee-intention'); if (ctrl.footLock) ctrl.footLock.carryTau = q.has('pied-sec') ? 0 : 0.1; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.

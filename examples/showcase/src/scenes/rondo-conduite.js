@@ -7,6 +7,7 @@
 // Chaque touche et chaque contrôle s'inscrivent dans window.__atelier.log ; window.__atelier.bilan() rend la synthèse ; ?arret : le monde
 // se suspend aux touches hors repère (window.__atelier.go() repart). Lecture de l'état sim et du rendu, jamais d'écriture.
 import * as THREE from 'three/webgpu';
+import { jugeInit, jugeImage, jugeTouche, jugeBilan } from './rondo-juge.js';   // l'arbitre visuel (téléportations, glisses, jambes étirées, allonge)
 
 const h = Math.hypot;
 const _f = new THREE.Vector3();
@@ -36,6 +37,7 @@ export function conduiteInit(scene, A) {
   const C = { log: [], ouverts: [], dernier: {}, suivi: null };
   A.conduite = C; A.log = C.log;
   A.bilan = () => bilanDe(C.log);
+  C.juge = jugeInit(); A.juge = () => jugeBilan(C.juge);
   return C;
 }
 
@@ -43,6 +45,7 @@ export function conduiteInit(scene, A) {
 export function conduiteEvent(scene, A, e) {
   const C = A.conduite, st = scene.state; if (!C || st.restart) return;
   const c = e.by != null ? st.players[e.by] : null; if (!c || c.keeper) return;
+  if (e.type === 'touche' || ((e.type === 'control' || e.type === 'receive') && !e.miss)) jugeTouche(C.juge, scene, c.id, e.type);
   if (e.type === 'touche' && st.possession?.carrier === c.id) {
     const R = regimeDe(st, c), prev = C.dernier[c.id];
     const T = { k: 'touche', id: c.id, t: st.t, ...R, intervalle: prev && st.t - prev.t < 3 ? st.t - prev.t : null, dCorps: h(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2]), pied: piedDe(scene, c.id), piedMin: null, fin: st.t + 0.15 };
@@ -63,6 +66,7 @@ export function conduiteEvent(scene, A, e) {
 /** Chaque image : mesures ouvertes (le pied au contact dans ± 0,15 s, la vitesse absorbée, la balle à +0,5 s), caméra, HUD. */
 export function conduiteUpdate(scene, A) {
   const C = A.conduite, st = scene.state; A.now = st.t;
+  jugeImage(C.juge, scene);
   for (const x of C.ouverts) {
     const p = piedDe(scene, x.id); if (p != null && st.t <= x.fin) x.piedMin = Math.min(x.piedMin ?? Infinity, p);
     if (x.k === 'contrôle') {

@@ -117,8 +117,20 @@ export class FootLockIK {
         // À LA POSE, le pied RENDU fait foi : la couche de geste (après la foulée) a pu le déplacer — tirer vers le point de la foulée
         // le faisait glisser de 9 à 30 cm en deux images (mesuré en jeu, 7 appuis sur 332 en 60 s, tous sous geste). L'écart de la pose
         // est gardé tout l’appui (≤ 50 cm : un geste armé déplace la jambe d’appui jusqu’à 44 cm) ; sans geste il est nul (2026-09-24).
-        if (on && !st.drvOn) { const ox = _foot.x - st.dx, oz = _foot.z - st.dz, d = hyp(ox, oz), k = d > 0.5 ? 0.5 / d : 1; st.off = [ox * k, oz * k]; }
+        if (on && !st.drvOn) { const ox = _foot.x - st.dx, oz = _foot.z - st.dz, d = hyp(ox, oz), k = d > 0.5 ? 0.5 / d : 1; st.off = [ox * k, oz * k]; st.carry = null; if (this.carryTau && d <= 0.5) st.w = 1; }   // (chantier foulée) la pose capture le pied LÀ OÙ IL EST : tenu à 100 % dès l'image de contact (la rampe de 0,03 s laissait l'élan du vol glisser au sol)
+        // (chantier foulée, 27/09) LE DÉCOLLAGE SANS SAUT : relâcher le verrou en 0,03 s ramenait le pied de son point d'appui à celui de la foulée
+        // générée en DEUX images (jusqu'à 25 cm, 13-15 m/s mesurés — la glisse et le « pied téléporté » du décollage). L'écart est gardé au
+        // décollage et se résorbe pendant le vol du pied (tau carryTau s) : le pied part d'où il était.
+        if (!on && st.drvOn && this.carryTau && st.w > 0.5) st.carry = [st.lock.x - _foot.x, st.lock.z - _foot.z];
         st.drvOn = on;
+        if (!on && st.carry && this.carryTau) {
+          const k = Math.exp(-dt / this.carryTau); st.carry[0] *= k; st.carry[1] *= k; st.w = 0;
+          if (hyp(st.carry[0], st.carry[1]) < 0.003) st.carry = null;
+          else { _tgt.set(_foot.x + st.carry[0], _foot.y, _foot.z + st.carry[1]); l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee);
+            const d = _hip.distanceTo(_tgt), R = (A + B) * 0.995; if (d > R) _tgt.set(_hip.x + (_tgt.x - _hip.x) * (R / d), _hip.y + (_tgt.y - _hip.y) * (R / d), _hip.z + (_tgt.z - _hip.z) * (R / d));
+            const sol = twoBoneIK(_hip.toArray(), _tgt.toArray(), A, B, [_knee.x - _hip.x, _knee.y - _hip.y, _knee.z - _hip.z]);
+            aimChildAt(l.up, l.knee, _mid.fromArray(sol.mid)); aimChildAt(l.knee, l.foot, _end.fromArray(sol.end)); continue; }
+        }
         if (on) st.lock.set(st.dx + st.off[0], _foot.y, st.dz + st.off[1]);
         st.grounded = on;
         st.w = Math.max(0, Math.min(1, st.w + (on ? dt : -dt) / 0.03));
