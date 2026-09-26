@@ -36,11 +36,16 @@ export function preparerMains(model) {
   const nom = (side, n) => S.bones.find((x) => x.name.endsWith(`${side}Hand${n}`));
   const axeMain = {};
   for (const side of ['Left', 'Right']) {
-    const i1 = nom(side, 'Index1'), p1 = nom(side, 'Pinky1'), m1 = nom(side, 'Middle1'), m2 = nom(side, 'Middle2');
-    if (!i1 || !p1 || !m1 || !m2) continue;
+    const i1 = nom(side, 'Index1'), p1 = nom(side, 'Pinky1'), m1 = nom(side, 'Middle1'), m2 = nom(side, 'Middle2'), h = nom(side, ''), t2 = nom(side, 'Thumb2');
+    if (!i1 || !p1 || !m1 || !m2 || !h || !t2) continue;
     const w = monde.get(p1)[0].clone().sub(monde.get(i1)[0]).normalize(), f = monde.get(m2)[0].clone().sub(monde.get(m1)[0]).normalize();
-    const ref = new THREE.Vector3().crossVectors(new THREE.Vector3(0, -1, 0), f);
-    axeMain[side] = w.dot(ref) >= 0 ? w : w.negate();
+    // (26/09, « t'as tourné les doigts dans le mauvais sens ») : l'hypothèse « paume vers −Y » était fausse sur la pose de repos de la
+    // scène — mesuré en match, le bout du majeur partait vers le DOS de la main (hyperextension) sur les deux mains. Le côté PAUME se lit
+    // désormais sur le squelette : le pouce (Thumb2) est du côté de la paume par rapport au plan (doigt, jointures). La rotation d'axe a
+    // déplace le bout selon a × f : on veut (a × f) · paume > 0.
+    const nrm = new THREE.Vector3().crossVectors(f, w), paume = monde.get(t2)[0].clone().sub(monde.get(h)[0]);
+    if (paume.dot(nrm) < 0) nrm.negate();
+    axeMain[side] = new THREE.Vector3().crossVectors(w, f).dot(nrm) >= 0 ? w : w.negate();
   }
   const out = [];
   for (const b of S.bones) {
