@@ -63,7 +63,7 @@ import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
-import { movePlayers } from '../assets/starter/src/engine/movement.js';
+import { movePlayers } from '../assets/starter/src/engine/movement.js'; import { planAppui } from '../assets/starter/src/engine/appui.js';
 import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
@@ -7905,6 +7905,39 @@ if (__bloc()) {
   ok(`lot 335 — LES ATTRIBUTS : sur ${n} porteurs, température moyenne decisions bas ${(Tbas / n).toFixed(4)} ≥ 3 × lucide ${(Thaut / n).toFixed(4)}`, n >= 50 && Tbas >= 3 * Thaut);
   ok(`lot 335 — LA TACTIQUE : sur ${n} porteurs, la passe choisie ${pasPoss} fois en possession contre ${pasDirect} en jeu direct`, pasPoss > pasDirect);
   ok(`lot 335 — LE RÔLE : sur les mêmes ${n} porteurs, le neuf de surface tire ${tir9} fois (le meneur ${tirMen}), le meneur passe ${pasMen} fois (le 9 ${pas9})`, tir9 >= tirMen && pasMen > pas9);
+}
+
+if (__bloc()) {
+  // L'APPUI PLANTÉ (336, cfg.appui — retour du 26/09 : « le demi-tour ou le virage ça va pas, c'est trop handicapant ; le foot est un
+  // sport d'appui »). Mesuré avant : repartir à ≥ 3 m/s dans le nouvel axe depuis 6,25 m/s prenait 0,98 s à 90°, 1,73 s au demi-tour
+  // (505 : 4,58 s, élite 2,2-2,3). Le book (Modèle 02 §4.2) : au-delà de 40° un événement d'appui — t_plant = 0,13 + 0,125 θ, sortie
+  // ρ(θ) v, v_allow(θ). Après : 90° 0,38 s, 180° 1,25 s ; 6,3 appuis / joueur / min ; 16 × 90 min : buts 3,45 → 4,70 (accepté : « les
+  // stats ne sont pas figées, la motricité est capitale »), distance de tir p50 14,7 → 16,3 m, centres 13,1 → 9,6. Cinq clauses :
+  // (1) LE MODÈLE : les durées tombent dans les temps de contact mesurés (Dos'Santos) et arriver plus vite ne fait pas sortir plus vite ;
+  const G = [[45, 0.157, 0.241], [90, 0.25, 0.35], [135, 0.388, 0.496], [180, 0.42, 0.53]].map(([d, lo, hi]) => [d, planAppui(d, 4, 9).dur, lo, hi]);
+  ok(`lot 336 — L'APPUI DU BOOK : durées ${G.map(([d, t]) => `${d}° ${t.toFixed(3)} s`).join(', ')} dans les temps de contact mesurés ; à 90° l'arrivée à 8 m/s sort à ${planAppui(90, 8, 9).vo.toFixed(2)} m/s, à 5,5 m/s ${planAppui(90, 5.5, 9).vo.toFixed(2)} (pas plus)`,
+    G.every(([, t, lo, hi]) => t >= lo && t <= hi) && planAppui(90, 8, 9).vo <= planAppui(90, 5.5, 9).vo + 1e-9 && planAppui(90, 8, 9).dur > planAppui(90, 5.5, 9).dur);
+  // (2)-(4) LE BANC DU VIRAGE : un joueur seul lancé à ~6 m/s, la cible tourne de θ ; le temps pour repartir à ≥ 3 m/s à < 20° du nouvel axe
+  const vire = (cfg, deg, { skill, porte } = {}) => { const st = makeMatch({ full: true, seed: 3 }); st.t = 100; const p = st.players[5];
+    for (const q of st.players) if (q !== p) { q.p = [q.p[0], 0, q.p[2] + 300]; q.target = [...q.p]; }
+    p.p = [-20, 0, 0]; p.v = [6.25, 0]; p.speed = 6.25; p.yaw = 0; if (skill) p.skill = { ...p.skill, ...skill }; st.possession = { team: porte ? p.team : 1 - p.team, carrier: porte ? p.id : -1 };
+    for (let i = 0; i < 60; i++) { p.job = 'press'; p.target = [p.p[0] + 30, 0, 0]; movePlayers(st, 1 / 60, cfg); st.t += 1 / 60; }
+    const ux = Math.cos(deg * Math.PI / 180), uz = Math.sin(deg * Math.PI / 180), T = [p.p[0] + ux * 40, 0, p.p[2] + uz * 40];
+    for (let i = 1; i <= 240; i++) { p.job = 'press'; p.target = T; movePlayers(st, 1 / 60, cfg); st.t += 1 / 60; const sp = Math.hypot(p.v[0], p.v[1]);
+      if (sp >= 3 && (p.v[0] * ux + p.v[1] * uz) / sp > Math.cos(20 * Math.PI / 180)) return i / 60; }
+    return 9; };
+  const cA = matchCfg({}), cN = matchCfg({ appui: null }), a90 = vire(cA, 90), n90 = vire(cN, 90), a180 = vire(cA, 180), n180 = vire(cN, 180);
+  ok(`lot 336 — LE VIRAGE SE PLANTE : 90° repart en ${a90.toFixed(2)} s (hier ${n90.toFixed(2)}), le demi-tour en ${a180.toFixed(2)} s (hier ${n180.toFixed(2)}) ; sabotage appui null = hier`, a90 <= 0.5 && n90 >= 0.8 && a180 < n180 - 0.3);
+  const ag = vire(cA, 135, { skill: { appuiF: 0.85, appuiRhoF: 1.07 } }), ra = vire(cA, 135, { skill: { appuiF: 1.15, appuiRhoF: 0.93 } });
+  ok(`lot 336 — L'AGILITÉ : à 135°, l'agile (agility 100) repart en ${ag.toFixed(2)} s, le raide (0) en ${ra.toFixed(2)} s`, ag < ra);
+  const pP = planAppui(90, 6, 9, {}, { appuiF: 1 / 0.69, appuiRhoF: 0.69 }), pS = planAppui(90, 6, 9);
+  ok(`lot 336 — LE PORTEUR (κℓ 0,69 à technique 50) : son appui à 90° dure ${pP.dur.toFixed(2)} s et sort à ${pP.vo.toFixed(2)} m/s (sans ballon ${pS.dur.toFixed(2)} s, ${pS.vo.toFixed(2)})`, pP.dur > pS.dur && pP.vo < pS.vo);
+  // (5) LE MONDE : la fréquence des appuis, graine 3, 300 s — un footballeur change de direction ~8 fois / min tous angles (Bloomfield) ;
+  //     sans la tenue de la demande (0,12 s) la cible tremblante des rôles sans ballon en plantait ~3 / s
+  { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ chrono: { periodes: 2, duree: 150, pause: 10 } }); let n = 0;
+    for (let i = 0; i < 300 * 60 * 1.1 && st.restart?.type !== 'fin'; i++) { matchStep(st, 1 / 60, cfg); for (const p of st.players) if (p._appui && p._appuiVu !== p._appui.t0) { p._appuiVu = p._appui.t0; n++; } }
+    const f = n / 22 / (st.t / 60);
+    ok(`lot 336 — LES APPUIS DU MONDE : ${f.toFixed(1)} appuis / joueur / min (bande 3-12 ; le réel ~8 changements de direction tous angles)`, f >= 3 && f <= 12); }
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
