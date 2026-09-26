@@ -360,7 +360,13 @@ export function movePlayers(st, dt, cfg) {
     if (st.full && cfg.sePoser && (p._pose ?? -1) > st.t) top = Math.min(top, cfg.sePoser.v ?? 1.5);   // (303) le receveur face au ballon se pose (match-sim : les appuis avant la réception)
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
-      const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
+      let dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
+      // (327, cfg.contourneBallon && st.full) LE MARCHEUR NE PASSE PAS SUR LE BALLON (chantier foulée : l'arbitre visuel, jambes DANS le ballon posé à l'engagement) :
+      // un joueur en MARCHE (job walk : il rejoint son poste, il n'a jamais affaire au ballon) dont la ligne passe à < r m d'un ballon au sol vise le point à côté.
+      const CB = st.full && cfg.contourneBallon; if (CB && p.job === 'walk' && !p.keeper && st.ball.p[1] < 0.5) {
+        const r = CB.r ?? 0.8, L2 = dx * dx + dz * dz, bx = st.ball.p[0] - p.p[0], bz = st.ball.p[2] - p.p[2];
+        if (L2 > 1e-4) { const k = (bx * dx + bz * dz) / L2; if (k > 0 && k < 1) { const cx = dx * k - bx, cz = dz * k - bz, cd = hyp(cx, cz);
+          if (cd < r) { const l = Math.sqrt(L2); let nx = -dz / l, nz = dx / l; if (nx * cx + nz * cz < 0) { nx = -nx; nz = -nz; } dx = bx + nx * r * 1.3; dz = bz + nz * r * 1.3; } } } }
       const d = hyp(dx, dz); dTgt = d;
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }

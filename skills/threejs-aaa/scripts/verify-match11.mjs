@@ -7817,5 +7817,19 @@ if (__bloc()) {
   ok(`lot 326 — LE CORPS S'ARRÊTE AVEC SON CONTRÔLE : délai contrôle → 1re action p90 ${mA.d90.toFixed(2)} s (${mA.nD}) ≤ 0,85 × hier ${mN.d90.toFixed(2)} s (${mN.nD}) ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.d90 <= 0.85 * mN.d90 && mA.passes >= 0.85 * mN.passes);
 }
 
+if (__bloc()) {
+  // LE BALLON N'EST PAS DANS LES PIEDS (327-328 — chantier foulée : « le ballon traverse peut-être les pieds » ; l'arbitre visuel du rendu, rondo-juge.js :
+  // 2 422 images de jambe DANS le ballon sur 150 s, deux tiers à l'engagement — les marcheurs traversaient le ballon posé —, et le porteur dont le pied se POSAIT
+  // sur son ballon porté à 0,34 m, là où la course pose le pied). Les lois : 327 le marcheur (job walk) contourne le ballon au sol (movement.js,
+  // cfg.contourneBallon) ; 328 le ballon porté en course vit devant la pose (skills-sim.footPoint : a0 + k × v, cfg.porteDevant). Le rendu, lui, écarte le
+  // pied en vol (rondo-evite.js). Le monde, 1 graine × 600 s contre hier : les images du porteur à < 0,3 m de son ballon ≤ 0,3 × hier ; passes ≥ 0,85 × hier.
+  const monde = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let n = 0, passes = 0, seen = 0;
+    for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && e.to >= 0 && !st.players[e.by]?.keeper) passes++; }
+      const c = st.possession?.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && !c.keeper && !st.restart && st.ball.p[1] < 0.5 && Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]) < 0.3) n++; }
+    return { n, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, contourneBallon: null, porteDevant: null }));
+  ok(`lot 327-328 — LE BALLON N'EST PAS DANS LES PIEDS : images du porteur à < 0,3 m de son ballon ${mA.n} ≤ 0,3 × hier ${mN.n} ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mN.n > 0 && mA.n <= 0.3 * mN.n && mA.passes >= 0.85 * mN.passes);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
