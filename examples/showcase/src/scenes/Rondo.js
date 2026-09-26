@@ -24,7 +24,8 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, modeDe, dureeDe } from './rondo-produit.js';
+import { planDe, planSuivant, camerasUpdate } from './rondo-cameras.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -49,7 +50,7 @@ export class Rondo {
   }
 
   async _build() {
-    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre'); this._fouleeLibre = q.has('foulee-libre'); this._piedTraverse = q.has('pied-traverse');
+    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre'); this._fouleeLibre = q.has('foulee-libre'); this._mode = modeDe(q); this._piedTraverse = q.has('pied-traverse');
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
@@ -147,7 +148,7 @@ export class Rondo {
     // en plein format, la portée de tir suit l'échelle (les frappes du 11c11 partent de 16-25 m)
     // …et le CYCLE DE MATCH (chrono — l'enveloppe produit) : deux mi-temps de 3 min, sifflet
     // final, feuille. Le réduit garde son monde sans fin (calibré 76 clauses).
-    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, ...(() => { try { return JSON.parse(q.get('cfg') || '{}'); } catch { return {}; } })() })   /* ?cfg={…} : les clés du moteur surchargées (l'A/B d'une loi dans l'atelier, même match) */
+    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: dureeDe(this._mode), pause: 6 }, ...(() => { try { return JSON.parse(q.get('cfg') || '{}'); } catch { return {}; } })() })   /* ?cfg={…} : les clés du moteur surchargées (l'A/B d'une loi dans l'atelier, même match) */
       : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
       ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
@@ -328,9 +329,11 @@ export class Rondo {
 
     this._hud = document.getElementById('score');
     // LE BOUTON « PASSER LA CÉRÉMONIE » (284, retour du 17/09) : visible tant que la cérémonie vit ; la touche C fait de même
-    this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
+    this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
+    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this);   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
+    if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg) });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
     // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
     // flash du sifflet, la présentation pure des événements nommés ; le paiement de la dette
@@ -724,6 +727,7 @@ export class Rondo {
   _broadcast(dt) {
     if (this.free || !this.cam) return;
     if (this._atelier && atelierUpdate(this)) return;
+    if (camerasUpdate(this, dt)) return;
     const b = this.state.ball.p;
     if (!this._look) this._look = new THREE.Vector3(0, 1, 0);
     if (!this._camV) this._camV = 0;
@@ -763,6 +767,7 @@ export class Rondo {
 
   update(dt) {
     if (!this.state) return;
+    if (this._produit) produitUpdate(this, this._produit);
     if (this._atelier) { dt = atelierDt(this, dt); if (dt === 0) { atelierUpdate(this); return; } }
     // LA RÉSOLUTION SUIT LE TÉLÉPHONE (lot 61 — « toujours saccadé » après le CPU réglé au
     // lot 60) : le tier se choisit à l'ouverture, le GPU réel ne se voit qu'en jouant. Fenêtre
@@ -813,7 +818,7 @@ export class Rondo {
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
-      const e = this.state.events[i]; if (this._atelier) atelierEvent(this, e);
+      const e = this.state.events[i]; if (this._atelier) atelierEvent(this, e); if (this._produit) produitEvent(this, this._produit, e);
       if (e.type === 'windup') {
         // THE SWING STARTS HERE, FROM FRAME 0 — and the ball is still at his feet. This event did not
         // exist: the game used to strike the ball and then ask for a pose, so the only way to keep the
