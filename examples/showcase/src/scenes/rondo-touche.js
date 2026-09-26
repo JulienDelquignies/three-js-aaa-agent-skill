@@ -120,6 +120,7 @@ export function touchWarpApply(scene, pl) {
     if (d < dBest) { dBest = d; side = f; }
   }
   if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot] && !planted(pl._touchFoot)) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
+  if (pl._touchFootPlan && Math.abs(scene._t - (pl._touchPlanT ?? -9)) < 0.2 && pl.legs?.[pl._touchFootPlan]?.foot && pl.legLens?.[pl._touchFootPlan] && !planted(pl._touchFootPlan)) side = pl._touchFootPlan;   // (chantier foulée) le pied que la foulée a calé sur la touche (rondo-foulee.js)
   if (!side) return;
   const leg = pl.legs[side], lens = pl.legLens[side];
   leg.foot.getWorldPosition(scene._wf);

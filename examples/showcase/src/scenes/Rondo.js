@@ -24,7 +24,7 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -49,7 +49,7 @@ export class Rondo {
   }
 
   async _build() {
-    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre');
+    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre'); this._fouleeLibre = q.has('foulee-libre');
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
@@ -933,6 +933,7 @@ export class Rondo {
       }
       const dtP = pl._lodAcc; pl._lodAcc = 0;
       pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top); pl.ctrl.rootFinal = [s.p[0], s.p[2], pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw))];       // magnitude picks idle / walk / run ; rootFinal : la racine où la sim va recaler le corps (l'ancrage des appuis s'y fait)
+      fouleeSteer(this, pl, dtP);   // (chantier foulée) la touche au pas : la foulée se cale sur la prochaine touche (rondo-foulee.js)
       pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);

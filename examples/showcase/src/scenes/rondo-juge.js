@@ -62,13 +62,19 @@ export function jugeTouche(J, scene, id, kind) {
   let best = Infinity;
   for (const f of ['left', 'right']) { const leg = pl.legs?.[f], L = pl.legLens?.[f]; if (!leg?.up || !L) continue; leg.up.getWorldPosition(_b); best = Math.min(best, _b.distanceTo(b) / (L.A + L.B)); }
   if (isFinite(best)) J.allonges.push({ kind, r: best, t: scene.state.t });
+  // la PHASE du pied qui touche (le plus proche du ballon, non posé) : u ∈ [0,1), 0 = sa pose ; la fin de vol (u ≥ 0,8) est le bon moment
+  let pied = null, dP = Infinity; for (const f of ['left', 'right']) { const leg = pl.legs?.[f], gf = pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']; if (!leg?.foot || !gf) continue; leg.foot.getWorldPosition(_a); const d = _a.distanceTo(b); if (gf.phase === 'swing' && d < dP) { dP = d; pied = gf.u; } }
+  (J.phases ??= []).push(pied == null ? -1 : pied);
+  const pf = pl._touchFootPlan, gP = pf ? pl.ctrl?._gaitFeet?.[pf === 'left' ? 'Left' : 'Right'] : null;
+  (J.plans ??= []).push({ kind, plan: pf ?? null, uPlan: gP ? +gP.u.toFixed(2) : null, phPlan: gP?.phase ?? null, ecart: pl._touchPlanT != null ? +(scene._t - pl._touchPlanT).toFixed(2) : null, uPres: pied == null ? null : +pied.toFixed(2) });
   if (J.allonges.length > 2000) J.allonges.splice(0, J.allonges.length - 2000);
 }
 
 export function jugeBilan(J) {
   const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s.length ? +s[Math.floor(p * (s.length - 1))].toFixed(2) : null; };
   const A = J.allonges.map((x) => x.r);
-  return { images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
+  const P = J.phases ?? [];
+  return { plans: (J.plans ?? []).slice(-40), phasePied: { n: P.length, finDeVol: P.filter((u) => u >= 0.8).length, milieu: P.filter((u) => u >= 0 && u < 0.8).length, aucunEnVol: P.filter((u) => u < 0).length }, images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
     jambesEtireesPct: +(100 * J.jambes / Math.max(1, J.jambeImages)).toFixed(2), jambeMax: +J.jambesMax.toFixed(2),
     cases: Object.fromEntries(Object.entries(J.cases ?? {}).map(([k, [n, g]]) => [k, `${Math.round(100 * g / Math.max(1, n))} % de ${n}`])), vGlisse: { p50: q(J.vGl ?? [], 0.5), p90: q(J.vGl ?? [], 0.9) }, diag: J.diag,
     allonge: { n: A.length, p50: q(A, 0.5), p90: q(A, 0.9), max: q(A, 1), au_dela_1_1: A.filter((r) => r > 1.1).length }, pires: J.pires.slice(-30) };
