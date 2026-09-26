@@ -185,3 +185,11 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   Essayé et RETIRÉ : le cap au but à 0,8 face à un seul défenseur (dos 43 → 46 %, conversion 26 → 45 %). `capture-geste.mjs` : T0 = 'demi[:k]'.
 - Après (16 graines × 120 s) : 1,2 → 1,8 face-à-face/min ; ballon-défenseur tenu 1,27 m (Headrick 1,15-1,69), corps à corps 1,53 m ; à +2 s
   gardé 62 %, défenseur passé 28 %, perdu 10 % ; 1,75 tir/min, conversion 25 % ; verify-duel 22/22, verify-pas 10/10, matchday 88/88 au bit.
+- La prise de balle, mesurée (2026-09-26 — « ne plus laisser partir le ballon dans le dos ») : `prise-balle.mjs` (chaque prise d'un joueur
+  de champ : l'espèce, le ballon, la course, le défenseur ; dans les 1,5 s : ballon dans le dos, fuite, ballon au pied, perte). VERDICT :
+  la prémisse est FAUSSE. Défenseur côté but à ≥ 1,5 m : le ballon n'est JAMAIS derrière le porteur à la prise (37 devant, 0 derrière) ;
+  la fuite suit la COURSE à la prise (vers lui 0 %, à l'opposé 67 %), l'allure (≥ 3 m/s : 80 %) et le défenseur qui fonce (≥ 3 m/s :
+  100 %) — gagné lancé loin d'un défenseur qui arrive, fuir EST le bon football. La touche orientée va bien vers le but (3-54°) ; les
+  « contrôles » sans technique sont les prises de turnover (rondo.turnover). ESSAYÉ ET RETIRÉ : le retournement en course (crochet
+  dans la foulée jusqu'à 150° vers le défenseur, freiné Dos'Santos) — 0 face-à-face sur 20, la moitié des ballons perdus (on sert le
+  poursuivant). Ce qui ressort : 48 % des prises se font AU CONTACT (< 1,5 m) et 39 % d'entre elles sont reperdues en 1,5 s.
