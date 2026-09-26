@@ -83,7 +83,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.ball.restart([c.p[0] + 0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
     st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
-    return arbitre(st, c, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (14/0 au 271), le monde serré remangé (le 9 → passe : la porte xG compare son tir à la continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
+    return arbitre(st, c, matchCfg({ choix: null /* DATÉ 335 : ce monde serré est calé sur les NOTES de l'arbitre d'hier (P/T 1,03) — sous le choix en valeur attendue il ne l'est plus ; le rôle sous le 335 se prouve au bloc 335 de verify-match11 (mêmes porteurs, 9 c. meneur) */, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (14/0 au 271), le monde serré remangé (le 9 → passe : la porte xG compare son tir à la continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
   };
   const men = monde('meneur'), neuf = monde('neufDeSurface');
   ok(`le RÔLE départage un monde serré (équipe neutre : le meneur → « ${men.meilleure} », le 9 → « ${neuf.meilleure} » — deux joueurs, deux footballs dans le MÊME système)`,

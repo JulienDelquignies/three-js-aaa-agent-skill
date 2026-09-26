@@ -82,6 +82,7 @@ const cfgD = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null,
   d1[0].p[0] = sgn * 40; d1[0].p[2] = 8;                             // dans le couloir ballon→r1
   d1[1].p[0] = sgn * 42; d1[1].p[2] = 4;                             // dans le couloir ballon→r2
   d1[2].p[0] = sgn * 43; d1[2].p[2] = 13;                            // ferme le cône de conduite
+  c.skill = { ...(c.skill ?? {}), decF: 1.15 };   // (335) le choix est un softmax (choix.js) : l'ORDRE des valeurs se lit chez le porteur lucide (decisions haut) — centre 0,053 c. conduite 0,033, un tirage moyen le perd parfois, par construction
   const a = arbitre(st, c, cfgD());
   ok(`aile haute, angle fermé, boîte servie → le CENTRE gagne (centre ${a.centre.score}, ${a.centre.cibles} cibles · tir « ${a.tir.pourquoi} »)`,
     a.meilleure === 'centre' && a.tir.score === 0 && a.centre.cibles >= 2);

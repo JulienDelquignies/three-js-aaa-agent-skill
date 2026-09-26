@@ -7,8 +7,8 @@
 //   PASSE     p_succ × V(arrivée) − λ (1 − p_succ) V_adv(arrivée)   (p_succ de la sélection 267 : passing, vision, pression, couloir) ;
 //   CONDUITE  p_garde × V(le point atteint dans l'espace libre) − λ (1 − p_garde) V_adv(ici)   (p_garde : espace, pression, dribbling) ;
 //   CENTRE    p_centre × xG de la tête en surface, montant avec les cibles (crossing, heading de la surface servie) − λ (1 − p_centre) V_adv ;
-// λ = le PRIX DE LA PERTE, axe tactique mentalite (prudent 1,3 ↔ audacieux 0,7). Puis la TACTIQUE et le RÔLE entrent en PRÉFÉRENCE (un
-// biais de logit : style possession ↔ direct, arbitre du rôle) et les ATTRIBUTS en LUCIDITÉ : le choix est un softmax de température
+// λ = le PRIX DE LA PERTE, axe tactique mentalite (prudent 1,3 ↔ audacieux 0,7). Puis la TACTIQUE et le RÔLE PÈSENT la valeur (style
+// possession ↔ direct ×0,65-1,35, arbitre du rôle ±15 %, cfg.menace) et les ATTRIBUTS entrent en LUCIDITÉ : le choix est un softmax de température
 // T = T0 × e^(k (1 − decF)/0,15) × (1 + P (2 − composureF)) — le joueur lucide prend presque toujours la meilleure option, le fébrile se
 // trompe plus, et plus encore sous pression. Le bruit est un Gumbel FIXÉ par (porteur, option, époque de 1,2 s) — un hash, aucun tirage
 // consommé : le joueur ne change pas d'avis à chaque image, et le monde reste reproductible au bit. Absent : l'argmax d'hier.
@@ -31,9 +31,11 @@ export function valeursDe(st, c, cfg, o) {
   // LE TIR : ses portes restent celles de menaceTir (hors portée, angle fermé, pré-filtre) — le score nul ferme l'option
   if (o.tir?.score > 0 && cfg.xg) ev.tir = xgDe(st, c, cfg, false).dec * (K.tir ?? 1);
   // LA PASSE : l'élue de choosePass (le cerveau de passe garde ses candidats, sa vision, ses couloirs)
-  if (o.passe?.lead) { const p = o.passe.pSucc ?? (0.6 + 0.35 * Math.min(1, (o.passe.marge ?? 1) / 3)); ev.passe = p * V(o.passe.lead) - lam * (1 - p) * Va(o.passe.lead); }
+  // …la marge du COULOIR pèse sur la réussite (couloirF : sous 1,5 m de marge la passe se contre — la sélection la voyait à 69 % à 12 cm d'un défenseur, fixture menace (d))
+  if (o.passe?.lead) { const m = o.passe.marge ?? 1.5, p = (o.passe.pSucc ?? (0.6 + 0.35 * Math.min(1, m / 3))) * Math.max(K.couloirMin ?? 0.35, Math.min(1, (K.couloirMin ?? 0.35) + (1 - (K.couloirMin ?? 0.35)) * m / 1.5)); ev.passe = p * V(o.passe.lead) - lam * (1 - p) * Va(o.passe.lead); }
   // LA CONDUITE : le point atteint dans l'espace libre du cône vers le but ; la garde du ballon lit l'espace, la pression, le dribble
-  { const esp = o.conduite?.espace ?? 0, gx = goal.x - c.p[0], gz = -c.p[2], gl = hyp(gx, gz) || 1, L = Math.min(esp, K.conduiteMax ?? 6) * 0.8;
+  // …jamais plus près du but que le point de penalty (pointMin, 11 m) : au-delà la conduite n'est plus un moyen, c'est au tir de conclure (le gardien sort, l'angle se ferme — le xT de la bouche du but n'est pas « porter le ballon jusqu'au gardien »)
+  { const esp = o.conduite?.espace ?? 0, gx = goal.x - c.p[0], gz = -c.p[2], gl = hyp(gx, gz) || 1, L = Math.max(0, Math.min(Math.min(esp, K.conduiteMax ?? 6) * 0.8, gl - (K.pointMin ?? 11)));
     const pt = [c.p[0] + gx / gl * L, 0, c.p[2] + gz / gl * L];
     const dribF = c.ratings?.dribbling != null ? 0.85 + 0.3 * c.ratings.dribbling / 100 : 1;   // la note brute (50 → 1, l'identité)
     const pK = Math.max(0.3, Math.min(0.97, ((K.garde0 ?? 0.62) + 0.035 * esp) * (1 - (K.garderP ?? 0.35) * P) * dribF));
@@ -44,18 +46,19 @@ export function valeursDe(st, c, cfg, o) {
   return { ev, P, lam };
 }
 
-/** LE CHOIX : softmax (Gumbel fixé) sur EV / T + ln(préférences tactique × rôle × cfg.menace). Rend { meilleure, ev, T, prefs }. */
+/** LE CHOIX : softmax (Gumbel fixé) sur (EV pesée par la tactique × le rôle × cfg.menace) / T. Rend { meilleure, ev, T, logits }. */
 export function choixEV(st, c, cfg, o, prefs) {
   const K = cfg.choix, S = c.skill ?? {};
   const { ev, P } = valeursDe(st, c, cfg, o);
   const decF = S.decF ?? 1, compF = S.composureF ?? 1.075;
-  const T = (K.T0 ?? 0.008) * Math.exp((K.lucidite ?? 0.7) * (1 - decF) / 0.15) * (1 + P * Math.max(0, 2 - compF) * (K.pressionT ?? 0.8));
+  const T = (K.T0 ?? 0.005) * Math.exp((K.lucidite ?? 0.7) * (1 - decF) / 0.15) * (1 + P * Math.max(0, 2 - compF) * (K.pressionT ?? 0.8));
   const epoque = Math.floor((st.t ?? 0) / (K.epoque ?? 1.2)), seed = (st.seed ?? 1) >>> 0;
   let meilleure = 'conduite', best = -Infinity; const L = {};
   for (const [i, k] of ['tir', 'centre', 'passe', 'conduite'].entries()) {
     if (ev[k] == null) continue;
     const g = -Math.log(-Math.log(u01(seed, c.id + 1, epoque, i + 1)));
-    L[k] = ev[k] / T + Math.log(Math.max(1e-3, prefs[k])) * (K.pref ?? 1) + g;
+    const w = Math.pow(Math.max(1e-3, prefs[k]), K.pref ?? 1);   // la tactique et le rôle PÈSENT LA VALEUR (× sur un gain, ÷ sur une perte) — un biais additif ne basculait aucun choix serré (verify-tactics / verify-roles)
+    L[k] = (ev[k] >= 0 ? ev[k] * w : ev[k] / w) / T + g;
     if (L[k] > best) { best = L[k]; meilleure = k; }
   }
   return { meilleure, ev, T, logits: L };

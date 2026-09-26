@@ -34,6 +34,7 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
+import { choixEV } from '../assets/starter/src/engine/choix.js'; import { arbitre as arbitre335 } from '../assets/starter/src/engine/menace.js'; import { resoudreRole as role335 } from '../assets/starter/src/engine/roles.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
 import { serreDe } from '../assets/starter/src/engine/serre.js';
@@ -7875,8 +7876,35 @@ if (__bloc()) {
         if (e.type === 'shot' && p) tirT[p.team] = st.t;
         if (e.type === 'but' && e.team != null) { const conc = 1 - e.team; if (st.t - gkT[conc] < 4 && st.t - tirT[e.team] > 4) csc++; } } }
     return csc; };
-  const { avance, ...hier } = matchCfg({}).gkPied, CH = { periodes: 2, duree: 2700, pause: 10 }, cA = monde(matchCfg({ shotRange: 20, chrono: CH })), cN = monde(matchCfg({ shotRange: 20, chrono: CH, gkPied: hier }));
+  const { avance, ...hier } = matchCfg({}).gkPied, CH = { periodes: 2, duree: 2700, pause: 10 }, M334 = { choix: null, ellipse: { ...matchCfg({}).ellipse, sigma0: 2.0 } } /* DATÉ 335 : le monde du sceau 334 — sous le choix 335 la passe en retrait de t=505 ne se joue plus, la clause mesure le spot du gardien, pas le choix */, cA = monde(matchCfg({ shotRange: 20, chrono: CH, ...M334 })), cN = monde(matchCfg({ shotRange: 20, chrono: CH, ...M334, gkPied: hier }));
   ok(`lot 334 — LE GARDIEN NE POUSSE PAS VERS SON BUT : buts concédés dans les 4 s d'une possession du gardien, sans tir : ${cA} (hier ${cN} — la clause mord)`, cA === 0 && cN >= 1);
+}
+
+if (__bloc()) {
+  // LE CHOIX EN VALEUR ATTENDUE (335, cfg.choix + ellipse σ0 4 — retour au football du 26/09 : « corrige les choix des joueurs, sans oublier la
+  // tactique et leurs attributs »). Mesuré 16 × 90 min contre 334 : tirs 19,5 → 25,5 par match (réel 22-30), distance p50 12 → 14 m (réel 16-17),
+  // centres 10,1 → 10,0, buts 3,9 → 4,2 (la conversion trop haute reste la dette de la frappe et du gardien). Trois clauses :
+  // (1) le monde, graine 3, 2 × 900 s : tirs ≥ hier, distance p50 ≥ hier + 1 m ; sabotage choix null + σ0 2 = hier ;
+  // (2) LES ATTRIBUTS : la température du choix d'un porteur « decisions » bas (decF 0,85) ≥ 3 × celle du même porteur lucide (decF 1,15) ;
+  // (3) LA TACTIQUE : sur les mêmes situations (100 porteurs d'un match gelé), le style direct choisit le tir au moins aussi souvent que le style possession, et strictement plus au total.
+  const ELL0 = { ...matchCfg({}).ellipse, sigma0: 2.0 };
+  const monde = (cfg) => { let n = 0; const D = []; for (const seed of [3, 7]) { const st = makeMatch({ full: true, seed }); let seen = 0;
+    for (let i = 0; i < 900 * 60 * 2.2; i++) { matchStep(st, 1 / 60, cfg); if (st.restart?.type === 'fin') break; for (; seen < st.events.length; seen++) { const e = st.events[seen]; const p = e.by != null ? st.players[e.by] : null;
+        if (e.type === 'shot' && p) { n++; D.push(e.range ?? Math.hypot(st.pitch.attackGoal(p.team).x - p.p[0], p.p[2])); } } } }
+    D.sort((a, b) => a - b); return { n, d50: D[D.length >> 1] ?? 0 }; };
+  const CH = { periodes: 2, duree: 900, pause: 10 }, mA = monde(matchCfg({ shotRange: 20, chrono: CH })), mN = monde(matchCfg({ shotRange: 20, chrono: CH, choix: null, ellipse: ELL0 }));
+  ok(`lot 335 — LE CHOIX EN VALEUR ATTENDUE (graines 3, 7) : ${mA.n} tirs (hier ${mN.n}), distance p50 ${mA.d50.toFixed(1)} m (hier ${mN.d50.toFixed(1)})`, mA.n >= 0.9 * mN.n && mA.d50 >= mN.d50 + 1);
+  // (2) et (3) sur les porteurs d'un vrai match (graine 7, 600 s, un porteur de champ par seconde)
+  const cfgA = matchCfg({ shotRange: 20 }), st = makeMatch({ full: true, seed: 7 }), PR = { tir: 1, centre: 1, passe: 1, conduite: 1 };
+  let Tbas = 0, Thaut = 0, pasDirect = 0, pasPoss = 0, n = 0, tir9 = 0, tirMen = 0, pas9 = 0, pasMen = 0; const R9 = role335('neufDeSurface'), RM = role335('meneur');
+  for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfgA); if (i % 60 || st.restart || !(st.possession.carrier >= 0)) continue;
+    const c = st.players[st.possession.carrier]; if (c.keeper) continue; const sk = c.skill, tv = st.tactics[c.team], o = arbitre335(st, c, cfgA); n++;
+    c.skill = { decF: 0.85, composureF: 1.075 }; Tbas += choixEV(st, c, cfgA, o, PR).T; c.skill = { decF: 1.15, composureF: 1.075 }; Thaut += choixEV(st, c, cfgA, o, PR).T; c.skill = sk;
+    st.tactics[c.team] = { ...tv, style: 1 }; if (arbitre335(st, c, cfgA).meilleure === 'passe') pasDirect++; st.tactics[c.team] = { ...tv, style: 0 }; if (arbitre335(st, c, cfgA).meilleure === 'passe') pasPoss++; st.tactics[c.team] = tv;
+    const rv = c.role; c.role = R9; { const m = arbitre335(st, c, cfgA).meilleure; tir9 += m === 'tir'; pas9 += m === 'passe'; } c.role = RM; { const m = arbitre335(st, c, cfgA).meilleure; tirMen += m === 'tir'; pasMen += m === 'passe'; } c.role = rv; }
+  ok(`lot 335 — LES ATTRIBUTS : sur ${n} porteurs, température moyenne decisions bas ${(Tbas / n).toFixed(4)} ≥ 3 × lucide ${(Thaut / n).toFixed(4)}`, n >= 50 && Tbas >= 3 * Thaut);
+  ok(`lot 335 — LA TACTIQUE : sur ${n} porteurs, la passe choisie ${pasPoss} fois en possession contre ${pasDirect} en jeu direct`, pasPoss > pasDirect);
+  ok(`lot 335 — LE RÔLE : sur les mêmes ${n} porteurs, le neuf de surface tire ${tir9} fois (le meneur ${tirMen}), le meneur passe ${pasMen} fois (le 9 ${pas9})`, tir9 >= tirMen && pasMen > pas9);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
