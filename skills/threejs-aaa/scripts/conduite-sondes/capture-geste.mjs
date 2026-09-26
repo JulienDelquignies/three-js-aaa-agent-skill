@@ -55,6 +55,16 @@ if (String(T0).startsWith('recup')) {
   if (!L[k]) { console.log('pas de récupération n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
 }
+// T0 = 'arret[:k]' : le k-ième ARRÊT du gardien (événement 'arrêt') — filmé de 3 s avant (le dribble et le tir qui l'amènent)
+if (String(T0).startsWith('arret')) {
+  const k = Number(String(T0).split(':')[1] ?? 0);
+  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'arrêt') out.push({ t: st.t, kind: e.kind ?? e.mode ?? '?' }); } }
+    return out; });
+  console.log('arrêts trouvés :', L.length, JSON.stringify(L.slice(0, 8)));
+  if (!L[k]) { console.log("pas d'arrêt n°", k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - 3); await ouvre();
+}
 const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), suitId, dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard
@@ -74,16 +84,17 @@ await pg.evaluate((P) => {
     let wx = s.p[0] + ux * P.dist, wz = s.p[2] + uz * P.dist; const bx = Math.max(-A[0], Math.min(A[0], wx)), bz = Math.max(-A[1], Math.min(A[1], wz)), perdu = Math.hypot(wx - bx, wz - bz);
     const want = [bx, Math.min(2.2, 1.15 + 0.5 * perdu), bz], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
     c.pos = c.pos ? c.pos.map((x, j) => x + (want[j] - x) * kp) : want; c.tgt = c.tgt ? c.tgt.map((x, j) => x + (tg[j] - x) * kp) : tg; };
-  const sc = window.__scene; window.__cam = null;
+  const sc = window.__scene; window.__cam = null; window.__camPage = P.cam === 'page';
   { let best = null; window.__engine.scene.traverse((o) => { if (o.isDirectionalLight && (!best || o.intensity > best.intensity)) best = o; });   // le soleil
     if (best) { best.updateMatrixWorld(); const a = best.getWorldPosition(best.position.clone()), t = best.target.getWorldPosition(best.position.clone()), h = Math.hypot(a.x - t.x, a.z - t.z) || 1; window.__soleilH = [(a.x - t.x) / h, (a.z - t.z) / h]; }
     const ar = sc.state.area; if (ar) window.__cage = [ar[0] / 2 - 0.4, ar[1] / 2 - 0.4]; }
   window.__suivi = (sc) => { if (P.i >= 0) return sc.players[P.i].sim; if (P.suitId != null) return sc.players.find((q) => q.sim.id === P.suitId).sim; const c = sc.state.possession?.carrier; const pl = sc.players.find((q) => q.sim.id === c); if (pl) window.__dernier = pl.sim; return window.__dernier ?? sc.players[0].sim; };
-  for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) window.__majCam(window.__suivi(sc), 1 / 60); }
+  for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) { if (P.cam === 'page') sc._broadcast(1 / 60); else window.__majCam(window.__suivi(sc), 1 / 60); } }
 }, P);
 const N = Math.round(Number(DUR) * 60 / Number(LENT)); let refaits = 0;   // DUR : la durée filmée (avec T0 = 'conduite', à partir de 0,6 s avant la conduite)
 for (let f = 0; f < N; f++) {
   await pg.evaluate(async ({ i, dt }) => { const sc = window.__scene, e = window.__engine; sc.update(dt); window.__majCam(window.__suivi(sc), dt); const c = window.__cam;
+    if (window.__camPage) { sc._broadcast(dt); e.controls.target.copy(sc._look); await window.__seekFrame(); return; }   // CAM=page : la régie de la page (ce que voit l'utilisateur)
     e.camera.position.set(...c.pos); e.controls.target.set(...c.tgt); e.camera.fov = 40; e.camera.updateProjectionMatrix(); await window.__seekFrame(); }, { i: P.i, dt: Number(LENT) / 60 });
   for (let k = 0; k < 6; k++) {   // la bande du sol sous les joueurs : verte, ou l'image est refaite
     if (vert(await pg.screenshot({ type: 'png', clip: { x: 80, y: 470, width: 800, height: 50 } })) > 12) break;

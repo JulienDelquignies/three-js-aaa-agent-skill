@@ -16,7 +16,7 @@ import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
-import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js'; import { DUEL_CAST, DUEL_CAST_VILLE } from './duel-joueurs.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
+import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js'; import { DUEL_CAST, DUEL_CAST_VILLE, TENUE_GARDIEN, tenueGardien } from './duel-joueurs.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
@@ -179,7 +179,7 @@ export class Rondo {
     // Order matters: scale and place BEFORE constructing the controller (it snapshots position/yaw/groundY and measures hip height and foot floors from the live rig).
     for (const p of this.state.players) {
       // one rig per TEAM rather than round-robin: the two sides must be told apart at a glance, and two different bodies do that even before the kit colours do
-      const { model: model3d, groundY: groundY0, clips, rig } = this.squad.spawn(p.team);
+      const { model: model3d, groundY: groundY0, clips, rig } = this.squad.spawn(this.duelMode && p.keeper ? 0 : p.team); if (this.duelMode && p.keeper && rig === 'n18') tenueGardien(model3d, TENUE_GARDIEN[p.team]);   // (duel) les gardiens : le corps du n° 18, les blancs à la couleur du gardien
       // la TAILLE de la persona (±4 %) — appliquée par-dessus la normalisation du squad, avec le
       // sol qui suit : c'est la première chose que l'œil lit pour distinguer deux corps
       // le LOOK injecté (attributes/squads : taille du projet amont) prime sur l'accent persona

@@ -283,7 +283,7 @@ export function tryCross(st, c, cfg) {
  *  pas un style de jeu. */
 export function tryClear(st, c, cfg) {
   const { pitch } = st;
-  if (c.keeper) return false;
+  if (c.keeper || cfg.duel?.degagement === false) return false;   // (le duel) le 1c1 sort en dribblant, en protégeant ou par son gardien — pas en expédiant le ballon dans la grille
   const own = pitch.ownGoal(c.team);
   const depth = (c.p[0] - own.x) * -own.sign;                      // profondeur depuis SA ligne
   if (depth > pitch.hx * 0.66) return false;                       // pas dans son tiers : on joue

@@ -23,21 +23,27 @@ import { MATCH } from './match-config.js';
 
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
-export const CAGE = { length: 24, width: 14, goal: { width: 3, height: 2 }, box: { depth: 3, width: 7 }, six: { depth: 1.2, width: 4 }, spot: 5, circle: 3 };
+/** (2026-09-26, « agrandis le terrain et mets des gardiens ») LE TERRAIN DE FUTSAL — Lois du jeu du futsal (FIFA), loi 1 : 40 × 20 m (le format
+ *  international : 38-42 × 20-25), buts 3 × 2 m, surface de réparation = deux quarts de cercle de 6 m centrés sur les poteaux joints par une
+ *  ligne de 3,16 m (box : son rectangle englobant, 6 × 15,16 — la zone de prise du gardien), point de réparation à 6 m, second à 10 m,
+ *  cercle central de 3 m. Pas de surface de but (six : un reliquat du 11c11 — placement des sorties de but, que la grille rend inutiles).
+ *  Hier : la cage street 24 × 14, sans gardien. */
+export const CAGE = { length: 40, width: 20, goal: { width: 3, height: 2 }, box: { depth: 6, width: 15.16 }, six: { depth: 1, width: 4 }, spot: 6, spot2: 10, circle: 3, futsal: true };
 /** La même cage au format du stade paramétrique (generateStadium). */
 export const CAGE_STADE = {
   pitch: { L: CAGE.length, W: CAGE.width, circle: CAGE.circle, box: { d: CAGE.box.depth, w: CAGE.box.width }, six: { d: CAGE.six.depth, w: CAGE.six.width }, spot: CAGE.spot },
   goal: { w: CAGE.goal.width, h: CAGE.goal.height },
 };
 
-const DUEL_KEYS = { rebond: 0.55, recul: 3.5 };
+const DUEL_KEYS = { rebond: 0.55, recul: 3.5, passeGardien: 0.35, degagement: false, appel: { x: 9, z: 4.5 }, repli: { angle: 50, avance: 0.7, min: 2, max: 7, pres: 6 } };   // passeGardien : la note de la passe du joueur de champ à SON gardien × 0,35 (menace.arbitre) — un 1c1 se joue au dribble
 
-/** L'état : un match à un joueur par camp sur la cage, st.full forcé (les lois du corps du 11c11). */
-export function makeDuel({ seed = 7, cage = CAGE } = {}) {
-  const st = makeMatch({ perTeam: 0, seed, pitch: makePitch(cage) });
+/** L'état : un joueur de champ par camp ET SON GARDIEN (le métier du 11c11 : keeper.js — il se règle sur la largeur du but), st.full forcé
+ *  (les lois du corps du 11c11). gardiens:false = le duel d'hier, sans gardien. */
+export function makeDuel({ seed = 7, cage = CAGE, gardiens = true } = {}) {
+  const st = makeMatch({ perTeam: gardiens ? 1 : 0, seed, pitch: makePitch(cage) });
   st.full = true;
-  for (const p of st.players) p.keeper = false;          // un seul joueur par camp : pas de métier de gardien
-  const [a, d] = st.players;
+  if (!gardiens) for (const p of st.players) p.keeper = false;          // un seul joueur par camp : pas de métier de gardien
+  const [a, d] = [0, 1].map((t) => st.players.find((p) => p.team === t && !p.keeper));
   a.p = [-0.6, 0, 0]; a.yaw = 0;                          // le botteur au ballon (engagement posé par makeMatch)
   d.p = [DUEL_KEYS.recul, 0, 0]; d.yaw = Math.PI;
   st._duel = { cage };
@@ -72,8 +78,13 @@ export function duelCfg(overrides = {}) {
     locomoteur: base.locomoteur ? { ...base.locomoteur, sortie: true } : base.locomoteur,   // la sortie d'un geste démarre à pleine capacité force-vitesse (locomoteur.pasLoco)
     corps: overrides.corps ?? { portee: 1.8, marge: 0.01 },   // les corps RENDUS ne se traversent pas (contact-corps.js, appelé par la scène)
     decalage: base.decalage ? { ...base.decalage, plancher: 0.45 } : base.decalage,
+    // (2026-09-26, « trop de tirs, pas assez de dribble ») LE TIR SE COMPARE AU DRIBBLE (xg.evDribbleDe) : sans coéquipier de champ, la
+    // continuation d'un tir est le ballon gardé et mené plus près — plus la passe (nulle ici : on frappait dès la portée). Et la conduite
+    // ne « s'use » pas (menace.muteD : elle poussait à RENDRE le ballon après 10 m — il n'y a personne à qui le rendre sur 40 m)
+    xg: base.xg ? { ...base.xg, dribble: { pas: 4, min: 5, devant: 4, passe: 0.5, libre: 0.85 } } : base.xg,
+    menace: typeof base.menace === 'object' ? { ...base.menace, muteD: 999 } : base.menace,
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),
-    assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); },
+    assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); appelDuel(st, cfg); repliDuel(st, cfg); },
   };
 }
 
@@ -97,12 +108,42 @@ function sortieCage(st, cfg, onOutMatch) {
   return true;
 }
 
+/** L'APPEL DE BALLE (les gardiens, 2026-09-26) : quand SON gardien a le ballon, le joueur de champ ne reste pas sur le poste de soutien du 11c11
+ *  (mesuré : figé > 1,5 s au coin de sa surface, le gardien sans ligne) — il se démarque devant son but, à `appel.x` m de sa ligne, du côté
+ *  opposé à l'adversaire, et s'y replace tant que l'adversaire ferme la ligne. */
+function appelDuel(st, cfg) {
+  const K = cfg.duel.appel; if (!K || st.restart) return;
+  const car = st.players[st.possession?.carrier ?? -1];
+  if (!car?.keeper || st.phase !== 'carry') return;
+  const moi = st.players.find((p) => p.team === car.team && !p.keeper), foe = st.players.find((p) => p.team !== car.team && !p.keeper);
+  if (!moi || moi.act || moi.down > 0) return;
+  const g = st.pitch.ownGoal(car.team), zs = foe ? -Math.sign(foe.p[2] || 1) : 1;
+  moi.target = [g.x - g.sign * (K.x ?? 9), 0, zs * Math.min(st.pitch.hz - 1.5, K.z ?? 4.5)];
+}
+
+/** LE REPLI DU DÉFENSEUR (les gardiens, 2026-09-26 — « pas assez de dribble ») : mesuré (geo-1c1), le défenseur était DERRIÈRE le porteur 75 %
+ *  des instants de décision (61 % à 1,5-3 m, 3,9 m/s : une course-poursuite), de face à < 3 m 4,6 % — le 1c1 était une course, pas un duel.
+ *  Le vrai défenseur se replace ENTRE le ballon et son but avant de défier : tant qu'il n'est pas du bon côté (son relèvement depuis le
+ *  porteur à plus de `angle`° de l'axe porteur → but), il court au point de l'axe devant le porteur que ses jambes atteignent d'abord
+ *  (à `avance` × sa distance, borné) — le porteur mené ralentit (70-85 % de son sprint), l'homme sans ballon le rattrape ; du bon côté,
+ *  la défense du match reprend (contenir, temporiser, mordre). */
+function repliDuel(st, cfg) {
+  const K = cfg.duel.repli; if (!K || st.restart || st.phase !== 'carry') return;
+  const car = st.players[st.possession?.carrier ?? -1]; if (!car || car.keeper) return;
+  const def = st.players.find((p) => p.team !== car.team && !p.keeper); if (!def || def.act || def.down > 0) return;
+  const g = st.pitch.ownGoal(def.team), gx = g.x - car.p[0], gz = -car.p[2], gl = Math.hypot(gx, gz) || 1, dx = def.p[0] - car.p[0], dz = def.p[2] - car.p[2], dl = Math.hypot(dx, dz) || 1;
+  const cos = (dx * gx + dz * gz) / (dl * gl);
+  if (cos >= Math.cos((K.angle ?? 50) * Math.PI / 180) || gl < (K.pres ?? 6)) return;   // déjà du bon côté (ou le porteur au but : on y va)
+  const L = Math.max(K.min ?? 2, Math.min(K.max ?? 7, dl * (K.avance ?? 0.7), gl - 1));
+  def.target = [car.p[0] + gx / gl * L, 0, car.p[2] + gz / gl * L];
+}
+
 /** L'ENGAGEMENT DU DUEL : le botteur va au ballon, l'autre attend dans son camp hors du rond. */
 function engagementDuel(st, cfg) {
   const R = st.restart;
   if (!R || R.type !== 'engagement') return;
   for (const p of st.players) {
-    if (p.act || p.down > 0) continue;
+    if (p.act || p.down > 0 || p.keeper) continue;   // le gardien garde son but (keeper.js)
     if (p.team === R.team) p.target = [R.p[0] - Math.sign(st.pitch.attackGoal(p.team).x) * 0.6, 0, R.p[1]];
     else p.target = [R.p[0] + Math.sign(st.pitch.ownGoal(p.team).x) * cfg.duel.recul, 0, R.p[1]];
   }

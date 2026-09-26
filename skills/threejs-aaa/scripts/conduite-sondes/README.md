@@ -103,3 +103,17 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - Après (cfg.conduite.cadence, dribble.toucheCadenceT/vitesseRdv, rendez-vous tenu à 0,25 m, la ligne tenue entre deux touches, la cage) :
   2,33 touches/s, pied 0,32 / 0,89 m, respiration 0,68 m, louvoiement 0,37 m, trous 20 % ; touches au cou-de-pied 84 % (verify-pas, 16 graines).
 - `capture-geste.mjs` : la caméra prend le côté qui a de la place (borne de la cage), soleil dans le dos en second, jamais au-dessus de 2,2 m.
+
+## Le terrain de futsal, les gardiens, le tir qui se mérite (2026-09-26)
+- Retour : « trop de tir pas assez de dribble — agrandis le terrain et mets des gardiens — réduis le volume de tir ».
+- `jeu-format.mjs` (sans navigateur) : par minute — tirs, buts, arrêts du gardien, gestes de dribble, duels, pertes, passes (par rôle :
+  champ/gardien ; `to` −2 = le but : tirs et dégagements), joueurs de champ figés ; conduite en course, conversion, portée et xG des tirs.
+  Base (cage 24 × 14 sans gardien) : 5,38 tirs/min, conversion 62 %, conduite 24 % du temps, 3,3 duels/min.
+- `geo-1c1.mjs` a trouvé la course-poursuite : le défenseur DERRIÈRE le porteur 75 % des instants (de face à < 3 m : 4,6 %) — d'où le
+  repli (duel-1v1.repliDuel : entre le ballon et son but avant de défier) → derrière 39 %, de face à < 3 m 8,2 %, 8,6 duels/min.
+- Le tir comparé au DRIBBLE (xg.evDribbleDe) : sans coéquipier de champ la continuation d'un tir est le ballon mené plus près (la passe,
+  nulle, laissait frapper dès la portée) ; la conduite ne s'use plus (menace.muteD) ; pas de passe « facile » à son gardien (× 0,35), pas
+  de dégagement du joueur de champ ; l'appel de balle quand son gardien a le ballon (figé au poste du 11c11 avant).
+- Après : ≈ 2 tirs/min (tirs de près, xG 0,18-0,27), 2,3 arrêts/min, conduite 46 % du temps ; verify-duel réécrit pour le format (le gel
+  hors gardien et hors relance du gardien, 1-3 tirs/min, des arrêts), verify-pas : dribbles gardés ≥ 50 % (face à un défenseur replacé).
+- `capture-geste.mjs` : CAM=page (la régie de la page) et T0 = 'arret[:k]' (le k-ième arrêt, 3 s avant).

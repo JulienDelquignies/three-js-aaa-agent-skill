@@ -18,7 +18,7 @@
 
 import { laneClearance } from './ball-predict.js';
 import { choosePass } from './rondo.js';
-import { xgDe, thetaDe, evContDe, porteDe } from './xg.js'; import { prefiltreDe, entreesPrefiltre } from './prefiltre.js';
+import { xgDe, thetaDe, evContDe, porteDe, evDribbleDe } from './xg.js'; import { prefiltreDe, entreesPrefiltre } from './prefiltre.js';
 import { axe } from './tactics.js';
 
 /** LE TIR — proximité × couloir réel vers le meilleur coin (les mêmes lois que tryShot : portée,
@@ -274,7 +274,7 @@ export function arbitre(st, c, cfg) {
   const w = typeof cfg.menace === 'object' && cfg.menace ? cfg.menace : {};
   const passeD = st.full && cfg.xg ? menacePasse(st, c, cfg) : null;   // (272) sous cfg.xg la passe se note D'ABORD : le tir se compare à sa continuation
   const o = {
-    tir: menaceTir(st, c, cfg, passeD?.ev ?? 0),
+    tir: menaceTir(st, c, cfg, Math.max(passeD?.ev ?? 0, st.full && cfg.xg?.dribble && !c.keeper ? evDribbleDe(st, c, cfg) : 0)),   // (cfg.xg.dribble, le duel) la continuation d'un 1c1 est le dribble, pas une passe
     centre: menaceCentre(st, c, cfg),
     passe: passeD ?? menacePasse(st, c, cfg),
     conduite: menaceConduite(st, c, cfg),
@@ -292,6 +292,7 @@ export function arbitre(st, c, cfg) {
   } : null;
   // …ET LE RÔLE DU JOUEUR compose avec le style d'équipe (roles.js — ±15 % : un 9 direct dans
   // une équipe possession reste un 9, nuancé, pas écrasé). Aucun rôle : ×1, pas un bit.
+  if (cfg.duel?.passeGardien != null && !c.keeper && st.players[o.passe.vers]?.keeper) o.passe = { ...o.passe, score: +(o.passe.score * cfg.duel.passeGardien).toFixed(3), pourquoi: 'rendre-au-gardien' };   // (le duel) rendre le ballon à SON gardien n'est pas le jeu d'un 1c1 : 5,4 passes/min mesurées, le dribble s'éteignait
   const rW = c.role?.arbitre;
   let meilleure = 'conduite', sMax = -Infinity;
   for (const k of ['tir', 'centre', 'passe', 'conduite']) {

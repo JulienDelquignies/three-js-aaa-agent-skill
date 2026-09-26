@@ -108,6 +108,20 @@ export function evContDe(st, c, cfg, best) {
 
 /** LA PORTE (§ 1.2) : u = xG_dec / max(seuilMin, EV_cont + Θ_i), lissé entre 0,5 et 1,5 (la sélectivité du 232 garde sa forme) ;
  *  rend { f, sel, seuil } — f multiplie le score du tir (plancher + (1 − plancher)·sel). Pure. */
+/** LA CONTINUATION DU DRIBBLE (cfg.xg.dribble — le duel, 1c1 + gardiens : « trop de tirs, pas assez de dribble ») : sans coéquipier de champ,
+ *  la continuation d'un tir n'est pas une passe (EV nulle : on frappait dès la portée, 5,4 tirs/min) mais LE BALLON GARDÉ ET MENÉ PLUS PRÈS —
+ *  le xG de décision au point atteint en portant `pas` m vers le but (jamais plus près que `min` m), l'adversaire BATTU (sa pression y est
+ *  retirée), × la chance de le passer : `passe` quand il est devant à moins de `devant` m (≈ 0,5 — l'ordre de grandeur des dribbles réussis
+ *  du haut niveau), `libre` sinon. Nulle au point le plus utile (on y frappe). Pure. */
+export function evDribbleDe(st, c, cfg) {
+  const K = cfg.xg.dribble, goal = st.pitch.attackGoal(c.team), gx = goal.x - c.p[0], gz = -c.p[2], d = Math.hypot(gx, gz) || 1;
+  const pas = Math.max(0, Math.min(K.pas ?? 4, d - (K.min ?? 5)));
+  if (pas <= 0.2) return 0;
+  const X = xgDe(st, { ...c, p: [c.p[0] + gx / d * pas, c.p[1], c.p[2] + gz / d * pas] }, cfg), libreDec = sig(logit(Math.min(0.999, Math.max(1e-4, X.dec))) - (cfg.xg.d?.press ?? -1.1) * X.P);
+  let devant = false;
+  for (const q of st.players) { if (q.team === c.team || q.keeper || q.down > 0) continue; const vx = q.p[0] - c.p[0], vz = q.p[2] - c.p[2], al = (vx * gx + vz * gz) / d; if (al > 0 && al < (K.devant ?? 4) && Math.abs(vx * gz - vz * gx) / d < 1.5) devant = true; }
+  return libreDec * (devant ? (K.passe ?? 0.5) : (K.libre ?? 0.85));
+}
 export function porteDe(xgDec, ev, theta, K) {
   const seuil = Math.max(K.seuilMin ?? 0.01, ev + theta), u = xgDec / seuil, t = Math.max(0, Math.min(1, (u - 0.5) / 1));   // seuilMin : Θ peut devenir négatif (mené tard, doctrine 1 — « on tire de partout ») ; le plancher est le xG du rond central
   const sel = t * t * (3 - 2 * t), pl = K.plancher ?? 0.15;

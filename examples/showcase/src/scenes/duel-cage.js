@@ -32,6 +32,15 @@ function turfTexture(L, W, cage) {
     g.beginPath(); g.arc(X(0), Z(0), cage.circle * PX, 0, Math.PI * 2); g.stroke();
     g.fillStyle = 'rgba(245,247,250,0.92)'; g.beginPath(); g.arc(X(0), Z(0), 0.12 * PX, 0, Math.PI * 2); g.fill();
     for (const sg of [-1, 1]) {
+      if (cage.futsal) {   // LA SURFACE DU FUTSAL (loi 1) : deux quarts de cercle de 6 m centrés sur l'extérieur des poteaux, joints par 3,16 m ; points à 6 et 10 m
+        const r = cage.box.depth, zp = 3.16 / 2, x0 = sg * L / 2, xi = x0 - sg * r;
+        g.beginPath();
+        if (sg > 0) { g.arc(X(x0), Z(zp), r * PX, Math.PI / 2, Math.PI); g.lineTo(X(xi), Z(-zp)); g.arc(X(x0), Z(-zp), r * PX, Math.PI, 1.5 * Math.PI); }
+        else { g.arc(X(x0), Z(-zp), r * PX, 1.5 * Math.PI, 2 * Math.PI); g.lineTo(X(xi), Z(zp)); g.arc(X(x0), Z(zp), r * PX, 0, Math.PI / 2); }
+        g.stroke();
+        for (const dm of [cage.spot ?? 6, cage.spot2 ?? 10]) { g.beginPath(); g.arc(X(x0 - sg * dm), Z(0), 0.06 * PX, 0, Math.PI * 2); g.fill(); }
+        continue;
+      }
       const bx = sg > 0 ? L / 2 - cage.box.depth : -L / 2;
       g.strokeRect(X(bx), Z(-cage.box.width / 2), cage.box.depth * PX, cage.box.width * PX);
     }
