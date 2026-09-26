@@ -65,6 +65,12 @@ export function pasLoco(p, st, K, vAlong, vWant, dt) {
   return Math.max(dv, -d * dt);
 }
 
+/** (337) LE FREIN FORT effectif d'un joueur (m/s²), celui que pasLoco appliquera au-delà de vBrk — la loi d'arrivée l'anticipe (movement.js). */
+export function freinDe(p, st, K) {
+  const F = fatigueDe(p.wp, K), kE = K.freinEffort && (p.job === 'support' || p.job === 'mark' || p.job === 'cover' || p.job === 'walk') ? Math.pow(epsilonDe(p, st, K), K.freinEffort) : 1;
+  return (K.dMax ?? 6.0) * F.kD * kE;
+}
+
 /** Le budget : vidange au-dessus de la vitesse critique (D′ m), récupération dessous (τ_rec s). */
 export function budgetStep(p, st, K, dt) {
   p.wp ??= 1;

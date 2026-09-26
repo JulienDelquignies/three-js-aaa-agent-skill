@@ -7940,5 +7940,23 @@ if (__bloc()) {
     ok(`lot 336 — LES APPUIS DU MONDE : ${f.toFixed(1)} appuis / joueur / min (bande 3-12 ; le réel ~8 changements de direction tous angles)`, f >= 3 && f <= 12); }
 }
 
+if (__bloc()) {
+  // LE FREINAGE ANTICIPÉ (337, cfg.freinAnticipe — la suite du 336, « oui vas-y » du 26/09). Mesuré avant (un joueur seul, départ arrêté,
+  // cible fixe à 8 / 20 m) : la loi d'arrivée 2,6·d ne freinait qu'à ~2 m, et sous 3 m/s d'écart le locomoteur ne faisait que ROULER
+  // (1,5 m/s²) — le presseur dépassait son point de 1,3 / 1,9 m, le receveur de 1,9 / 2,0, le soutien de 1,0 / 3,45. Le book (Modèle 02
+  // §4.2) : v_approche = √(v_fin² + 2 D d). Après : 0,04-0,4 m ; freinages < −3 m/s² (vitesse lissée 0,25 s) 6,24 → 6,37 / joueur-minute.
+  // Clauses : le presseur et le soutien s'arrêtent sur leur point (dépassement ≤ 0,3 / 0,6 m) quand hier le dépassait (≥ 1 m) ; le frein part plus tôt.
+  const arret = (cfg, job) => { const st = makeMatch({ full: true, seed: 3 }); st.t = 100; const p = st.players[5];
+    for (const q of st.players) if (q !== p) { q.p = [q.p[0], 0, q.p[2] + 300]; q.target = [...q.p]; }
+    p.p = [0, 0, 0]; p.v = [0, 0]; p.speed = 0; st.possession = { team: 1 - p.team, carrier: -1 };
+    let xmax = 0, vPrev = 0, dFrein = null;
+    for (let i = 0; i < 600; i++) { p.job = job; p.target = [20, 0, 0]; movePlayers(st, 1 / 60, cfg); st.t += 1 / 60; const v = Math.hypot(p.v[0], p.v[1]);
+      if ((v - vPrev) * 60 < -0.5 && dFrein == null) dFrein = 20 - p.p[0]; vPrev = v; xmax = Math.max(xmax, p.p[0]); }
+    return { dep: xmax - 20, dFrein: dFrein ?? 0 }; };
+  const cA = matchCfg({}), cN = matchCfg({ freinAnticipe: null }), pA = arret(cA, 'press'), pN = arret(cN, 'press'), sA = arret(cA, 'support'), sN = arret(cN, 'support');
+  ok(`lot 337 — LE FREINAGE ANTICIPÉ : le presseur lancé s'arrête à ${pA.dep.toFixed(2)} m de son point (hier ${pN.dep.toFixed(2)}), le soutien à ${sA.dep.toFixed(2)} (hier ${sN.dep.toFixed(2)}) ; le frein du presseur part à ${pA.dFrein.toFixed(2)} m (hier ${pN.dFrein.toFixed(2)}) ; sabotage freinAnticipe null = hier`,
+    pA.dep <= 0.3 && sA.dep <= 0.6 && pN.dep >= 1 && sN.dep >= 1 && pA.dFrein > pN.dFrein + 0.5);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

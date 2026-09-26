@@ -8,7 +8,7 @@ import { momentDuJeu } from './phases.js';
 import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
 import { ouvreDe } from './ouverture.js';
-import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
+import { pasLoco, budgetStep, pointePermise, freinDe } from './locomoteur.js';
 import { intentionDe, appelPertinent } from './effort.js';
 import { feinteAppelAt } from './petits-gestes.js';
 
@@ -363,7 +363,17 @@ export function movePlayers(st, dt, cfg) {
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
       const d = hyp(dx, dz); dTgt = d;
-      if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
+      if (d > 0.18) { let s = Math.min(top, d * 2.6);
+        // (337, cfg.freinAnticipe && cfg.locomoteur) LE FREINAGE ANTICIPÉ (book Modèle 02 §4.2, le lookahead v = √(v_fin² + 2 D d)) : mesuré, la
+        // loi d'arrivée 2,6·d ne freinait qu'à ~2 m — le presseur lancé dépassait son point de 1,3-1,9 m, le receveur de 2,0, le soutien (frein
+        // doux, ε²) de 3,45. La demande ne dépasse plus la vitesse dont le joueur peut s'arrêter avec SON frein (freinDe : Dmax, fatigue, effort)
+        // avant la cible, moins une marge. Absent : hier au bit.
+        const FA = st.full && cfg.freinAnticipe && cfg.locomoteur ? cfg.freinAnticipe : null;
+        // …et quand la vitesse atteint la courbe, il DÉCIDE de freiner fort : sous seuilFrein d'écart le locomoteur ne fait que rouler (1,5 m/s²) —
+        // mesuré, une demande qui suivait la courbe laissait le presseur rouler jusqu'à la cible (5,9 → 5,3 m/s sur 3 m, dépassement 1,6 m)
+        if (FA) { const vc = Math.sqrt(2 * freinDe(p, st, cfg.locomoteur) * (FA.part ?? 0.8) * Math.max(0, d - (FA.marge ?? 0.3))) + (FA.vFin ?? 0.5), va = (p.v[0] * dx + p.v[1] * dz) / d;
+          s = va >= vc ? Math.min(s, va - (cfg.locomoteur.seuilFrein ?? 1.5) - 0.2) : Math.min(s, vc); }   // (sous ~3 m/s la demande passe NÉGATIVE dans l'axe : le frein fort tient jusqu'à l'arrêt — sinon le dernier mètre se roulait)
+        wx = (dx / d) * s; wz = (dz / d) * s; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
     // de plusieurs mètres en une image (churn mesuré 18-19 m/s) et la locomotion vivait en
