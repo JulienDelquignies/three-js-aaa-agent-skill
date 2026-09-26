@@ -16,6 +16,7 @@ import { axe as axeT, tac as tacT } from './tactics.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { byId } from './technique.js';
+import { placerEngagement, spotsEngagement } from './coup-envoi.js'; export { engageurTient } from './coup-envoi.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -24,6 +25,7 @@ const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 
 
 export function placeKickoff(st, kickTeam, cfg) {
   const { pitch } = st;
+  if (st.full && cfg?.coupEnvoi) { placerEngagement(st, kickTeam, cfg); return; }   // (338) les postes de la formation — coup-envoi.js
   for (const team of [0, 1]) {
     const sign = pitch.ownGoal(team).sign;                        // le côté DÉFENDU
     // …et l'EXPULSÉ ne revient pas des vestiaires (Loi 12), le REMPLACÉ en chemin non plus
@@ -56,6 +58,7 @@ export function placeKickoff(st, kickTeam, cfg) {
 export function kickoffSpots(st, kickTeam, takerId = -1, cfg) {
   const { pitch } = st;
   const spots = {};
+  if (st.full && cfg?.coupEnvoi) return spotsEngagement(st, kickTeam, takerId, cfg);   // (338) les postes de la formation — coup-envoi.js
   for (const team of [0, 1]) {
     const sign = pitch.ownGoal(team).sign;
     const rows = [[0.28, 0], [0.42, -0.28], [0.42, 0.28], [0.62, -0.14], [0.62, 0.14], [0.75, 0]];
@@ -218,6 +221,7 @@ export function remiseEnTouche(st, id, cfg) {
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   const T = 2 * speed * Math.sin(theta) / 9.81;
   st.pass = { from: id, to: best.id, lead: [bestT[0], 0, bestT[1]], style: 'touche', t: st.t, flight: T, origin: [q.p[0], q.p[2]] };
+  if (st.full && cfg.lanceurPasseur) st.lastPasser = id;   // (338) le lanceur est le dernier passeur (strike-sim.throwNow)
   // 'rentrée', pas 'touche' : l'événement 'touche' est le TOUCHER de balle (conduite) — un
   // même mot, deux faits ; le registre les sépare
   st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: id, to: best.id, range: +Rr.toFixed(1), genre: longue && Rr > 19 ? 'longue' : undefined });

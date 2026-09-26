@@ -45,7 +45,9 @@ export function intentionDe(p, st, cfg, K, bursting) {
   if (p.keeper || p.down > 0 || st.restart || !p.target) { p._reg = null; return null; }
   if (bursting) {   // (4) LE REPLI EST UN SPRINT DE TRANSITION : passé repliSprint s depuis la perte, celui qui rentre encore RÉCUPÈRE (vRecup — Bible 10 : le recul de récupération 4-6 m/s), il ne sprinte plus (sondé : 138 sprints de repli par joueur et par match, 55 % de la haute intensité, la moitié en défense placée)
     p._reg = null;
-    return p._pace?.kind === 'repli' && st.t - (st._possChangeAt ?? -99) > (K.repliSprint ?? 5) ? { v: K.vRecup ?? 5.0, eps: K.epsRecup ?? 0.7, reg: 'rentre' } : null;
+    if (!(p._pace?.kind === 'repli' && st.t - (st._possChangeAt ?? -99) > (K.repliSprint ?? 5))) return null;
+    const R = rejointDe(p, st, cfg); if (R) { p._reg = 'rejoint'; return R; }   // (338) le repli sans urgence (ni dépassé, ni ballon près du but) rentre au trot
+    return { v: K.vRecup ?? 5.0, eps: K.epsRecup ?? 0.7, reg: 'rentre' };
   }
   const dB = hyp(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
   const enPress = !!(st._press && st._press.until > st.t && st._press.team === p.team);
@@ -63,13 +65,34 @@ export function intentionDe(p, st, cfg, K, bursting) {
   const g = hyp(p.target[0] - p.p[0], p.target[2] - p.p[2]);
   if (enPress) { p._reg = 'recup-press'; return null; }
   if (dB < (K.chaud ?? 10)) { p._reg = 'recup-chaud'; return null; }
-  if (g > (K.gRecup ?? 12)) { p._reg = 'recup-loin'; return null; }
+  if (g > (K.gRecup ?? 12)) { p._reg = 'recup-loin'; const R = rejointDe(p, st, cfg); if (R) p._reg = 'rejoint'; return R; }
   if (momentDuJeu(st, p.team, K.fenetre ?? 5) === 'transition-def' && dB < (K.rayonTrans ?? 20) * axe(tac(st, p.team).transition, 0.6, 1.4)) { p._reg = 'recup-trans'; return null; }
   if ((p._efAct ?? -1) > st.t && g > (K.tolOff ?? 1.2)) { p._reg = 'actif'; return { v: K.vActif ?? 4.2, eps: K.epsActif ?? 0.6, reg: 'actif' }; }
   if (p._efLigne && p._efLigne.until > st.t && g > (K.tolOff ?? 1.2)) { p._reg = 'ligne'; return { v: p._efLigne.v, eps: K.epsActif ?? 0.6, reg: 'ligne' }; }   // (273) la ligne rejoint sa bande en course avant / recul organisé (ligne.js, sous cfg.ligne seulement)
   p._reg = 'ent';
   const vEnt = st.possession?.team === p.team ? (K.vEnt ?? 1.4) : (K.vEntDef ?? K.vEnt ?? 1.4);   // l'entretien du bloc SANS ballon est une marche rapide (Bible 10 : 1,8-2,6 m/s), celui du soutien AVEC ballon une marche
   return { v: Math.max(vEnt, Math.min(K.vActif ?? 4.2, tSpd * 1.15 + 0.4)), eps: K.epsEnt ?? 0.45, reg: 'ent' };
+}
+
+/** (338) LE TEMPO : LE LOIN DE SON POSTE SANS URGENCE REJOINT AU TROT (cfg.tempo && st.full — 26/09, la référence FC 26 du
+ *  joueur : « presque personne ne sprinte, le bloc se replace en marchant »). Sondé (2 × 600 s) : 32,6 % de la distance dans la
+ *  bande 12-18 km/h (réel 24,3), 17,6 % en marche (réel 30,3), 12,2 km par joueur (réel 10-11) — le premier contributeur de la
+ *  bande : le soutien à plus de gRecup de son poste (10 % du temps) repartait au plafond du métier (4,9 m/s) SANS AUCUNE
+ *  URGENCE. Le vrai foot (Bible 10 §4.3) : l'entretien est un trot, la course de récupération est une URGENCE nommée. Urgent :
+ *    — la transition (les miens viennent de perdre OU de gagner le ballon, fenêtre fenetre s) : on court (contre, repli) ;
+ *    — le défenseur DÉPASSÉ par le ballon (plus loin de son but que le ballon de plus de depasse m) : il rentre ;
+ *    — le défenseur dont le ballon est dans ses danger m de son but : on ne trottine pas devant sa surface.
+ *  Sinon : le trot vRejoint (× workF — le travailleur rejoint plus vite, le nonchalant plus lentement ; identité à 50), ε epsRejoint.
+ *  Pure. null : le plafond du métier (hier). */
+export function rejointDe(p, st, cfg) {
+  const T = cfg.tempo; if (!T || !st.pitch) return null;
+  const m = momentDuJeu(st, p.team, T.fenetre ?? 5);
+  if (m === 'transition-def' || m === 'transition-off' || m === 'arrêt') return null;
+  if (m === 'défense-placée') {
+    const og = st.pitch.ownGoal(p.team), dP = Math.abs(p.p[0] - og.x), dBa = Math.abs(st.ball.p[0] - og.x);
+    if (dP > dBa + (T.depasse ?? 3) || dBa < (T.danger ?? 30)) return null;
+  }
+  return { v: (T.vRejoint ?? 3.2) * (p.skill?.workF ?? 1), eps: T.epsRejoint ?? 0.5, reg: 'rejoint' };
 }
 
 /** L'appel d'un soutien est pertinent à portée de passe du ballon. Pure. */

@@ -27,7 +27,7 @@ const LA316 = () => ({ ...matchCfg({}).ligneAccrochee, marge: { couvert: 2, entr
 const MES_1609 = { blocPercu: null, enveloppe: null, visee: null, ellipse: null, repertoire: null, arretControle: null, ligneAccrochee: null };   // MES CLÉS D'HIER — DATÉ fusion 16/09 : les sept clés de 275-280 nulles = le monde de la branche animations 5f8870f au bit (bb530de469f21cbc / d5ba9ca701a880fa) sur l'état fusionné e798b47
 import { formationSpots, checkFormation, premierOffensif, blocFor } from '../assets/starter/src/engine/formation.js';
 import { evadeSpot, choosePass, enLance } from '../assets/starter/src/engine/rondo.js';
-import { makeMatch, matchCfg, matchStep, checkMatch, playMatch, matchInternals } from '../assets/starter/src/engine/match-sim.js';
+import { makeMatch, matchCfg, matchStep, checkMatch, playMatch, matchInternals, placeKickoff as placeKickoff338 } from '../assets/starter/src/engine/match-sim.js';
 import { couloirDe, ouvrirRegistre, placerCouloir, tenirDemiEspace, dansOmbre } from '../assets/starter/src/engine/couloirs.js';
 import { checkOffside, offsideLine, pointCorps, horsJeuTente } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
@@ -37,7 +37,7 @@ import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { choixEV } from '../assets/starter/src/engine/choix.js'; import { arbitre as arbitre335 } from '../assets/starter/src/engine/menace.js'; import { resoudreRole as role335 } from '../assets/starter/src/engine/roles.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
-import { serreDe } from '../assets/starter/src/engine/serre.js';
+import { serreDe } from '../assets/starter/src/engine/serre.js'; import { rejointDe } from '../assets/starter/src/engine/effort.js'; import { postesEngagement } from '../assets/starter/src/engine/coup-envoi.js';
 import { piqueTenteDe, piqueReussiteDe } from '../assets/starter/src/engine/tacle-debout.js';
 import { toucheCorpsDe } from '../assets/starter/src/engine/touche-corps.js';
 import { porteePasseDe } from '../assets/starter/src/engine/portee.js';
@@ -181,7 +181,7 @@ if (__bloc()) {
   // 330 → 480 s (238, même doctrine) : à 34 tirs par 100 min, 330 s à zéro tir a 16 % de chance — la graine 7 est
   // sèche dans le monde d'hier aussi (1 tir en 300 s, 2-4 en 600) ; la fenêtre suit le tempo, jamais la graine.
   // 480 → 600 s (300, même doctrine) : la prise en relatif rend les tirs au book (32 → 26 par match, 4 × 90 min) — 480 s à zéro tir a ~10 % de chance ; la graine 7 y tombe.
-  const { st: s2, trace } = playMatch(st2, 600, { cfg: matchCfg({ gkPied: GKP334() /* DATÉ 334 : vert à HEAD~ ; le monde de la loi atteint un corner POSÉ par écriture à 26 m (la quête du ballon épuisée, ramasseurs null dans ce bloc) — dette nommée, la clause mesure le contrat, pas le spot du gardien */, ligneAccrochee: LA316() /* DATÉ 316 */, aligneRecev: null /* DATÉ 309 : vert à HEAD~ ; la graine 7 est sèche dans les deux mondes (hier 2 tirs en 1200 s, sous la loi un but sans tir à 716 puis un tir à 884) — la clause mesure le contrat, pas l'alignement du receveur */, remisePostes: null, rendezVous: null /* remisePostes et rendezVous null DATÉ 281 : vert à HEAD~ (worktree 0f5e292), le plein format remangé (20 passes en 3 min c. ≥ 25) — la clause mesure sa loi, pas la passe au rendez-vous ni les postes de la remise */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, repertoire: null, arretControle: null /* repertoire et arretControle null DATÉ 279 : vert à HEAD~ (worktree 842c118), le plein format de 3 min remangé (18 passes c. 25) — la clause mesure sa loi, pas les vitesses du book ni l'arrêt au journal */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ...LEUR_1609 /* DATÉ fusion 16/09 : la combinaison remange ce flux — vert dans les deux parents (29c0f95, 5f8870f) ; la clause mesure sa loi sur le monde de son parent */, shotRange: 20 }) });
+  const { st: s2, trace } = playMatch(st2, 600, { cfg: matchCfg({ gkPied: GKP334() /* DATÉ 334 : vert à HEAD~ ; le monde de la loi atteint un corner POSÉ par écriture à 26 m (la quête du ballon épuisée, ramasseurs null dans ce bloc) — dette nommée, la clause mesure le contrat, pas le spot du gardien */, ligneAccrochee: LA316() /* DATÉ 316 */, tempo: null, coupEnvoi: null, lanceurPasseur: null /* DATÉ 338 : vert à HEAD~ (le jumeau 338 = 337 au bit) ; la graine 7 sèche 600 s sous le tempo (tirs 25,5 → 22 / 90 min au banc 16 matchs) — la clause mesure le contrat, pas le tempo */, aligneRecev: null /* DATÉ 309 : vert à HEAD~ ; la graine 7 est sèche dans les deux mondes (hier 2 tirs en 1200 s, sous la loi un but sans tir à 716 puis un tir à 884) — la clause mesure le contrat, pas l'alignement du receveur */, remisePostes: null, rendezVous: null /* remisePostes et rendezVous null DATÉ 281 : vert à HEAD~ (worktree 0f5e292), le plein format remangé (20 passes en 3 min c. ≥ 25) — la clause mesure sa loi, pas la passe au rendez-vous ni les postes de la remise */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, repertoire: null, arretControle: null /* repertoire et arretControle null DATÉ 279 : vert à HEAD~ (worktree 842c118), le plein format de 3 min remangé (18 passes c. 25) — la clause mesure sa loi, pas les vitesses du book ni l'arrêt au journal */, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ...LEUR_1609 /* DATÉ fusion 16/09 : la combinaison remange ce flux — vert dans les deux parents (29c0f95, 5f8870f) ; la clause mesure sa loi sur le monde de son parent */, shotRange: 20 }) });
   const r = checkMatch(s2, trace, cfg);
   ok(`le CONTRAT du match tient à 22 (checkMatch : ${r.ok ? 'ok' : r.issues.slice(0, 2).join(' ; ')})`, r.ok);
 }
@@ -7956,6 +7956,45 @@ if (__bloc()) {
   const cA = matchCfg({}), cN = matchCfg({ freinAnticipe: null }), pA = arret(cA, 'press'), pN = arret(cN, 'press'), sA = arret(cA, 'support'), sN = arret(cN, 'support');
   ok(`lot 337 — LE FREINAGE ANTICIPÉ : le presseur lancé s'arrête à ${pA.dep.toFixed(2)} m de son point (hier ${pN.dep.toFixed(2)}), le soutien à ${sA.dep.toFixed(2)} (hier ${sN.dep.toFixed(2)}) ; le frein du presseur part à ${pA.dFrein.toFixed(2)} m (hier ${pN.dFrein.toFixed(2)}) ; sabotage freinAnticipe null = hier`,
     pA.dep <= 0.3 && sA.dep <= 0.6 && pN.dep >= 1 && sN.dep >= 1 && pA.dFrein > pN.dFrein + 0.5);
+}
+
+if (__bloc()) {
+  // LE TEMPO, LE COUP D'ENVOI, LE LANCEUR (338 — retours du 26/09 : la référence FC 26 « presque personne ne sprinte, le bloc se replace
+  // en marchant » ; « corrige le placement des joueurs au coup d'envoi » ; « le joueur qui fait le coup d'envoi ne peut pas partir en
+  // dribble » ; « le gardien ne peut pas prendre le ballon à la main sur une passe en rentrée »). Mesuré avant (4 × 900 s) : 35,6 % de la
+  // distance à 12-18 km/h (réel 24,3), 17,0 % en marche (réel 30,3), 12,3 km / joueur / 90 ; après 28,8 / 21,4 / 11,2. Coup d'envoi :
+  // 6 paires empilées, le latéral gauche engageait, 1,5-3,5 m conduits avant de donner ; après 0 paire, la pointe engage, passe en 0,5-1,2 s.
+  // 16 × 90 min : buts 4,70 → 3,88, tirs 25,5 → 22,0, complétion 90,6 → 91,5.
+  // (1) LA LOI DU REJOINT (pure) : loin de son poste, en défense placée, ni dépassé ni ballon près du but → le trot ; dépassé → l'urgence
+  { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({}); st.restart = null; st.t = 100; st._possChangeAt = 80;
+    const p = st.players.find((q) => q.team === 0 && !q.keeper), og = st.pitch.ownGoal(0);
+    st.possession = { team: 1, carrier: -1 }; p.p = [og.x - og.sign * 20, 0, 0];
+    const trot = rejointDe(p, st, cfg); p.p = [og.x - og.sign * 70, 0, 0]; const depasse = rejointDe(p, st, cfg);
+    st._possChangeAt = 98; p.p = [og.x - og.sign * 20, 0, 0]; const trans = rejointDe(p, st, cfg);
+    ok(`lot 338 — LE REJOINT : loin de son poste sans urgence on trotte (${trot?.v.toFixed(2)} m/s) ; dépassé par le ballon (${depasse ? depasse.v : 'urgence'}) ou en transition (${trans ? trans.v : 'urgence'}) on court ; sabotage tempo null = le plafond du métier`,
+      trot && Math.abs(trot.v - 3.2 * (p.skill?.workF ?? 1)) < 1e-9 && depasse === null && trans === null && rejointDe(p, st, matchCfg({ tempo: null })) === null); }
+  // (2) LES POSTES DU COUP D'ENVOI : personne empilé, chacun dans sa moitié, le rond vide d'adversaires, la pointe engage
+  const pose = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); placeKickoff338(st, 0, cfg); let emp = 0, moitie = 0, rond = 0; const pl = st.players.filter((q) => !q._sub && !q.expulse);
+    for (const a of pl) { if (a.team !== 0 && !a.keeper && Math.hypot(a.p[0], a.p[2]) < 9.15) rond++; if (a.p[0] * st.pitch.ownGoal(a.team).sign < -0.5) moitie++; for (const b of pl) if (a.id < b.id && a.team === b.team && Math.hypot(a.p[0] - b.p[0], a.p[2] - b.p[2]) < 1.5) emp++; }
+    const near = pl.filter((q) => q.team === 0 && !q.keeper).sort((a, b) => Math.hypot(a.p[0], a.p[2]) - Math.hypot(b.p[0], b.p[2]))[0];
+    return { emp, moitie, rond, near, st }; };
+  const kA = pose(matchCfg({})), kN = pose(matchCfg({ coupEnvoi: null })), E = postesEngagement(kA.st, 0, -1, matchCfg({}));
+  ok(`lot 338 — LES POSTES DU COUP D'ENVOI : ${kA.emp} paire empilée (hier ${kN.emp}), ${kA.moitie} hors de sa moitié, ${kA.rond} adversaire dans le rond ; l'engageur est la pointe (poste ${kA.near.post}, hier ${kN.near.post})`,
+    kA.emp === 0 && kN.emp >= 3 && kA.moitie === 0 && kA.rond === 0 && kA.near.id === E.taker && kA.near.post !== kN.near.post);
+  // (3) L'ENGAGEUR NE CONDUIT PAS : du restart-pris à l'armé de sa passe, le ballon reste sous sa semelle
+  const engage = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let ev = 0, pris = null;
+    for (let i = 0; i < 60 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; ev < st.events.length; ev++) { const e = st.events[ev];
+      if (e.type === 'restart-pris' && !pris) pris = { t: e.t, by: e.by };
+      if (pris && e.type === 'windup' && e.by === pris.by) return { d: Math.hypot(st.ball.p[0], st.ball.p[2]), dt: e.t - pris.t }; } }
+    return { d: 99, dt: 99 }; };
+  const eA = engage(matchCfg({})), eN = engage(matchCfg({ coupEnvoi: null }));
+  ok(`lot 338 — L'ENGAGEUR TIENT SON BALLON : à l'armé de sa passe le ballon est à ${eA.d.toFixed(2)} m du point (hier ${eN.d.toFixed(2)}), ${eA.dt.toFixed(2)} s après la prise`, eA.d <= 0.5 && eN.d >= 1 && eA.dt <= 2);
+  // (4) LE LANCEUR EST LE DERNIER PASSEUR (Loi 12.2 : le gardien qui ramasse la rentrée de son coéquipier ne la prend pas aux gants)
+  const lance = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let ev = 0;
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type === 'rentrée') return st.lastPasser === e.by; } }
+    return null; };
+  const lA = lance(matchCfg({})), lN = lance(matchCfg({ lanceurPasseur: null }));
+  ok(`lot 338 — LE LANCEUR PASSE : après la première rentrée, le dernier passeur est le lanceur (${lA}) ; hier ${lN}`, lA === true && lN === false);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

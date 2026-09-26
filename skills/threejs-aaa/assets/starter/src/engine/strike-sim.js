@@ -77,6 +77,7 @@ export function throwNow(st, c, cfg) {
   st.phase = 'flight';
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   st.pass = { from: c.id, to: T.to, lead: [tx, 0, tz], style: 'touche', t: st.t, flight: sol ? sol.flightTime : 2 * speed * Math.sin(theta) / 9.81, origin: [from[0], from[2]] };
+  if (st.full && cfg.lanceurPasseur) st.lastPasser = c.id;   // (338) LE LANCEUR EST LE DERNIER PASSEUR (retour utilisateur 26/09 : « le gardien ne peut pas prendre le ballon à la main sur une passe en rentrée » — Loi 12.2) : hier le lastPasser restait celui d'AVANT la sortie (souvent l'adversaire) — le gardien qui ramassait la rentrée de son coéquipier la prenait aux gants, et la rentrée directement sortie s'attribuait au mauvais camp
   st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: c.id, to: T.to, range: +Math.min(d, T.Rr ?? d).toFixed(1), genre: longue ? 'longue' : court ? 'courte' : undefined, ballY: +from[1].toFixed(2), speed: +speed.toFixed(1),
     face: +(Math.abs(wrapPi(Math.atan2(tz - from[2], tx - from[0]) - c.yaw)) * 180 / Math.PI).toFixed(0) });   // l'écart corps-cible en degrés
 }

@@ -104,6 +104,7 @@ export function movePlayers(st, dt, cfg) {
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);
+    if (st.full && cfg.tempo?.marche && p.job === 'walk' && st.restart && p.target && hyp(p.target[0] - p.p[0], p.target[2] - p.p[2]) < (cfg.tempo.loin ?? 12)) top = Math.min(top, cfg.tempo.marche * (p.skill?.workF ?? 1));   // (338) L'ARRÊT DE JEU SE MARCHE (cfg.tempo.marche) : le métier « walk » avançait à 2,6 m/s (9,4 km/h — un trot) pendant 30-45 % du match ; près de sa place, on marche vraiment (loin, le retour trotté d'hier)
     if (p.act?.payload?.elan) top = Math.min(top, p.act.payload.elan);   // la course d'élan (A9 bis) : un trot vers le ballon, pas un sprint
     // LE VENDANGÉ SE REPREND (cfg.porteAnticipe && st.full — strikeNow pose _reprise au refus stance-au-contact) : le porteur dont la frappe est refusée VISE SON BALLON, sans poussée ni pointe, le temps de le reprendre — hier il filait
     // sur l'élan du glissement (7,5 m/s) pendant que le ballon vendangé mourait derrière lui : 2,2 m, 0,5 s, « il oublie le ballon ». Absente : l'hier au bit.
