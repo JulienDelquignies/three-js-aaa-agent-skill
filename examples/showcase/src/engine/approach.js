@@ -149,6 +149,30 @@ export function glide(from, fromYaw, anchor, t01) {
 }
 
 /**
+ * LE GLISSEMENT DANS LE REPÈRE DU BALLON (cfg.armePied, le duel) : pendant l'armé le ballon ROULE (plus de servo au point de stance
+ * — l'aimant : le ballon rejoignait le pied, jusqu'à 9 m/s) et c'est le CORPS qui règle ses derniers appuis sur lui. La position
+ * relative corps − ballon va de r0 (l'engagement) à l'ancre relative (fixe : −R(lacet + β)·dist) par une Hermite cubique qui PART
+ * de la vitesse relative de l'engagement w0 (le coureur garde son élan, pas d'arrêt marqué) et arrive à vitesse relative nulle (le
+ * pied planté accompagne le ballon). En POLAIRE autour du ballon (rayon, angle) : on CONTOURNE son ballon — en cartésien le trajet
+ * d'un côté à l'autre le traversait, la garde radiale le rejetait sur le cercle et le corps arrivait en retard (relèvement raté au
+ * contact). Chaque tangente est bornée à 3 × son écart (Fritsch-Carlson : l'Hermite reste monotone, le rayon ne descend jamais sous
+ * min(départ, arrivée), le corps ne dépasse pas l'ancre pour revenir). Pure : `rel` = { r0: [x, z], w0: [vx, vz] } posé à l'engagement.
+ */
+export function glideRelatif(rel, ball, anchor, fromYaw, t01, T) {
+  const u = Math.max(0, Math.min(1, t01)), e = glideEase(u);
+  const h00 = 2 * u ** 3 - 3 * u ** 2 + 1, h10 = u ** 3 - 2 * u ** 2 + u, h01 = 3 * u ** 2 - 2 * u ** 3;
+  const FC = (m, d) => (m * d > 0 && Math.abs(m) > 3 * Math.abs(d) ? 3 * d : m);
+  const [x0, z0] = rel.r0, [wx, wz] = rel.w0, r1 = [anchor.p[0] - ball[0], anchor.p[1] - ball[1]];
+  const rho0 = hyp(x0, z0), rho1 = hyp(r1[0], r1[1]), th0 = Math.atan2(z0, x0), dTh = wrap(Math.atan2(r1[1], r1[0]) - th0);
+  const mR = FC(T * (x0 * wx + z0 * wz) / Math.max(1e-6, rho0), rho1 - rho0), mT = FC(T * (x0 * wz - z0 * wx) / Math.max(1e-6, rho0 * rho0), dTh);
+  const rho = h00 * rho0 + h10 * mR + h01 * rho1, th = th0 + h10 * mT + h01 * dTh;
+  return {
+    p: [ball[0] + rho * Math.cos(th), ball[1] + rho * Math.sin(th)],
+    yaw: fromYaw + wrap(anchor.yaw - fromYaw) * e,
+  };
+}
+
+/**
  * LE PLAN DE FRAPPE — quelle technique, quel pied, quelle ancre : décidé par L'ATTEIGNABILITÉ,
  * pas par la géométrie transitoire.
  *

@@ -2,7 +2,7 @@
 // visée au bassin, fov 40 — les deux joueurs de la tête aux pieds), au ralenti si `lent` < 1 (le pas de simulation par image = lent / 60 s).
 // Le rendu logiciel (SwiftShader, sans GPU) sort par moments un sol GRIS (le gazon absent, 26 % des images mesurées ; le GPU n'a pas ce
 // défaut) : chaque image est vérifiée sur une bande du sol et RE-RENDUE (sans avancer la sim) tant qu'elle est grise, 6 essais au plus.
-// Usage : node capture-geste.mjs <url> <dossier> <graine> <t0 | conduite> <durée s> [joueur=0 | porteur] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
+// La caméra garde le soleil dans le dos et reste dans la cage (bornée, elle monte). Usage : node capture-geste.mjs <url> <dossier> <graine> <t0 | conduite> <durée s> [joueur=0 | porteur] [lent=1] [dist=4]   (CAM=face : trois quarts face)   → JPEG <dossier>/f00000.jpg…
 import { chromium } from '../../../../examples/showcase/node_modules/playwright/index.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -42,7 +42,8 @@ if (T0 === 'conduite') {
   T0n = Math.max(0.05, best.t0 - 0.6); await ouvre();
 }
 // T0 = 'recup[:k]' : la k-ième prise d'un ballon LIBRE (au sol, par un joueur lancé ≥ 1,5 m/s, le ballon à plus de 1 m de lui 0,8 s avant) — filmée
-// de 1,2 s avant la prise ; `I = porteur` suit alors le récupérateur.
+// de 1,2 s avant la prise ; `I = porteur` suit alors le RÉCUPÉRATEUR dès la première image (pas l'ancien porteur qu'il va chercher).
+let suitId = null;
 if (String(T0).startsWith('recup')) {
   const k = Number(String(T0).split(':')[1] ?? 0);
   const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = [], hist = []; let ne = 0;
@@ -52,20 +53,29 @@ if (String(T0).startsWith('recup')) {
     return out; });
   console.log('récupérations trouvées :', L.length, JSON.stringify(L.slice(0, 6)));
   if (!L[k]) { console.log('pas de récupération n°', k); process.exit(1); }
-  T0n = Math.max(0.05, L[k].t - 1.2); await ouvre();
+  T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
 }
-const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
+const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), suitId, dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard
     const k = 1 - Math.exp(-dt / 0.8), vx = s.v[0], vz = s.v[1]; if (Math.hypot(vx, vz) > 0.5) { c.dir[0] += (vx - c.dir[0]) * k; c.dir[1] += (vz - c.dir[1]) * k; }
     const n = Math.hypot(c.dir[0], c.dir[1]) || 1, px = -c.dir[1] / n, pz = c.dir[0] / n;
-    if (c.sign == null) c.sign = Math.hypot(s.p[0] + px * P.dist, s.p[2] + pz * P.dist) < Math.hypot(s.p[0] - px * P.dist, s.p[2] - pz * P.dist) ? 1 : -1;   // le côté de la cage le plus ouvert
-    // CAM=face : de trois quarts FACE (40° de l'axe de course, devant le porteur) — l'arc latéral d'une jambe (le passement) se lit de face, pas de côté
-    const fwd = [c.dir[0] / n, c.dir[1] / n], face = P.cam === 'face', ux = face ? fwd[0] * 0.77 + c.sign * px * 0.64 : c.sign * px, uz = face ? fwd[1] * 0.77 + c.sign * pz * 0.64 : c.sign * pz;
-    const want = [s.p[0] + ux * P.dist, 1.15, s.p[2] + uz * P.dist], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
+    // LE SOLEIL DANS LE DOS (le soleil rasant de la cage, lumière directionnelle la plus forte) : face à lui, le rendu sature en blanc (voile, bloom)
+    // — le côté de la caméra est celui qui regarde le moins vers lui ; il ne change (coupe) que si le côté tenu finit à contre-jour franc
+    const fwd = [c.dir[0] / n, c.dir[1] / n], face = P.cam === 'face';
+    const U = (sg) => (face ? [fwd[0] * 0.77 + sg * px * 0.64, fwd[1] * 0.77 + sg * pz * 0.64] : [sg * px, sg * pz]), sol = window.__soleilH ?? [0, 0];
+    const ds = (sg) => { const u = U(sg); return u[0] * sol[0] + u[1] * sol[1]; };
+    if (c.sign == null) c.sign = ds(1) >= ds(-1) ? 1 : -1; else if (ds(c.sign) < -0.35 && ds(-c.sign) > ds(c.sign) + 0.3) { c.sign = -c.sign; c.pos = null; c.tgt = null; }
+    const [ux, uz] = U(c.sign), A = window.__cage ?? [99, 99];
+    // …et DANS la cage : derrière la grille la caméra filmait le grillage ; bornée, elle monte d'autant qu'elle s'est rapprochée (vue plongeante)
+    let wx = s.p[0] + ux * P.dist, wz = s.p[2] + uz * P.dist; const bx = Math.max(-A[0], Math.min(A[0], wx)), bz = Math.max(-A[1], Math.min(A[1], wz)), perdu = Math.hypot(wx - bx, wz - bz);
+    const want = [bx, 1.15 + 0.8 * perdu, bz], kp = 1 - Math.exp(-dt / 0.3), tg = [s.p[0], 0.9, s.p[2]];
     c.pos = c.pos ? c.pos.map((x, j) => x + (want[j] - x) * kp) : want; c.tgt = c.tgt ? c.tgt.map((x, j) => x + (tg[j] - x) * kp) : tg; };
   const sc = window.__scene; window.__cam = null;
-  window.__suivi = (sc) => { if (P.i >= 0) return sc.players[P.i].sim; const c = sc.state.possession?.carrier; const pl = sc.players.find((q) => q.sim.id === c); if (pl) window.__dernier = pl.sim; return window.__dernier ?? sc.players[0].sim; };
+  { let best = null; window.__engine.scene.traverse((o) => { if (o.isDirectionalLight && (!best || o.intensity > best.intensity)) best = o; });   // le soleil
+    if (best) { best.updateMatrixWorld(); const a = best.getWorldPosition(best.position.clone()), t = best.target.getWorldPosition(best.position.clone()), h = Math.hypot(a.x - t.x, a.z - t.z) || 1; window.__soleilH = [(a.x - t.x) / h, (a.z - t.z) / h]; }
+    const ar = sc.state.area; if (ar) window.__cage = [ar[0] / 2 - 0.4, ar[1] / 2 - 0.4]; }
+  window.__suivi = (sc) => { if (P.i >= 0) return sc.players[P.i].sim; if (P.suitId != null) return sc.players.find((q) => q.sim.id === P.suitId).sim; const c = sc.state.possession?.carrier; const pl = sc.players.find((q) => q.sim.id === c); if (pl) window.__dernier = pl.sim; return window.__dernier ?? sc.players[0].sim; };
   for (let t = 0; t < P.T - 1e-6; t += 1 / 60) { sc.update(1 / 60); if (t > P.T - 2) window.__majCam(window.__suivi(sc), 1 / 60); }
 }, P);
 const N = Math.round(Number(DUR) * 60 / Number(LENT)); let refaits = 0;   // DUR : la durée filmée (avec T0 = 'conduite', à partir de 0,6 s avant la conduite)

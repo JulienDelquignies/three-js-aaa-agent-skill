@@ -46,8 +46,9 @@ export function movePlayers(st, dt, cfg) {
         }
         const k = Math.exp(-(cfg.slideTackle?.frein ?? 2.5) * dt);   // …et la glisse PORTE LOIN (191 : freinée à 2,5 elle mourait à ~1,5 m, le ballon emporté à 2+ — le vrai tacle glisse 2,5-3 m, c'est même son danger)
         g.v[0] *= k; g.v[1] *= k;
-        p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0] + g.v[0] * dt));
-        p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2] + g.v[1] * dt));
+        const mc = st.full ? cfg.murCorps ?? 0 : 0;   // (cfg.murCorps) la glisse s'arrête aussi à une demi-carrure de la grille
+        p.p[0] = Math.max(-st.area[0] / 2 + mc, Math.min(st.area[0] / 2 - mc, p.p[0] + g.v[0] * dt));
+        p.p[2] = Math.max(-st.area[1] / 2 + mc, Math.min(st.area[1] / 2 - mc, p.p[2] + g.v[1] * dt));
         p.v[0] = g.v[0]; p.v[1] = g.v[1]; p.speed = hyp(g.v[0], g.v[1]);
         if (p.speed < 0.4) p._glisse = null;
         continue;
@@ -427,7 +428,7 @@ export function movePlayers(st, dt, cfg) {
     // tireur de touche se poste dehors. Sans ça, le ballon freiné à 1 m derrière la ligne était
     // INATTEIGNABLE (le preneur pédalait contre la borne, remise jamais posée, jeu gelé — mesuré :
     // en-jeu 63 %, une graine sans une seule visite d'un camp).
-    const apron = cfg.apron ?? 0;
+    const apron = (cfg.apron ?? 0) - (st.full ? cfg.murCorps ?? 0 : 0);   // (cfg.murCorps, la cage) la grille est un MUR : le centre du corps s'arrête à une demi-carrure de lui, pas dedans
     p.p[0] = clamp(p.p[0], -st.area[0] / 2 - apron, st.area[0] / 2 + apron);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2 - apron, st.area[1] / 2 + apron);
     p.speed = hyp(p.v[0], p.v[1]);

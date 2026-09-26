@@ -126,7 +126,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // frappe se planifie comme sur ballon porté (le couple s'arrange : hardMax/adjustSpeed).
   // La borne ABSOLUE d'hier reste la loi du ballon VRAIMENT libre. false : la disette d'hier.
   const relV = hyp(st.ball.v[0] - (c.v?.[0] ?? 0), st.ball.v[2] - (c.v?.[1] ?? 0));
-  const couple = st.ball.owner === c.id || (st.full && cfg.frappeConduite !== false
+  const couple = (st.ball.owner === c.id && !(st.full && cfg.armePied)) || (st.full && cfg.frappeConduite !== false   // (cfg.armePied) le ballon porté ROULE pendant l'armé : il passe l'enveloppe relative comme celui de la conduite — possédé ne veut plus dire tenu
     && relV <= (cfg.strikeBallRel ?? 2.2) * (c.skill?.controlF ?? 1));
   let pick, move, stance, anchor;
   if (mains) {
@@ -306,6 +306,18 @@ export function beginPass(st, choice, cfg, opts = {}) {
     (st.laneVeto ??= {})[choice.to.id] = st.t + cfg.vetoTtl;
     c.intent = null;                                        // course perdue : le plan meurt, on re-décide
     return deny(st, urgent ? 'course-urgente' : 'course');
+  }
+  // (cfg.armePied) LE BALLON ROULE PENDANT L'ARMÉ : il doit être encore DANS la cage au contact — roulé sur le sol du terrain
+  // (décélération dec0 + decV·v), sinon la grille le renvoie dans les pieds pendant l'armé (mesuré : ballon à 4,8 m/s, 0,2 m de
+  // la grille du coin, stance ratée d'un mètre au contact). Le porteur le suit d'abord, il frappera après le rebond — l'intention et l'ancre tombent (tenues, elles ramèneraient le porté au servo : intentFresh).
+  if (st.full && cfg.armePied && !mains && st.area) {
+    const v = hyp(st.ball.v[0], st.ball.v[2]), S = st.ball.sol, a = S ? S.dec0 + S.decV * v : 1.5, T = move.contact;
+    const d = v > 0.05 ? Math.min(v * T - a * T * T / 2, v * v / (2 * a)) : 0, bx = st.ball.p[0] + (v > 0.05 ? st.ball.v[0] / v : 0) * d, bz = st.ball.p[2] + (v > 0.05 ? st.ball.v[2] / v : 0) * d;
+    if (Math.abs(bx) > st.area[0] / 2 - BALL.radius || Math.abs(bz) > st.area[1] / 2 - BALL.radius) { c.intent = null; c.anchorHint = null; return deny(st, 'ballon-mur'); }
+    // …et les APPUIS de la frappe doivent tenir dans la cage (cfg.murCorps) : un ballon collé à la grille ne se frappe pas de derrière
+    // lui — l'ancre serait dans le mur, le corps bloqué à une demi-carrure frappait de travers (relèvement raté de 25-60°). Il le décolle d'abord.
+    const mc = cfg.murCorps ?? 0;
+    if (anchor && (Math.abs(anchor.p[0] + bx - st.ball.p[0]) > st.area[0] / 2 - mc || Math.abs(anchor.p[1] + bz - st.ball.p[2]) > st.area[1] / 2 - mc)) { c.intent = null; c.anchorHint = null; return deny(st, 'ancre-mur'); }
   }
 
   // HE COMMITS TO THE GESTURE. The ball does NOT leave here — it leaves when the swing reaches its

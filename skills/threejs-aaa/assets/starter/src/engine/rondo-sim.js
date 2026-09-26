@@ -4,7 +4,7 @@ import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, da
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep, retourneeArmerStep, retourneeContact } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
-import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
+import { STANCES, anchorFor, reachable, glide, glideRelatif, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
@@ -41,18 +41,18 @@ function stepGestures(st, dt, cfg) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
-        if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
-      } else if (st.ball.owner === p.id && (p.act.payload?.pin || p.act.payload?.pinRel)) st.ball.carry(p.act.payload.pinRel ? [p.p[0] + Math.cos(p.yaw) * p.act.payload.pinRel, p.p[2] + Math.sin(p.yaw) * p.act.payload.pinRel] : p.act.payload.pin, dt, { tau: 0.04 });   /* (397) pinRel : le point du clip suit le corps qui court (crochet en course) */ /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
+        if (st.full && cfg.armePied) st.ball.integrate(dt); else if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
+      } else if (st.ball.owner === p.id && (p.act.payload?.pin || p.act.payload?.pinRel)) st.ball.carry(p.act.payload.pinRel ? [p.p[0] + Math.cos(p.yaw) * p.act.payload.pinRel, p.p[2] + Math.sin(p.yaw) * p.act.payload.pinRel] : p.act.payload.pin, dt, { tau: 0.04 });   /* (397) pinRel : le point du clip suit le corps qui court (crochet en course) */ /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) (st.full && cfg.armePied && st.ball.owner == null ? st.ball.integrate(dt) : st.ball.escort([0, 0], dt, { tau: 0.09 }));   /* (cfg.armePied) le ballon libre de l'armé ROULE — l'escorte le freinait à zéro sans pied */
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {
         const A = p.act.payload;
         // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
-        const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance, A.dos ? { dos: true } : undefined);   // (401) la talonnade honnête : l'ancre regarde à l'opposé de la sortie
+        const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance, A.dos ? { dos: true } : undefined); if (st.full && cfg.armePied) anchor.p = anchorFor([st.ball.p[0], st.ball.p[2]], A.dos ? p.yaw - Math.PI : p.yaw, A.pick.foot, A.stance, A.dos ? { dos: true } : undefined).p;   /* (cfg.armePied) les appuis se règlent sur le REGARD RÉEL (le lacet tourne à taux borné) : le ballon libre est à la stance du corps tel qu'il est tourné — sur le lacet visé, le relèvement au contact ratait du retard de rotation (12 refus sur 109, écart = retard) */   // (401) la talonnade honnête : l'ancre regarde à l'opposé de la sortie
         // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS
         // (ride, lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-
         // config, NOTES 83.
-        if (cfg.strideStrike && st.full && (A.v0 ?? 0) > 1) {
+        if (cfg.strideStrike && st.full && !cfg.armePied && (A.v0 ?? 0) > 1) {   /* (cfg.armePied) le ballon roule de lui-même : la foulée n'avance plus l'ancre */
           const tau = cfg.strideStrike.tau ?? 0.6;
           const pas = A.v0 * Math.exp(-p.act.t / tau) * dt;
           A._foulee = (A._foulee ?? 0) + pas;
@@ -63,12 +63,12 @@ function stepGestures(st, dt, cfg) {
           }
         }
         // …et le segment ENTIER (ancre ET from porté) reste DANS le carré : le joueur s'arrête à la craie (sans la clampe le glissement poussait dehors)
-        anchor.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, anchor.p[0]));
-        anchor.p[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, anchor.p[1]));
+        anchor.p[0] = Math.max(-st.area[0] / 2 + (st.full ? cfg.murCorps ?? 0 : 0), Math.min(st.area[0] / 2 - (st.full ? cfg.murCorps ?? 0 : 0), anchor.p[0]));   // (cfg.murCorps) l'ancre aussi à une demi-carrure de la grille
+        anchor.p[1] = Math.max(-st.area[1] / 2 + (st.full ? cfg.murCorps ?? 0 : 0), Math.min(st.area[1] / 2 - (st.full ? cfg.murCorps ?? 0 : 0), anchor.p[1]));
         A.from[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, A.from[0]));
         A.from[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, A.from[1]));
         const t01 = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation));
-        const g = glide(A.from, A.fromYaw, anchor, t01);
+        const g = st.full && cfg.armePied ? glideRelatif(A._rel ??= { r0: [p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]], w0: [(A.v0 ?? 0) * Math.cos(A.vYaw ?? 0) - st.ball.v[0], (A.v0 ?? 0) * Math.sin(A.vYaw ?? 0) - st.ball.v[2]] }, [st.ball.p[0], st.ball.p[2]], anchor, A.fromYaw, t01, p.act.anticipation) : glide(A.from, A.fromYaw, anchor, t01);   // (cfg.armePied) le corps règle ses appuis sur le ballon qui roule (approach.glideRelatif) — l'élan est celui de l'ENGAGEMENT (A.v0/vYaw) : plantVitesse a déjà nulé p.v
         // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : le chemin du glissement est poussé radialement hors du cercle du ballon (les stances finissent au-delà — talonnade 0,38 > 0,32).
         {
           const bx = g.p[0] - st.ball.p[0], bz = g.p[1] - st.ball.p[2];
@@ -89,7 +89,7 @@ function stepGestures(st, dt, cfg) {
         if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || (A.pick?.tech?.clip === 'talonnade' && !A.dos))) {   /* (401) le talon honnête tourne au taux borné comme les autres : sa sortie est derrière, le tour est petit */ let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
         else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
-        if (st.full && cfg.porteAnticipe && st.ball.owner === p.id && A.stance) { const sp = stanceBallPoint(p, A.stance, A.pick.foot), loin = d2(p.p, st.ball.p) > 0.45; st.ball.carry(sp, dt, loin ? { tau: 0.12, vMax: 9 } : { tau: cfg.porteAnticipe.tau ?? 0.015 }); }   // LE PORTÉ ANTICIPE (cfg.porteAnticipe && st.full — retour utilisateur « le joueur oublie le ballon ») : le ballon se portait au point de stance du corps D'AVANT le glissement (tau 0,035) — à 7,5 m/s il traînait 0,38 m derrière, la frappe REFUSÉE au contact (stance-au-contact 65 par 900 s, un armé sur cinq), le ballon vendangé, le corps filait sur son élan (32 des 35 « il court sans son ballon »). Ici : le point de stance du corps APRÈS son pas, au servo serré (tau). Absente : hier au bit.
+        if (st.full && cfg.porteAnticipe && !cfg.armePied && st.ball.owner === p.id && A.stance) { const sp = stanceBallPoint(p, A.stance, A.pick.foot), loin = d2(p.p, st.ball.p) > 0.45; st.ball.carry(sp, dt, loin ? { tau: 0.12, vMax: 9 } : { tau: cfg.porteAnticipe.tau ?? 0.015 }); }   // LE PORTÉ ANTICIPE (cfg.porteAnticipe && st.full — retour utilisateur « le joueur oublie le ballon ») : le ballon se portait au point de stance du corps D'AVANT le glissement (tau 0,035) — à 7,5 m/s il traînait 0,38 m derrière, la frappe REFUSÉE au contact (stance-au-contact 65 par 900 s, un armé sur cinq), le ballon vendangé, le corps filait sur son élan (32 des 35 « il court sans son ballon »). Ici : le point de stance du corps APRÈS son pas, au servo serré (tau). Absente : hier au bit.
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {

@@ -72,3 +72,19 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   ballon à 0,20-0,25 m du pied rendu, la prise en course joue une touche PLANIFIÉE vers le pied qui se pose (rendez-vous déclaré). Reste :
   l'armé de passe et la feinte de corps tiennent le ballon au servo pendant leur geste.
 - `capture-geste.mjs … recup[:k] …` : filme la k-ième prise d'un ballon libre par un joueur lancé, trouvée dans la partie de la page même.
+
+## L'armé au pied : le ballon roule, le corps règle ses appuis (2026-09-26)
+- `arme-ballon.mjs <url> [s] [graines] [sortie.json]` : pendant l'armé d'une frappe (engagement → contact), le ballon qui bouge sans pied,
+  sa vitesse au plus fort, l'ACCÉLÉRATION INEXPLIQUÉE (la force sans pied) ; à l'image du contact le pied qui frappe contre le ballon d'AVANT
+  la frappe (la dernière image d'armé est 25-30 cm trop tôt à 60 Hz, l'image du contact a déjà lancé le ballon : lire l'un contre l'autre),
+  la stance réalisée (écart de distance, de relèvement, lacet contre la sortie) et les refus stance-au-contact. Avant : le ballon porté au
+  POINT DE STANCE (porteAnticipe, jusqu'à 9 m/s — 13 images de force sans pied par armé, 6,3 m/s au plus fort), pied au contact 0,18 m
+  [p90 0,39], 8 refus / 16 min. Après (cfg.armePied, approach.glideRelatif, cfg.murCorps) : 0 image de force, le ballon roule (2,5 m/s),
+  pied au contact 0,17 [p90 0,22], 2 refus. Les pièges trouvés en route : plantVitesse nule p.v avant le glissement (l'élan se lit à
+  l'engagement, A.v0/vYaw) ; le lacet tourne à taux borné (l'ancre se règle sur le regard réel) ; le chemin cartésien traversait le ballon
+  (polaire autour de lui) ; ballon qui file dans la grille et ballon collé à la grille (refus ballon-mur / ancre-mur, l'intention et
+  l'ancre tombent — tenues, elles rendaient le porté au servo).
+- `recuperation.mjs` compte désormais la FORCE sans pied (l'accélération que le roulement n'explique pas), plus le ballon possédé qui roule.
+  Base : poussé sans pied > 0,1 m sur 122/296 prises, p90 1,19 m (armé de passe 1 204 images, feinte 250). Après : 47/295, p90 0,38 m
+  (armé 0, feinte 44). Reste : le bouclier (la tenue dos au presseur), la semelle qui pose au pas, le crochet (le ballon au point du clip).
+- `capture-geste.mjs … recup[:k] …` suit le RÉCUPÉRATEUR dès la première image (hier l'ancien porteur jusqu'à la prise).
