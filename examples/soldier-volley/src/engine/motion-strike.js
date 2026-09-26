@@ -74,6 +74,36 @@ export const KINDS = {
   passeRapide:     { surface: 'inside', duration: 0.54, contact: 0.22, vFoot: 10.5, amp: 1.15, swingHip: 0.11, swingKnee: 0.08, follow: 0.09, hipTop: -15, hipEnd: 44, kneeTop: 58, kneeMin: 8, turnOut: 40, abdTop: 12, abdContact: 10, toeDown: -8, lean: 5, open: 10, headDown: 24, armElev: 40, armFwd: 20, dip: 0.035, sitBack: 0.045 },
 };
 
+// (26/09, « améliore la conduite, les passes en une touche et les passes normales — ajoute plein d'animations pour répondre à toutes les
+// situations ») LES VARIANTES DE SITUATION. Recensement (2 matchs, 1 106 passes de joueurs de champ) : 51 % partent à ≥ 70° du regard
+// (côté ou arrière — la passe pivot n'en couvre que 10 %), 43 % en course (3-5 m/s), 24 % adversaire collé (< 1,5 m), 12 % levées,
+// 50 % tendues, 8 % en une touche (la déviation). Chaque variante GARDE la durée et le contact de son parent (la sim arme au temps
+// du parent : le pied reste au ballon) — elle change la posture et l'élan :
+//   course    le buste devant (lean 1), sans assise (sitBack 0,02), bras de course bas — la passe dans la foulée ;
+//   ouverte   le bassin PIVOTE vers la cible au contact (pivot 24°) — la passe sur le côté, le corps s'ouvre ;
+//   levee     le buste en arrière (lean 12), le pied sous le ballon (toeDown −14), l'accompagnement HAUT (hipEnd 62) ;
+//   tendue    le genou sur le ballon, la pointe basse (toeDown −16), l'accompagnement court (hipEnd 32), la tête dessus ;
+//   protegee  le bras côté appui écarté vers l'adversaire (armElev 68), les appuis bas (dip 5,5 cm), l'armé court (hipTop −11).
+// Le choix est à passe-situation.js (situation → variante). Noms : `${parent}_${variante}`.
+// l'amplitude RÉSOLUE de chaque variante (solveStrike contre sa vFoot — verify-motion : « amp bakée ≈ résolue ») : la posture change
+// la vitesse du pied (la levée à l'amplitude du parent passait à 137 % de vFoot)
+const AMP_VARIANTES = { passe_course: 1.075, passe_ouverte: 1.075, passe_levee: 0.85, passe_tendue: 1.075, passe_protegee: 1.075,
+  passeRapide_course: 0.9, passeRapide_ouverte: 0.925, passeRapide_levee: 0.701, passeRapide_tendue: 0.963, passeRapide_protegee: 0.925,
+  deviation_course: 0.7, deviation_ouverte: 0.7, deviation_protegee: 0.7 };
+export const VARIANTES_PASSE = {
+  course: { lean: 1, sitBack: 0.02, dip: 0.025, armElev: 30, armFwd: 12, headDown: 16 },
+  ouverte: { pivot: 24 },
+  levee: { lean: 12, hipEnd: 62, toeDown: -14, sitBack: 0.08, headDown: 18 },
+  tendue: { lean: 2, hipEnd: 32, toeDown: -16, headDown: 30, open: 6 },
+  protegee: { armElev: 68, armFwd: 6, dip: 0.055, hipTop: -11, lean: 3 },
+};
+for (const parent of ['passe', 'passeRapide', 'deviation']) for (const [v, mods] of Object.entries(VARIANTES_PASSE)) {
+  if (parent === 'deviation' && (v === 'levee' || v === 'tendue')) continue;   // la une-touche redirige : ni levée ni tendue
+  if (parent === 'passeRapide' && v === 'levee') continue;   // la passe pressée ne se lève pas (et l'amplitude résolue, 0,70, ralentissait le genou sous 690 °/s : 40/40 refus)
+  const m = parent === 'deviation' && v === 'protegee' ? { ...mods, hipTop: KINDS.deviation.hipTop, armElev: 54 } : mods;   // la une-touche garde son armé minuscule (−4°) : −11 déplaçait le pic de vitesse (40/40 refus)
+  KINDS[`${parent}_${v}`] = { ...KINDS[parent], ...m, amp: AMP_VARIANTES[`${parent}_${v}`] ?? KINDS[parent].amp, variante: v, parent };
+}
+
 /** Les bornes du STYLE — un détail par joueur, jamais un autre geste (verify-motion les balaye). */
 export const STYLE_RANGES = {
   backswing: [0.86, 1.14],   // × amplitude d'armé (extension de hanche, flexion du genou)

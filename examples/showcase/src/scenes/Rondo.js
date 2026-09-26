@@ -19,7 +19,7 @@ import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
-import { piedDuControle } from './rondo-pied.js'; import { appuiPose } from './rondo-appui.js'; import { lisseOs } from './rondo-lisse.js'; import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
+import { piedDuControle } from './rondo-pied.js'; import { appuiPose } from './rondo-appui.js'; import { lisseOs } from './rondo-lisse.js'; import { passeDeSituation } from './rondo-passe.js'; import { conduitePose } from './rondo-porteur.js'; import { skipCeremonie } from '../engine/ceremonie.js';   // (284) le saut de la cérémonie d'avant-match : une API moteur, un bouton et la touche C ici
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
@@ -285,7 +285,7 @@ export class Rondo {
         };
       })();
       const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite }), cast = castStrikes(entry, p, Number(q.get('seed')) || 7, this._reports.gestes);
-      ctrl.lockExternal = true; ctrl.gaitVraie = !q.has('foulee-intention'); ctrl.gaitDepart = !q.has('sans-depart'); if (ctrl.footLock) ctrl.footLock.carryTau = q.has('pied-sec') ? 0 : 0.1; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
+      ctrl.lockExternal = true; ctrl.gaitFondu = q.has('foulee-fondue') ? 0.1 : 0; ctrl.gaitVraie = !q.has('foulee-intention'); ctrl.gaitDepart = !q.has('sans-depart'); if (ctrl.footLock) ctrl.footLock.carryTau = q.has('pied-sec') ? 0 : 0.1; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.
@@ -335,7 +335,7 @@ export class Rondo {
     this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
-    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre'); this._controlesHier = q.has('controles-hier'); this._appuiMuet = q.has('appui-muet'); this._gesteSec = q.has('geste-sec'); this._osLibres = q.has('os-libres');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
+    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre'); this._controlesHier = q.has('controles-hier'); this._appuiMuet = q.has('appui-muet'); this._gesteSec = q.has('geste-sec'); this._osLibres = q.has('os-libres'); this._passesHier = q.has('passes-hier'); this._conduiteNue = q.has('conduite-nue');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
     if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg), tactiques: this._tac?.choix ?? null });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
     if (this._produit && q.get('ralenti') !== '0') { this._ralenti = ralentiInit(this, { onClip: (c) => produitClip(this._produit, c) }); this.revoir = (clip) => ralentiJouer(this._ralenti, this, clip); }   // les RALENTIS (rondo-ralenti.js) : le magnétoscope du rendu, le ralenti après chaque but
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
@@ -831,7 +831,7 @@ export class Rondo {
         // boot and the ball together was to start the clip AT its contact frame, throwing away the
         // entire backswing. That is why there was no visible movement — you were watching the second
         // half of a gesture whose first half had been deleted. Now the simulation waits for the leg.
-        if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], e);   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
+        if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], passeDeSituation(this, this.players[e.by], e));   /* (26/09) la variante de situation de la passe (rondo-passe) */   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
       } else if (e.type === 'pass') {
         // the ball leaving is no longer a cue to animate: the swing that sent it started earlier and is
         // still running, and it will finish on its own follow-through
@@ -1107,7 +1107,7 @@ export class Rondo {
       // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
       // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
       // pied d'appui garde son verrou.
-      strikeWarpPlan(this, pl); touchLunge(this, pl); appuiPose(this, pl);   /* (336 bis) le geste de l'appui planté (rondo-appui) */   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
+      strikeWarpPlan(this, pl); touchLunge(this, pl); appuiPose(this, pl); conduitePose(this, pl, dtP);   /* (336 bis) le geste de l'appui planté (rondo-appui) */   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
         let striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;

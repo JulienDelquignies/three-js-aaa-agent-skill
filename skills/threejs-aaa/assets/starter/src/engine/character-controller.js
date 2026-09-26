@@ -295,7 +295,7 @@ export class CharacterController {
       const tauV = this.plantHold ? 0.025 : 0.08;
       this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / tauV);
       this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
-      this._applyGaitLayer(this._vAnim);
+      this._gdt = dt; this._applyGaitLayer(this._vAnim);
     } else {
       this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
       this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
@@ -397,6 +397,24 @@ export class CharacterController {
     this._gaitFeet = gait ? gait.feet : null;                  // la phase et la cible de chaque pied (instruments, ancrage de l'appui)
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;
+    // (26/09, « pas fluide ») LE FONDU D'INERTIE AUX CHANGEMENTS D'APPUI : la jambe est résolue deux fois — libre en vol, vers le point
+    // planté en appui (_anchorStance, seconde passe) — et bascule d'une solution à l'autre à la POSE et au DÉCOLLAGE : mesuré en match,
+    // pied et genou à > 30° PAR IMAGE ~5 fois / joueur-minute (un pied à 131° au trot, peel → swing ; genoux 81-92° à la pose, swing →
+    // stance). À chaque changement de phase d'un pied, les os de SA jambe partent de leur dernière pose écrite et rejoignent la nouvelle
+    // en gaitFondu s (smoothstep) ; en appui le verrou (dernier écrivain) tient la position du pied. gaitFondu 0 : hier (le DÉFAUT —
+    // mesuré : 0,1 s ne retirait que 19 % des sauts de pied (353 → 285 en 20 s) et faisait glisser les appuis, arbitre visuel 1,3 → 3,4 % ;
+    // la cause est ailleurs : la cheville en DÉBUT DE VOL tourne à 30-40° par image plusieurs images de suite (~2 000 °/s, réel 500-800) —
+    // la courbe du pied en vol du générateur, à reprendre dans motion-gait. L'option reste : la scène la pose sur ?foulee-fondue).
+    const GF = this.gaitFondu ?? 0, gdt = this._gdt ?? 1 / 60;
+    if (GF > 0 && gait?.feet) {
+      this._gOut ??= new Map(); this._gPh ??= {}; this._gFade ??= {};
+      for (const side of ['Left', 'Right']) {
+        const ph = gait.feet[side]?.phase ?? null, prev = this._gPh[side];
+        if (prev != null && ph !== prev) { const snap = new Map(); for (const n of [`${side}UpLeg`, `${side}Leg`, `${side}Foot`, `${side}ToeBase`]) { const o = this._gOut.get(n); if (o) snap.set(n, o.clone()); } if (snap.size) this._gFade[side] = { snap, age: 0 }; }
+        this._gPh[side] = ph;
+        const F = this._gFade[side]; if (F) { F.age += gdt; if (F.age >= GF) this._gFade[side] = null; }
+      }
+    }
     for (const name in pose.q) {
       if (this.gestureHold && UP_BONES.test(name)) continue;
       const bone = this._gaitBones.get(name), rest = G.rest.get(name);
@@ -404,6 +422,11 @@ export class CharacterController {
       const q = pose.q[name];
       this._gaitQ.set(q[0], q[1], q[2], q[3]);
       G.tq.copy(rest).multiply(this._gaitQ);
+      if (GF > 0 && this._gOut) {
+        const side = name.startsWith('Left') ? 'Left' : name.startsWith('Right') ? 'Right' : null, F = side && this._gFade?.[side], sq = F?.snap.get(name);
+        if (sq) { const u = Math.min(1, F.age / GF), k = u * u * (3 - 2 * u); G.tq.copy(sq.slerp(G.tq, k)); F.snap.set(name, sq); }
+        (this._gOut.get(name) ?? this._gOut.set(name, G.tq.clone()).get(name)).copy(G.tq);
+      }
       bone.quaternion.copy(G.tq);
     }
     const hips = this._gaitBones.get('Hips');
