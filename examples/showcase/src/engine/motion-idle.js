@@ -171,7 +171,7 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
     const hipW = partial[`${side}UpLeg`].p;
     const target = [-sgn * hw + (K.slide || 0) * sw, ankleY + L.foot * Math.sin(heel * D2R), 0.0];
     const lev = raise && raise.side === side;   // (A12c) la semelle sur le ballon : cheville au-dessus du ballon (rayon 0,11), pied à plat, orteil un peu baissé
-    if (lev) { target[0] = raise.at[0]; target[2] = raise.at[1]; target[1] = ankleY + 0.22 - 0.012; }
+    if (lev) { target[0] = raise.at[0]; target[2] = raise.at[1] + (raise.dz ?? 0); target[1] = ankleY + 0.22 - 0.012; }   // (face.js) dz : l'AVANT-PIED sur le ballon (la cheville 0,10 m en arrière, comme le clip de semelle) — la tenue et le roulé posent le même pied au même point
     // la jambe LIBRE (le bassin est parti de l'autre côté) lève le talon de ce qui lui manque en
     // portée — comme une vraie jambe déchargée ; l'orteil reste au sol, la pose ne glisse pas
     const dh = Math.hypot(target[0] - hipW[0], target[2] - hipW[2]);

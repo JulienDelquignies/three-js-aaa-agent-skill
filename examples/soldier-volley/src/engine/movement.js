@@ -135,7 +135,7 @@ export function movePlayers(st, dt, cfg) {
     // en fin de pas (après l'intégration), l'attribut stamina le module, la précision fatiguée
     // est une dette nommée. Clé absente : le rondo et le réduit d'hier, au bit près.
     if (cfg.fatigue && st.full) top *= 1 - (cfg.fatigue.cap ?? 0.15) * (1 - (p.stam ?? 1));
-    if (st.full && p._bouclier && cfg.bouclier?.pas) top = Math.min(top, cfg.bouclier.pas);   // la tenue au PAS (bouclier.js) : il tourne autour du presseur, il ne le fuit pas
+    if (st.full && p._bouclier && cfg.bouclier?.pas) top = Math.min(top, cfg.bouclier.pas); if (st.full && cfg.face && p._faceCap != null) top = Math.min(top, p._faceCap);   // (face.js) l'approche et la tenue du face-à-face au pas   // la tenue au PAS (bouclier.js) : il tourne autour du presseur, il ne le fuit pas
     if (st.full && cfg.ligne && p._frein && p._frein.until > st.t) top *= p._frein.f;   // (273) « on retient les avancés » : le plus avancé d'une ligne cassée freine (ligne.js)
     // LE BACKPEDAL DU LIBÉRO (lot 120, cfg.libero && st.full) : le gardien AVANCÉ qui rentre
     // revient FACE AU JEU — en reculant (retour m/s), pas en sprint dos au ballon. C'est LE

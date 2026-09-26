@@ -22,6 +22,9 @@
 // Pur : aucune dépendance rendu ; tout se prouve dans node (verify-motion.mjs).
 
 import { quatMul, quatConjugate, quatNormalize, quatFromAxisAngle, applyQuat, add, sub, scale as vscale, len, clamp } from './vecmath.js';
+const D2R_M = Math.PI / 180;
+const eulerToQuat = ([x, y, z]) => { const c1 = Math.cos(x * D2R_M / 2), s1 = Math.sin(x * D2R_M / 2), c2 = Math.cos(y * D2R_M / 2), s2 = Math.sin(y * D2R_M / 2), c3 = Math.cos(z * D2R_M / 2), s3 = Math.sin(z * D2R_M / 2);
+  return [s1 * c2 * c3 + c1 * s2 * s3, c1 * s2 * c3 - s1 * c2 * s3, c1 * c2 * s3 + s1 * s2 * c3, c1 * c2 * c3 - s1 * s2 * s3]; };   // XYZ, la convention d'animkit (sans l'importer : animkit-data génère au profil — le cycle)
 
 /** Les 22 os canoniques du rig Mixamo (même liste que animkit.MIXAMO_BONES, ordre parent → enfant). */
 export const CANON = [
@@ -181,6 +184,27 @@ export function fkPose(profile, pose = {}, hips = null) {
 
 /** Quaternion → Euler XYZ (degrés), la convention des specs animkit (three.js 'XYZ'). Inverse exact
  *  de animkit.eulerToQuat (prouvé par aller-retour dans le banc). */
+/** LE MIROIR D'UN GESTE GÉNÉRÉ, AU PROFIL DU RIG (2026-09-26). La couche de geste joue le pied gauche en miroir du clip écrit à droite ;
+ *  mirrorMove (animkit) inverse (y, z) des angles d'Euler LOCAUX — juste pour un rig dont les os gauche et droit ont des repères bind en
+ *  miroir. Le Biped Rocketbox (le duel) ne l'est pas : mesuré au rendu, le roulé de semelle gauche posait le pied gauche DERRIÈRE le
+ *  corps et lançait la jambe droite devant, à 0,65 m (le ballon à 0,26 m du pied — tous les gestes générés du pied gauche l'étaient).
+ *  Ici le miroir est EXACT : la rotation locale repasse au repère personnage (R = bindQ ⊗ q ⊗ bindQ⁻¹), s'y réfléchit par le plan
+ *  sagittal (x → −x : le pseudo-vecteur de l'axe devient (x, −y, −z), l'angle reste), et se ré-exprime dans le repère bind de l'os
+ *  OPPOSÉ ; le bassin (hips) se réfléchit en x. Sur un rig symétrique, c'est mirrorMove au centième de degré près. */
+export function mirrorGen(spec, profile, name = `${spec.name}-gauche`) {
+  const flip = (b) => (b.startsWith('Left') ? `Right${b.slice(4)}` : b.startsWith('Right') ? `Left${b.slice(5)}` : b);
+  const keys = spec.keys.map((k) => {
+    const pose = {};
+    for (const [b, e] of Object.entries(k.pose)) {
+      const B = profile.bones[b], b2 = flip(b), B2 = profile.bones[b2]; if (!B || !B2) continue;
+      const R = quatNormalize(quatMul(B.bindQ, quatMul(eulerToQuat(e), quatConjugate(B.bindQ))));
+      pose[b2] = quatToEulerXYZ(quatNormalize(quatMul(quatConjugate(B2.bindQ), quatMul([R[0], -R[1], -R[2], R[3]], B2.bindQ)))).map((v) => Math.round(v * 100) / 100);
+    }
+    return { ...k, pose, ...(k.hips ? { hips: [-k.hips[0], k.hips[1], k.hips[2]] } : {}) };
+  });
+  return { ...spec, name, keys };
+}
+
 export function quatToEulerXYZ(q) {
   const [x, y, z, w] = q;
   const x2 = x + x, y2 = y + y, z2 = z + z;

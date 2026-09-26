@@ -115,7 +115,7 @@ function stepGestures(st, dt, cfg) {
       // plantées (passement 2,3, râteau 1,2, roulette 2,4 m/s à +1,5 s), le ralenti existait, l'explosion
       // jamais. Durée × accelF (l'attribut) ; la feinte garde son burst propre, la semelle protège. Absente : hier.
       const SB = st.full && cfg.skill?.sortieBurst;
-      if (SB && (st.ball.owner === p.id || A.reussi) && A.skill !== 'plongeon' && A.skill !== 'semelle' && A.skill !== 'feinte') {
+      if (SB && (st.ball.owner === p.id || A.reussi) && A.skill !== 'plongeon' && A.skill !== 'semelle' && A.skill !== 'feinte' && A.face?.fin == null) {
         p._pace = { until: st.t + (SB.dur ?? 1.2) * (p.skill?.accelF ?? 1), kind: 'sortie-geste', next: p._pace?.next ?? 0 };
         st.events.push({ type: 'burst', kind: 'sortie-geste', by: p.id, t: +st.t.toFixed(2) });
       }
@@ -648,7 +648,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (contested) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg); }  // il tente de l'emmener hors du duel
-      } else if (((intentFresh || settling || tourne) && !(st.full && cfg.conduite?.libre && c.speed >= cfg.conduite.libre && !intentFresh)) || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   /* (cfg.conduite.libre) EN COURSE LE BALLON N'EST PLUS TENU AU SERVO (le contrôle qui se pose, le retournement) : il roule, un pied le relance — 17 % du temps de conduite il bougeait sans pied (conduite-ballon) */   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
+      } else if (((intentFresh || settling || tourne) && !(st.full && cfg.conduite?.libre && c.speed >= cfg.conduite.libre && !intentFresh)) || (st.full && (cfg.pausaPied && c._pausa || c._bouclier || c._face))) {   /* (cfg.conduite.libre) EN COURSE LE BALLON N'EST PLUS TENU AU SERVO (le contrôle qui se pose, le retournement) : il roule, un pied le relance — 17 % du temps de conduite il bougeait sans pied (conduite-ballon) */   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
@@ -827,7 +827,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
     const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
     // LES NICHES DU 1c1, du plus spécifique au plus général (114-117) : le jeté franc se perfore (croqueta), le glisseur se traverse (pont), le poursuivant s'enroule (roulette) — sortie fermée : le râteau reprend
-    if (decide && !settleGate && maybeDoubleContact(st, c, cfg)) return st;   // (263) les niches du 1c1 sont des décisions : au tick
+    if (st.full && (c._face || c._faceApp?.go)) return st; if (decide && !settleGate && maybeDoubleContact(st, c, cfg)) return st;   // (263) les niches du 1c1 sont des décisions : au tick
     if (decide && !settleGate && maybePetitPont(st, c, cfg)) return st;
     if (decide && !settleGate && maybeRoulette(st, c, cfg)) return st;
     // LE RÂTEAU AVANT QUE LE DUEL S'INSTALLE : presseur qui ferme la face, sortie arrière libre — on se retourne avec le pas d'avance (refus nommés sinon)

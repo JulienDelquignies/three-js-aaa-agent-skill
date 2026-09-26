@@ -30,13 +30,26 @@ export const B_BOOK = PARTS_BOOK.map((p) => Math.log(p / PARTS_BOOK[0]));
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a)), n1 = (F, h) => Math.max(-1, Math.min(1, ((F ?? 1) - 1) / h));
 
 /** Le disque d'atteinte de Fujimura-Sugihara à t s : { cx, cz, R }. α re-ajusté pour que R(1 s) soit la distance courue en 1 s par le profil du moteur. Pure. */
-export function disqueDe(q, t, K, cfg) {
+export function disqueDe(q, t, K, cfg, L = 0) {
+  if (L > 0) {   // (K.latence) LE DÉFENSEUR ENGAGÉ NE POURSUIT PAS ENCORE : pendant L s il dérive sur son élan (mordu, fente en cours), puis le disque d'hier repart de là
+    const tl = Math.min(t, L), d = disqueDe(q, t - tl, K, cfg);
+    return { cx: d.cx + q.v[0] * tl, cz: d.cz + q.v[1] * tl, R: d.R };
+  }
   const al = K.alpha ?? 2.05, A = (1 - Math.exp(-al * t)) / al, vmax = (cfg.speeds?.chase ?? 6.4) * (q.skill?.topF ?? 1);
   return { cx: q.p[0] + A * q.v[0], cz: q.p[2] + A * q.v[1], R: vmax * (t - A) + (K.rho ?? 0.95) };
 }
 
+/** (K.latence, le duel — face.js) LA LATENCE DU DÉFENSEUR (s) : le reste de sa morsure (au ralenti biteSlow, la part perdue) et le reste de
+ *  son geste engagé (la fente jusqu'au bout de son accompagnement) — le disque de Fujimura-Sugihara partait d'un défenseur toujours frais :
+ *  mesuré, 45 % des sorties de face-à-face dépossédées dans les 2 s, mordu ou fente manquée compris (face-trace). Pure. */
+export function latenceDe(st, q, cfg) {
+  const bite = Math.max(0, (q._bite ?? -1) - st.t) * (1 - (cfg.skill?.biteSlow ?? 0.35));
+  const acte = q.act ? Math.max(0, (q.act.anticipation ?? 0) + (q.act.follow ?? 0) - (q.act.t ?? 0)) : 0;
+  return Math.max(bite, acte);
+}
+
 /** La marge de franchissement μ* (m) : le meilleur des 9 points de l'éventail (2-5 m devant, ± 75°), le pire des trois instants où le ballon y passe (τ = d / v_a, + séjour). Pure, zéro allocation. */
-export function margeDe(c, q, K, cfg) {
+export function margeDe(c, q, K, cfg, L = 0) {
   const yaw = hyp(c.v[0], c.v[1]) > 0.8 ? Math.atan2(c.v[1], c.v[0]) : c.yaw, T = K.T ?? 1.2, nP = K.points ?? 9, va = Math.max(2.5, hyp(c.v[0], c.v[1]) * 0.6 + 2.5);
   let best = -Infinity;
   for (let i = 0; i < nP; i++) {
@@ -44,7 +57,7 @@ export function margeDe(c, q, K, cfg) {
     const tau = d / va; if (tau > T) continue;   // le dribbleur doit pouvoir y être dans l'horizon
     const px = c.p[0] + d * Math.cos(a), pz = c.p[2] + d * Math.sin(a);
     let mu = Infinity;   // le ballon est en p à τ ; le défenseur ne doit pas l'y atteindre pendant qu'il y passe (τ … τ + séjour)
-    for (let k = 0; k < 3; k++) { const D = disqueDe(q, tau + k * (K.sejour ?? 0.1), K, cfg); const m = hyp(px - D.cx, pz - D.cz) - D.R; if (m < mu) mu = m; }
+    for (let k = 0; k < 3; k++) { const D = disqueDe(q, tau + k * (K.sejour ?? 0.1), K, cfg, L); const m = hyp(px - D.cx, pz - D.cz) - D.R; if (m < mu) mu = m; }
     if (mu > best) best = mu;
   }
   return best === -Infinity ? -(K.rho ?? 0.95) : best;
@@ -71,7 +84,7 @@ export function featuresDe(st, c, q, K, cfg) {
   const aA = aAttaquant(c);
   const aD = sD ? 0.30 * Math.max(-1, Math.min(1, (sD.tackleReach ?? 0) / 0.10)) + 0.24 * n1(sD.posF, 0.15) + 0.22 * n1(sD.getupF, 0.28) * -1 + 0.14 * n1(sD.anticipF, 0.15) + 0.10 * n1(sD.chargeF, 0.15) : 0;
   const dside = hz - Math.abs(c.p[2]);
-  return { mu: margeDe(c, q, K, cfg), dv: hyp(c.v[0], c.v[1]) - hyp(q.v[0], q.v[1]), dpsi: Math.abs(wrap(q.yaw - axe)), dside, press, x: Math.max(0, Math.min(1, (c.p[0] * gS + hx) / (2 * hx))), nc, aA, aD, near: Math.max(0, 1 - dside / (K.sortieMax ?? 8)) };
+  return { mu: margeDe(c, q, K, cfg, K.latence ? latenceDe(st, q, cfg) : 0), dv: hyp(c.v[0], c.v[1]) - hyp(q.v[0], q.v[1]), dpsi: Math.abs(wrap(q.yaw - axe)), dside, press, x: Math.max(0, Math.min(1, (c.p[0] * gS + hx) / (2 * hx))), nc, aA, aD, near: Math.max(0, 1 - dside / (K.sortieMax ?? 8)) };
 }
 
 /** Les logits des huit issues : s = Σ w·f (le franchissement), b_o l'intercept, ± s selon la famille, la touche près de la ligne. Pure. */

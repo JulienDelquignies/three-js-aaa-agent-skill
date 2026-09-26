@@ -270,14 +270,14 @@ export function bodyPortrait(spec, P, { support = 'Left', window = null, hz = 12
 }
 
 /** Les clauses du corps, communes (chaque famille y ajoute les siennes). */
-export function bodyIssues(p, { support = true } = {}) {
+export function bodyIssues(p, { support = true, finInitiale = true } = {}) {   // finInitiale false : le geste PART d'une tenue (startOn) — son contrat juge le départ et le retour au repos
   const issues = [];
   if (support && p.supDrift > 0.03) issues.push(`l'appui GLISSE (${(p.supDrift * 100).toFixed(1)} cm) — le pied planté doit tenir`);
   if (support && p.supLift > 0.03) issues.push(`l'appui DÉCOLLE (${(p.supLift * 100).toFixed(1)} cm)`);
   if (p.worstHand > 0.03) issues.push(`une main passe au-dessus du cou (+${(p.worstHand * 100).toFixed(0)} cm)`);
   if (p.lockedFrac > 0.2) issues.push(`coude verrouillé bras levé sur ${(100 * p.lockedFrac).toFixed(0)} % des images (> 20)`);
   if (p.lowest < -0.03) issues.push(`un pied passe sous la pelouse (${(p.lowest * 100).toFixed(0)} cm)`);
-  if (p.endGap > 0.06) issues.push(`la pose finale n'est pas la pose initiale (écart ${(p.endGap * 100).toFixed(0)} cm) — le fondu vers la locomotion sauterait`);
+  if (finInitiale && p.endGap > 0.06) issues.push(`la pose finale n'est pas la pose initiale (écart ${(p.endGap * 100).toFixed(0)} cm) — le fondu vers la locomotion sauterait`);
   return issues;
 }
 

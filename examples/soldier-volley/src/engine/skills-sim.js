@@ -20,6 +20,7 @@ import { pasPointPorte, pasVols, pasPose, sortieFoulee, vSortie, freinCoupe } fr
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 export const footPoint = (st, p, cfg) => {
+  if (st.full && p._face?.ballon) return p._face.ballon;   // (face.js) le face-à-face au pas : le ballon sous la semelle, là où la tenue le veut
   const PP = st.full && cfg?.pas ? pasPointPorte(st, p) : null; if (PP) return PP;   // (2026-09-24) en course sous cfg.pas : le point où le pied préféré se pose (pas.js)
   const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
   const lat = p.foot === 'left' ? 1 : -1;
@@ -678,7 +679,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
 export function skillContactNow(st, p, cfg) {
   const A = p.act.payload;
   // LE NOYAU COMMUN DE DUEL (268, cfg.noyau && st.full — doc noyau.js) : le take-on se juge UNE fois au contact, huit issues ; N.franchi gate la morsure d'hier, le pas de jeu applique le reste (st._noyau). Clé absente : la géométrie d'hier au bit.
-  const N = st.full && cfg.noyau && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(A.skill) ? noyauAuContact(st, p, A, cfg) : null;
+  const N = st.full && cfg.noyau && !A.face && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(A.skill) ? noyauAuContact(st, p, A, cfg) : null;   // (face.js) la sortie du face-à-face au pas a DÉJÀ son duel (la morsure, la fente lue) : pas de second tirage — la physique juge la suite
   if (N) { st._noyau = { ...N, p: p.id }; A.issue = N.issue; }
   const mord = !N || N.franchi;
   if (A.skill === 'feinte') {
@@ -978,8 +979,8 @@ export function skillFollowStep(st, p, dt, cfg) {
     // version le déposait latéral à 0,53 m sur l'ANCIEN cap : 37/43 ballons orphelins,
     // le geste réussissait sa feinte et perdait son ballon
     const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
-    const e = u * u * (3 - 2 * u);
-    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    const e = u * u * (3 - 2 * u), uY = A.face ? Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow)) : u, eY = uY * uY * (3 - 2 * uY);   // (face.js) planté, le cap ne tourne qu'APRÈS la touche : suivi dès le contact seulement, la moitié du virage sautait en une image (2 467 °/s)
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * eY;
     p.yawWant = null;
     const vG = (A.v0 ?? 2) * 0.55;
     p.v[0] = Math.cos(p.yaw) * vG; p.v[1] = Math.sin(p.yaw) * vG;
@@ -1037,8 +1038,8 @@ export function skillFollowStep(st, p, dt, cfg) {
     // version le déposait latéral à 0,53 m sur l'ANCIEN cap : 37/43 ballons orphelins,
     // le geste réussissait sa feinte et perdait son ballon
     const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
-    const e = u * u * (3 - 2 * u);
-    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    const e = u * u * (3 - 2 * u), uY = A.face ? Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow)) : u, eY = uY * uY * (3 - 2 * uY);   // (face.js) planté, le cap ne tourne qu'APRÈS la touche : suivi dès le contact seulement, la moitié du virage sautait en une image (2 467 °/s)
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * eY;
     p.yawWant = null;
     const vG = (A.v0 ?? 2) * 0.55;
     p.v[0] = Math.cos(p.yaw) * vG; p.v[1] = Math.sin(p.yaw) * vG;
@@ -1050,6 +1051,13 @@ export function skillFollowStep(st, p, dt, cfg) {
     const lat = (A.away ?? 1) * 0.32 * Math.cos(Math.PI * u) * (1 - e);
     const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
     st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.face?.fin != null) {   // (face.js) LE ROULÉ, LE TIRÉ DE SEMELLE : corps planté, le ballon suit le chemin du clip (x : la droite, z : devant) jusqu'à fin
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roule', { log: st.gestures }); return; }
+    const S = A.face, u = Math.max(0, Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-3, S.fin - p.act.anticipation))), e = u * u * (3 - 2 * u);
+    const x = S.x0 + (S.x1 - S.x0) * e, z = S.z0 + (S.z1 - S.z0) * e, fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
+    if (!A.mobile) { p.v[0] = 0; p.v[1] = 0; p.speed = 0; p.yawWant = null; }   // (l'arrêt semelle d'entrée est MOBILE : le corps freine sous le geste, movePlayers le mène)
+    st.ball.carry([p.p[0] + fx * z - fz * x, p.p[2] + fz * z + fx * x], dt, { tau: 0.04 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'semelle') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-semelle', { log: st.gestures }); return; }

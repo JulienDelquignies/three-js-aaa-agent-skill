@@ -89,6 +89,13 @@ export function duelCfg(overrides = {}) {
     blocCorps: overrides.blocCorps ?? { w0: 0.35, vMembre: 4.5, max: 1.2, h: 2.0, rebond: 0.35, vMin: 4, geste: { antic: 0.25, basH: 0.9, buste: 0.4 } },   // geste : le bloc s'anime (keeper.blocGeste — le bloc en croix du futsal, la parade du buste)
     libero: base.libero ? { ...base.libero, far: 30, max: 4, rampe: 6 } : base.libero,
     gkAuDevant: base.gkAuDevant ? { ...base.gkAuDevant, rayon: 10, soutien: 3, plafond: 6 } : base.gkAuDevant,
+    // (2026-09-26, « lancer le chantier face-à-face au pas façon Taarabt ») LE FACE-À-FACE AU PAS (face.js) : pose à 1,5-2,6 m corps à corps (le
+    // ballon à ~1,4 m du défenseur à sa garde : Headrick 1,15-1,69), un roulé de semelle (0,7 s) toutes les 0,8-1,15 s (Taarabt : une feinte toutes
+    // les 0,3-0,6 s, 2-4 par duel), 5 s de tenue au plus (Headrick : 1c1 prudent 5,0 s) ; la fente s'annonce 0,2 s (la charge lue)
+    jockeyConduite: overrides.jockeyConduite ?? 1.2, jockey: base.jockey ? { ...base.jockey, dist: 1.4 } : base.jockey, mord: base.mord ? { ...base.mord, porte: 1.1 } : base.mord,   // (face.js) LA GARDE aussi en conduite : 1,4 m du ballon (Headrick 1,15-1,69), le défenseur ne mord qu'à 1,1 m (× aggrF)
+    noyau: base.noyau ? { ...base.noyau, latence: true } : base.noyau,   // (face.js) le disque d'atteinte du take-on part après la latence du défenseur (mordu, fente engagée) — noyau.latenceDe
+    face: overrides.face === undefined ? { entree: { foe: [1.0, 2.6], frein: 0.25, cone: 50, but: 6.5, vMax: 4.5, ballon: 0.5, vBallon: 5.5, envie: [0.55, 0.4], cd: 2.5 }, pause: [0.1, 0.35], jab: { cadence: [0.45, 0.85], pas: 0.35, duree: 0.3 }, approche: { d: [2.0, 7], cap: [1.5, 3.0], pente: 0.35, ballon: 1.4, max: 3.5 },
+      morsure: { base: 0.15, cumul: 0.12, duree: 0.6, decale: 0.6, elan: 1.8 }, garde: 1.4, patience: [1.6, 3.2], fente: { charge: 0.2, glisse: 0.7, portee: 0.7, suite: 1.4, surMorsure: 0.35, chute: 0.3 }, lecture: 0.6, lache: 4.8, max: 5.0, sortie: { lat: 1.3, au: 1.0, duree: 0.8 } } : overrides.face,
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),
     assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); appelDuel(st, cfg); repliDuel(st, cfg); },
   };

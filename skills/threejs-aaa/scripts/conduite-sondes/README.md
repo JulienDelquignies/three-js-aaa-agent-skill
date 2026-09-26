@@ -150,3 +150,26 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   paradeBuste ; à bout portant (avant le réflexe) la scène habille le bloc à son contact (l'événement porte hauteur et côté).
 - keeper.blocCorps bloque au PLAN du corps face au tir (plus un cercle : le ballon arrêté jusqu'à 0,8 m devant le gardien).
 - `bloc-rendu.mjs <url>` : au rendu, le ballon contre le membre le plus proche à chaque bloc — 0,45 → 0,31 m (anticipés 1,01 → 0,27 m).
+
+## Le face-à-face au pas, façon Taarabt (2026-09-26)
+- Cible mesurée : Headrick (thèse QUT, 1c1 — distance ballon-défenseur au face-à-face stable 1,15-1,69 m, 1c1 de 3,3 à 5,0 s, oscillation
+  latérale de l'attaquant 0,60-0,88 m) et la vidéo de référence (Taarabt, image par image à 6 i/s : planté à 1,5-2 m, semelle sur le ballon,
+  une feinte toutes les 0,3-0,6 s, 2-4 par duel, le défenseur qui se jette et finit au sol, puis le départ).
+- `duel-face.mjs` (sans navigateur) : le duel face à face ENTIER (entrée : défenseur de champ devant ≤ 3,5 m, ballon au pied ; issues BATTU /
+  perdu / tir / éteint) — durée, distance ballon-défenseur, oscillation, allure, gestes enchaînés, défenseur qui s'engage / tombe / mord ;
+  et les face-à-face au pas (face.js : fins, durée, roulés, morsures, fentes, les 2 s qui suivent). Avant : 0,7 s, ballon à 0,81 m, porteur à
+  2,1 m/s, 64 % sans geste, 57 % perdus, défenseur jamais au sol.
+- Ce que les sondes ont trouvé en route : le défenseur fonçait au ballon en conduite (la garde du jockey ne jouait que ballon SOUDÉ : 63 %
+  du temps déjà à < 2,6 m) → cfg.jockeyConduite ; le porteur tournait le DOS au défenseur côté but 55 % du temps (l'évasion) → l'approche ;
+  le noyau de duel jugeait la sortie plantée comme un dribble lancé (disque de Fujimura-Sugihara d'un défenseur toujours frais) → la
+  latence du défenseur (noyau.latenceDe, cfg.noyau.latence) et la sortie de face hors noyau ; la fente mordue gagnait (elle visait où le
+  roulé venait d'envoyer le ballon) → la suite vendue ; la croqueta de face sautait la moitié de son virage en une image (2 467 °/s) ; le
+  défenseur mordu « assis » se lisait figé (1,43 s) → le pas du mauvais côté ; la garde statique → le jab.
+- `face-rendu.mjs <url>` : au rendu, le ballon contre le pied le plus proche à chaque image de face-à-face, par état (tenue, roulé, tiré,
+  arrêt semelle) et par pied. Il a trouvé LE MIROIR CASSÉ des gestes générés sur le Biped Rocketbox (mirrorMove inverse des Euler locaux :
+  juste pour un rig aux repères bind en miroir) — le pied gauche derrière le corps, le ballon à 0,26 m ; motion-rig.mirrorGen (le miroir
+  exact au profil du rig) : 0,03 m pour les deux pieds.
+- `capture-geste.mjs` : T0 = 'face[:issue][:k]' (le k-ième face-à-face au pas, de cette issue — mordu, fente-lue, au-sol… — 1 s avant).
+- Après (16 graines × 120 s) : 1,2 face-à-face/min, 2,4 s, 2 roulés [1-3], fins mordu 38 % / fente lue 23 % / fente mordue 18 % / au sol 10 % /
+  perdu 10 % ; à +2 s : gardé 62 %, défenseur PASSÉ 26 %, perdu 13 % ; jeu : 1,8 tir/min, conversion ≈ 21 % ; verify-duel 22/22, verify-pas
+  10/10, matchday 88/88 au bit.
