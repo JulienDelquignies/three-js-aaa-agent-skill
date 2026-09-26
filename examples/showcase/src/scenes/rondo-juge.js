@@ -53,6 +53,15 @@ export function jugeImage(J, scene) {
     }
     J.P.set(s.id, prev);
   }
+  // LE BALLON QUI TRAVERSE UNE JAMBE : distance du centre du ballon aux segments genou→cheville et cheville→orteils des joueurs proches ;
+  // pénétration = (rayon ballon 0,11 + demi-épaisseur du membre) − distance, comptée au-delà de 3 cm
+  if (scene.ball) { const B = scene.ball.position; J.traverseImages = (J.traverseImages ?? 0) + 1;
+    for (const pl of scene.players ?? []) { if (Math.hypot(pl.sim.p[0] - B.x, pl.sim.p[2] - B.z) > 1.6) continue;
+      for (const f of ['left', 'right']) { const leg = pl.legs?.[f]; if (!leg?.foot || !leg.knee) continue; const toe = leg.foot.children.find((o) => /ToeBase/i.test(o.name));
+        leg.knee.getWorldPosition(_a); leg.foot.getWorldPosition(_b); const t1 = toe ? toe.getWorldPosition(new THREE.Vector3()) : _b.clone();
+        const dSeg = (P, Q, r) => { const ux = Q.x - P.x, uy = Q.y - P.y, uz = Q.z - P.z, L2 = ux * ux + uy * uy + uz * uz || 1; let k = ((B.x - P.x) * ux + (B.y - P.y) * uy + (B.z - P.z) * uz) / L2; k = Math.max(0, Math.min(1, k)); return Math.hypot(P.x + ux * k - B.x, P.y + uy * k - B.y, P.z + uz * k - B.z) - r; };
+        const pen = 0.11 - Math.min(dSeg(_a, _b, 0.055), dSeg(_b, t1, 0.045));
+        if (pen > 0.03) { J.traverse = (J.traverse ?? 0) + 1; const tc = pl._touchT != null && Math.abs(scene._t - pl._touchT) < 0.2; (J.travK ??= {})[(st.possession?.carrier === pl.sim.id ? 'porteur' : 'autre') + (tc ? '/touche' : '')] = ((J.travK ?? {})[(st.possession?.carrier === pl.sim.id ? 'porteur' : 'autre') + (tc ? '/touche' : '')] ?? 0) + 1; (J.travP ??= []).length < 2000 && J.travP.push(+pen.toFixed(3)); const gfT = pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right'], vbT = Math.hypot(st.ball.v[0], st.ball.v[2]); for (const k of [st.restart ? 'arrêt:' + st.restart.type : 'jeu', vbT < 0.3 ? 'ballon immobile' : vbT < 3 ? 'ballon lent' : 'ballon rapide', gfT ? (gfT.phase === 'swing' ? 'pied en vol' : 'pied posé') : 'sans foulée', 'job:' + (pl.sim.job ?? '-')]) (J.travD ??= {})[k] = ((J.travD ?? {})[k] ?? 0) + 1; } } } }
   if (J.pires.length > 200) J.pires.splice(0, J.pires.length - 200);
 }
 
@@ -74,7 +83,7 @@ export function jugeBilan(J) {
   const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s.length ? +s[Math.floor(p * (s.length - 1))].toFixed(2) : null; };
   const A = J.allonges.map((x) => x.r);
   const P = J.phases ?? [];
-  return { plans: (J.plans ?? []).slice(-40), phasePied: { n: P.length, finDeVol: P.filter((u) => u >= 0.8).length, milieu: P.filter((u) => u >= 0 && u < 0.8).length, aucunEnVol: P.filter((u) => u < 0).length }, images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
+  return { traverse: { images: J.traverse ?? 0, sur: J.traverseImages ?? 0, par: J.travK ?? {}, detail: J.travD ?? {}, penP50: q(J.travP ?? [], 0.5), penP90: q(J.travP ?? [], 0.9) }, plans: (J.plans ?? []).slice(-40), phasePied: { n: P.length, finDeVol: P.filter((u) => u >= 0.8).length, milieu: P.filter((u) => u >= 0 && u < 0.8).length, aucunEnVol: P.filter((u) => u < 0).length }, images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
     jambesEtireesPct: +(100 * J.jambes / Math.max(1, J.jambeImages)).toFixed(2), jambeMax: +J.jambesMax.toFixed(2),
     cases: Object.fromEntries(Object.entries(J.cases ?? {}).map(([k, [n, g]]) => [k, `${Math.round(100 * g / Math.max(1, n))} % de ${n}`])), vGlisse: { p50: q(J.vGl ?? [], 0.5), p90: q(J.vGl ?? [], 0.9) }, diag: J.diag,
     allonge: { n: A.length, p50: q(A, 0.5), p90: q(A, 0.9), max: q(A, 1), au_dela_1_1: A.filter((r) => r > 1.1).length }, pires: J.pires.slice(-30) };

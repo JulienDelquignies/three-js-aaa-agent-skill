@@ -24,7 +24,7 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon } from './rondo-evite.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -49,7 +49,7 @@ export class Rondo {
   }
 
   async _build() {
-    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre'); this._fouleeLibre = q.has('foulee-libre');
+    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre'); this._fouleeLibre = q.has('foulee-libre'); this._piedTraverse = q.has('pied-traverse');
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
@@ -1114,6 +1114,7 @@ export class Rondo {
       this._applyCatchWarp(pl);
       this._applyAideWarp(pl); poigneeWarp(this, pl); semelleWarp(this, pl);   // (A11 ter) les mains de la poignée, la fin du salut ; (§ 10) la semelle sur le ballon
       this._applyTouchWarp(pl);
+      eviteBallon(this, pl);   // (chantier foulée) le pied en vol contourne le ballon (rondo-evite.js)
     }
 
     if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, stepV, top);
@@ -1135,9 +1136,14 @@ export class Rondo {
           const h = plH.arms[sd]?.hand;
           if (h) { h.getWorldPosition(this._wv); mx += this._wv.x; my += this._wv.y; mz += this._wv.z; n++; }
         }
-        if (n) { mx /= n; my /= n; mz /= n; this.ball.position.set(b.p[0] + (mx - b.p[0]) * w, b.p[1] + (my - b.p[1]) * w, b.p[2] + (mz - b.p[2]) * w); }
+        if (n) { mx /= n; my /= n; mz /= n; this._ballOffW = [(mx - b.p[0]) * w, (my - b.p[1]) * w, (mz - b.p[2]) * w]; }
       }
     }
+    // (chantier foulée) LE BALLON NE SAUTE PAS AUX MAINS : l'écart rendu − sim (l'attache aux gants) avance au plus à ballOffV m/s, à l'aller comme au retour —
+    // fondu en 0,12 s, un ballon tenu à 1 m des mains rendues y volait à 8 m/s puis revenait d'un bloc au lâcher (arbitre visuel : les seuls sauts de ballon)
+    { const W = this._ballOffW ?? [0, 0, 0], O = (this._ballOff ??= [0, 0, 0]), dx = W[0] - O[0], dy = W[1] - O[1], dz = W[2] - O[2], dl = Math.hypot(dx, dy, dz), mv = (this._ballOffV ?? 3) * step;
+      const k = dl > mv ? mv / dl : 1; O[0] += dx * k; O[1] += dy * k; O[2] += dz * k; this._ballOffW = null;
+      if (Math.hypot(O[0], O[1], O[2]) > 1e-4) this.ball.position.set(b.p[0] + O[0], b.p[1] + O[1], b.p[2] + O[2]); }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;
 
     this._broadcast(stepV);
