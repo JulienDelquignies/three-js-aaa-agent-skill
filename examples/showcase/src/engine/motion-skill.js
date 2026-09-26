@@ -38,6 +38,11 @@ export const SKILL_KINDS = {
   // gauche), le retour VERS L'EXTÉRIEUR ; le buste vend le côté du roulé
   tireSemelleIn: { duration: 0.6, contact: 0.04, ball: [-0.14, BALL_R, -0.28], sole: true, startOn: true, dragTo: -0.06, dragX: -0.22, dragEnd: 0.3, lean: 10, headDown: 10, dip: 0.08, yawDrag: 10 },   // …le tiré depuis le ballon CROISÉ (après le roulé en travers)
   semelleRoule: { duration: 0.5, contact: 0.04, ball: [0.10, BALL_R, -0.28], sole: true, startOn: true, endOn: true, dragX: -0.14, dragEnd: 0.4, lean: 8, headDown: 10, dip: 0.07, yawDrag: 16, sideDrag: 8 },
+  // …et LA FEINTE DE CORPS SEMELLE DESSUS : la semelle ne quitte pas le ballon (qui ne bouge pas), le corps VEND un départ du côté de
+  // l'appui — bassin décalé sur la jambe d'appui (shift), buste tourné et incliné (Brault et al. 2010, feinte de corps : lacet du haut du
+  // tronc ≈ 25°, inclinaison ≈ 15°, bassin ≈ 5°), le bras du côté vendu s'ouvre, le centre de gravité descend — pic au contact, retour à corps s
+  feinteSemelle: { duration: 0.6, contact: 0.24, ball: [0.10, BALL_R, -0.28], sole: true, startOn: true, endOn: true, corps: 0.55, shift: -0.09, yawDrag: 25, sideDrag: 15, bassin: 5, bras: 40, lean: 10, dipVente: 0.04, dip: 0.06, headDown: 8 },
+  feinteSemelleIn: { duration: 0.6, contact: 0.24, ball: [-0.14, BALL_R, -0.28], sole: true, startOn: true, endOn: true, corps: 0.55, shift: -0.09, yawDrag: 25, sideDrag: 15, bassin: 5, bras: 40, lean: 10, dipVente: 0.04, dip: 0.06, headDown: 8 },
   semelleRouleOut: { duration: 0.5, contact: 0.04, ball: [-0.14, BALL_R, -0.28], sole: true, startOn: true, endOn: true, dragX: 0.10, dragEnd: 0.4, lean: 8, headDown: 10, dip: 0.07, yawDrag: -16, sideDrag: -8 },
   roulette:     { duration: 0.7,  contact: 0.1,  ball: [0.10, BALL_R, -0.26], sole: true, toe: true, dragTo: -0.02, dragEnd: 0.34, pivot: 0.32, armsOpen: 74, dip: 0.10, lean: 10, headDown: 10, marks: [0.32] },
   // LE CERCLE : la jambe passe PAR-DESSUS un ballon qui ne bouge pas, puis se plante à côté
@@ -52,6 +57,8 @@ export const SKILL_KINDS = {
   feinteAppel: { duration: 0.55, contact: 0.3, feint: true, upperOnly: true, sell: 0.15, sellSide: 16, yawSell: 24, lean: 6, dip: 0, headDown: 6 },   // (§ 10) LA FEINTE D'APPEL — sans ballon : le buste VEND un départ d'un côté (l'épaule qui plonge, le lacet) puis repart de l'autre au contact ; haut du corps seul (la foulée garde les jambes : le démarrage est celui de la sim)
   petitPont: { duration: 0.3, contact: 0.12, ball: [0.08, BALL_R, -0.30], flick: true, arm: 0.07, lean: 8, dip: 0.06, noArms: true, headDown: 12, marks: [0.07] },
 };
+// (face.js) LE PASSEMENT DE LA TENUE : le même cercle, autour du ballon à la distance de la tenue (sous la semelle, 0,28 m devant, au pied)
+SKILL_KINDS.passementFace = { ...SKILL_KINDS.passementJambes, ball: [0.10, BALL_R, -0.28] };
 // les passements à N tours (2..6) : le même cercle, répété — durée et contact avancent d'un tour
 for (let n = 2; n <= 6; n++) {
   const base = SKILL_KINDS.passementJambes;
@@ -136,12 +143,12 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
     };
     poseAt = (t) => {
       const up = K.startOn ? 1 : ramp(t, 0, 0.55 * tc, tc), drag = K.dragTo != null || K.dragX != null ? ramp(t, tc, (tc + tRel) / 2, tRel) : 0, back = K.endOn ? 0 : ramp(t, tRel, (tRel + T) / 2, T);
-      const on = up * (1 - back);
+      const on = up * (1 - back), vente = K.corps ? bump(t, 0, tc, K.corps) : 0, sell = K.corps ? vente : drag * (1 - back);   // (corps) la vente monte au contact et revient
       const J = {};
-      if (t < tc) applyLeg(J, 'Right', solC, up);
+      if (t < tc && !K.corps) applyLeg(J, 'Right', solC, up);   // (corps) la semelle reste en IK sur le ballon : le bassin qui se décale ne la décolle pas
       const headDown = K.hold ? K.headDown * S.headDown * on * (1 - ramp(t, tc, (tc + tRel) / 2, tRel)) + K.headUp * ramp(t, tc, (tc + tRel) / 2, tRel) * (1 - back) : (K.headDown ?? 12) * S.headDown * on;
-      trunk(J, { lean: (K.lean ?? 8) * S.lean * (on + 0.5 * drag) * (K.pivot ? 1 : 1), side: (K.sideDrag ?? 0) * S.lean * drag * (1 - back), yaw: (K.yawDrag ?? 0) * drag * (1 - back), headDown });
-      J.Hips = ry((K.yawDrag ?? 0) * 0.4 * drag * (1 - back));
+      trunk(J, { lean: (K.lean ?? 8) * S.lean * (on + 0.5 * (K.corps ? vente : drag)) * (K.pivot ? 1 : 1), side: (K.sideDrag ?? 0) * S.lean * sell, yaw: (K.yawDrag ?? 0) * sell, headDown });
+      J.Hips = ry((K.bassin ?? (K.yawDrag ?? 0) * 0.4) * sell);
       if (K.pivot) {
         // les bras s'ouvrent en balancier de pivot autour du pivot (0,32), se referment à la sortie
         const open = bump(t, tc, K.pivot, tRel + 0.28);
@@ -149,12 +156,12 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
         Object.assign(J, armJoints('Left', { elev, fwd: 4, elbow: 14 + 10 * open }), armJoints('Right', { elev, fwd: 4, elbow: 14 + 10 * open }));
       } else {
         // le bras d'équilibre opposé monte un peu devant quand le pied va au ballon
-        Object.assign(J, armJoints('Left', { elev: 14 + 26 * S.armElev * on, fwd: 6 + 16 * S.armFwd * on, elbow: 14 + 20 * on }), armJoints('Right', { elev: 14 + 8 * on, fwd: 6 - 14 * on, elbow: 14 + 8 * on }));
+        Object.assign(J, armJoints('Left', { elev: 14 + 26 * S.armElev * on + (K.bras ?? 0) * S.armElev * vente, fwd: 6 + 16 * S.armFwd * on, elbow: 14 + 20 * on + 10 * vente }), armJoints('Right', { elev: 14 + 8 * on, fwd: 6 - 14 * on, elbow: 14 + 8 * on }));
       }
       J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
-      return { J, hips: [0, -dipAt(t), 0] };
+      return { J, hips: [(K.shift ?? 0) * vente, -dipAt(t) - (K.dipVente ?? 0) * vente, 0] };
     };
-    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tc ? null : { p: footPath(t), foot: rx(-pitch * (K.endOn ? 1 : 1 - ramp(t, tRel, (tRel + T) / 2, T))) } });
+    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tc && !K.corps ? null : { p: footPath(t), foot: rx(-pitch * (K.endOn ? 1 : 1 - ramp(t, tRel, (tRel + T) / 2, T))) } });
   } else if (K.circle) {
     // LE CERCLE : hors du ballon (0), devant (¼), dedans (½ = contact), derrière (¾), hors (1)
     const c = [b[0], groundY + 0.26, b[2] + 0.10], RX = 0.25 * reach, RZ = 0.20 * reach;
@@ -412,6 +419,7 @@ export function checkSkillGen(spec, P, kindName) {
     if (p.toeBelowAnkle < 0.05) issues.push(`la pointe ne descend pas sur le ballon (${(p.toeBelowAnkle * 100).toFixed(0)} cm sous la cheville < 5)`);
     if (K.dragX != null && K.dragX < (K.ball?.[0] ?? 0) && p.latMost > K.dragX + 0.03) issues.push(`la semelle ne ROULE pas le ballon en travers (pied au plus à x=${p.latMost.toFixed(2)} après le contact, attendu ≤ ${(K.dragX + 0.03).toFixed(2)})`);
     if (K.dragTo != null && p.backMost < K.dragTo + 0.02) issues.push(`la semelle ne TIRE pas le ballon sous le corps (pied au plus à z=${p.backMost.toFixed(2)} après le contact, attendu ≥ ${(K.dragTo + 0.02).toFixed(2)})`);
+    if (K.corps && p.swayYawAbsPre < 15) issues.push(`le corps ne VEND pas (épaules tournées de ${p.swayYawAbsPre.toFixed(0)}° avant le contact < 15 — Brault 2010 : ≈ 25°)`);
     if (K.hold) {
       if (p.holdDrift > 0.03) issues.push(`la semelle ne TIENT pas (dérive ${(p.holdDrift * 100).toFixed(1)} cm pendant la tenue > 3)`);
       const hEnd = p.headAt(spec.keys.reduce((bst, k) => (Math.abs(k.t - K.hold) < Math.abs(bst - K.hold) ? k.t : bst), 0));

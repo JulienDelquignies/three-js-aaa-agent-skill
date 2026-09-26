@@ -77,13 +77,13 @@ if (String(T0).startsWith('geste')) {
   T0n = Math.max(0.05, L[k].t - 1.5); suitId = L[k].by; await ouvre();
 }
 // T0 = 'face[:issue][:k]' : le k-ième FACE-À-FACE AU PAS (face.js : événements 'face' entre → fin), de cette issue si donnée (mordu, fente-lue,
-// fente-manquee, perdu…) — filmé de 1,0 s avant l'entrée ; `I = porteur` suit le porteur du face-à-face
+// fente-manquee, perdu…) ou contenant ce geste (passementFace, feinteSemelle…) — filmé de 1,0 s avant l'entrée ; `I = porteur` suit le porteur du face-à-face
 if (String(T0).startsWith('face')) {
   const parts = String(T0).split(':'), issue = parts[1] && isNaN(Number(parts[1])) ? parts[1] : null, k = Number(issue ? parts[2] ?? 0 : parts[1] ?? 0);
   const L = (await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0, cur = null;
-    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type !== 'face') continue;
-      if (e.phase === 'entre') cur = { t: e.t, by: e.by }; else if (e.phase === 'fin' && cur) { out.push({ ...cur, issue: e.issue, duree: e.duree, feintes: e.feintes, fente: e.fente }); cur = null; } } }
-    return out; })).filter((x) => !issue || x.issue === issue);
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (cur && e.type === 'windup' && e.by === cur.by && e.skill) cur.gestes.push(e.skill); if (e.type !== 'face') continue;
+      if (e.phase === 'entre') cur = { t: e.t, by: e.by, gestes: [] }; else if (e.phase === 'fin' && cur) { out.push({ ...cur, issue: e.issue, duree: e.duree, feintes: e.feintes, fente: e.fente }); cur = null; } } }
+    return out; })).filter((x) => !issue || x.issue === issue || x.gestes.includes(issue));
   console.log('face-à-face trouvés :', L.length, JSON.stringify(L.slice(0, 8)));
   if (!L[k]) { console.log('pas de face-à-face n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.0); suitId = L[k].by; await ouvre();

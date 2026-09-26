@@ -201,3 +201,15 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   reprises éclair sont des gardiens qui ramassent. Remède (cfg.perteReaction, duel) : le dépossédé ne pique ni ne charge avant son temps de
   réaction (skill.reaction) — les actions du perdant sous 0,25 s 22 → 8 %, la reperte subie inchangée. verify-charge : 2 ✗ PRÉEXISTANTS (même
   sur le commit d'avant).
+- D'autres feintes plantées (2026-09-26 : « feinte de corps semelle dessus, passement au pas »). Deux clips générés (motion-skill) :
+  `feinteSemelle`/`feinteSemelleIn` — la semelle reste en IK sur le ballon immobile, le corps vend un départ du côté de l'appui (Brault et
+  al. 2010 : buste tourné ≈ 25°, incliné ≈ 15°, bassin ≈ 5°, bassin décalé de 9 cm, le bras du côté vendu s'ouvre), contrat : épaules
+  tournées ≥ 15° avant le contact ; `passementFace` — le cercle du passement autour du ballon à la distance de la tenue. face.js les tire à
+  chaque feinte (`cfg.face.feintes` : part et poids de vente ; le passement depuis le ballon dehors, selon le flair) ; la morsure se juge au
+  contact de chacune, la sortie attend que la feinte libère le pied. `face-feintes.mjs [graines] [s]` : par feinte, jugée / mordue (et la
+  morsure impossible au contact : une fente déjà chargée), ce qui la suit ; les face-à-face perdus avec la feinte en cours (BRUT=1).
+  Mesuré (32 graines, A/B apparié) : poids de vente 1 → les pertes du face-à-face 14 → 20 % — toutes des fentes FRANCHES (non lues) sur
+  un ballon IMMOBILE : le roulé déplace le ballon pendant la charge, la feinte statique non ; la vente du corps (bassin compris) et du
+  passement (la jambe entière) pèse plus que le roulé (le ballon seul) : 1,3 / 1,5 → pertes 16 %, perdu à +2 s 13 % (= sans), 1,9 face-à-
+  face/min. Au rendu (`face-rendu.mjs`) : semelle à 0,02 m du ballon tout le long de la feinte de corps (cheville 0,17 m), le pied du
+  passement jamais à moins de 0,13 m, cheville jusqu'à 0,32 m. capture-geste : T0 = 'face:<geste>:k' (le k-ième face-à-face qui contient ce geste).
