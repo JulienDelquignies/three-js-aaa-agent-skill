@@ -128,3 +128,15 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   le passement reste dans la course) : 74 % des face-à-face finissent sur un geste, 5 % au contact ; 1,75 → 3,4 gestes/min ; verify-pas :
   111 gestes / 16 min (54 avant), 56 % gardés ou tirés.
 - `capture-geste.mjs` : T0 = 'geste[:k]' (le k-ième geste dans la foulée, 1,5 s avant).
+
+## Le gardien : le bloc du corps, les sorties à l'échelle du futsal (2026-09-26)
+- `gardien-tirs.mjs` (sans navigateur) : pour chaque tir, le gardien à l'instant du tir (profondeur, écart à la bissectrice, distance au
+  tireur, au sol) et l'issue ; ses sorties (hors surface, profondeur, coins, pourquoi) et les buts but vide. Référence : en futsal d'élite
+  76,5 % des tirs cadrés finissent sur une intervention du gardien. Avant : il en arrêtait 45 %, conversion 39 %, sous 5 m 8 buts sur 11 —
+  le vol arrivait avant le réflexe (0,12 s) et PASSAIT AU TRAVERS du corps (keeperDecide rend 'poste' avant le réflexe, aucun bloc passif) ;
+  hors surface 11 % du temps jusqu'à 17 m (le libéro, le retrait et le soutien du 105 m), 3 buts but vide / 16 min.
+- Remède : keeper.blocCorps (cfg.blocCorps : w0 0,35, vMembre 4,5, max 1,2, h 2 ; le segment du ballon contre le corps), libéro / retrait /
+  soutien à l'échelle (duelCfg), les 4 s du futsal au gardien porteur (menace.arbitre, cfg.duel.gardien4s), l'urgence sans geste qui garde le
+  plan d'approche (strike-sim, cfg.duel.urgencePlan — le gardien refusé 'technique' à chaque image portait le ballon jusqu'aux coins).
+- Après : 75-76 % des cadrés arrêtés, conversion ≈ 20 %, hors surface 3 %, profondeur max 8,6-9,5 m, 1 but but vide / 16 min.
+- `capture-geste.mjs` : T0 = 'arret:bloc:k' (la k-ième parade de cette espèce).

@@ -35,7 +35,7 @@ export const CAGE_STADE = {
   goal: { w: CAGE.goal.width, h: CAGE.goal.height },
 };
 
-const DUEL_KEYS = { rebond: 0.55, recul: 3.5, passeGardien: 0.35, degagement: false, appel: { x: 9, z: 4.5 }, repli: { angle: 50, avance: 0.7, min: 2, max: 7, pres: 6 } };   // passeGardien : la note de la passe du joueur de champ à SON gardien × 0,35 (menace.arbitre) — un 1c1 se joue au dribble
+const DUEL_KEYS = { rebond: 0.55, recul: 3.5, passeGardien: 0.35, degagement: false, gardien4s: 4, urgencePlan: true, appel: { x: 9, z: 4.5 }, repli: { angle: 50, avance: 0.7, min: 2, max: 7, pres: 6 } };   // passeGardien : la note de la passe du joueur de champ à SON gardien × 0,35 (menace.arbitre) — un 1c1 se joue au dribble
 
 /** L'état : un joueur de champ par camp ET SON GARDIEN (le métier du 11c11 : keeper.js — il se règle sur la largeur du but), st.full forcé
  *  (les lois du corps du 11c11). gardiens:false = le duel d'hier, sans gardien. */
@@ -83,6 +83,12 @@ export function duelCfg(overrides = {}) {
     // ne « s'use » pas (menace.muteD : elle poussait à RENDRE le ballon après 10 m — il n'y a personne à qui le rendre sur 40 m)
     xg: base.xg ? { ...base.xg, dribble: { pas: 4, min: 5, devant: 4, passe: 0.5, libre: 0.85 } } : base.xg,
     menace: typeof base.menace === 'object' ? { ...base.menace, muteD: 999 } : base.menace,
+    // (2026-09-26, « renforcer le gardien ») LE BLOC DU CORPS (keeper.blocCorps) : le tir qui traverse le gardien est repoussé ; et LES SORTIES
+    // À L'ÉCHELLE DU FUTSAL — le libéro (monte à 10 m quand le ballon est à > 34 m), la rencontre du retrait (jusqu'à 16 m) et le soutien
+    // (5 m) étaient ceux du 105 m : 11 % du temps hors de sa surface, jusqu'à 17 m, 3 buts but vide / 16 min (gardien-tirs.mjs)
+    blocCorps: overrides.blocCorps ?? { w0: 0.35, vMembre: 4.5, max: 1.2, h: 2.0, rebond: 0.35, vMin: 4 },
+    libero: base.libero ? { ...base.libero, far: 30, max: 4, rampe: 6 } : base.libero,
+    gkAuDevant: base.gkAuDevant ? { ...base.gkAuDevant, rayon: 10, soutien: 3, plafond: 6 } : base.gkAuDevant,
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),
     assignJobs: (st, cfg) => { base.assignJobs(st, cfg); engagementDuel(st, cfg); appelDuel(st, cfg); repliDuel(st, cfg); },
   };

@@ -292,6 +292,7 @@ export function arbitre(st, c, cfg) {
   } : null;
   // …ET LE RÔLE DU JOUEUR compose avec le style d'équipe (roles.js — ±15 % : un 9 direct dans
   // une équipe possession reste un 9, nuancé, pas écrasé). Aucun rôle : ×1, pas un bit.
+  if (cfg.duel?.gardien4s && c.keeper) o.conduite = { ...o.conduite, score: +(o.conduite.score * Math.max(0.1, 1 - (st.hold ?? 0) / cfg.duel.gardien4s)).toFixed(3), pourquoi: 'gardien-4s' };   // (le duel) LES 4 SECONDES DU FUTSAL (loi 12) : le gardien ne garde pas le ballon au pied dans son camp — la conduite s'éteint en 4 s, il joue (mesuré : il portait le ballon jusqu'aux coins)
   if (cfg.duel?.passeGardien != null && !c.keeper && st.players[o.passe.vers]?.keeper) o.passe = { ...o.passe, score: +(o.passe.score * cfg.duel.passeGardien).toFixed(3), pourquoi: 'rendre-au-gardien' };   // (le duel) rendre le ballon à SON gardien n'est pas le jeu d'un 1c1 : 5,4 passes/min mesurées, le dribble s'éteignait
   const rW = c.role?.arbitre;
   let meilleure = 'conduite', sMax = -Infinity;

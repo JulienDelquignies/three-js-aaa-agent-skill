@@ -57,10 +57,10 @@ if (String(T0).startsWith('recup')) {
 }
 // T0 = 'arret[:k]' : le k-ième ARRÊT du gardien (événement 'arrêt') — filmé de 3 s avant (le dribble et le tir qui l'amènent)
 if (String(T0).startsWith('arret')) {
-  const k = Number(String(T0).split(':')[1] ?? 0);
-  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+  const parts = String(T0).split(':'), espece = isNaN(Number(parts[1])) ? parts[1] : null, k = Number(espece ? parts[2] ?? 0 : parts[1] ?? 0);   // 'arret:bloc:k' : la k-ième de cette espèce
+  const L = (await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
     while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'arrêt') out.push({ t: st.t, kind: e.kind ?? e.mode ?? '?' }); } }
-    return out; });
+    return out; })).filter((x) => !espece || x.kind === espece);
   console.log('arrêts trouvés :', L.length, JSON.stringify(L.slice(0, 8)));
   if (!L[k]) { console.log("pas d'arrêt n°", k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 3); await ouvre();

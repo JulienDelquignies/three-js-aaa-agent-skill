@@ -117,8 +117,15 @@ export function beginPass(st, choice, cfg, opts = {}) {
   const nearFoe = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
   // l'urgence est TEMPORELLE (holdMax) ou SITUATIONNELLE (opts.forceUrgent : ballon contesté — un
   // adversaire est en train de le gagner ; on le joue MAINTENANT, du geste légal le plus prompt)
-  const urgent = opts.forceUrgent || st.hold >= cfg.holdMax - 0.1;
+  let urgent = opts.forceUrgent || st.hold >= cfg.holdMax - 0.1;
   const outYaw = Math.atan2(choice.lead[2] - bref[1], choice.lead[0] - bref[0]);
+  // (cfg.duel.urgencePlan — le duel) L'URGENCE SANS GESTE GARDE LE PLAN : passé holdMax l'improvisation cherche une surface sur la géométrie
+  // de l'instant ; le ballon mené à 1-2 m n'en a aucune — refus 'technique' à chaque image (2 306 en 97 s de possession du gardien mesurées),
+  // le plan d'approche (l'ancre qui rapproche le pied du ballon) était court-circuité et le gardien portait le ballon jusqu'aux coins.
+  if (urgent && !opts.forceUrgent && st.full && cfg.duel?.urgencePlan && !mains) {
+    const tx0 = choice.lead[0] - c.p[0], tz0 = choice.lead[2] - c.p[2], fx0 = Math.cos(c.yaw), fz0 = Math.sin(c.yaw);
+    if (!chooseTechnique(situation(c.p, c.yaw, from, st.ball.v, from[1]), 'pass', { firstTouch: false, outBearing: Math.atan2(fx0 * tz0 - fz0 * tx0, fx0 * tx0 + fz0 * tz0) * 180 / Math.PI }).length) urgent = false;
+  }
   // LE BALLON DE CONDUITE EST UN BALLON DU COUPLE (lot 77 — la gâchette : 3 401 refus
   // ballon-vif pour 4 tirs sur 4×180 s depuis que la conduite vit libre). Un ballon qui roule
   // AVEC son homme ne fuit l'ancre de personne : si la vitesse RELATIVE porteur-ballon tient

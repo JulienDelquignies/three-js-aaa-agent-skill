@@ -59,6 +59,28 @@ export function keeperRise(getupF = 1, resolved = true, K = KEEPER) {
  * frappes dans le gardien), l'arrêt se nomme {mode:'buste'} pour la scène (clip paradeBuste).
  * Sous le seuil ou hors de la fenêtre : false — la prise d'hier, au bit près.
  */
+/** LE BLOC DU CORPS (cfg.blocCorps — le duel, futsal, 2026-09-26 « renforcer le gardien ») : un tir qui TRAVERSE le corps du gardien est
+ *  repoussé — la physique, pas le réflexe. Mesuré avant (gardien-tirs.mjs) : sous 5 m l'attaquant marquait 8 fois sur 11, le gardien à 2 m
+ *  de lui — le vol arrivait avant le réflexe (0,12 s), keeperDecide rendait 'poste' et le ballon passait AU TRAVERS du corps. Le volume : une
+ *  demi-largeur w = w0 + vMembre × (âge du tir − réflexe), bornée à `max` (le corps debout 0,35 m — la demi-carrure ANSUR II 0,244 + les bras,
+ *  puis bras et jambes qui s'étendent à ~4,5 m/s, jusqu'à la demi-envergure penchée 1,2 m — au-delà c'est le plongeon), de 0 à `h` m (le lob
+ *  par-dessus reste un but). Le segment du ballon sur cette image contre l'axe du corps : touché, il repart (× rebond, vers le jeu). */
+export function blocCorps(st, gk, cfg, shotAge) {
+  const K = cfg.blocCorps, b = st.ball; if (!st.pass || st.pass.to !== -2 || gk.down > 0 || st.lastTouch === gk.team) return false;
+  const sp = hyp(b.v[0], b.v[2]); if (sp < (K.vMin ?? 4) || b.p[1] > (K.h ?? 2) + 0.3) return false;
+  const reflex = gk.skill?.keeperReflex ?? KEEPER.reflex, w = Math.min(K.max ?? 1.2, (K.w0 ?? 0.35) + (K.vMembre ?? 4.5) * Math.max(0, shotAge - reflex)) + 0.11;
+  const dt = 1 / 60, ax = b.p[0], az = b.p[2], ex = ax + b.v[0] * dt, ez = az + b.v[2] * dt, sx = ex - ax, sz = ez - az, l2 = sx * sx + sz * sz || 1e-9;
+  const u = Math.max(0, Math.min(1, ((gk.p[0] - ax) * sx + (gk.p[2] - az) * sz) / l2)), cx = ax + sx * u, cz = az + sz * u;
+  if (hyp(gk.p[0] - cx, gk.p[2] - cz) > w || u <= 0 && ((gk.p[0] - ax) * b.v[0] + (gk.p[2] - az) * b.v[2]) < 0) return false;   // hors du corps, ou le ballon s'éloigne
+  if (b.p[1] + b.v[1] * dt * u > (K.h ?? 2)) return false;
+  const r = K.rebond ?? 0.35, g = st.pitch.ownGoal(gk.team);
+  st.ball.impulse([-b.v[0] * (1 + r) * (Math.sign(b.v[0]) === g.sign ? 1 : 0), -b.v[1] * 0.5, -b.v[2] * 0.5]);
+  if (st.ball.owner != null) st.ball.release('perte');
+  st.possession.carrier = -1; st.phase = 'loose'; st.hold = 0; st.pressure = 0; st.lastTouch = gk.team; st.pass = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'bloc', kind: 'bloc', w: +w.toFixed(2) });
+  return true;
+}
+
 export function busteBlock(st, gk, cfg) {
   const vIn = hyp(st.ball.v[0], st.ball.v[1] ?? 0, st.ball.v[2]);
   const y = st.ball.p[1] ?? 0;

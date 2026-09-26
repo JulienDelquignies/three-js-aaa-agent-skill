@@ -62,7 +62,7 @@ for (const r of res) ok(`graine ${r.seed} : aucune remise ne dure plus de ${REMI
   const d50 = q(res.flatMap((r) => r.m.dist), 0.5);
   ok(`les deux joueurs se disputent le ballon (écart médian ≤ ${DIST_MAX} m)`, d50 <= DIST_MAX, `${d50.toFixed(1)} m`);
   const tot = (k) => res.reduce((a, r) => a + (r.types[k] ?? 0), 0);
-  ok(`des buts se marquent (${tot('but')} en ${SEEDS * SECS} s)`, tot('but') >= SEEDS / 2);
+  ok(`des buts se marquent — le jeu n'est pas stérile (${tot('but')} en ${SEEDS * SECS} s ; futsal d'élite ≈ 0,15 but/min, le gardien arrête ~3/4 des cadrés)`, tot('but') >= 1);
   const tpm = tot('shot') / (SEEDS * SECS / 60);
   ok(`le tir se mérite : 1 à 3 tirs par minute (${tpm.toFixed(2)} — ${tot('shot')} tirs ; 5,4/min avant, cage sans gardien)`, tpm >= 1 && tpm <= 3);
   ok(`les gardiens arrêtent (${tot('arrêt')} arrêts)`, tot('arrêt') >= SEEDS);
