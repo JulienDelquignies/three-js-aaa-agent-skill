@@ -42,7 +42,7 @@ export const ATTRIBUTES = {
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
-  agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91) ; porteuse de technique pour la tolérance du corps au tir (282)',
+  agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91) ; porteuse de technique pour la tolérance du corps au tir (282) ; l\'APPUI PLANTÉ (336) : durée × [1,15 ; 0,85], vitesse gardée × [0,93 ; 1,07]',
   stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
   strength:    'force dans le duel       → charge d\'épaule × [0,85 ; 1,15] (cfg.charge, lot 32)',
   jumping:     'détente verticale        → hauteur de saut de tête × [0,75 ; 1,25] (cfg.tete.saut, lot 112)',
@@ -124,6 +124,8 @@ export function makeProfile(ratings = {}) {
                                                                   // la ligne du centre (l'erreur du faible)
     depthKF: lerp(0.85, 1.15, r('keeping')),                      // × sur la profondeur max (le bon gardien
                                                                   // ose sortir — no-op exact à 50)
+    appuiF: lerp(1.15, 0.85, r('agility')),                       // × la DURÉE de l'appui planté (336, cfg.appui — appui.js) : le souple coupe court, 1 exact à 50
+    appuiRhoF: lerp(0.93, 1.07, r('agility')),                    // × la vitesse GARDÉE à la sortie de l'appui (336) — 1 exact à 50
     getupF: lerp(1.28, 0.72, r('agility')),                       // × sur le relevé (keeper.keeperRise —
                                                                   // le félin en 0,9 s, le raide en 1,6)
     stamF: lerp(1.25, 0.75, r('stamina')),                        // × sur le drain de fatigue (l'endurant tient)

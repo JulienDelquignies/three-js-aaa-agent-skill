@@ -1,3 +1,4 @@
+import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
 // chasses), séparation des corps. Sorti de rondo.js au lot 22 (volumétrie) — au bit près, la
@@ -383,7 +384,8 @@ export function movePlayers(st, dt, cfg) {
     // la cible tremblait (press : 5,6°/image à p90, 4 inversions/s). Le cap voulu passe par un filtre (tau s) puis un slew borné par la
     // vitesse (taux/v rad/s) : la demande latérale devient petite et suivie, le corps décrit des courbes. Sous des m/s (l'arrêt, le
     // pivot) et sans demande : libre. Les rôles de course y passent aussi (l'interception est un cap : mesuré au flux). null : hier au bit.
-    if (st.full && cfg.viragesLisses && (wx || wz)) {
+    const plante = st.full && cfg.appui && !p.keeper ? appuiPas(st, p, wx, wz, dTgt, cfg.appui, dt, !bitten && !p.act && (p.down ?? 0) <= 0) : false;   // (336) L'APPUI PLANTÉ (appui.js) : au-delà de 40° le joueur plante, il ne décrit pas d'arc
+    if (!plante && st.full && cfg.viragesLisses && (wx || wz)) {
       const VL = cfg.viragesLisses, spW = hyp(p.v[0], p.v[1]);
       if (spW >= (VL.des ?? 1.0) && dTgt > (VL.arrivee ?? 1.5)) {   // …et pas à l'ARRIVÉE (la cible à < arrivee m) : le demi-tour de l'arrivée est un frein, pas un virage — le slew le retardait (mesuré : le lanceur dépassait son point de 0,17 m)
         const want = Math.atan2(wz, wx), mag = hyp(wx, wz), have = p._capW ?? Math.atan2(p.v[1], p.v[0]);
@@ -413,7 +415,7 @@ export function movePlayers(st, dt, cfg) {
     // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
     const kBite = (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) * (p.skill?.accelF ?? 1);   // …et le DÉMARRAGE aussi
     const LOCO = st.full && cfg.locomoteur ? cfg.locomoteur : null;   // (260) LE PROFIL LOCOMOTEUR : a = ε (V − v)/τ, le freinage saturé — à la place de l'accélération constante
-    if (sp0 > 0.4) {
+    if (plante) { /* (336) l'appui a écrit la vitesse de l'image */ } else if (sp0 > 0.4) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
       const along = LOCO ? pasLoco(p, st, LOCO, sp0, dvx * ux + dvz * uz + sp0, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) : clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
@@ -554,7 +556,7 @@ export function movePlayers(st, dt, cfg) {
       // LE CORPS SE RETOURNE AVEC LE BALLON (240b, cfg.retournement && st.full — retour utilisateur : « le retournement pour la
       // passe en arrière est trop rapide » ; mesuré : 457 °/s p50, 586 p90 dans les 0,3 s avant une passe arrière, réel
       // 200-250 avec ballon) : le PORTEUR pivote au plus à rate rad/s × accelF (l'explosivité) — les autres gardent leur loi.
-      const rate0 = Math.max(cfg.turnRateMin, cfg.turnAccel / Math.max(1, p.speed));
+      const rate0 = p._appui && st.full && cfg.appui ? (cfg.appui.lacet ?? 9) : Math.max(cfg.turnRateMin, cfg.turnAccel / Math.max(1, p.speed));   // (336) pendant l'appui planté, les épaules tournent sur le pied (≈ 500 °/s)
       const porteur = st.full && cfg.retournement && enPorte(st, p, cfg);
       const rate = porteur ? Math.min(rate0, (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1)) : rate0;
       // …UN SEUL BUDGET PAR IMAGE pour le porteur (240b) : les deux slews s'additionnaient (229 + 229 = 458 °/s mesurés)
