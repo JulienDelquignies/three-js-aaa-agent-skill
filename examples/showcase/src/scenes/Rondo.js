@@ -5,7 +5,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { generateStadium, checkStadium } from '../engine/stadium.js';
 import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
-import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
+import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js'; import { buildCrowd } from '../engine/crowd.js'; import { setupStadiumJour } from '../engine/stadium-jour.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
 import { spawnArbitre, updateArbitre } from './arbitre.js';
@@ -25,7 +25,7 @@ import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWar
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, modeDe, dureeDe } from './rondo-produit.js';
-import { planDe, planSuivant, camerasUpdate } from './rondo-cameras.js';
+import { planDe, planSuivant, camerasUpdate, toitsUpdate } from './rondo-cameras.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -84,8 +84,10 @@ export class Rondo {
       built.group.traverse((o) => { if (o.isInstancedMesh && o.count > 800) o.count = Math.floor(o.count / 2); });
     }
 
-    // ---- night: floodlights + one shadow-casting sun fitted to the pitch
-    this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
+    this._heure = ['jour', 'soir'].includes(q.get('heure')) ? q.get('heure') : 'nuit';
+    if (this.matchMode && q.get('public') !== '0') { this.public = buildCrowd(built.group, { teams: TEAMS, debordement: { jour: 0, soir: 0.12 }[this._heure] ?? 0.38 }); this.disposables.push(this.public); }   // LE PUBLIC (engine/crowd.js) — un spectateur par siège occupé ; ?public=0 : le stade vide d'hier
+    // ---- night: floodlights + one shadow-casting sun fitted to the pitch — ou le JOUR / le SOIR (?heure=jour|soir : engine/stadium-jour.js, même contrat)
+    this.night = this._heure !== 'nuit' ? setupStadiumJour(this.scene, this.renderer, { at: [0, 0, 0], model, heure: this._heure, shadowMapSize: this.fullMode ? 1024 : 2048 }) : setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
       // plein format : 22 corps skinnés se re-déforment dans la passe d'ombre — la map se
       // resserre (1024²) et le BUDGET DE CASTERS (update) limite qui la paie. Le 512² du lot 61
       // est REVENU à 1024 (lot 63 — « encore un peu les traits », capture) : son texel de 22 cm
@@ -98,7 +100,7 @@ export class Rondo {
       // partout, =0 coupe partout (le forward d'hier, sabotage nommé).
       bake: q.get('bakelight') === '1' || (this._tier === 'low' && q.get('bakelight') !== '0') });
     this.disposables.push(this.night);
-    this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
+    this._reports = { stadium: chk, night: this._heure === 'nuit' ? checkStadiumNight(this.night, model) : { ok: true, issues: [] }, kits: [], gestes: [] };
 
     // LE LOD D'ANIMATION (lot 60) est actif par défaut — ?animlod=0 le coupe (sabotage nommé) ;
     // et le tier low PLAFONNE le pixel ratio à 1,75 (un écran 2,6× DPR paie 6,8 fragments pour 1 —
@@ -1153,7 +1155,11 @@ export class Rondo {
       if (Math.hypot(O[0], O[1], O[2]) > 1e-4) this.ball.position.set(b.p[0] + O[0], b.p[1] + O[1], b.p[2] + O[2]); }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;
 
-    this._broadcast(stepV);
+    this._broadcast(stepV); toitsUpdate(this);
+    if (this.public) { const st = this.state, c = st.players[st.possession?.carrier];   // la foule vit le match : la tension monte quand le porteur approche du but, le but l'enflamme
+      for (let k = 0; k < 2; k++) this.public.tension(k, c && c.team === k && !st.restart ? 1 - Math.hypot(st.pitch.attackGoal(k).x - c.p[0], c.p[2]) / 30 : 0);
+      for (let i = before; i < st.events.length; i++) if (st.events[i].type === 'but') this.public.cheer(st.events[i].team ?? 0, 8);
+      this.public.update(stepV); }
     this._t += step;
     if (this._trace.length < 4000 && Math.floor(this._t * 10) !== Math.floor((this._t - step) * 10)) {
       this._trace.push({

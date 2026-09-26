@@ -40,7 +40,12 @@ export function produitInit(scene, { teams, nomDe, sauter }) {
   for (const [k, v] of Object.entries(MODES)) { const o = document.createElement('option'); o.value = k; o.textContent = v; if (k === P.mode) o.selected = true; P.sel.appendChild(o); }
   P.sel.title = 'Mode de match (recharge la page)';
   P.sel.addEventListener('change', () => { const u = new URL(location.href); u.searchParams.set('mode', P.sel.value); location.href = u.toString(); });
-  P.ctl.appendChild(P.sel); document.body.appendChild(P.ctl);
+  P.ctl.appendChild(P.sel);
+  // L'HEURE DU MATCH (nuit sous les projecteurs, soir, jour — recharge : l'éclairage se construit au chargement)
+  P.selH = css(document.createElement('select'), P.sel.style.cssText); P.selH.title = 'Heure du match (recharge la page)';
+  for (const [k, v] of Object.entries({ nuit: 'Nuit', soir: 'Fin de journée', jour: 'Jour' })) { const o = document.createElement('option'); o.value = k; o.textContent = v; if (k === (scene._heure ?? 'nuit')) o.selected = true; P.selH.appendChild(o); }
+  P.selH.addEventListener('change', () => { const u = new URL(location.href); u.searchParams.set('heure', P.selH.value); location.href = u.toString(); });
+  P.ctl.appendChild(P.selH); document.body.appendChild(P.ctl);
   P.bCam.textContent = `Caméra : ${{ rapprochee: 'Rapprochée', tv: 'Télé', tactique: 'Tactique', joueur: 'Joueur' }[scene._plan] ?? 'Télé'}`;
   // LA LISTE DES MOMENTS
   P.list = css(document.createElement('div'), 'position:fixed;right:12px;top:56px;z-index:41;display:none;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:10px 12px;border-radius:10px;background:rgba(12,14,20,.86);color:#e8ebf2;font:500 13px/1.45 system-ui,sans-serif');

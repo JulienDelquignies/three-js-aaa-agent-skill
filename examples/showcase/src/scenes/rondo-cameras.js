@@ -21,6 +21,14 @@ export function planSuivant(scene) {
   scene._planT = 0; return NOMS_PLANS[scene._plan];
 }
 
+/** LES TOITS QUI BOUCHENT (26/09 : le bandeau noir du plan télé) : la régie filme depuis AU-DESSUS du toit de la tribune principale —
+ *  son dessus, sans lumière, mangeait le bas du cadre. Un toit est masqué tant que la caméra est plus haute que lui et de son côté. */
+export function toitsUpdate(scene) {
+  const cam = scene.cam; if (!cam) return;
+  const T = (scene._toits ??= (() => { const a = []; scene.scene?.traverse((o) => { if (o.isMesh && o.name === 'toit') a.push(o); }); return a; })());
+  for (const o of T) { const p = o.position, s = o.parent?.position ?? { x: 0, z: 0 }; const memeCote = Math.abs(p.z) > Math.abs(p.x) ? Math.sign(p.z + s.z) === Math.sign(cam.position.z) : Math.sign(p.x + s.x) === Math.sign(cam.position.x); o.visible = !(memeCote && cam.position.y > p.y - 0.5); }
+}
+
 /** Chaque image, pour les plans autres que tv : place la caméra ; rend false pour laisser la régie d'hier (tv). */
 export function camerasUpdate(scene, dt) {
   const P = scene._plan; if (!P || P === 'tv' || scene.free || !scene.cam) return false;
