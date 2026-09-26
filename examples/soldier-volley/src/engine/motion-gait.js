@@ -421,7 +421,13 @@ function volArticulaire(fp, w, wJ, v, L, hipNow, hipTO, hipTD, lift, land, kGeno
  * sabotage ou un réglage nommé (bancs).
  */
 export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) {
-  const p = gaitParams(vF, vR, style, opts.override || null, opts.legK ?? gaitLegK(P));   // (A7 bis) la cadence à l'échelle de la jambe du rig (le contrôleur avance l'horloge du même facteur)
+  const p = gaitParams(vF, vR, style, opts.override || null, opts.legK ?? gaitLegK(P));
+  // (26/09, « pas fluide » — la cheville qui fouette) LE PIÉTINEMENT : quand le contrôleur force la cadence au-dessus de la loi de l'allure
+  // (le PIVOT : un appui par ~60° de rotation, jusqu'à 2 Hz — et l'appui planté du lot 336 tourne les épaules à 9 rad/s), la foulée gardait
+  // l'amplitude de l'allure sur un cycle deux fois plus court : mesuré en match, cheville et genou à 30-40° PAR IMAGE plusieurs images de
+  // suite entre 0,6 et 1,8 m/s (le générateur seul : 5-8°/image à ces allures). Le vrai joueur qui se retourne piétine : des pas RAPIDES et
+  // COURTS. opts.pietine = r (cadence forcée ÷ cadence de l'allure, borné à 3) : la durée du cycle ÷ r (une phase, une durée — la longueur
+  // du pas v·T·s suit), la levée du pied ÷ r. Absent : hier au bit.   // (A7 bis) la cadence à l'échelle de la jambe du rig (le contrôleur avance l'horloge du même facteur)
   // (2026-09-24) L'APPUI MESURÉ (course, poids wRun) : le pied se pose et décolle à l'inclinaison des coureurs (piedAppuiRef) ; le talon du rig
   // (hauteur de sa cheville, et 0,57 / 0,49 de celle-ci derrière — les coureurs debout) ; l'affaissement du RÉGIME (le bassin de course est
   // mesuré, plus bas) — ce que le jockey et le frein y ajoutent reste.
@@ -433,6 +439,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // sur place — 0 % des images de vol sous 0,6 m/s, sonde A12b) garde les bras CALMES : un peu plus ouverts, coudes un peu plus
   // fermés, balancier réduit — l'amplitude vient du PORT DE BRAS de la persona (bras 0..1), pas d'un écart uniforme. `opts.receveur` (true ou { elev, elbow, swing }) — posé par le contrôleur quand la scène
   // dit que le ballon vole vers lui ; absent : la foulée d'hier, au bit.
+  if (opts.pietine > 1.001) { const r = Math.min(3, opts.pietine); p.T /= r; p.swingH /= r; }
   if (opts.receveur) { const rc = opts.receveur === true ? {} : opts.receveur; p.armElev += rc.elev ?? 4; p.elbow += rc.elbow ?? 8; }   // (retour utilisateur) calmes par défaut : +4° / +8°, le port de bras de la persona ouvre ou ferme
   // (A12d) LE RECUL-FREIN : le défenseur qui jockeye le porteur (la sim le fait reculer et chasser en lui faisant face,
   // A10 cfg.contact.jockey) est BAS et ouvert — bassin plus bas, buste penché, pieds plus larges, bras ouverts, balancier
@@ -600,7 +607,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
     const legW = quatMul(quatMul(RHips, r.Rthigh), r.Rshank);
     const flat = quatNormalize(quatConjugate(legW));
-    J[`${side}Foot`] = quatMul(flat, chain(ry(sgn * p.turnout + (pl && opts.plantYaw ? opts.plantYaw[side] ?? 0 : 0)), rx(fp.pitch)));   // …et son orientation au sol (le pied planté ne vire pas avec le corps)
+    J[`${side}Foot`] = quatMul(flat, chain(ry(sgn * p.turnout + (pl && opts.plantYaw ? opts.plantYaw[side] ?? 0 : (opts.swingYaw?.[side] ?? 0))), rx(fp.pitch)));   // …et son orientation au sol (le pied planté ne vire pas avec le corps) ; (26/09) au décollage, l'écart d'appui s'efface en début de vol (opts.swingYaw — sinon le pied retombait dans l'axe du corps en UNE image : le fouet mesuré)
     J[`${side}ToeBase`] = rx(fp.toe);
     feet[side] = { ...fp, u, reachable: r.reachable, knee: r.knee, hip: hipW };
   }

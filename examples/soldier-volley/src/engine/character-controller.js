@@ -268,7 +268,8 @@ export class CharacterController {
       if (this.gait) this.gait.advance(vGait, dt * kClock);
       // (2026-09-24) LE PIVOT : le corps qui tourne presque sur place change d'appui au moins à gaitPivotCadence (la foulée prend la même durée, opts.pivotHz)
       const fPiv = gen ? gaitPivotCadence(this._yawRate) : 0, fNow = this.gait ? this.gait.law(vGait) * kClock : 0;
-      if (this.gait && fPiv > fNow) this.gait.phi = (this.gait.phi + (fPiv - fNow) * dt) % 1;   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe, du frein et du virage serré (motion-gait : une phase, une durée)
+      if (this.gait && fPiv > fNow) this.gait.phi = (this.gait.phi + (fPiv - fNow) * dt) % 1;
+      this._pietine = this.gaitPietine && fPiv > fNow ? Math.min(3, fPiv / Math.max(0.3, fNow)) : 1;   // (26/09) le piétinement : la foulée prend la durée de la cadence forcée (motion-gait opts.pietine)   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe, du frein et du virage serré (motion-gait : une phase, une durée)
       // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
       // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
       // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
@@ -295,7 +296,7 @@ export class CharacterController {
       const tauV = this.plantHold ? 0.025 : 0.08;
       this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / tauV);
       this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
-      this._gdt = dt; this._applyGaitLayer(this._vAnim);
+      this._gdt = dt; this._clk = (this._clk ?? 0) + dt; this._applyGaitLayer(this._vAnim);
     } else {
       this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
       this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
@@ -390,7 +391,7 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: -4 + 8 * bras } : undefined /* (26/09, plan d'étude) le coude du jockey ne se referme plus (+12-28° montaient la main au visage) : bras écartés, coudes ouverts */, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, depart: this.gaitDepart === false ? 0 : (this._depart || 0), pivotHz: gaitPivotCadence(this._yawRate) || undefined, boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
+      this._lastGaitOpts = { pietine: this._pietine > 1.001 ? this._pietine : undefined, armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: -4 + 8 * bras } : undefined /* (26/09, plan d'étude) le coude du jockey ne se referme plus (+12-28° montaient la main au visage) : bras écartés, coudes ouverts */, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, depart: this.gaitDepart === false ? 0 : (this._depart || 0), pivotHz: gaitPivotCadence(this._yawRate) || undefined, boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
       gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, this._lastGaitOpts);
       gait = this._anchorStance(gait, (plant, plantYaw) => gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { ...this._lastGaitOpts, plant, plantYaw }));
     }
@@ -446,23 +447,35 @@ export class CharacterController {
     const toW = (p) => [ox + c * p[0] + s * p[2], oz - s * p[0] + c * p[2]];
     const toC = (w) => { const dx = w[0] - ox, dz = w[1] - oz; return [c * dx - s * dz, s * dx + c * dz]; };
     this._plants ??= { Left: null, Right: null };
-    const plant = {}, plantYaw = {}; let any = false;
+    const plant = {}, plantYaw = {}; let any = false, lifted = false;
     for (const side of ['Left', 'Right']) {
       const f = gait.feet[side];
       const li = side === 'Left' ? 0 : 1;
-      if (!f || f.phase === 'swing') { this._plants[side] = null; this.footLock?.drive(li, null); continue; }
+      if (!f || f.phase === 'swing') {
+        // (26/09) LE PIED QUITTE LE SOL DANS SON ORIENTATION D'APPUI : l'écart au corps (plantYaw, ≤ pivotAppui) s'efface sur les 0,15
+        // premières secondes du vol (opts.swingYaw) — il retombait dans l'axe du corps en une image (mesuré : 32-37° par image, toujours le
+        // pied, toujours au décollage, l'axe qui change de signe avec le virage)
+        if (this._plants[side] && this._pyLast?.[side] && this.pivotAppui != null) { (this._liftYaw ??= {})[side] = { deg: this._pyLast[side], t: this._clk ?? 0 }; lifted = true; }
+        this._plants[side] = null; this.footLock?.drive(li, null); continue; }
       const own = f.own ?? [0, 0, 0], base = [f.p[0] - own[0], f.p[2] - own[2]];
       let a = this._plants[side];
       if (!a) a = this._plants[side] = { w: toW([base[0], 0, base[1]]), yaw };
       const bc = toC(a.w);
       if (Math.hypot(bc[0] - base[0], bc[1] - base[1]) > 0.3) { a.w = toW([base[0], 0, base[1]]); a.yaw = yaw; }   // re-plante
+      // (26/09, « pas fluide » — la cheville qui fouette) LE PIED PIVOTE SUR L'AVANT-PIED : l'appui gardait son lacet au monde pendant que
+      // le corps tournait (l'appui planté du 336 tourne les épaules à 9 rad/s, le pivot force 2 appuis / s) — la jambe se vrillait tout
+      // l'appui (jusqu'à ~150°) et revenait d'un coup au décollage ou au re-plant : mesuré, les deux tiers des sauts de pied / genou > 30°
+      // par image de la foulée tombaient pendant un pivot, sur un pied en appui. Une hanche tourne de ~35° sur un pied planté (motion-gait,
+      // LE PIVOT) : au-delà, le pied suit le corps, en continu. this.pivotAppui (°) ; null : hier.
+      if (this.pivotAppui != null) { let d = a.yaw - yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; const m = this.pivotAppui * Math.PI / 180; if (Math.abs(d) > m) a.yaw = yaw + Math.sign(d) * m; }
       const pc = toC(a.w);
       plant[side] = [pc[0] + own[0], 0, pc[1] + own[2]];
       const tw = toW(plant[side]); this.footLock?.drive(li, tw[0], tw[1]);   // …et le verrou, dernier écrivain de la jambe, le tient là
-      plantYaw[side] = ((a.yaw - yaw) * 180) / Math.PI;
+      plantYaw[side] = ((a.yaw - yaw) * 180) / Math.PI; (this._pyLast ??= {})[side] = ((plantYaw[side] % 360) + 540) % 360 - 180;   // ramené à ]−180 ; 180] : −342° = +18° (sinon l'effacement du vol faisait tourner le pied d'un tour)
       any = true;
     }
-    return any ? repose(plant, plantYaw) : gait;
+    if (this._liftYaw) { const sy = {}; let n = 0; for (const sd in this._liftYaw) { const L = this._liftYaw[sd], age = (this._clk ?? 0) - L.t; if (age >= 0.15 || plant[sd]) { delete this._liftYaw[sd]; continue; } const u = age / 0.15; sy[sd] = L.deg * (1 - u * u * (3 - 2 * u)); n++; } if (this._lastGaitOpts) this._lastGaitOpts.swingYaw = n ? sy : undefined; if (n) lifted = true; }
+    return any || lifted ? repose(plant, plantYaw) : gait;
   }
 
   /** Forcer une espèce d'attente (la planche-contact, un test) — null : la politique décide. */
