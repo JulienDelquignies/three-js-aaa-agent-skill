@@ -93,7 +93,15 @@ export class GestureLayer {
 
   /** Prendre un geste. Renvoie { missing } — un os authoré absent du rig est un membre qui ne
    *  bougera pas : ça se DIT (la leçon du repli silencieux : 57 % des gestes jamais visibles). */
-  begin(spec) {
+  begin(spec, { fondu = 0 } = {}) {
+    // (26/09, « pour l'instant c'est pas fluide ») LE FONDU D'ENCHAÎNEMENT : un geste qui en REMPLACE un autre en cours partait de sa
+    // première clé — les os sautaient de la pose affichée à la nouvelle (mesuré en match : 11 gestes sur 43 coupés avant 70 % de leur
+    // durée — le contrôle par la passe, la conduite par la frappe…). La pose AFFICHÉE est capturée, le nouveau geste la rejoint en
+    // `fondu` s (smoothstep, temps du geste). fondu 0 : la coupe d'hier.
+    this._fade = null;
+    // …la pose de départ est la DERNIÈRE ÉCRITE par le geste sortant (this._last) — au moment où la scène lance un geste, les os portent
+    // déjà la base de l'image (le mixer est passé) : capturer les os fondait depuis la course, pas depuis le geste (mesuré : 94-140°/image)
+    if (fondu > 0 && this.tracks && this._last?.size) this._fade = { snap: new Map(this._last), dur: fondu, t0: null };
     const r = resolveTracks(spec);
     this.spec = spec; this.tracks = r.tracks; this.hipsPos = r.hipsPos; this.duration = spec.duration ?? 0;
     // SÉMANTIQUE ABSOLUE VRAIE : pose(t) = rest ⊗ q_spec(t) — ce qui est écrit EST ce qui
@@ -120,16 +128,22 @@ export class GestureLayer {
     if (!this.tracks) return;
     const tc = Math.max(0, Math.min(this.duration, t));
     const pose = samplePose(this.tracks, tc);
+    let kF = 1; const F = this._fade, last = new Map();
+    if (F) { if (F.t0 == null) F.t0 = t; const u = Math.max(0, Math.min(1, (t - F.t0) / F.dur)); kF = u * u * (3 - 2 * u); if (u >= 1) this._fade = null;
+      // les os que le geste sortant tenait et que l'entrant ne tient pas rendent la main à la base EN FONDU aussi
+      if (kF < 1) for (const [name, sq] of F.snap) { if (pose[name]) continue; const bone = this.bones.get(name); if (!bone?.quaternion) continue; const bq = bone.quaternion, o = qSlerp(sq, [bq.x, bq.y, bq.z, bq.w], kF); bq.set(o[0], o[1], o[2], o[3]); } }
     for (const [name, q] of Object.entries(pose)) {
       const w = UP_BONES.test(name) ? wUp : wLegs;
       if (w <= 1e-4) continue;
       const bone = this.bones.get(name), rest = this.rest.get(name);
       if (!bone || !rest) continue;
-      const target = qMul(rest, q);
+      let target = qMul(rest, q);
+      if (kF < 1) { const sq = F.snap.get(name); if (sq) target = qSlerp(sq, target, kF); }
       const bq = bone.quaternion;
       const out = w >= 1 ? target : qSlerp([bq.x, bq.y, bq.z, bq.w], target, w);
-      bq.set(out[0], out[1], out[2], out[3]);
+      bq.set(out[0], out[1], out[2], out[3]); last.set(name, out);
     }
+    this._last = last;
     // le déplacement du bassin (mètres personnage [droite, haut, avant], lerp entre clés) — écrit
     // par la scène, pondéré comme les jambes : un tacle à poids plein COUCHE le corps
     if (this.hipsPos && this.hipsWrite && wLegs > 1e-4) {

@@ -36,7 +36,12 @@ export function situationPrise(scene, pl) {
 
 /** L'événement de geste x (déjà résolu par la scène : orienté, ramassage…) → le geste de la situation, joué du bon pied. */
 export function piedDuControle(scene, pl, x) {
-  if (scene._piedLibre || !x || x.move === 'ramassage' || NOMMEES.test(x.tech ?? '') || pl.sim.keeper) return x;
+  if (!scene._controlesHier && !scene._piedLibre && x && x.tech !== 'prise-gardien' && !pl.sim.keeper && pl._ctlT != null && scene._t - pl._ctlT < 0.3 && pl.gestureLayer?.active) return null;   // (voir plus bas : un contrôle, un geste — les techniques nommées aussi)
+  if (scene._piedLibre || !x || x.move === 'ramassage' || NOMMEES.test(x.tech ?? '') || pl.sim.keeper) { if (x && !pl.sim.keeper && x.tech !== 'prise-gardien') pl._ctlT = scene._t; return x; }
+  // (26/09) UN CONTRÔLE, UN GESTE : la réception ('receive') et le contrôle ('control') arrivent sur deux images — le second relançait le
+  // geste, parfois de l'autre pied (mesuré : 4 des 11 gestes coupés en 40 s, « controlePivot-gauche → controlePivot »). Dans les 0,3 s
+  // d'un contrôle lancé, le suivant ne rejoue rien (null : _playTech l'ignore). ?controles-hier : hier.
+  if (!scene._controlesHier && pl._ctlT != null && scene._t - pl._ctlT < 0.3 && pl.gestureLayer?.active) return null;
   let y = x;
   if (!scene._controlesHier) {
     const sit = situationPrise(scene, pl), c = choisirControle(sit);
@@ -53,5 +58,6 @@ export function piedDuControle(scene, pl, x) {
   // dans le vide pendant que l'autre va au ballon 12 → 6. Rejeté (mesuré) : forcer le pied en appui (glisses du porteur à la touche
   // 4 → 35 % des images) ; prendre l'autre pied quand l'appui est déclaré à la prise (aucun gain : l'appui change deux fois en 0,3 s).
   if (y.foot === 'left' || y.foot === 'right') { pl._gestePied = y.foot; pl._gestePiedT = scene._t + 0.15; }
+  pl._ctlT = scene._t;
   return y;
 }
