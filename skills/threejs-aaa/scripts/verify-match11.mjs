@@ -7849,5 +7849,19 @@ if (__bloc()) {
   ok(`lot 330 — LE CONTRÔLE SERRÉ : délai contrôle → 1re action p90 ${mA.d90.toFixed(2)} s (${mA.nD}) ≤ hier ${mN.d90.toFixed(2)} s ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.d90 <= mN.d90 + 1e-9 && mA.passes >= 0.9 * mN.passes);
 }
 
+if (__bloc()) {
+  // LA PRISE AU PIED (333 — chantier foulée ; la référence FM : le ballon tué à 20-30 cm du pied). Mesuré : le contrôle partait à l'ENTRÉE du rayon de réception —
+  // ballon-corps à la prise p50 0,82 / p90 0,85 m, toujours au bout de la jambe (le rendu étirait la jambe ou glissait le corps jusqu'à 0,6 m). La loi (rondo-sim,
+  // cfg.priseAuPied) : le ballon qui VIENT encore au joueur se laisse venir jusqu'au pied (r = 0,5 m) ; qui ne vient plus ou aérien : la prise d'hier. Mesuré 16 × 90
+  // min contre 330 : complétion 88,5 → 90,2 %, pertes 128,8 → 122,8, manqués 5,3 → 5,4, passes 509 → 502, buts 4,28 → 3,90. Le monde, 1 graine, 2 × 900 s (le chrono du match — 15 min seules : 128 c. 190 passes, le bruit d'une fenêtre) : ballon-corps
+  // à la prise p50 ≤ 0,65 × hier ; passes ≥ 0,9 × hier.
+  const monde = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let seen = 0, passes = 0; const D = [];
+    for (let i = 0; i < 900 * 60 * 2.2; i++) { matchStep(st, 1 / 60, cfg); if (st.restart?.type === 'fin') break; for (; seen < st.events.length; seen++) { const e = st.events[seen]; const p = e.by != null ? st.players[e.by] : null; if (!p || p.keeper) continue;
+        if (e.type === 'pass' && !e.clear && e.to >= 0) passes++; if ((e.type === 'control' || e.type === 'receive') && !e.miss) D.push(Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2])); } }
+    D.sort((a, b) => a - b); return { d50: D[D.length >> 1] ?? 9, n: D.length, passes }; };
+  const CH = { periodes: 2, duree: 900, pause: 10 }, mA = monde(matchCfg({ shotRange: 20, chrono: CH })), mN = monde(matchCfg({ shotRange: 20, chrono: CH, priseAuPied: null }));
+  ok(`lot 333 — LA PRISE AU PIED : ballon-corps à la prise p50 ${mA.d50.toFixed(2)} m (${mA.n}) ≤ 0,65 × hier ${mN.d50.toFixed(2)} m ; passes ${mA.passes} ≥ 0,9 × ${mN.passes}`, mA.d50 <= 0.65 * mN.d50 && mA.passes >= 0.9 * mN.passes);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
