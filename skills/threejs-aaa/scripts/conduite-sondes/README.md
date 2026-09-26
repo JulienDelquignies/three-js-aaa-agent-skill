@@ -140,3 +140,13 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   plan d'approche (strike-sim, cfg.duel.urgencePlan — le gardien refusé 'technique' à chaque image portait le ballon jusqu'aux coins).
 - Après : 75-76 % des cadrés arrêtés, conversion ≈ 20 %, hors surface 3 %, profondeur max 8,6-9,5 m, 1 but but vide / 16 min.
 - `capture-geste.mjs` : T0 = 'arret:bloc:k' (la k-ième parade de cette espèce).
+
+## Le bloc du gardien s'anime (2026-09-26)
+- motion-keeper.blocCroix : le bloc en croix du futsal (« parada en cruz ») — genou arrière au tapis, la jambe du côté du ballon glisse
+  tendue au ras du sol (0,89 m, 10 cm du sol), bassin −44 cm, bras en croix ; contact 0,24 s (0,18 dépassait le plafond de checkClip :
+  37 rad/s > 30), relevé à 1,25 s ; les pieds suivent des trajectoires (IK par image — le mélange d'angles passait l'orteil sous la pelouse).
+- keeper.blocGeste : le geste ANTICIPÉ (passage au plus près prévu dans la couverture d'ici 0,25 s → le clip calé sur ce passage :
+  payload.decalage, l'horloge de la scène act.t + decalage) ; bas → blocCroix du côté du ballon (le miroir du plongeon), haut dans l'axe →
+  paradeBuste ; à bout portant (avant le réflexe) la scène habille le bloc à son contact (l'événement porte hauteur et côté).
+- keeper.blocCorps bloque au PLAN du corps face au tir (plus un cercle : le ballon arrêté jusqu'à 0,8 m devant le gardien).
+- `bloc-rendu.mjs <url>` : au rendu, le ballon contre le membre le plus proche à chaque bloc — 0,45 → 0,31 m (anticipés 1,01 → 0,27 m).

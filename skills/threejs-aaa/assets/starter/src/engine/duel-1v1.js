@@ -86,7 +86,7 @@ export function duelCfg(overrides = {}) {
     // (2026-09-26, « renforcer le gardien ») LE BLOC DU CORPS (keeper.blocCorps) : le tir qui traverse le gardien est repoussé ; et LES SORTIES
     // À L'ÉCHELLE DU FUTSAL — le libéro (monte à 10 m quand le ballon est à > 34 m), la rencontre du retrait (jusqu'à 16 m) et le soutien
     // (5 m) étaient ceux du 105 m : 11 % du temps hors de sa surface, jusqu'à 17 m, 3 buts but vide / 16 min (gardien-tirs.mjs)
-    blocCorps: overrides.blocCorps ?? { w0: 0.35, vMembre: 4.5, max: 1.2, h: 2.0, rebond: 0.35, vMin: 4 },
+    blocCorps: overrides.blocCorps ?? { w0: 0.35, vMembre: 4.5, max: 1.2, h: 2.0, rebond: 0.35, vMin: 4, geste: { antic: 0.25, basH: 0.9, buste: 0.4 } },   // geste : le bloc s'anime (keeper.blocGeste — le bloc en croix du futsal, la parade du buste)
     libero: base.libero ? { ...base.libero, far: 30, max: 4, rampe: 6 } : base.libero,
     gkAuDevant: base.gkAuDevant ? { ...base.gkAuDevant, rayon: 10, soutien: 3, plafond: 6 } : base.gkAuDevant,
     onOut: (st, cfg) => sortieCage(st, cfg, base.onOut),

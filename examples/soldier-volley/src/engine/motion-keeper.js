@@ -29,6 +29,9 @@ export const KEEPER_KINDS = {
   sortiePoing:     { duration: 1.32, contact: 0.62, jump: true, punch: true, crouch: 0.26, dip: 0.3, lateral: 0.6, apex: 0.5, tLand: 0.94, kneeUp: 72, aE: 186, aF0: 50, aF1: -20, eb0: 30, eb1: 30, armEnd: 0.0, thruW: 0.16, ball: [0.7, 2.0, -0.25] },   // (C3) LA SORTIE DU POING : le saut à un genou levé, les deux poings serrés devant-haut, le coup À TRAVERS le ballon au contact
   paradePieds:     { duration: 0.7, contact: 0.22, kick: true, reach: 0.78, dip: 0.08, ball: [0.85, 0.15, -0.12] },
   paradeBuste:     { duration: 0.8, contact: 0.3,  chest: true, dip: 0.06, ball: [0.0, 1.22, -0.36] },
+  // (2026-09-26) LE BLOC EN CROIX DU FUTSAL (« parada en cruz ») : face au tir de près, le gardien TOMBE sur le genou arrière pendant que la
+  // jambe du côté du ballon s'allonge au ras du sol, bras écartés — il barre le sol et le petit filet. Un RÉFLEXE : contact à 0,24 s (0,18 dépassait le plafond de vitesse angulaire des membres de checkClip : 37 rad/s > 30).
+  blocCroix:       { duration: 1.25, contact: 0.24, croix: true, drop: 0.44, reach: 0.95, hold: 0.62, ball: [0.8, 0.2, -0.1] },
 };
 
 function trunk(J, { lean = 0, side = 0, yaw = 0, headDown = 0 }) {
@@ -177,6 +180,29 @@ export function generateKeeper(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } 
       return { J, hips: hipsOf(t) };
     };
     ik = () => ({ Left: [restL[0], restL[1], restL[2]], Right: null });
+  } else if (K.croix) {
+    // LE BLOC EN CROIX : chute rapide (0 → contact), la jambe droite glisse latérale tendue au ras du sol, le genou gauche au tapis sous le
+    // bassin (tibia derrière), le tronc droit penché d'un rien vers le ballon, les bras en croix bas ; tenu, puis on se relève sur place
+    const down = (t) => ramp(t, 0, 0.55 * tc, tc), up = (t) => ramp(t, K.hold, (K.hold + T) / 2, T), on = (t) => down(t) * (1 - up(t));
+    const hipsOf = (t) => [0.10 * on(t), -K.drop * on(t), 0.04 * on(t)];
+    const g = P.lengths.groundY;
+    // les pieds suivent des TRAJECTOIRES (IK à chaque image, pas un mélange d'angles — le mélange faisait passer l'orteil arrière 15 cm sous
+    // la pelouse au relevé) : le pied du bloc GLISSE au ras du sol jusqu'à `reach`, le pied arrière recule sous le genou en arc (+8 cm au milieu)
+    const kneel = [restL[0] + 0.02, g + 0.05, 0.42], out = [K.reach, g + 0.07, -0.04];
+    const lerp3 = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+    poseAt = (t) => {
+      const o = on(t), J = {}, h = hipsOf(t);
+      trunk(J, { lean: 8 * o, side: -8 * o, headDown: 10 * o });
+      Object.assign(J, armJoints('Right', { elev: 14 + 46 * o, fwd: 6 + 18 * o, elbow: 14 + 6 * o }), armJoints('Left', { elev: 14 + 56 * S.armElev * o, fwd: 6 + 10 * o, elbow: 14 + 8 * o }));
+      J.LeftShoulder = I; J.RightShoulder = I;
+      if (o > 1e-4) {
+        const pR = lerp3(restR, out, o), pL = lerp3(restL, kneel, o); pL[1] += 0.08 * Math.sin(Math.PI * o) * (1 - o);
+        applyLeg(J, 'Right', solveLeg(P, 'Right', h, I, { p: pR, foot: rx(10 * o), pole: [0, 1, -0.3] }), 1);
+        applyLeg(J, 'Left', solveLeg(P, 'Left', h, I, { p: pL, foot: rx(95 * o), pole: [0, 0.2 + 0.8 * (1 - o), -1] }), 1);
+      }
+      return { J, hips: h };
+    };
+    ik = (t) => (on(t) < 1e-3 ? { Left: [restL[0], restL[1], restL[2]], Right: [restR[0], restR[1], restR[2]] } : { Left: null, Right: null });
   } else if (K.chest) {
     // LE BLOCAGE DU BUSTE : la poitrine ENCAISSE — buste bombé, coudes serrés devant, genoux souples ; le recul au contact, puis on se rassemble
     const dip = K.dip * S.dip;
@@ -226,8 +252,8 @@ export function keeperPortrait(spec, P) {
   // (C3) le poing : l'écart des deux mains au contact, le coup À TRAVERS (les mains avancent de −0,06 à +0,06 s autour du contact, vers −Z) et le genou levé
   const fistsGap = hyp(wC.LeftHand.p[0] - wC.RightHand.p[0], wC.LeftHand.p[1] - wC.RightHand.p[1], wC.LeftHand.p[2] - wC.RightHand.p[2]);
   const zH = (w) => (w.LeftHand.p[2] + w.RightHand.p[2]) / 2, punchThru = zH(near(spec.contact - 0.06).w) - zH(near(spec.contact + 0.06).w);
-  const kneeUpH = wC.LeftLeg.p[1] - w0.LeftLeg.p[1];
-  return { ...body, hC, handReach, handsAboveHead, rollC, pelvisLie, rollLie, pelvisE, rollE, feetE, footOutC, footHC, kneeC, headBackMax, handsFrontC, landed, dipMin, fistsGap, punchThru, kneeUpH };
+  const kneeUpH = wC.LeftLeg.p[1] - w0.LeftLeg.p[1], kneeLC = wC.LeftLeg.p[1] - ground;   // (croix) le genou arrière au tapis
+  return { ...body, hC, handReach, handsAboveHead, rollC, pelvisLie, rollLie, pelvisE, rollE, feetE, footOutC, footHC, kneeC, headBackMax, handsFrontC, landed, dipMin, fistsGap, punchThru, kneeUpH, kneeLC };
 }
 
 /** Le contrat d'un geste de gardien. */
@@ -260,6 +286,13 @@ export function checkKeeperGen(spec, P, kindName) {
     if (p.footOutC < 0.6) issues.push(`la jambe ne CLAQUE pas latérale (pied à ${p.footOutC.toFixed(2)} m < 0,6)`);
     if (p.footHC > 0.3) issues.push(`la parade des pieds décolle (pied à ${(100 * p.footHC).toFixed(0)} cm > 30)`);
     if (p.kneeC < -14) issues.push(`la jambe n'est pas TENDUE au contact (genou ${p.kneeC.toFixed(0)}° < −14)`);
+  }
+  if (K.croix) {   // le bloc en croix : la jambe barre le sol, le bassin tombe, le genou au tapis, et l'on se relève debout
+    if (p.footOutC < 0.75) issues.push(`la jambe ne BARRE pas le sol (pied à ${p.footOutC.toFixed(2)} m < 0,75)`);
+    if (p.footHC > 0.2) issues.push(`la jambe du bloc décolle (pied à ${(100 * p.footHC).toFixed(0)} cm > 20)`);
+    if (p.hC[1] > -0.32) issues.push(`le bassin ne tombe pas (${(100 * p.hC[1]).toFixed(0)} cm au contact > −32)`);
+    if (p.kneeLC > 0.22) issues.push(`le genou arrière n'est pas au tapis (${(100 * p.kneeLC).toFixed(0)} cm > 22)`);
+    if (Math.abs(p.pelvisE) > 0.04 || p.feetE > 0.06) issues.push(`le relevé ne remet pas DEBOUT (bassin ${(100 * p.pelvisE).toFixed(0)} cm, pieds ${(100 * p.feetE).toFixed(0)} cm)`);
   }
   if (K.chest) {
     if (p.headBackMax < 0.03) issues.push(`le buste ne se BOMBE pas avant le contact (tête ${(100 * p.headBackMax).toFixed(0)} cm derrière le bassin < 3)`);

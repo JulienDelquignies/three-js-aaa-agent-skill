@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { tirage } from './rng.js'; import { startGesture, busy } from './gesture.js'; import { KEEPER_KINDS } from './motion-keeper.js';
 // keeper — LE GARDIEN : la position qui coupe l'angle, la décision d'arrêt, rien d'autre.
 //
 // Un gardien n'est pas un joueur de champ lent : c'est un MÉTIER à deux lois.
@@ -69,15 +69,39 @@ export function blocCorps(st, gk, cfg, shotAge) {
   const K = cfg.blocCorps, b = st.ball; if (!st.pass || st.pass.to !== -2 || gk.down > 0 || st.lastTouch === gk.team) return false;
   const sp = hyp(b.v[0], b.v[2]); if (sp < (K.vMin ?? 4) || b.p[1] > (K.h ?? 2) + 0.3) return false;
   const reflex = gk.skill?.keeperReflex ?? KEEPER.reflex, w = Math.min(K.max ?? 1.2, (K.w0 ?? 0.35) + (K.vMembre ?? 4.5) * Math.max(0, shotAge - reflex)) + 0.11;
-  const dt = 1 / 60, ax = b.p[0], az = b.p[2], ex = ax + b.v[0] * dt, ez = az + b.v[2] * dt, sx = ex - ax, sz = ez - az, l2 = sx * sx + sz * sz || 1e-9;
-  const u = Math.max(0, Math.min(1, ((gk.p[0] - ax) * sx + (gk.p[2] - az) * sz) / l2)), cx = ax + sx * u, cz = az + sz * u;
-  if (hyp(gk.p[0] - cx, gk.p[2] - cz) > w || u <= 0 && ((gk.p[0] - ax) * b.v[0] + (gk.p[2] - az) * b.v[2]) < 0) return false;   // hors du corps, ou le ballon s'éloigne
+  // LE PLAN DU CORPS, face au tir : le ballon est bloqué quand il FRANCHIT ce plan (la profondeur du corps : ± prof), à un écart latéral
+  // ≤ w — pas quand il entre dans un cercle autour de l'axe (mesuré au rendu : bloqué jusqu'à 0,8 m DEVANT le gardien, avant ses jambes)
+  const dt = 1 / 60, ux = b.v[0] / sp, uz = b.v[2] / sp, rx = gk.p[0] - b.p[0], rz = gk.p[2] - b.p[2], s0 = rx * ux + rz * uz;
+  if (s0 < -(K.prof ?? 0.15) || s0 > sp * dt + (K.prof ?? 0.15)) return false;   // pas encore au plan (ou déjà passé)
+  const u = Math.max(0, Math.min(1, s0 / Math.max(1e-6, sp * dt))), cx = b.p[0] + ux * s0, cz = b.p[2] + uz * s0;
+  if (hyp(gk.p[0] - cx, gk.p[2] - cz) > w) return false;   // passé à côté du corps
   if (b.p[1] + b.v[1] * dt * u > (K.h ?? 2)) return false;
   const r = K.rebond ?? 0.35, g = st.pitch.ownGoal(gk.team);
   st.ball.impulse([-b.v[0] * (1 + r) * (Math.sign(b.v[0]) === g.sign ? 1 : 0), -b.v[1] * 0.5, -b.v[2] * 0.5]);
   if (st.ball.owner != null) st.ball.release('perte');
   st.possession.carrier = -1; st.phase = 'loose'; st.hold = 0; st.pressure = 0; st.lastTouch = gk.team; st.pass = null;
-  st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'bloc', kind: 'bloc', w: +w.toFixed(2) });
+  const lx = cx - gk.p[0], lz = cz - gk.p[2], ll = hyp(lx, lz);   // où le ballon a frappé le corps : la scène habille le bloc réflexe (sans geste anticipé) du bon côté, à la bonne hauteur
+  st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'bloc', kind: 'bloc', w: +w.toFixed(2), hauteur: +b.p[1].toFixed(2), ...(ll > 0.05 ? { lunge: [+(lx / ll).toFixed(3), +(lz / ll).toFixed(3)] } : {}) });
+  return true;
+}
+
+/** LE GESTE DU BLOC (cfg.blocCorps.geste — le duel) : le bloc du corps s'ANIME — anticipé comme toute frappe du moteur (le geste mène le
+ *  contact) : à chaque image d'un tir adverse en vol, le passage au plus près du gardien (temps tc, écart latéral, hauteur) ; s'il passera
+ *  DANS sa couverture (la loi de blocCorps à l'instant du passage) d'ici `antic` s, le geste part, son contact calé sur tc — BAS (< basH m) :
+ *  le bloc en croix du futsal (motion-keeper.blocCroix), du côté du ballon ; haut et dans l'axe (< buste m) : la parade du buste. Le clip
+ *  démarre décalé (payload.decalage = contact du clip − tc) pour que son contact tombe sur celui de la sim. Le corps est possédé (ownsBody). */
+export function blocGeste(st, gk, cfg, shotAge) {
+  const K = cfg.blocCorps, G = K?.geste; if (!G || !st.pass || st.pass.to !== -2 || st.lastTouch === gk.team || gk.down > 0 || busy(gk)) return false;
+  const b = st.ball, reflex = gk.skill?.keeperReflex ?? KEEPER.reflex; if (shotAge < reflex) return false;
+  const vx = b.v[0], vz = b.v[2], v2 = vx * vx + vz * vz; if (v2 < (K.vMin ?? 4) ** 2) return false;
+  const rx0 = gk.p[0] - b.p[0], rz0 = gk.p[2] - b.p[2], tc = (rx0 * vx + rz0 * vz) / v2; if (tc <= 0 || tc > (G.antic ?? 0.25)) return false;
+  const ox = b.p[0] + vx * tc - gk.p[0], oz = b.p[2] + vz * tc - gk.p[2], d = hyp(ox, oz), y = Math.max(0.11, b.p[1] + b.v[1] * tc - 4.9 * tc * tc);
+  const w = Math.min(K.max ?? 1.2, (K.w0 ?? 0.35) + (K.vMembre ?? 4.5) * Math.max(0, shotAge + tc - reflex)) + 0.11;
+  if (d > w || y > (K.h ?? 2)) return false;
+  const move = y < (G.basH ?? 0.9) ? 'blocCroix' : d < (G.buste ?? 0.4) ? 'paradeBuste' : null; if (!move) return false;
+  const KK = KEEPER_KINDS[move], dl = d || 1, lunge = d > 0.05 ? [ox / dl, oz / dl] : [Math.cos(gk.yaw + Math.PI / 2), Math.sin(gk.yaw + Math.PI / 2)];
+  startGesture(gk, { id: move, duration: KK.duration, contact: Math.max(0.02, tc) }, { payload: { kind: 'skill', skill: 'bloc', ownsBody: true, lunge, decalage: Math.max(0, KK.contact - tc), pick: { foot: 'right' } }, log: st.gestures });
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move, skill: 'bloc', foot: 'right', anticipation: +tc.toFixed(3), ecart: +d.toFixed(2), hauteur: +y.toFixed(2) });
   return true;
 }
 

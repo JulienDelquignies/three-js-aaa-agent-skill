@@ -474,8 +474,8 @@ export class Rondo {
     // gauche » jouait la moitié des plongeons à l'envers (« il plonge du mauvais côté », captures).
     // Ici : le lunge sim projeté sur la DROITE RÉELLE du modèle (matrice monde) choisit le côté.
     let useMirror = e.foot === 'left';
-    if (/^plongeon/.test(move)) {
-      const lg = pl.sim.act?.payload?.lunge;
+    if (/^plongeon|^blocCroix/.test(move)) {   // (le bloc en croix, écrit à droite comme le plongeon : le même miroir au modèle)
+      const lg = pl.sim.act?.payload?.lunge ?? e.lunge;   // (le bloc réflexe porte son côté dans l'événement)
       // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : rejouer la convention monde naïve — la clause du relevé-au-lieu doit mordre
       if (lg) {
         pl.model.updateMatrixWorld(true);
@@ -872,11 +872,11 @@ export class Rondo {
       } else if (e.type === 'faute' || e.type === 'carton' || e.type === 'glissade' || e.type === 'poignee' || e.type === 'salut') { feteEvent(this, e); if (e.type === 'faute' && e.kind === 'accrochage') contactEvent(this, e); this._ticker.event(e, this.state);   // (A11) la protestation du fautif, la glissade du buteur — le ticker garde ces événements
       } else if (e.type === 'geste') { const pl = this.players[e.by]; if (pl && !pl.gestureLayer.active && (pl.sim.down ?? 0) <= 0 && !pl.sim.act) { this._playTech(pl, e); pl._teched = this._t; if (e.move === 'arretSemelle') pl._semelleT = this._t; }   // (§ 10, petits-gestes.js) la semelle du preneur, le gardien qui replace son mur, la feinte d'appel : un corps libre joue le geste nommé
       } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
-      } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
+      } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste' || (e.mode === 'bloc' && this.players[e.by]?.sim.act?.payload?.skill !== 'bloc'))) {   // (le bloc réflexe, sans geste anticipé : habillé à son contact)
         // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
         // paradeBuste ; les modes de plongeon appartiennent à l'acte qui possède déjà le corps.
         const pl = this.players[e.by];
-        if (pl) { this._playTech(pl, { ...e, move: e.mode === 'pieds' ? 'paradePieds' : 'paradeBuste' }); pl._teched = this._t; }
+        if (pl) { this._playTech(pl, { ...e, move: e.mode === 'bloc' ? ((e.hauteur ?? 0) < 0.9 ? 'blocCroix' : 'paradeBuste') : e.mode === 'pieds' ? 'paradePieds' : 'paradeBuste' }, e.mode === 'bloc' ? 'contact' : 0); pl._teched = this._t; }
       } else if (e.type === 'receive') {
         // une RÉCEPTION n'est pas une passe : le repli par défaut de _playTech jouait le clip
         // « passe » sur le receveur — mesuré au sweep, un armé fantôme à chaque réception, aussitôt
@@ -994,7 +994,7 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        let t = act && !pl._elanTail ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
+        let t = act && !pl._elanTail ? act.t + (act.payload?.decalage ?? 0) : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
         // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
