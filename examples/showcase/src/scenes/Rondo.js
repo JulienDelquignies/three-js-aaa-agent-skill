@@ -341,6 +341,7 @@ export class Rondo {
     this._ticker = makeTicker(TEAMS);
     this._gesteHud = this._ticker.hud;
     this._sifflet = this._ticker.sifflet;
+    if (this._produit) this._ticker.flash.style.display = 'none';   // le produit a son tableau et son commentaire : l'annonce centrale ferait doublon
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
     // controller to know the scene is live — expose the first player's for that readiness check
     this.ctrl = this.players[0]?.ctrl;

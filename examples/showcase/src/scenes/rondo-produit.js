@@ -7,6 +7,8 @@
 // court : < 28 m, corner, penalty, coup franc proche) et quelques secondes après chaque but ; demo — l'ancien format 2 × 3 min.
 // Clavier : Espace pause, 1-4 vitesse (×1 ×2 ×4 ×8), N prochain moment, M la liste des moments.
 
+import { tableauInit, tableauEvent, tableauBut, tableauUpdate } from './rondo-tableau.js';
+
 const MODES = { complet: 'Match complet', long: 'Résumé long', court: 'Résumé court', demo: 'Démo (6 min)' };
 const h = Math.hypot;
 
@@ -21,13 +23,8 @@ export function produitInit(scene, { teams, nomDe, sauter }) {
   const P = { mode: scene._mode ?? 'court', teams, nomDe, sauter, pause: false, vUser: 1, turbo: false, moments: [], com: { txt: '', t: -9, prio: 0 }, dernierTir: null, butT: -99, vCur: 1 };
   if (typeof document === 'undefined') return P;
   const old = document.getElementById('score'); if (old) old.style.display = 'none';
-  // LE BANDEAU (en haut, centré — FM : minute, équipes, score)
-  P.bar = css(document.createElement('div'), 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:40;display:flex;align-items:stretch;gap:0;font:700 15px/1 system-ui,sans-serif;color:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.45);pointer-events:none');
-  P.min = css(document.createElement('div'), 'background:#3a1650;padding:8px 10px;min-width:62px;text-align:center');
-  const eq = (t) => css(document.createElement('div'), `background:${hex(t.secondary)};padding:8px 14px;border-bottom:3px solid ${hex(t.primary)}`);
-  P.eqA = eq(teams[0]); P.eqB = eq(teams[1]);
-  P.sc = css(document.createElement('div'), 'background:#111;padding:8px 12px;min-width:54px;text-align:center;font-variant-numeric:tabular-nums');
-  P.bar.append(P.min, P.eqA, P.sc, P.eqB); document.body.appendChild(P.bar);
+  // LE TABLEAU DE SCORE (rondo-tableau.js : l'habillage télé, en haut à gauche)
+  P.tab = tableauInit(teams);
   // LE COMMENTAIRE (bandeau bas, centré)
   P.comEl = css(document.createElement('div'), 'position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:40;max-width:min(720px,calc(100vw - 32px));padding:8px 18px;border-radius:18px;background:rgba(70,140,220,.88);color:#fff;font:600 14px/1.3 system-ui,sans-serif;text-align:center;pointer-events:none;transition:opacity .25s;opacity:0');
   document.body.appendChild(P.comEl);
@@ -77,12 +74,13 @@ function action(P, scene) { const m = P.moments[P.moments.length - 1]; return m 
 
 /** Un événement de la sim : le commentaire, les moments. */
 export function produitEvent(scene, P, e) {
+  tableauEvent(P.tab, scene.state, e);
   const st = scene.state, now = scene._t ?? st.t, n = (id) => (id != null && st.players[id] ? P.nomDe(st.players[id]) : '?'), eq = (tm) => P.teams[tm]?.name ?? '';
   switch (e.type) {
     case 'pass': if (e.to >= 0 && !e.clear && st.players[e.by] && !st.restart) { const d = e.d ?? 0; if (e.through || e.cls === 'THROUGH' || e.cls === 'CHIP_THROUGH') dire(P, now, `${n(e.by)} lance ${n(e.to)} en profondeur`, 2); else if (e.cls === 'CROSS' || e.cls === 'CUTBACK') dire(P, now, `Centre de ${n(e.by)}…`, 2); else if (d > 30 || e.cls === 'SWITCH' || e.cls === 'LONG_GROUND') dire(P, now, `${n(e.by)} change le jeu vers ${n(e.to)}`, 1); else if (now - P.com.t > 3) dire(P, now, `${n(e.by)} cherche ${n(e.to)}`, 0); } break;
     case 'shot': P.dernierTir = e.by; P.tirT = st.t; dire(P, now, `Frappe de ${n(e.by)} !`, 3); break;
     case 'arrêt': { dire(P, now, `Arrêt de ${n(e.by)}`, 3); const A = action(P, scene); if (A) { if (!A.arret) { A.arret = true; A.txt += ` — arrêt de ${n(e.by)}`; P.listDirty = true; } } else moment(P, scene, `Arrêt de ${n(e.by)} (${eq(st.players[e.by]?.team)})`); break; }
-    case 'but': { const tm = e.team ?? st.players[P.dernierTir]?.team, sc = P.dernierTir != null && st.players[P.dernierTir]?.team === tm ? n(P.dernierTir) : null; P.butT = st.t; dire(P, now, `BUT ! ${sc ? sc + ' — ' : ''}${eq(tm)} · ${st.score[0]}-${st.score[1]}`, 5); const A = action(P, scene); if (A) P.moments.splice(P.moments.indexOf(A), 1); moment(P, scene, `⚽ But ${sc ? 'de ' + sc + ' ' : ''}(${eq(tm)}) — ${st.score[0]}-${st.score[1]}`, true); break; }
+    case 'but': { const tm = e.team ?? st.players[P.dernierTir]?.team, sc = P.dernierTir != null && st.players[P.dernierTir]?.team === tm ? n(P.dernierTir) : null; P.butT = st.t; tableauBut(P.tab, tm, `${sc ?? eq(tm)}<em>${minuteDe(scene)}</em>`); dire(P, now, `BUT ! ${sc ? sc + ' — ' : ''}${eq(tm)} · ${st.score[0]}-${st.score[1]}`, 5); const A = action(P, scene); if (A) P.moments.splice(P.moments.indexOf(A), 1); moment(P, scene, `⚽ But ${sc ? 'de ' + sc + ' ' : ''}(${eq(tm)}) — ${st.score[0]}-${st.score[1]}`, true); break; }
     case 'sortie': if (P.dernierTir != null && e.out === 'sortie-de-but' && now - P.com.t < 2.5) dire(P, now, 'À côté !', 3); else if (e.out === 'corner') { dire(P, now, `Corner pour ${eq(e.team)}`, 2); } break;
     case 'faute': dire(P, now, `Faute de ${n(e.by)} sur ${n(e.sur)}`, 2); break;
     case 'carton': dire(P, now, `Carton ${e.couleur} pour ${n(e.by)}`, 4); moment(P, scene, `${e.couleur === 'rouge' ? '🟥' : '🟨'} ${n(e.by)} (${eq(st.players[e.by]?.team)})`, e.couleur === 'rouge'); break;
@@ -119,9 +117,8 @@ export function produitUpdate(scene, P) {
   // la vitesse de lecture change par paliers doux (jamais ×32 → ×1 en une image : l'œil suit le ralentissement)
   P.vCur = v <= P.vCur ? v : Math.min(v, P.vCur + Math.max(1, P.vCur * 0.25));
   scene.vitesse = P.pause ? 0 : Math.round(P.vCur);
-  if (!P.bar) return;
-  P.min.textContent = st.fini ? 'FIN' : (minuteDe(scene) || "0'");
-  P.eqA.textContent = P.teams[0].name; P.eqB.textContent = P.teams[1].name; P.sc.textContent = `${st.score[0]} - ${st.score[1]}`;
+  if (!P.ctl) return;
+  tableauUpdate(P.tab, scene);
   const now = scene._t ?? st.t, vis = P.com.txt && now - P.com.t < 3.2;
   if (vis && P.comEl.textContent !== P.com.txt) P.comEl.textContent = P.com.txt;
   P.comEl.style.opacity = vis ? '1' : '0';

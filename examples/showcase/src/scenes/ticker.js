@@ -115,5 +115,5 @@ export function makeTicker(TEAMS) {
     } else return false;
     return true;
   };
-  return { hud, sifflet, event };
+  return { hud, sifflet, event, flash };
 }
