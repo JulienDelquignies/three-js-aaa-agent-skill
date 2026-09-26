@@ -56,7 +56,12 @@ export function appuiPas(st, p, wx, wz, dTgt, A, dt, libre) {
   p._appuiVeut.last = st.t;
   if (st.t - p._appuiVeut.t < (A.tenue ?? 0.12)) return false;
   p._appuiVeut = null;
-  const P = planAppui(deg, sp, wm, A, p.skill ?? {});
+  // LE PORTEUR TOURNE MOINS SEC (book Modèle 02 §5 : a_lat avec ballon = κℓ · a_lat, κℓ = 0,60 + 0,18 × technique) — mesuré sur 16 matchs,
+  // l'appui plein pour tous : buts 3,45 → 4,70. porteur : 'kappa' (défaut : durée ÷ κℓ, sortie × κℓ), 'exclu' (l'arc d'hier), 'libre'.
+  const porte = st.possession?.carrier === p.id && (A.porteur ?? 'kappa') !== 'libre';
+  if (porte && A.porteur === 'exclu') return false;
+  const kl = porte ? 0.60 + 0.18 * (p.ratings?.technique ?? 50) / 100 : 1;
+  const P = planAppui(deg, sp, wm, A, porte ? { appuiF: (p.skill?.appuiF ?? 1) / kl, appuiRhoF: (p.skill?.appuiRhoF ?? 1) * kl } : (p.skill ?? {}));
   p._appui = { t0: st.t, fin: st.t + P.dur, vi: sp, ui: [p.v[0] / sp, p.v[1] / sp], vo: P.vo, uo: [wx / wm, wz / wm], deg };
   p._appuiN = (p._appuiN ?? 0) + 1;
   return appuiPas(st, p, wx, wz, dTgt, A, dt, libre);
