@@ -1052,6 +1052,33 @@ export function skillFollowStep(st, p, dt, cfg) {
     const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
     st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.face?.chemin) {   // (face.js) LE RÂTEAU, LA ROULETTE DE LA TENUE : le ballon suit un chemin en repère personnage [t, x (droite), z (devant)] — le cap tourne de face.tour (rad) sur face.cap, le corps part vers la sortie (face.dir) en accélérant jusqu'à face.v
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-sortie', { log: st.gestures }); return; }
+    const S = A.face, t = p.act.t, C = S.chemin; let k = 1; while (k < C.length - 1 && C[k][0] < t) k++;
+    const a = C[k - 1], b = C[k], u = Math.max(0, Math.min(1, (t - a[0]) / Math.max(1e-3, b[0] - a[0]))), e = u * u * (3 - 2 * u);
+    const uy0 = Math.max(0, Math.min(1, (t - S.cap[0]) / Math.max(1e-3, S.cap[1] - S.cap[0]))), r = 0.2, ey = uy0 < r ? uy0 * uy0 / (2 * r * (1 - r)) : uy0 > 1 - r ? 1 - (1 - uy0) * (1 - uy0) / (2 * r * (1 - r)) : (uy0 - r / 2) / (1 - r), uv = Math.min(1, t / Math.max(1e-3, p.act.anticipation + p.act.follow)), v = S.v * uv * uv * (3 - 2 * uv);
+    // (roulette) le corps PIVOTE SUR SON APPUI : face.pivots [t, x, z] = à partir de t, le pied d'appui en repère personnage (planté : sa place au
+    // monde est figée au changement d'appui) ; le corps tourne autour de lui jusqu'à face.libre, puis court vers la sortie (l'élan repris)
+    let i = -1; if (S.pivots) for (let j = 0; j < S.pivots.length; j++) if (t >= S.pivots[j][0]) i = j;
+    S.jambes = !!S.pivots && t < S.libre;   // (le rendu : pendant le pivot le geste POSSÈDE ses jambes — le corps qui tourne autour de son appui à 2-3 m/s n'est pas une course : la loi de fusion rendait les jambes à la foulée, la 2e semelle manquait le ballon de 0,3 m)
+    if (i >= 0 && t < S.libre) {
+      const [, lx, lz] = S.pivots[i];
+      if (A._piv !== i) { const f0 = Math.cos(p.yaw), g0 = Math.sin(p.yaw); A._piv = i; A._anc = [p.p[0] + f0 * lz - g0 * lx, p.p[2] + g0 * lz + f0 * lx]; }
+      p.yaw = wrapA(S.yaw0 + S.tour * ey); p.yawWant = null;
+      const f1 = Math.cos(p.yaw), g1 = Math.sin(p.yaw), nx = A._anc[0] - (f1 * lz - g1 * lx), nz = A._anc[1] - (g1 * lz + f1 * lx);
+      p.v[0] = (nx - p.p[0]) / Math.max(1e-4, dt); p.v[1] = (nz - p.p[2]) / Math.max(1e-4, dt); p.p[0] = nx; p.p[2] = nz; p.speed = A._vPiv = hyp(p.v[0], p.v[1]);
+    } else {
+      p.yaw = wrapA(S.yaw0 + S.tour * ey); p.yawWant = null;
+      const vv = S.pivots ? (A._vL ??= Math.min(S.v, A._vPiv ?? 0)) + (S.v - A._vL) * Math.min(1, (t - S.libre) / Math.max(1e-3, p.act.anticipation + p.act.follow - S.libre)) : v;
+      p.v[0] = S.dir[0] * vv; p.v[1] = S.dir[1] * vv; p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt; p.speed = vv;
+    }
+    const x = a[1] + (b[1] - a[1]) * e, z = a[2] + (b[2] - a[2]) * e, fx = Math.cos(p.yaw), fz = Math.sin(p.yaw), tx = p.p[0] + fx * z - fz * x, tz = p.p[2] + fz * z + fx * x;
+    // le servo du porté (BallBody.carry) laisse une cible qui file à v à τ·v derrière en régime établi ((cible − p)/τ = v) — 0,2 m mesurés au
+    // rendu sous la roulette (cible à ~3 m/s, orbite autour de l'appui) : la cible est ANTICIPÉE de sa propre vitesse × τ (2τ surcompensait :
+    // le ballon passait DEVANT la semelle dans le sens du tour, x −0,26 pour −0,05 visé)
+    const tau = 0.03, pv = A._tgt ? [(tx - A._tgt[0]) / Math.max(1e-4, dt), (tz - A._tgt[1]) / Math.max(1e-4, dt)] : [0, 0]; A._tgt = [tx, tz];
+    st.ball.carry([tx + pv[0] * tau, tz + pv[1] * tau], dt, { tau });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.face?.fin != null) {   // (face.js) LE ROULÉ, LE TIRÉ DE SEMELLE : corps planté, le ballon suit le chemin du clip (x : la droite, z : devant) jusqu'à fin
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roule', { log: st.gestures }); return; }
     const S = A.face, u = Math.max(0, Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-3, S.fin - p.act.anticipation))), e = u * u * (3 - 2 * u);

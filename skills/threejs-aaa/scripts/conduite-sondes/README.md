@@ -213,3 +213,20 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   passement (la jambe entière) pèse plus que le roulé (le ballon seul) : 1,3 / 1,5 → pertes 16 %, perdu à +2 s 13 % (= sans), 1,9 face-à-
   face/min. Au rendu (`face-rendu.mjs`) : semelle à 0,02 m du ballon tout le long de la feinte de corps (cheville 0,17 m), le pied du
   passement jamais à moins de 0,13 m, cheville jusqu'à 0,32 m. capture-geste : T0 = 'face:<geste>:k' (le k-ième face-à-face qui contient ce geste).
+- Le râteau et la roulette de la tenue (2026-09-26). Mesurés sur la vidéo de référence (Taarabt, 60 i/s) : le RÂTEAU (11,80 s, 41,6 s) —
+  contre le défenseur qui se jette, la semelle ratisse le ballon ≈ 0,5 m en travers en 0,2 s et il sort de ce côté ; la ROULETTE (22,00 s) —
+  semelle droite qui tire 0,2 s, le tour ballon libre 0,2 s, semelle GAUCHE à 22,40 qui tire ≈ 0,25 s, sortie à 22,70 (0,7 s, deux semelles :
+  la « double drag-back » ; la roulette générée d'hier n'en avait qu'une). Clips : `rateauFace`/`rateauFaceIn` (du ballon dehors en travers,
+  du ballon croisé vers l'extérieur), `rouletteFace` (branche roulette2 du générateur : les deux semelles, l'appui qui change, contrat des
+  appuis). face.js : réponses à la fente LUE (roulette / râteau / tiré, chacune du côté ouvert, quand le pied est libre) et sortie sur morsure
+  (le râteau quand le côté s'y prête). La roulette PIVOTE SUR L'APPUI (le gauche pendant que la semelle droite tire, puis le droit reposé) —
+  d'où sa sortie du côté du pied de semelle. `sortie-rendu.mjs <url>` : pendant ces gestes, le ballon contre chaque pied rendu par fenêtre du
+  clip (BRUT=geste : image par image, ballon en repère personnage). Il a trouvé : le VERROU D'APPUI du rendu tenait l'ancien appui au monde
+  (le pied gauche montait à 0,5 m) → relâché pendant ces sorties ; la LOI DE FUSION rendait les jambes à la foulée (le corps qui tourne à
+  2-3 m/s autour de son appui lu comme une course) → le geste possède ses jambes pendant le pivot (face.jambes) ; le servo du porté (second
+  ordre) : cible anticipée de τ·v (2τ surcompensait) ; le tour trop rapide (≈ 1 000 °/s, ballon à 6-7 m/s) → profil trapèze sur tout le geste
+  (≈ 500 °/s), la 2e semelle près du pied pivot. Rendu final : semelle à 0,03-0,04 m du ballon pendant le râteau, 0,01 (1re) et 0,05 m (2e)
+  pendant la roulette. LE COULOIR DE LA FENTE (cfg.face.fente.couloir 0,35 m) : la fente engagée ne gagne que le ballon resté sur sa ligne —
+  la portée radiale reprenait le ballon ratissé à 0,5 m (3 râteaux sur 24) ; seul, le couloir laisse le jeu d'hier identique à l'octet près
+  (32 graines). face-feintes.mjs juge chaque SORTIE à +2 s : croqueta passé 23 %, râteau 48 %, roulette 4/4 (rare : ~1 par 16 min de duel) ;
+  face-à-face perdus 19 → 15 (32 graines), perdu à +2 s 13 → 9 % (duel-face, 16 graines).

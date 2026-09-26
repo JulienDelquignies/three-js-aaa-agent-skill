@@ -49,7 +49,7 @@ function devant(st, c, E) {
 
 function fin(st, c, issue, K) {
   const F = c._face;
-  st.events.push({ t: +st.t.toFixed(2), type: 'face', phase: 'fin', by: c.id, par: F.par, issue, duree: +(st.t - F.t0).toFixed(2), feintes: F.feintes, mords: F.mords, fente: F.fente ? (F.fente.lu ? 'lue' : F.fente.mordue ? 'mordue' : 'franche') : null });
+  st.events.push({ t: +st.t.toFixed(2), type: 'face', phase: 'fin', by: c.id, par: F.par, issue, duree: +(st.t - F.t0).toFixed(2), feintes: F.feintes, mords: F.mords, fente: F.fente ? (F.fente.lu ? 'lue' : F.fente.mordue ? 'mordue' : 'franche') : null, sortie: F.sortie ?? null });
   c._face = null; c._faceCap = null; c._faceCd = st.t + (K.entree.cd ?? 2.5); c._regard = null; c._regardUntil = null;
 }
 
@@ -61,23 +61,48 @@ function semelle(st, c, kind, S, x1, z1, fin = S.dragEnd) {
   F.x = x1;
 }
 
-/** LA SORTIE : la croqueta PLANTÉE du côté `cote` (+1 = la droite du porteur face au défenseur) — en diagonale devant (≈ 37° de l'axe),
- *  le ballon part du côté opposé et traverse (skillFollowStep 'doubleContact'), la sortie explose à sa fin (rondo-sim, sortieBurst). */
-function sortir(st, c, q, cote, issue, K) {
+/** Le côté où la semelle RATISSE depuis la tenue : du ballon dehors, en travers devant le corps (−m) ; du ballon croisé, vers l'extérieur (+m). */
+const coteRateau = (F) => (F.x * F.m > -0.02 ? -F.m : F.m);
+
+/** LA SORTIE du côté `cote` (+1 = la droite du porteur face au défenseur), vers le côté ouvert du défenseur, en diagonale devant — par
+ *  la CROQUETA plantée (le ballon part du côté opposé et traverse, skillFollowStep 'doubleContact'), le RÂTEAU (la semelle ratisse le ballon
+ *  de ce côté-là, possible quand c'est le côté où elle ratisse depuis le ballon d'alors) ou la ROULETTE (les deux semelles, le tour complet,
+ *  sortie du côté `cote`) ; la sortie explose à sa fin (rondo-sim, sortieBurst). Sans geste nommé : le râteau au tirage (sorties.rateau)
+ *  quand le côté s'y prête, la croqueta sinon. */
+function sortir(st, c, q, cote, issue, K, geste = null) {
   const F = c._face;
   // LA SORTIE VISE LE CÔTÉ OUVERT DU DÉFENSEUR, VERS LE BUT : un point à cote.lat m de son flanc et cote.au m au-delà de lui (côté but) —
   // tirée de l'axe porteur-défenseur seul, la croqueta partait de biais et la conduite qui suivait (vers le but) laissait le ballon (capture)
   const g = st.pitch.attackGoal(c.team), gx = g.x - q.p[0], gz = -q.p[2], gl = hyp(gx, gz) || 1;
   const ax = q.p[0] + F.n[0] * cote * K.sortie.lat + (gx / gl) * K.sortie.au, az = q.p[2] + F.n[1] * cote * K.sortie.lat + (gz / gl) * K.sortie.au;
-  const exitYaw = Math.atan2(az - c.p[2], ax - c.p[0]);
-  c._faceSortie = { dir: [Math.cos(exitYaw), Math.sin(exitYaw)], t: st.t + MOVE_TIMING.doubleContact.duration };
+  const exitYaw = Math.atan2(az - c.p[2], ax - c.p[0]), SK = K.sorties;
+  if (!geste) geste = SK && cote === coteRateau(F) && rnd(st, c.id) < SK.rateau ? 'rateau' : 'croqueta';
   if (busy(c)) abortGesture(c, 'face-sortie', { log: st.gestures });
+  if (geste !== 'croqueta') {   // LE RÂTEAU, LA ROULETTE : le chemin du ballon en repère personnage (les points des clips : x la droite, z devant), le cap, l'élan
+    const m = F.m, d = ((exitYaw - c.yaw + 3 * Math.PI) % (2 * Math.PI)) - Math.PI, fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
+    const bx = (st.ball.p[0] - c.p[0]) * -fz + (st.ball.p[2] - c.p[2]) * fx, bz = (st.ball.p[0] - c.p[0]) * fx + (st.ball.p[2] - c.p[2]) * fz, dehors = bx * m > -0.02;   // le ballon RÉEL en repère personnage (un roulé coupé l'a laissé en chemin)
+    const kind = geste === 'roulette' ? 'rouletteFace' : dehors ? 'rateauFace' : 'rateauFaceIn', S = SKILL_KINDS[kind], T = S.duration;
+    const chemin = geste === 'roulette'
+      ? [[0, bx, bz], [S.contact, dehors ? m * S.ball[0] : F.x, DEV], [S.drag1End, m * S.drag1[0], -S.drag1[1]], [(S.drag1End + S.on2) / 2, m * (S.drag1[0] + S.ball2[0]) / 2, -S.drag1[1] - 0.04], [S.on2, m * S.ball2[0], -S.ball2[1]], [S.drag2End, m * S.drag2[0], -S.drag2[1]], [T, 0, 0.38]]
+      : [[0, bx, bz], [S.contact, m * S.ball[0], DEV], [S.dragEnd, m * S.dragX, -S.dragTo], [T, 0, 0.4]];
+    const tour = geste === 'roulette' ? -Math.sign(d || cote) * (2 * Math.PI - Math.abs(d)) : d;   // la roulette tourne d'abord à l'opposé de la sortie (le dos au défenseur au demi-tour), finit face à elle
+    c._faceSortie = { dir: [Math.cos(exitYaw), Math.sin(exitYaw)], t: st.t + T };
+    startGesture(c, { id: kind, duration: T, contact: S.contact }, { payload: { kind: 'skill', skill: kind, pick: { foot: F.pied }, ownsBody: true, foeId: q.id, ballMax: 0,
+      face: { chemin, yaw0: c.yaw, tour, cap: geste === 'roulette' ? [S.drag1End - 0.06, T] : [S.contact, T], dir: [Math.cos(exitYaw), Math.sin(exitYaw)], v: K.sortie.v?.[geste] ?? 2.2,
+        ...(geste === 'roulette' ? { pivots: [[0, -0.15 * m, -0.05], [S.plantR, 0.18 * m, -0.02]], libre: S.drag2End } : {}) } }, log: st.gestures });
+    (c._skillCd ??= {}).double = st.t + 2; c._dribAt = st.t;
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: kind, foot: F.pied, skill: kind, anticipation: S.contact });
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind, by: c.id, foe: +hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]).toFixed(2), face: issue });
+    if (F.fente && !F.fente.contact) q._fenteDue = { Fn: F.fente, c: c.id };   // le défenseur qui CHARGE est engagé : sa fente part quand même (dans le vide que la sortie laisse)
+    F.sortie = geste; return fin(st, c, issue, K);
+  }
+  c._faceSortie = { dir: [Math.cos(exitYaw), Math.sin(exitYaw)], t: st.t + MOVE_TIMING.doubleContact.duration };
   const foot = footFor(byId.crochet, situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1])), move = MOVE_TIMING.doubleContact;
   startGesture(c, { id: 'doubleContact', ...move }, { payload: { kind: 'skill', skill: 'doubleContact', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, away: cote, v0: Math.max(1.2, c.speed), foeId: q.id, ballMax: 0, face: true }, log: st.gestures });
   (c._skillCd ??= {}).double = st.t + 2; c._dribAt = st.t;
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'doubleContact', foot, skill: 'doubleContact', anticipation: move.contact });
   st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'doubleContact', by: c.id, foe: +hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]).toFixed(2), face: issue });
-  fin(st, c, issue, K);
+  F.sortie = 'croqueta'; fin(st, c, issue, K);
 }
 
 /** LA FENTE qui s'annonce : le défenseur CHARGE son appui (charge s), vers `cible` (fixée maintenant — il s'engage sur le ballon d'alors) ;
@@ -89,8 +114,8 @@ function fente(st, q, c, cible, mordue, K) {
   st.events.push({ t: +st.t.toFixed(2), type: 'face', phase: 'charge', by: c.id, par: q.id, fente: mordue ? 'mordue' : 'patience', lue: F.fente.lu != null });
 }
 
-function lancerFente(st, q, c, K, cfg) {
-  const Fn = c._face.fente, move = MOVE_TIMING.tacleDebout, dx = Fn.cible[0] - q.p[0], dz = Fn.cible[1] - q.p[2], d = hyp(dx, dz) || 1;
+function lancerFente(st, q, c, K, cfg, Fn = c._face.fente) {
+  const move = MOVE_TIMING.tacleDebout, dx = Fn.cible[0] - q.p[0], dz = Fn.cible[1] - q.p[2], d = hyp(dx, dz) || 1;
   q.tackleCd = st.t + (cfg.standCooldown ?? 1.5); q.yawWant = Math.atan2(dz, dx);
   startGesture(q, { id: 'tacleDebout', ...move }, { payload: { kind: 'tacle-debout', victim: c.id, fente: { u: [dx / d, dz / d], v: Math.min(K.fente.glisse, Math.max(0, d - K.fente.portee)) / Math.max(0.05, move.contact), reste: Math.min(K.fente.glisse, Math.max(0, d - K.fente.portee)), chute: K.fente.chute * (Fn.mordue ? 1.5 : 1), juge: false } }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: 'tacleDebout', anticipation: move.contact, fente: Fn.mordue ? 'mordue' : Fn.lu ? 'lue' : 'franche' });
@@ -146,10 +171,18 @@ export function faceAvant(st, cfg) {
   const K = cfg.face, E = K.entree, dt = Math.max(0, Math.min(0.05, st.t - (st._faceT ?? st.t))); st._faceT = st.t;
   for (const q of st.players) {   // LA FENTE : le glissé de l'armé (movePlayers se tait, ce pas l'écrit), puis au contact passé — manquée — la CHUTE au tirage
     const G = q.act?.payload?.fente; if (!G) continue;
-    if (!q.act.fired) { if (G.reste > 0) { const s = Math.min(G.v * dt, G.reste); q.p[0] += G.u[0] * s; q.p[2] += G.u[1] * s; G.reste -= s; } continue; }
+    if (!q.act.fired) {
+      if (G.reste > 0) { const s = Math.min(G.v * dt, G.reste); q.p[0] += G.u[0] * s; q.p[2] += G.u[1] * s; G.reste -= s; }
+      // LA FENTE EST ENGAGÉE : la jambe part sur sa ligne (vers le ballon d'alors) — elle ne gagne que le ballon resté dans son COULOIR (fente.couloir m
+      // de part et d'autre, pas derrière le tacleur) ; hors couloir, le contact est dans le vide (rondo-sim.standTackleNow lit fente.vide). La portée
+      // RADIALE seule gagnait le ballon que la semelle venait de ratisser à 0,5 m sur le côté (face-feintes : 3 râteaux sur 24 repris ainsi, à +0,35 s)
+      if (K.fente.couloir != null) { const bx = st.ball.p[0] - q.p[0], bz = st.ball.p[2] - q.p[2]; G.vide = Math.abs(bx * G.u[1] - bz * G.u[0]) > K.fente.couloir || bx * G.u[0] + bz * G.u[1] < -0.2; }
+      continue;
+    }
     if (G.juge) continue; G.juge = true;
     if (st.possession?.carrier === q.act.payload.victim) { if (rnd(st, q.id) < G.chute) chuter(st, q, null, cfg, 'fente', 1.2); else q._bite = Math.max(q._bite ?? -1, st.t + 0.45); }
   }
+  for (const q of st.players) if (q._fenteDue && st.t >= q._fenteDue.Fn.part) { const D = q._fenteDue; q._fenteDue = null; if (!busy(q) && q.down <= 0) lancerFente(st, q, st.players[D.c], K, cfg, D.Fn); }
   const car = st.players[st.possession?.carrier ?? -1];
   for (const p of st.players) { if (p._face && p !== car) fin(st, p, 'perdu', K); if (p !== car) { p._faceApp = null; p._faceCap = null; p._faceSortie = null; } }
   if (car?._faceSortie && (!busy(car) || st.t > car._faceSortie.t + 0.1)) {   // LA SORTIE TIENT SA DIRECTION (pas.sortieFoulee) : la croqueta finie, la poussée reste sur la sortie sortie.duree s, en accélération
@@ -194,6 +227,12 @@ export function faceAvant(st, cfg) {
   const age = st.t - F.t0, Fn = F.fente, A = c.act?.payload;
   // LA FENTE : la charge, la lecture (le tiré de semelle), le départ, puis le jugement du contact
   if (Fn) {
+    const piedLibre = !busy(c) || !F.roule || A?.skill !== F.roule.kind || c.act.t >= F.roule.libre;   // (une semelle en plein roulé ne ratisse pas : la réponse attend la fin du roulé — trop tard, la fente gagne)
+    if (Fn.lu != null && !Fn.tire && st.t >= Fn.lu && K.sorties && piedLibre && !Fn.repondu) {   // LA FENTE LUE, trois réponses au tirage, chacune du côté OUVERT (à l'opposé du flanc du défenseur) : la ROULETTE (geste de flair ; pivot sur le pied de semelle → elle sort de SON côté, +m), le RÂTEAU (la semelle ratisse le ballon hors du couloir de la fente et part avec), le TIRÉ (plus bas)
+      Fn.repondu = true; const u = rnd(st, c.id), ouvert = (dx * F.n[0] + dz * F.n[1]) > 0 ? -1 : 1, pR = ouvert === F.m ? K.sorties.roulette * (0.6 + 0.8 * (c.persona?.flair ?? 0.5)) : 0, pA = coteRateau(F) === ouvert ? K.sorties.rateau : 0;
+      if (u < pR) return sortir(st, c, q, F.m, 'roulette-fente', K, 'roulette');
+      if (u < pR + pA) return sortir(st, c, q, ouvert, 'rateau-fente', K, 'rateau');
+    }
     if (Fn.lu != null && !Fn.tire && st.t >= Fn.lu) { Fn.tire = true; if (busy(c)) abortGesture(c, 'face-tire', { log: st.gestures }); const dehors = F.x * F.m > -0.02, S = dehors ? TIRE : TIRE_IN; semelle(st, c, dehors ? 'tireSemelle' : 'tireSemelleIn', S, F.m * S.dragX, -S.dragTo); }   // le clip tire le ballon de (ball[0], ball[2]) à (dragX, dragTo) — z < 0 devant ; depuis le ballon dehors ou croisé
     if (!Fn.contact && st.t >= Fn.part && q.down <= 0 && !busy(q)) lancerFente(st, q, c, K, cfg);
     if (Fn.contact && !Fn.juge && st.t > Fn.contact + 0.02) {   // le ballon toujours à lui : manquée — au SOL (tirage) ou déséquilibré, puis la sortie
