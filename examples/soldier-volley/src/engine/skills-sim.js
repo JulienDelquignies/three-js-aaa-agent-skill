@@ -259,7 +259,7 @@ export function maybePassement(st, c, cfg) {
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > (st.full && cfg.decalage ? (cfg.decalage.chargeCourse ?? 2.0) : 0.6)) return false;   // lancé : le jockey RECULE devant, il ne charge pas — (397) jusqu'à chargeCourse m/s sous cfg.decalage
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > envieFace(st, c, cfg, Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1))) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -374,7 +374,7 @@ export function maybeCrochet(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     if (hyp(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KD ? (KD.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197) — (397) sur un plancher d'appétit
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > envieFace(st, c, cfg, Math.max(KD ? (KD.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)))) {   // …la tentative au carré (197) — (397) sur un plancher d'appétit
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
   }
   // L'ESPÈCE (la variété demandée : « du Dembélé, du Yamal ») : le CHALOUPÉ veut du TEMPS — le
@@ -415,11 +415,22 @@ export function maybeCrochet(st, c, cfg) {
   return true;
 }
 
+/** L'ENVIE DU FACE-À-FACE (cfg.dribble1c1.envieFace — le duel, 2026-09-26 « faire tenter plus de gestes dans les face-à-face ») : mis face
+ *  au défenseur de champ (devant lui, relèvement ≤ feinteCone°, à ≤ face m), le porteur d'un 1c1 TENTE — rien d'autre ne le fera passer (pas
+ *  de coéquipier, le tir comparé au dribble). Mesuré avant (face-a-face.mjs) : 29 % des face-à-face finissaient sur un geste, le tirage d'un
+ *  joueur moyen (flair 0,5) valait ≈ 0,19 par fenêtre. L'envie monte à envieFace × (0,5 + flair) × gesteF² (flair 0,5 : envieFace, le joueur
+ *  sans flair la moitié, l'élite du flair tente toujours) ; hors face-à-face ou clé absente : l'envie du geste, telle quelle. */
+function envieFace(st, c, cfg, p) {
+  const K = st.full ? cfg.dribble1c1 : null; if (!K?.envieFace || c.keeper) return p;
+  const def = st.players.find((q) => q.team !== c.team && !q.keeper && q.down <= 0); if (!def) return p;
+  if (d2(def.p, c.p) > (K.face ?? 3.5) || situation(c.p, c.yaw, def.p, [0, 0], 0.11).bearing > (K.feinteCone ?? 55)) return p;
+  return Math.max(p, Math.min(1, K.envieFace * (0.5 + (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)));
+}
 /** (2026-09-25) LA FEINTE DE CORPS DANS LA FOULÉE (cfg.pas && cfg.dribble1c1 — le duel ; absente : aucun monde ne change) : le face-à-face
  *  de la cage à 1,1-3 m — un pied se pose LARGE, le buste penche de son côté (le défenseur mord), l'autre pied pousse le ballon de l'extérieur
  *  du côté OPPOSÉ. La feinte d'hier (maybeFeinte) est une feinte de PASSE — sans coéquipier dans la cage, elle ne partait jamais. */
 export function maybeFeinteCorps(st, c, cfg) {
-  const KF = st.full && cfg.pas && cfg.dribble1c1; if (!KF || c.keeper || !c._pas || c.speed < 1.4) return false;
+  const KF = st.full && cfg.pas && cfg.dribble1c1; if (!KF || c.keeper || !c._pas || c.speed < (KF.feinteV ?? 1.4)) return false;   // feinteV : l'allure où la feinte part (le duel : 1,0 — l'horloge du pas tourne dès 1 m/s ; le porteur RALENTIT face au défenseur, 1,2 m/s p50 mesuré)
   if ((c._skillCd?.feinteCorps ?? -1) > st.t) return false;
   if (d2(c.p, st.ball.p) > 0.7) return false;
   let foe = null, fd = Infinity; for (const q of st.players) { if (q.team === c.team || q.down > 0) continue; const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; } }
@@ -429,7 +440,7 @@ export function maybeFeinteCorps(st, c, cfg) {
   let i0 = 0; if (V.length > 2 && !libre(c.yaw + cote(V[1].pied) * 0.7)) i0 = 1;
   const Pa = V[i0], Pb = V[i0 + 1]; if (!Pa || !Pb) return false;
   const exY = c.yaw + cote(Pb.pied) * 0.7; if (!libre(exY)) return deny(st, 'feinte-corps-sans-issue');
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KF.plancher ?? 0.3, dribM(st, c, cfg)) * ((0.2 + 0.45 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) { (c._skillCd ??= {}).feinteCorps = st.t + 1.5; return false; }
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > envieFace(st, c, cfg, Math.max(KF.plancher ?? 0.3, dribM(st, c, cfg)) * ((0.2 + 0.45 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)))) { (c._skillCd ??= {}).feinteCorps = st.t + (KF.refusCd ?? 1.5); return false; }
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: 'feinteCorpsFoulee', contact: 9, duration: 9 }, {
     payload: { kind: 'skill', skill: 'feinteCorps', pick: { foot: Pa.pied }, mobile: true, yaw0: c.yaw, exitYaw: exY, v0: c.speed, foeId: foe.id, ballMax: 0,
@@ -479,7 +490,7 @@ export function maybeDoubleContact(st, c, cfg) {
   // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
   // fenêtres leur arrivent plus souvent, et la part de tirs élite tombait de 49 à 33 % sur
   // un jeu de graines ; le joueur limité ne tente pas la croqueta, il dégage)
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(PS ? (cfg.dribble1c1?.plancher ?? 0.3) : 0, dribM(st, c, cfg)) * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > envieFace(st, c, cfg, Math.max(PS ? (cfg.dribble1c1?.plancher ?? 0.3) : 0, dribM(st, c, cfg)) * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3)))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
     (c._skillCd ??= {}).double = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);

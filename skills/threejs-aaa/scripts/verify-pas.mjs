@@ -32,7 +32,7 @@ function jouer(pas, seeds = GRAINES, secs = 120, drb = null) {   // 8 graines : 
         if (e.type === 'but' || e.type === 'goal') R.buts++;
       }
       { const car = st.possession?.carrier ?? -1, c = st.players[car];   // la conduite en course : le ballon TENU au servo, le ballon libre DERRIÈRE le porteur
-        if (c && st.phase === 'carry' && !st.restart && !c.act && Math.hypot(...c.v) >= 1) { R.conduite++; if (st.ball.owner === car) R.tenu++; else { R.libre++; const v = Math.hypot(...c.v); if (((st.ball.p[0] - c.p[0]) * c.v[0] + (st.ball.p[2] - c.p[2]) * c.v[1]) / v < -0.1) R.derriere++; } } }
+        if (c && !c.keeper && st.phase === 'carry' && !st.restart && !c.act && Math.hypot(...c.v) >= 1) { /* (2026-09-26) le joueur de champ : le gardien qui marche ballon EN MAIN n'est pas une conduite au servo */ R.conduite++; if (st.ball.owner === car) R.tenu++; else { R.libre++; const v = Math.hypot(...c.v); if (((st.ball.p[0] - c.p[0]) * c.v[0] + (st.ball.p[2] - c.p[2]) * c.v[1]) / v < -0.1) R.derriere++; } } }
       for (let g = (R._suivis ?? []).length - 1; g >= 0; g--) { const x = R._suivis[g], p = st.players[x.by]; if (p.act?.payload?.foulee) x.vs.push(p.speed);
         if (st.t >= x.t) { if (x.vs.length) R.gV.push(Math.min(...x.vs)); if (st.phase === 'carry' && st.possession.carrier === x.by || st.events.slice(x.ev0).some((e) => e.type === 'shot' && e.by === x.by)) R.gOk++; R._suivis.splice(g, 1); } }
       for (const [id, o] of Object.entries(open)) {

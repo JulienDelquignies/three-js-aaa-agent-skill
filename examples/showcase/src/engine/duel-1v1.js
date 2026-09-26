@@ -63,7 +63,7 @@ export function duelCfg(overrides = {}) {
     duel: { ...DUEL_KEYS, ...(overrides.duel ?? {}) },
     pas: overrides.pas ?? true,   // (2026-09-24) l'horloge de foulée dans la sim, la touche au pied qui la joue (pas.js)
     // (2026-09-25) LE RÉPERTOIRE DU 1c1 dans la foulée : la feinte de corps (face-à-face à 1,1-3 m), et le plancher d'envie des gestes de la cage
-    dribble1c1: overrides.dribble1c1 ?? { plancher: 0.45, feinteFoe: [1.1, 3.0], feinteCone: 55, feinteCd: 6, feinteBite: 0.5, sortie: { duree: 0.6 }, passementV: 1.1 },
+    dribble1c1: overrides.dribble1c1 ?? { plancher: 0.45, feinteFoe: [1.1, 3.0], feinteCone: 55, feinteCd: 3, feinteBite: 0.5, sortie: { duree: 0.6 }, passementV: 1.3, envieFace: 0.8, face: 3.5, feinteV: 1.0, refusCd: 0.5 },   // (2026-09-26) envieFace : face au défenseur on TENTE (skills-sim.envieFace) ; feinteV 1,0 (le porteur ralentit face à lui : 1,2 m/s p50) ; refusCd 0,5 s, feinteCd 3 s (6 : une feinte par face-à-face au plus)
     // …et L'ÉQUILIBRE du répertoire (mesuré, 16 min : 22 passements, 8 crochets, 6 feintes, 1 croqueta — le passement, testé AVANT les autres
     // avec une envie doublée, prenait toutes les fenêtres de face) : l'envie du passement ramenée à celle des autres, le crochet relevé
     passements: { ...base.passements, envie: 1, plancher: 0.2 },

@@ -65,6 +65,17 @@ if (String(T0).startsWith('arret')) {
   if (!L[k]) { console.log("pas d'arrêt n°", k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 3); await ouvre();
 }
+// T0 = 'geste[:k]' : le k-ième GESTE de dribble dans la foulée (feinte de corps, passement, crochet, croqueta — l'événement 'windup' d'un
+// geste) — filmé de 1,5 s avant ; `I = porteur` suit alors le dribbleur
+if (String(T0).startsWith('geste')) {
+  const k = Number(String(T0).split(':')[1] ?? 0);
+  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'windup' && e.foulee && e.skill) out.push({ t: st.t, by: e.by, skill: e.skill }); } }
+    return out; });
+  console.log('gestes trouvés :', L.length, JSON.stringify(L.slice(0, 10)));
+  if (!L[k]) { console.log('pas de geste n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - 1.5); suitId = L[k].by; await ouvre();
+}
 const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), suitId, dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard

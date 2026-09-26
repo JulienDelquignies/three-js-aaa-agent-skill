@@ -117,3 +117,14 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - Après : ≈ 2 tirs/min (tirs de près, xG 0,18-0,27), 2,3 arrêts/min, conduite 46 % du temps ; verify-duel réécrit pour le format (le gel
   hors gardien et hors relance du gardien, 1-3 tirs/min, des arrêts), verify-pas : dribbles gardés ≥ 50 % (face à un défenseur replacé).
 - `capture-geste.mjs` : CAM=page (la régie de la page) et T0 = 'arret[:k]' (le k-ième arrêt, 3 s avant).
+
+## Tenter plus de gestes dans les face-à-face (2026-09-26)
+- `face-a-face.mjs` (sans navigateur) : les épisodes où le porteur de champ, ballon au pied, a le défenseur DEVANT lui (≤ 55°, 1,1-3,5 m) —
+  leur issue (geste, tir, dépassé, perdu, éteint : au contact / hors cône / distance / acte) et, image par image, la porte de la feinte de
+  corps qui bloque (allure, ballon, distance, délai, fenêtre ouverte). Avant : 29 % des face-à-face finissaient sur un geste, 32 % au contact
+  sans rien tenter ; portes : allure < 1,4 m/s 43 % (le porteur RALENTIT face au défenseur : 1,2 m/s p50), délai de feinte 21 %, fenêtre
+  ouverte 15 % (le tirage d'un joueur moyen ≈ 0,19, puis 1,5 s d'attente).
+- Remède (skills-sim.envieFace, cfg.dribble1c1 : envieFace 0,8, face 3,5, feinteV 1,0, refusCd 0,5, feinteCd 3 ; passementV 1,3 pour que
+  le passement reste dans la course) : 74 % des face-à-face finissent sur un geste, 5 % au contact ; 1,75 → 3,4 gestes/min ; verify-pas :
+  111 gestes / 16 min (54 avant), 56 % gardés ou tirés.
+- `capture-geste.mjs` : T0 = 'geste[:k]' (le k-ième geste dans la foulée, 1,5 s avant).
