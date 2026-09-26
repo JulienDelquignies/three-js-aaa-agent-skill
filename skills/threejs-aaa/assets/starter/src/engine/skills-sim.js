@@ -22,12 +22,8 @@ export const footPoint = (st, p, cfg) => {
   const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
   const lat = p.foot === 'left' ? 1 : -1;
   const m = BALL.radius + 0.02;
-  // (328, cfg.porteDevant && st.full) LE BALLON PORTÉ N'EST PAS SOUS LE PIED QUI SE POSE (chantier foulée : l'arbitre visuel, pieds posés DANS le ballon) :
-  // en course, le pied se pose ~0,3 m devant la hanche — le point du porté à 0,34 m y mettait le ballon. En course (≥ vMin), le point avance avec l'allure
-  // (a0 + k × v, plafonné) : le ballon vit devant la pose ; à l'arrêt, et dès qu'une passe ou un tir se prépare (intention, geste, tir armé : le joueur RASSEMBLE son ballon — sans quoi personne ne tirait, mesuré), la semelle d'hier (controlSettle). Absente : hier au bit.
-  const PD = st.full && cfg.porteDevant, sp = p.speed ?? 0, cs = PD && sp >= (PD.vMin ?? 1.5) && !p.intent && !p.act && !((p._prepShot ?? -1) > st.t) && !(p.anchorHint && st.t - p.anchorHint.t < 0.4) ? Math.min(PD.max ?? 0.75, (PD.a0 ?? 0.4) + (PD.k ?? 0.05) * sp) : cfg.controlSettle;
-  return [Math.max(-st.area[0] / 2 + m, Math.min(st.area[0] / 2 - m, p.p[0] + fx * cs + fz * lat * cfg.footSide)),
-          Math.max(-st.area[1] / 2 + m, Math.min(st.area[1] / 2 - m, p.p[2] + fz * cs - fx * lat * cfg.footSide))];
+  return [Math.max(-st.area[0] / 2 + m, Math.min(st.area[0] / 2 - m, p.p[0] + fx * cfg.controlSettle + fz * lat * cfg.footSide)),
+          Math.max(-st.area[1] / 2 + m, Math.min(st.area[1] / 2 - m, p.p[2] + fz * cfg.controlSettle - fx * lat * cfg.footSide))];
 };
 
 /** Le POINT DE STANCE : où le geste veut le ballon relativement à CE corps (l'inverse exact

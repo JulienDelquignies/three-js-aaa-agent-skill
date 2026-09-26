@@ -40,6 +40,9 @@ export function fouleeSteer(scene, pl, dt, K = {}) {
   const s = pl.sim, b = scene.state.ball.p, lat = (b[0] - s.p[0]) * Math.sin(s.yaw) - (b[2] - s.p[2]) * Math.cos(s.yaw), cote = lat > 0 ? 'left' : 'right';
   let foot = Math.abs(eL) <= Math.abs(eR) ? 'left' : 'right';
   if (foot !== cote && Math.abs(Math.abs(eL) - Math.abs(eR)) < (K.cote ?? 0.08)) foot = cote;
+  // le cycle du porté (329 : une touche par foulée, du côté du pied fort) se joue du PIED FORT — la foulée s'y cale d'un cycle à l'autre
+  const fort = s.strongFoot && s.strongFoot !== 'both' ? s.strongFoot : null;
+  if (fort && scene.state.ball.owner === s.id && s._resp) foot = fort;
   const e = foot === 'left' ? eL : eR, borne = (K.borne ?? 0.35) * fq;
   const r = Math.max(-borne, Math.min(borne, e / D));
   g.phi = ((g.phi + r * dt) % 1 + 1) % 1;

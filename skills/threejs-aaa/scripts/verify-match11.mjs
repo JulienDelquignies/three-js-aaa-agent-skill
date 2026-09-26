@@ -7818,17 +7818,18 @@ if (__bloc()) {
 }
 
 if (__bloc()) {
-  // LE BALLON N'EST PAS DANS LES PIEDS (327-328 — chantier foulée : « le ballon traverse peut-être les pieds » ; l'arbitre visuel du rendu, rondo-juge.js :
-  // 2 422 images de jambe DANS le ballon sur 150 s, deux tiers à l'engagement — les marcheurs traversaient le ballon posé —, et le porteur dont le pied se POSAIT
-  // sur son ballon porté à 0,34 m, là où la course pose le pied). Les lois : 327 le marcheur (job walk) contourne le ballon au sol (movement.js,
-  // cfg.contourneBallon) ; 328 le ballon porté en course vit devant la pose (skills-sim.footPoint : a0 + k × v, cfg.porteDevant). Le rendu, lui, écarte le
-  // pied en vol (rondo-evite.js). Le monde, 1 graine × 600 s contre hier : les images du porteur à < 0,3 m de son ballon ≤ 0,3 × hier ; passes ≥ 0,85 × hier.
-  const monde = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let n = 0, passes = 0, seen = 0;
-    for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && e.to >= 0 && !st.players[e.by]?.keeper) passes++; }
-      const c = st.possession?.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && !c.keeper && !st.restart && st.ball.p[1] < 0.5 && Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]) < 0.3) n++; }
-    return { n, passes }; };
-  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, contourneBallon: null, porteDevant: null }));
-  ok(`lot 327-328 — LE BALLON N'EST PAS DANS LES PIEDS : images du porteur à < 0,3 m de son ballon ${mA.n} ≤ 0,3 × hier ${mN.n} ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mN.n > 0 && mA.n <= 0.3 * mN.n && mA.passes >= 0.85 * mN.passes);
+  // LA RESPIRATION AU PAS (329 — chantier foulée ; la référence : Football Manager, l'extrait « soliste » regardé au 1/15 s — le ballon SERRÉ, 0,3-0,5 m devant le
+  // pied qui joue, décalé de son côté, touché à chaque cycle de foulée du même pied). La loi (porte-respire.js, cfg.porteRespire.foulee) : la période du porté qui
+  // respire est celle de la foulée (gait.strideLaw — la loi que le rendu anime ; le rendu cale le pied fort dessus, rondo-foulee.js), l'amplitude 0,25 m, le
+  // ballon décalé de 6 cm vers le pied fort. Le monde, 1 graine × 900 s contre hier (la période fixe) : le ballon porté en course, distance moyenne au corps ≤ 0,9 × hier (mesuré 0,31 c. 0,36 m)
+  // (serré) ; passes ≥ 0,85 × hier. (Mesuré aussi : la part des touches espacées d'un cycle de foulée ne bouge pas — 25 c. 27 % : la conduite LIBRE domine.)
+  const PR0 = { ...matchCfg({}).porteRespire }; delete PR0.foulee;
+  const monde = (cfg) => { const st = makeMatch({ full: true, seed: 3 }); let passes = 0, seen = 0, n = 0, som = 0;
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type === 'pass' && !e.clear && e.to >= 0 && !st.players[e.by]?.keeper) passes++; }
+      const c = st.possession?.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && st.ball.owner === c.id && c.speed >= 1.5 && !c.act && !st.restart) { n++; som += Math.hypot(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2]); } }
+    return { d: n ? som / n : 0, n, passes }; };
+  const mA = monde(matchCfg({ shotRange: 20 })), mN = monde(matchCfg({ shotRange: 20, porteRespire: PR0 }));
+  ok(`lot 329 — LA RESPIRATION AU PAS : le ballon porté en course à ${mA.d.toFixed(2)} m du corps en moyenne (${mA.n}) ≤ 0,9 × hier ${mN.d.toFixed(2)} m — serré comme la référence ; passes ${mA.passes} ≥ 0,85 × ${mN.passes}`, mA.n > 0 && mA.d <= 0.9 * mN.d && mA.passes >= 0.85 * mN.passes);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

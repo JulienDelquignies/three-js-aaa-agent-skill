@@ -7,16 +7,21 @@
 // (A = amp × min(1, espace / 4) × dribbleLeadF — serré sous pression, plus long lancé seul, le mauvais dribbleur pousse plus loin) puis
 // revient au pied sur le reste du cycle. Le servo reste la loi (une vitesse, jamais une position — ball-body). Absente : le point fixe d'hier.
 import { hyp } from './hyp.js';
+import { strideLaw } from './gait.js';
 
 /** Le point du servo qui respire, et la touche du cycle (rend { pt, touche }). */
 export function respireDe(st, c, K, pt, espace = 99) {
   if (!K || c.speed < (K.vMin ?? 1.5)) { c._resp = null; return { pt, touche: false }; }
-  const T = (K.periode ?? 0.7) * (2 - (c.skill?.gesteF ?? 1)) * (c.speed >= (K.vSprint ?? 5) ? (K.sprintF ?? 1.4) : 1);
+  // (329, K.foulee) LA RESPIRATION AU PAS — la référence (Football Manager, extrait « soliste » regardé au 1/15 s) : le ballon vit SERRÉ (0,3-0,5 m devant le pied
+  // qui joue, décalé de son côté), touché à chaque cycle de foulée du MÊME pied ; la période est celle de la foulée (gait.strideLaw — la loi que le rendu anime),
+  // l'amplitude courte, le ballon décalé vers le pied fort (cote m) : l'autre pied ne se pose jamais dessus. Absente : la période fixe d'hier.
+  const F = K.foulee, T = F ? 1 / Math.max(0.6, strideLaw(c.speed)) : (K.periode ?? 0.7) * (2 - (c.skill?.gesteF ?? 1)) * (c.speed >= (K.vSprint ?? 5) ? (K.sprintF ?? 1.4) : 1);
   let touche = false;
   if (!c._resp || st.t - c._resp.t0 >= c._resp.T) { c._resp = { t0: st.t, T }; touche = true; }
   const ph = (st.t - c._resp.t0) / c._resp.T, mont = K.montee ?? 0.3;
   const f = ph < mont ? ph / mont : 1 - (ph - mont) / (1 - mont);
-  const A = (K.amp ?? 0.6) * Math.min(1, espace / 4) * (c.skill?.dribbleLeadF ?? 1) * (c.speed >= (K.vSprint ?? 5) ? (K.sprintA ?? 1.8) : 1);
+  const A = (F ? F.amp ?? 0.25 : K.amp ?? 0.6) * Math.min(1, espace / 4) * (c.skill?.dribbleLeadF ?? 1) * (c.speed >= (K.vSprint ?? 5) ? (F ? F.sprintA ?? 1.3 : K.sprintA ?? 1.8) : 1);
   const v = hyp(c.v[0], c.v[1]) || 1, ux = c.v[0] / v, uz = c.v[1] / v;
-  return { pt: [pt[0] + ux * A * f, pt[1] + uz * A * f], touche };
+  const sd = F && c.strongFoot && c.strongFoot !== 'both' ? (c.strongFoot === 'left' ? 1 : -1) * (F.cote ?? 0.06) : 0;   // à gauche du sens de course : (uz, −ux) — la convention de footPoint
+  return { pt: [pt[0] + ux * A * f + uz * sd, pt[1] + uz * A * f - ux * sd], touche };
 }
