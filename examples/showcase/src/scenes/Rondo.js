@@ -24,7 +24,7 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, modeDe, dureeDe } from './rondo-produit.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, produitClip, modeDe, dureeDe } from './rondo-produit.js'; import { ralentiInit, ralentiRecord, ralentiBut, ralentiJouer, ralentiUpdate } from './rondo-ralenti.js';
 import { planDe, planSuivant, camerasUpdate, toitsUpdate } from './rondo-cameras.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
@@ -336,6 +336,7 @@ export class Rondo {
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
     this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this);   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
     if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg) });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
+    if (this._produit && q.get('ralenti') !== '0') { this._ralenti = ralentiInit(this, { onClip: (c) => produitClip(this._produit, c) }); this.revoir = (clip) => ralentiJouer(this._ralenti, this, clip); }   // les RALENTIS (rondo-ralenti.js) : le magnétoscope du rendu, le ralenti après chaque but
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
     // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
     // flash du sifflet, la présentation pure des événements nommés ; le paiement de la dette
@@ -771,6 +772,7 @@ export class Rondo {
   update(dt) {
     if (!this.state) return;
     if (this._produit) produitUpdate(this, this._produit);
+    if (this._ralenti && ralentiUpdate(this, this._ralenti, dt)) return;   // un ralenti occupe l'écran : le match attend
     if (this._atelier) { dt = atelierDt(this, dt); if (dt === 0) { atelierUpdate(this); return; } }
     // LA RÉSOLUTION SUIT LE TÉLÉPHONE (lot 61 — « toujours saccadé » après le CPU réglé au
     // lot 60) : le tier se choisit à l'ouverture, le GPU réel ne se voit qu'en jouant. Fenêtre
@@ -821,7 +823,7 @@ export class Rondo {
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
-      const e = this.state.events[i]; if (this._atelier) atelierEvent(this, e); if (this._produit) produitEvent(this, this._produit, e);
+      const e = this.state.events[i]; if (this._atelier) atelierEvent(this, e); if (this._produit) produitEvent(this, this._produit, e); if (this._ralenti && e.type === 'but') ralentiBut(this._ralenti, this, e);
       if (e.type === 'windup') {
         // THE SWING STARTS HERE, FROM FRAME 0 — and the ball is still at his feet. This event did not
         // exist: the game used to strike the ball and then ask for a pose, so the only way to keep the
@@ -1155,7 +1157,7 @@ export class Rondo {
       if (Math.hypot(O[0], O[1], O[2]) > 1e-4) this.ball.position.set(b.p[0] + O[0], b.p[1] + O[1], b.p[2] + O[2]); }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;
 
-    this._broadcast(stepV); toitsUpdate(this);
+    this._broadcast(stepV); toitsUpdate(this); if (this._ralenti) ralentiRecord(this, this._ralenti);
     if (this.public) { const st = this.state, c = st.players[st.possession?.carrier];   // la foule vit le match : la tension monte quand le porteur approche du but, le but l'enflamme
       for (let k = 0; k < 2; k++) this.public.tension(k, c && c.team === k && !st.restart ? 1 - Math.hypot(st.pitch.attackGoal(k).x - c.p[0], c.p[2]) / 30 : 0);
       for (let i = before; i < st.events.length; i++) if (st.events[i].type === 'but') this.public.cheer(st.events[i].team ?? 0, 8);

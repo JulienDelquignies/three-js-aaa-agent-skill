@@ -50,6 +50,7 @@ export function produitInit(scene, { teams, nomDe, sauter }) {
   // LA LISTE DES MOMENTS
   P.list = css(document.createElement('div'), 'position:fixed;right:12px;top:56px;z-index:41;display:none;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:10px 12px;border-radius:10px;background:rgba(12,14,20,.86);color:#e8ebf2;font:500 13px/1.45 system-ui,sans-serif');
   document.body.appendChild(P.list);
+  P.list.addEventListener('click', (e) => { const b = e.target.closest?.('[data-rev]'); if (b) scene.revoir?.(P.moments[+b.dataset.rev]?.clip); });   // « ▶ revoir » : le ralenti du but
   window.addEventListener('keydown', (e) => {
     if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
     if (e.code === 'Space') { e.preventDefault(); togglePause(P); }
@@ -62,6 +63,12 @@ export function produitInit(scene, { teams, nomDe, sauter }) {
 }
 
 function togglePause(P) { P.pause = !P.pause; }
+/** Le clip du ralenti d'un but (rondo-ralenti.js) : accroché au dernier but de la liste qui n'en a pas (les 6 derniers gardent le leur). */
+export function produitClip(P, clip) {
+  const m = [...P.moments].reverse().find((x) => x.cle && x.txt.startsWith('⚽') && !x.clip); if (!m) return;
+  m.clip = clip; P.listDirty = true;
+  const avec = P.moments.filter((x) => x.clip); if (avec.length > 6) avec[0].clip = null;
+}
 function camSuivante(scene, P) { const n = scene.cycleCam?.(); if (n) { P.bCam.textContent = `Caméra : ${n}`; dire(P, scene._t ?? 0, `Caméra ${n.toLowerCase()}`, 9); } }
 
 /** La minute affichée (FM : « 67' », « 45+2' »), à partir du chrono de la sim. */
@@ -131,5 +138,5 @@ export function produitUpdate(scene, P) {
   P.bPause.textContent = P.pause ? '▶' : '⏸';
   for (const [k, b] of P.bV.entries()) b.style.background = !P.pause && !resume && P.vUser === [1, 2, 4, 8][k] ? '#4a6cf0' : '#2a2f3a';
   if (resume && !P.pause) P.bNext.style.background = scene.vitesse > 8 ? '#4a6cf0' : '#2a2f3a';
-  if (P.listDirty) { P.listDirty = false; P.list.innerHTML = `<b>Moments clés</b><br>` + (P.moments.length ? P.moments.slice().reverse().map((m) => `<div style="padding:3px 0;border-top:1px solid #2a2f3a;${m.cle ? 'color:#ffd54a' : ''}">${m.min} · ${m.txt}</div>`).join('') : '<i>aucun pour l\'instant</i>'); }
+  if (P.listDirty) { P.listDirty = false; P.list.innerHTML = `<b>Moments clés</b><br>` + (P.moments.length ? P.moments.map((m, i) => [m, i]).reverse().map(([m, i]) => `<div style="padding:3px 0;border-top:1px solid #2a2f3a;${m.cle ? 'color:#ffd54a' : ''}">${m.min} · ${m.txt}${m.clip ? ` <button data-rev="${i}" style="margin-left:6px;border:0;border-radius:4px;background:#d7ff3c;color:#07090f;font:700 12px system-ui;padding:1px 7px;cursor:pointer">▶ revoir</button>` : ''}</div>`).join('') : '<i>aucun pour l\'instant</i>'); }
 }
