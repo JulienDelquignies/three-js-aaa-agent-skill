@@ -121,6 +121,7 @@ export function touchWarpApply(scene, pl) {
   }
   if (pl._touchFoot && pl._touchPre == null && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot] && !planted(pl._touchFoot)) side = pl._touchFoot;   // (304) pendant la touche PRÉVUE, le pied nommé est celui de la touche d'avant : le plus proche
   if (pl._touchFootPlan && Math.abs(scene._t - (pl._touchPlanT ?? -9)) < 0.2 && pl.legs?.[pl._touchFootPlan]?.foot && pl.legLens?.[pl._touchFootPlan] && !planted(pl._touchFootPlan)) side = pl._touchFootPlan;   // (chantier foulée) le pied que la foulée a calé sur la touche (rondo-foulee.js)
+  if (pl._gestePied && Math.abs(scene._t - (pl._gestePiedT ?? -9)) < 0.2 && pl.legs?.[pl._gestePied]?.foot && pl.legLens?.[pl._gestePied] && !planted(pl._gestePied)) side = pl._gestePied;   // (26/09, rondo-pied) le pied qui JOUE le geste de contrôle est celui qui va au ballon
   if (!side) return;
   const leg = pl.legs[side], lens = pl.legLens[side];
   leg.foot.getWorldPosition(scene._wf);
@@ -155,6 +156,7 @@ export function touchLunge(scene, pl) {
   const planted = (f) => /^(stance|peel)$/.test(pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']?.phase ?? '');
   let side = null, dBest = 1.8;
   for (const f of ['left', 'right']) { const leg = pl.legs?.[f]; if (!leg?.foot || !leg.up || !pl.legLens?.[f] || planted(f)) continue; leg.foot.getWorldPosition(scene._wf); const d = Math.hypot(scene._wf.x - b[0], scene._wf.z - b[2]); if (d < dBest) { dBest = d; side = f; } }
+  if (pl._gestePied && Math.abs(scene._t - (pl._gestePiedT ?? -9)) < 0.2 && pl.legs?.[pl._gestePied]?.up && pl.legLens?.[pl._gestePied] && !planted(pl._gestePied)) side = pl._gestePied;   // la fente sur la jambe du geste (rondo-pied)
   if (!side) return;
   const L = { lunge: 0.18, drop: 0.14 }, lens = pl.legLens[side], R = (lens.A + lens.B) * 0.97, env = Math.sin(Math.PI * u);
   pl.legs[side].up.getWorldPosition(scene._wh);
