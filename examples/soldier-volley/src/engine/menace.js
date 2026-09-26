@@ -227,6 +227,7 @@ export function menacePasse(st, c, cfg) {
     pourquoi: prog > 0.2 ? 'ligne-qui-progresse' : 'circulation',
     ...(st.full && cfg.xg ? { ev: evContDe(st, c, cfg, best) } : {}),   // (272) la valeur de continuation que la porte du tir compare
     ...(best.dxt != null ? { dxt: best.dxt } : {}),   /* (283) le terme xT de l'élue */
+    ...(st.full && cfg.choix ? { lead: best.lead, pSucc: best.pSucc, marge: best.lane?.margin } : {}),   /* (335) le choix en valeur attendue lit l'arrivée et la réussite de l'élue */
   };
 }
 
@@ -293,6 +294,9 @@ export function arbitre(st, c, cfg) {
   // …ET LE RÔLE DU JOUEUR compose avec le style d'équipe (roles.js — ±15 % : un 9 direct dans
   // une équipe possession reste un 9, nuancé, pas écrasé). Aucun rôle : ×1, pas un bit.
   const rW = c.role?.arbitre;
+  // (335) LE CHOIX EN VALEUR ATTENDUE (choix.js, cfg.choix) : une échelle (probabilité de but), la tactique et le rôle en préférence, decisions/composure en lucidité
+  if (st.full && cfg.choix) { const pr = {}; for (const k of ['tir', 'centre', 'passe', 'conduite']) pr[k] = (w[k] ?? 1) * (sW ? sW[k] : 1) * (rW?.[k] ?? 1);
+    const C = choixEV(st, c, cfg, o, pr); return { ...o, meilleure: C.meilleure, score: +(C.ev[C.meilleure] ?? 0).toFixed(4), ev: C.ev, T: C.T }; }
   let meilleure = 'conduite', sMax = -Infinity;
   for (const k of ['tir', 'centre', 'passe', 'conduite']) {
     const s = o[k].score * (w[k] ?? 1) * (sW ? sW[k] : 1) * (rW?.[k] ?? 1);
@@ -301,3 +305,4 @@ export function arbitre(st, c, cfg) {
   return { ...o, meilleure, score: +sMax.toFixed(3) };
 }
 import { hyp } from './hyp.js';
+import { choixEV } from './choix.js';

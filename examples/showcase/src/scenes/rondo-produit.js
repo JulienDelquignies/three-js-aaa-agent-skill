@@ -48,7 +48,7 @@ export function produitInit(scene, { teams, nomDe, sauter, tactiques = null }) {
   P.selH.addEventListener('change', () => { const u = new URL(location.href); u.searchParams.set('heure', P.selH.value); location.href = u.toString(); });
   P.ctl.appendChild(P.selH); document.body.appendChild(P.ctl);
   // LES TACTIQUES (rondo-tactiques.js) : le panneau de choix, et les compositions sous le tableau au coup d'envoi
-  if (tactiques) { P.tac = panneauTactiques(P.ctl, teams, tactiques); tableauInfo(P.tab, 'COMPOSITIONS', [[libelle(tactiques[0]), '', libelle(tactiques[1])]], 9000); }
+  if (tactiques) { P.tac = panneauTactiques(P.ctl, teams, tactiques, scene._tac?.squads, scene._tac?.roles); tableauInfo(P.tab, 'COMPOSITIONS', [[libelle(tactiques[0]), '', libelle(tactiques[1])]], 9000); }
   P.bCam.textContent = `Caméra : ${{ rapprochee: 'Rapprochée', tv: 'Télé', tactique: 'Tactique', joueur: 'Joueur' }[scene._plan] ?? 'Télé'}`;
   // LA LISTE DES MOMENTS
   P.list = css(document.createElement('div'), 'position:fixed;right:12px;top:56px;z-index:41;display:none;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:10px 12px;border-radius:10px;background:rgba(12,14,20,.86);color:#e8ebf2;font:500 13px/1.45 system-ui,sans-serif');

@@ -171,7 +171,7 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
-  gkPied: { touche: 0.35, presse: 0.7, avance: true /* (26/09) le spot de distribution jamais derrière le gardien ; absent : le spot fixe à 4,5 m d'hier */ },   // 179 : LE PIED DU GARDIEN — la touche COLLÉE
+  choix: null /* (335) le choix du porteur en valeur attendue (choix.js) — { T0, lucidite, pressionT, perte, tir, garde0, garderP, conduiteMax, muette, centreP, centreXg, pref, epoque } ; null : l'argmax des notes d'hier */, gkPied: { touche: 0.35, presse: 0.7, avance: true /* (26/09) le spot de distribution jamais derrière le gardien ; absent : le spot fixe à 4,5 m d'hier */ },   // 179 : LE PIED DU GARDIEN — la touche COLLÉE
                           // (contrôle, pas conduite : il marche) + la distribution prompte au
                           // retrait (le backpass se joue vite). Absent : la poussée d'hier.
   craie: { tire: 0.6, seuil: 0.42, tenue: 6, marge: 0.25, bord: 2.5, dabord: 3, ouvre: null },   // 177 : L'ANCRE À LA CRAIE — en possession le poste

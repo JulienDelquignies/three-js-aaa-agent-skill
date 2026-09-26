@@ -152,9 +152,9 @@ export class Rondo {
     // final, feuille. Le réduit garde son monde sans fin (calibré 76 clauses).
     this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: dureeDe(this._mode), pause: 6 }, ...(() => { try { return JSON.parse(q.get('cfg') || '{}'); } catch { return {}; } })() })   /* ?cfg={…} : les clés du moteur surchargées (l'A/B d'une loi dans l'atelier, même match) */
       : this.matchMode ? matchCfg() : null;
-    this._tac = this.fullMode && !q.has('atelier') && q.get('tactiques') !== '0' ? tactiquesDe(q) : null;   // LES TACTIQUES DU PRODUIT (rondo-tactiques.js) — ?tactiques=0 : équilibre contre équilibre, le monde d'hier
+    this._tac = this.fullMode && !q.has('atelier') && q.get('tactiques') !== '0' ? tactiquesDe(q, NOMS_DEMO) : null;   // LES TACTIQUES DU PRODUIT (rondo-tactiques.js) — ?tactiques=0 : équilibre contre équilibre, le monde d'hier
     this.state = this.matchMode
-      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, tactics: this._tac?.tactics ?? null, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : this._tac?.roles ?? null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
+      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, tactics: this._tac?.tactics ?? null, squads: this._tac?.squads ?? null, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : this._tac?.roles ?? null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
