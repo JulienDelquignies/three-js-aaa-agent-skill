@@ -452,6 +452,11 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const B = opts.boite && opts.boite.k > 0 ? { side: opts.boite.side === 'right' ? 'Right' : 'Left', k: clamp(opts.boite.k, 0, 1) } : null;
   const pS = (side) => B && side === B.side ? { ...p, s: p.s * (1 - 0.3 * B.k), swingH: p.swingH * (1 - 0.2 * B.k), pitchTO: p.pitchTO * (1 - 0.5 * B.k) } : p;
   if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 6 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
+  // LE DÉPART (26/09 — `opts.depart` 0..1 : l'accélération avant mesurée / 4,5 m/s²) : le corps se couche dans l'accélération (atan(a/g) : ~22°
+  // à 4 m/s², la course en compte 8 → +13° au plein), le bassin descend, les bras pompent plus fort, les pas sont plus courts et plus vifs,
+  // le pied se pose SOUS le bassin (il pousse, il ne freine pas). Jamais avec le frein (l'un exclut l'autre). Absent : hier au bit.
+  const dp = br > 0.05 ? 0 : clamp(opts.depart ?? 0, 0, 1);
+  if (dp > 0) { p.lean += 13 * dp; p.drop += 0.025 * dp; p.armA += 12 * dp; p.armOff += 4 * dp; p.bias += 0.03 * dp; p.T *= 1 - 0.12 * dp; p.swingH *= 1 - 0.12 * dp; }
   if (aT !== 0) p.T /= gaitTurnCadence(aT);
   if (opts.pivotHz > 1 / p.T) p.T = 1 / opts.pivotHz;                   // le pivot : la cadence minimale du corps qui tourne sur place (gaitPivotCadence)
   const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);

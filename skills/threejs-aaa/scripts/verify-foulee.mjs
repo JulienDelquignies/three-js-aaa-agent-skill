@@ -219,6 +219,12 @@ console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le
   ok(t.shoulderDy <= -0.025 && t.hipsX >= 0.03 && t.chestRoll >= d.chestRoll + 10, `virage à droite (6 m/s²) : l'épaule droite descend (${cm(t.shoulderDy)} cm), le bassin glisse à droite (${cm(t.hipsX)} cm), le tronc roule ${t.chestRoll.toFixed(0)}° dans le virage (${d.chestRoll.toFixed(0)}° de roulis moyen en course)`);
   ok(Math.abs(t.headRoll - d.headRoll) <= 1 && Math.abs(tl.headRoll - d.headRoll) <= 1, `…et la tête reste d'aplomb (roulis moyen signé ${t.headRoll.toFixed(2)}° c. ${d.headRoll.toFixed(2)} en course, à 1° près — le contre-roulis cou + tête)`);
   ok(Math.abs(tl.shoulderDy + t.shoulderDy) < 1e-4 && Math.abs(tl.hipsX + t.hipsX) < 1e-4 && t.hw >= d.hw + 0.02, `le virage à gauche est le miroir ; la base s'élargit de ${cm(t.hw - d.hw)} cm (le pied extérieur se pose plus large)`);
+  // (26/09) le départ : le corps se couche dans l'accélération, pas plus vifs, jamais avec le frein, et toujours sous le contrat
+  { const dp = mes({ depart: 1 }), d0 = mes({ depart: 1, brake: 1 });
+    ok(dp.lean >= d.lean + 10 && dp.T < d.T && d0.lean === b.lean, `départ 1 à 4,5 m/s : le buste se couche (${dp.lean.toFixed(1)}° c. ${d.lean.toFixed(1)}), les pas s'avivent (cycle ${dp.T.toFixed(3)} c. ${d.T.toFixed(3)} s) ; avec le frein, le frein seul`);
+    ok(JSON.stringify(gaitPose(P, 0.3, 4, 0, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 4, 0, NEUTRAL_GAIT_STYLE, { depart: 0 })), 'départ 0 / absent : la foulée d\'hier au bit');
+    const badD = []; for (const v of [1, 2.8, 4.5, 6, 8]) for (const o of [{ depart: 1 }, { depart: 0.5 }, { depart: 1, turn: 6 }]) { const r = checkGaitGen(P, { vF: v, vR: 0, opts: o }); if (!r.ok) badD.push(`${v} m/s ${JSON.stringify(o)} : ${r.issues.join(' ; ').slice(0, 90)}`); }
+    ok(badD.length === 0, `le départ reste sous le contrat de 1 à 8 m/s${badD.length ? ' — ' + badD.join(' | ') : ''}`); }
   bad = [];
   for (const v of [2.8, 4.5, 6, 8]) for (const o of [{ turn: 6 }, { turn: -6 }, { turn: 9, brake: 1 }]) { const r = checkGaitGen(P, { vF: v, vR: 0, opts: o }); if (!r.ok) bad.push(`${v} m/s ${JSON.stringify(o)} : ${r.issues.join(' ; ').slice(0, 80)}`); }
   ok(bad.length === 0, `le virage, seul ou avec le frein, reste sous le contrat de 2,8 à 8 m/s (la hanche extérieure qui monte est dans le calcul d'affaissement)${bad.length ? ' — ' + bad[0] : ''}`);
