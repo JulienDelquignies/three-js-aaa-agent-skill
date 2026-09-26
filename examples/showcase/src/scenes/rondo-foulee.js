@@ -18,7 +18,7 @@ function prochaineTouche(scene, pl) {
   // le RECEVEUR : la passe arrive à t + vol (la sim le sait dès le départ — 0,5-2 s d'avance : le contrôle au pas)
   if (st.pass && st.pass.to === s.id && !st.restart && st.ball.p[1] < 1.2) { let dt = st.pass.t + (st.pass.flight ?? 1) - st.t;
     // …mais le receveur VA au ballon et le prend plus tôt (mesuré : 0,13-0,2 s avant la fin du vol) : l'instant où le ballon entre à portée (R) à la vitesse de rapprochement
-    const b = st.ball.p, dx = s.p[0] - b[0], dz = s.p[2] - b[2], d = Math.hypot(dx, dz), R = scene._mcfg?.receiveRadius ?? 0.85;
+    const b = st.ball.p, dx = s.p[0] - b[0], dz = s.p[2] - b[2], d = Math.hypot(dx, dz), R = scene._mcfg?.priseAuPied ? (scene._mcfg.priseAuPied.r ?? 0.5) : (scene._mcfg?.receiveRadius ?? 0.85);   // (333) la prise au pied : le contact à r, plus à l'entrée du rayon
     if (d > 1e-3) { const vc = ((st.ball.v[0] - s.v[0]) * dx + (st.ball.v[2] - s.v[1]) * dz) / d; if (vc > 0.5) dt = Math.min(dt, Math.max(0, d - R) / vc); }
     if (dt > 0) return scene._t + dt; }
   if (st.possession?.carrier === s.id && st.ball.owner === s.id && s._resp && !s.act) { const dt = s._resp.t0 + s._resp.T - st.t; if (dt > 0) return scene._t + dt; }
