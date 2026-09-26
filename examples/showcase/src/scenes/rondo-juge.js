@@ -21,12 +21,12 @@ export function jugeImage(J, scene) {
   if (!(dt > 0) || dt > 0.1) { J.ball = scene.ball?.position.clone(); for (const pl of scene.players ?? []) J.P.set(pl.sim.id, { root: pl.model.position.clone(), feet: {} }); return; }
   J.n++;
   // le ballon
-  if (scene.ball) { const b = scene.ball.position, vb = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);
-    if (J.ball && b.distanceTo(J.ball) > vb * dt * 1.5 + 0.03 && !st.restart) { J.sautsBallon++; J.pires.push({ k: 'ballon', t: +t.toFixed(2), d: +b.distanceTo(J.ball).toFixed(2) }); }
-    J.ball = b.clone(); }
+  if (scene.ball) { const b = scene.ball.position, vb1 = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]), vb = Math.max(vb1, J.vb ?? vb1); J.vb = vb1;   // la plus grande des vitesses de début et de fin d'image (une touche qui amortit est légitime)
+    if (J.ball && b.distanceTo(J.ball) > vb * dt * 1.5 + 0.03 && !st.restart) { J.sautsBallon++; const hp = (scene.players ?? []).find((x) => (x._holdW ?? 0) > 0); J.pires.push({ k: 'ballon', t: +t.toFixed(2), d: +b.distanceTo(J.ball).toFixed(2), vb: +vb.toFixed(1), simSaut: J.bs ? +Math.hypot(st.ball.p[0] - J.bs[0], st.ball.p[1] - J.bs[1], st.ball.p[2] - J.bs[2]).toFixed(2) : null, owner: st.ball.owner ?? null, hold: hp ? [hp.sim.id, +hp._holdW.toFixed(2), !!hp.sim.keeper] : null, rendu_sim: +Math.hypot(b.x - st.ball.p[0], b.y - st.ball.p[1], b.z - st.ball.p[2]).toFixed(2), phase: st.phase }); }
+    J.ball = b.clone(); J.bs = [...st.ball.p]; }
   for (const pl of scene.players ?? []) {
-    const s = pl.sim, prev = J.P.get(s.id) ?? { root: null, feet: {} }, r = pl.model.position, vs = Math.hypot(s.v[0], s.v[1]);
-    if (prev.root && r.distanceTo(prev.root) > Math.max(vs, 1) * dt * 1.5 + 0.03 && !st.restart) { J.sautsCorps++; J.pires.push({ k: 'corps', id: s.id, t: +t.toFixed(2), d: +r.distanceTo(prev.root).toFixed(2) }); }
+    const s = pl.sim, prev = J.P.get(s.id) ?? { root: null, feet: {} }, r = pl.model.position, vs1 = Math.hypot(s.v[0], s.v[1]), vs = Math.max(vs1, prev.vs ?? vs1); prev.vs = vs1;
+    if (prev.root && r.distanceTo(prev.root) > Math.max(vs, 1) * dt * 1.5 + 0.03 && !st.restart) { J.sautsCorps++; J.pires.push({ k: 'corps', id: s.id, t: +t.toFixed(2), d: +r.distanceTo(prev.root).toFixed(2), vs: +vs.toFixed(1), offA: pl._offA ? pl._offA.map((x) => +x.toFixed(2)) : null, act: s.act?.payload?.kind ?? null, down: s.down ?? 0, keeper: !!s.keeper }); }
     prev.root = r.clone();
     for (const f of ['left', 'right']) {
       const leg = pl.legs?.[f], L = pl.legLens?.[f]; if (!leg?.foot || !leg.up || !L) continue;
@@ -39,8 +39,10 @@ export function jugeImage(J, scene) {
       const proche = !scene.cam || Math.hypot(scene.cam.position.x - s.p[0], scene.cam.position.z - s.p[2]) < 25;   // les joueurs PROCHES (le LOD anime les lointains une image sur 2-3 : leurs pieds suivent le corps entre deux)
       const pose = !!(gf && gf.phase === 'stance' && !pl.ctrl.airborne), avant = F.pose; F.pose = pose;   // la glisse se lit d'une image POSÉE à la suivante (l'image du contact est l'atterrissage)
       if (proche && F.p && F.q && pose && avant) { const vA = Math.hypot(_a.x - F.p.x, _a.z - F.p.z) / dt, vT = Math.hypot(_t.x - F.q.x, _t.z - F.q.z) / dt, vh = Math.min(vA, vT);
+        const LS0 = pl.ctrl.footLock?.state?.[f === 'left' ? 0 : 1];
         J.piedsPoses++; const kv = vs < 1 ? 'v<1' : vs < 3 ? 'v1-3' : vs < 5 ? 'v3-5' : 'v5+', ko = (pl._offA && Math.hypot(pl._offA[0], pl._offA[1]) > 0.05) ? 'décalé' : 'non-décalé', kc = st.possession?.carrier === s.id ? 'porteur' : 'autres';
-        for (const k of [kv, ko, kc]) { const B = (J.cases ??= {})[k] ??= [0, 0]; B[0]++; if (vh > 0.5) B[1]++; }
+        const ka = kc === 'porteur' ? 'porteur:' + (s.act ? (s.act.payload?.kind ?? 'geste') : pl._touchT != null && t - pl._touchT < 0.35 ? 'touche' : 'conduite') + (LS0 && LS0.driven && LS0.w < 0.5 ? '/verrou-coupé' : '') : null;
+        for (const k of [kv, ko, kc, ka].filter(Boolean)) { const B = (J.cases ??= {})[k] ??= [0, 0]; B[0]++; if (vh > 0.5) B[1]++; }
         const LS = pl.ctrl.footLock?.state?.[f === 'left' ? 0 : 1];
         if (vh > 0.5 && LS) { const e = LS.driven && LS.w > 0.99 ? Math.hypot(_a.x - LS.lock.x, _a.z - LS.lock.z) : -1, mv = LS._lp ? Math.hypot(LS.lock.x - LS._lp[0], LS.lock.z - LS._lp[1]) / dt : null; (J.diag ??= []).length < 3000 && J.diag.push([+e.toFixed(3), mv == null ? null : +mv.toFixed(2), LS.driven ? 1 : 0, +LS.w.toFixed(2), +vh.toFixed(2), +vs.toFixed(1)]); }
         if (LS) LS._lp = [LS.lock.x, LS.lock.z];
@@ -69,5 +71,5 @@ export function jugeBilan(J) {
   return { images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
     jambesEtireesPct: +(100 * J.jambes / Math.max(1, J.jambeImages)).toFixed(2), jambeMax: +J.jambesMax.toFixed(2),
     cases: Object.fromEntries(Object.entries(J.cases ?? {}).map(([k, [n, g]]) => [k, `${Math.round(100 * g / Math.max(1, n))} % de ${n}`])), vGlisse: { p50: q(J.vGl ?? [], 0.5), p90: q(J.vGl ?? [], 0.9) }, diag: J.diag,
-    allonge: { n: A.length, p50: q(A, 0.5), p90: q(A, 0.9), max: q(A, 1), au_dela_1_1: A.filter((r) => r > 1.1).length }, pires: J.pires.slice(-8) };
+    allonge: { n: A.length, p50: q(A, 0.5), p90: q(A, 0.9), max: q(A, 1), au_dela_1_1: A.filter((r) => r > 1.1).length }, pires: J.pires.slice(-30) };
 }

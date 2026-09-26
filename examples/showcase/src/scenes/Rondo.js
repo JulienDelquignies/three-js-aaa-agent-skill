@@ -49,7 +49,7 @@ export class Rondo {
   }
 
   async _build() {
-    const q = new URLSearchParams(location.search);
+    const q = new URLSearchParams(location.search); this._frappeLibre = q.has('frappe-libre');
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
@@ -1096,7 +1096,11 @@ export class Rondo {
       strikeWarpPlan(this, pl); touchLunge(this, pl);   // (306) la fente de la touche, même place — B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
-        const striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;
+        let striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;
+        // (chantier foulée) LA JAMBE DE FRAPPE N'EST LIBÉRÉE QUE QUAND ELLE PART : masquée dès le début de l'armé, la jambe encore EN APPUI
+        // glissait sous le corps qui approche (89 % des appuis du passeur en armé, mesuré). Elle reste verrouillée tant que la foulée la dit
+        // posée et que l'armé n'a pas passé la moitié de son anticipation ; en l'air, en fin d'armé ou à l'accompagnement : à la frappe.
+        if (striking >= 0 && !this._frappeLibre) { const gfS = pl.ctrl._gaitFeet?.[striking === 0 ? 'Left' : 'Right']; if (gfS && gfS.phase !== 'swing' && !act2.fired && act2.t < (act2.anticipation ?? 0) * 0.5) striking = -1; }
         // un corps COUCHÉ (tacle, down > 0) n'a pas de pied d'appui : verrouiller un pied de la
         // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
         // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
