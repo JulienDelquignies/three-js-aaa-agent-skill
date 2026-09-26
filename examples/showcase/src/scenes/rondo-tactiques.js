@@ -22,8 +22,8 @@ export function tactiquesDe(q, noms = null) {
   const tactics = choix.map(({ t, f }) => ({ ...TACTIQUES[t], formation: f, nom: t }));
   const roles = choix.map(({ t, f }) => ({ ...(ROLES_FORMATION[f] ?? {}), ...(f === '433' ? TACTIQUES[t].roles ?? {} : {}) }));
   // LES EFFECTIFS NOTÉS (engine/effectif.js) : chaque joueur a ses 40 notes — le profil de son poste, l'accent de son rôle, sa qualité —
-  // autour du niveau de l'équipe (?niveauA / ?niveauB, défaut 64 / 62) ; ?effectifs=0 : les 22 joueurs identiques d'hier (notés 50)
-  const seed = Number(q.get('seed')) || 7, niv = [Number(q.get('niveauA')) || 64, Number(q.get('niveauB')) || 62];
+  // autour du niveau de l'équipe (?niveauA / ?niveauB, défaut 52 / 50 — 50 est le joueur moyen du moteur, l'échelle de calibrage) ; ?effectifs=0 : les 22 joueurs identiques d'hier (notés 50)
+  const seed = Number(q.get('seed')) || 7, niv = [Number(q.get('niveauA')) || 52, Number(q.get('niveauB')) || 50];
   const squads = q.get('effectifs') === '0' ? null : choix.map(({ f }, k) => genererEffectif({ formation: f, roles: roles[k], niveau: niv[k], graine: seed * 2 + k + 1, noms: noms ? noms.slice(k * 11, k * 11 + 11) : null }));
   return { tactics, roles, choix, squads };
 }
