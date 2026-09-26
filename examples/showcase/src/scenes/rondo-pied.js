@@ -1,40 +1,57 @@
-// rondo-pied.js — LE PIED DU CONTRÔLE (26/09, « commence par les contrôles de balle »). MESURÉ en match (atelier, 43 contrôles au sol,
-// os du pied rendu ↔ ballon rendu sur 0,35 s après la prise) : dans 27 cas l'AUTRE pied passait plus près du ballon que celui qui
-// jouait le geste — le joueur levait la jambe du côté vide. Deux causes : l'événement de contrôle de la sim porte le pied FORT du joueur
-// (p.foot), pas le pied du côté du ballon ; et le contrôle orienté prenait son pied au sens du virage seul. Et dans 19 cas la réception
-// ('receive', déjà du bon côté) était aussitôt rejouée par le contrôle au mauvais pied.
-// Ici, au rendu seul (la sim ne bouge pas) : un contrôle au SOL se joue du pied du côté où le ballon se trouve par rapport au corps ;
-// le pied fort ne décide que si le ballon arrive dans l'axe (|lat| < AXE). Le contrôle orienté garde son intérieur quand le virage
-// part À L'OPPOSÉ du ballon (l'intérieur le fait traverser devant soi) ; quand le virage part DU CÔTÉ du ballon, c'est l'extérieur du
-// même pied qui l'emmène (controleExterieur) — plus la jambe croisée devant l'autre. ?pied-libre : hier.
+// rondo-pied.js — LE GESTE ET LE PIED DU CONTRÔLE, au rendu (la sim ne bouge pas ; ?pied-libre : hier ; ?controles-hier : les espèces
+// d'hier, seul le pied corrigé).
+// (26/09, « commence par les contrôles de balle ») MESURÉ en match (atelier, os du pied rendu ↔ ballon rendu) : le geste prenait le
+// pied FORT porté par l'événement sim (p.foot), le contrôle orienté son pied au sens du virage seul, jamais le côté du ballon ; et le
+// warp de touche (rondo-touche) amenait au ballon le pied LIBRE le plus proche sans savoir quelle jambe jouait le clip.
+// (26/09, « les positions de réception ne sont jamais les mêmes ») : l'espèce elle-même se choisit sur la SITUATION décrite dans le
+// repère du corps rendu — hauteur et vitesse du ballon avant la prise, d'où il arrive, la course du receveur, l'adversaire le plus
+// proche, le virage voulu — par engine/controle-situation.js (générique). Les techniques que la sim NOMME pour de bon (semelle, prise
+// du gardien) restent les siennes.
 
 import * as THREE from 'three/webgpu';
+import { choisirControle } from '../engine/controle-situation.js';
 
-const AXE = 0.06, HAUT = 0.55, _v = new THREE.Vector3();
+const HAUT = 0.55, _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _b = new THREE.Vector3();
+const NOMMEES = /^(controle-semelle|arret-semelle|quart-de-touche|prise-gardien)$/;
 
-/** Le côté du ballon par rapport au corps (convention de la scène : lat > 0 = à gauche). Lu sur le corps RENDU quand il existe : autour
- *  de la prise, le corps affiché n'a ni la position ni le lacet du corps sim (le décalage de contact le tire vers le ballon, le lacet
- *  rendu suit à sa vitesse) — mesuré : ballon « à gauche » pour la sim (lat 0,48) et à 0,19 m du pied DROIT rendu, 0,55 m du gauche.
- *  Repère du modèle Mixamo : la gauche du joueur est −x local. */
-export function latBallon(st, q, pl, ballObj) {
-  if (pl?.model && ballObj?.getWorldPosition) { pl.model.updateMatrixWorld(true); ballObj.getWorldPosition(_v); pl.model.worldToLocal(_v); return -_v.x; }
-  const b = st.ball.p; return (b[0] - q.p[0]) * Math.sin(q.yaw) - (b[2] - q.p[2]) * Math.cos(q.yaw);
+/** Le côté d'un point monde par rapport au corps RENDU (> 0 = à gauche). Autour de la prise le corps affiché n'a ni la position ni le
+ *  lacet du corps sim — mesuré : ballon « à gauche » pour la sim (lat 0,48), à 0,19 m du pied DROIT rendu. Mixamo : gauche = −x local. */
+function latRendu(pl, x, y, z) { _v.set(x, y, z); pl.model.worldToLocal(_v); return -_v.x; }
+
+/** La situation de la prise, dans le repère du corps rendu (voir controle-situation.js). */
+export function situationPrise(scene, pl) {
+  const st = scene.state, s = pl.sim, b = st.ball.p, v = scene._bvAvant ?? st.ball.v;
+  pl.model.updateMatrixWorld(true);
+  if (scene.ball?.getWorldPosition) scene.ball.getWorldPosition(_b); else _b.set(b[0], b[1], b[2]);
+  const vb = Math.hypot(v[0], v[2]);
+  let arrivee = null;
+  if (vb > 0.5) { pl.model.getWorldQuaternion(_q); _v.set(-v[0] / vb, 0, -v[2] / vb).applyQuaternion(_q.invert()); arrivee = Math.acos(Math.max(-1, Math.min(1, -_v.z))) * 180 / Math.PI; }   // d'où vient le ballon, contre l'avant du corps (−z local)
+  let adv = null, pa = null;
+  for (const q of st.players) { if (q.team === s.team || q.keeper || (q.down ?? 0) > 0) continue; const d = Math.hypot(q.p[0] - s.p[0], q.p[2] - s.p[2]); if (adv == null || d < adv) { adv = d; pa = q.p; } }
+  const lat = latRendu(pl, _b.x, _b.y, _b.z);
+  const advLat = pa ? latRendu(pl, pa[0] + pl.model.position.x - s.p[0], 0, pa[2] + pl.model.position.z - s.p[2]) : null;
+  const virage = s.yawWant != null ? Math.atan2(Math.sin(s.yawWant - s.yaw), Math.cos(s.yawWant - s.yaw)) * 180 / Math.PI : null;
+  return { h: b[1], vb, arrivee, lat, vr: Math.hypot(s.v[0], s.v[1]), adv, advLat, virage };
 }
 
-/** L'événement de geste x (déjà résolu : orienté, ramassage…) corrigé pour que le pied qui joue soit celui du ballon. */
+/** L'événement de geste x (déjà résolu par la scène : orienté, ramassage…) → le geste de la situation, joué du bon pied. */
 export function piedDuControle(scene, pl, x) {
-  if (scene._piedLibre || !x || x.move === 'ramassage' || x.tech === 'prise-gardien' || pl.sim.keeper && x.tech?.startsWith('prise')) return x;
-  const st = scene.state; if (st.ball.p[1] > HAUT) return x;
-  const lat = latBallon(st, pl.sim, pl, scene.ball), cote = Math.abs(lat) < AXE ? null : lat > 0 ? 'left' : 'right';
-  const y = !cote || x.foot === cote ? x : x.move === 'controleOriente' ? { ...x, move: 'controleExterieur', foot: cote } : { ...x, foot: cote };
-  // LE PIED DU GESTE EST CELUI QUI VA AU BALLON. Mesuré (même match, mêmes 22 contrôles au sol, avec / sans ce module) : le warp de touche
-  // (rondo-touche) prend le pied LIBRE le plus proche, sans savoir quelle jambe joue le clip — dans 12 cas sur 22 la jambe du geste
-  // s'ouvrait dans le vide pendant que l'autre était tirée au ballon ; le seul choix du côté n'en corrigeait que 2. Le warp lit le pied
-  // nommé par le GESTE (_gestePied, prioritaire — le canal de la foulée, _touchFootPlan, est remis à zéro à chaque image hors conduite),
-  // centré sur la fenêtre de la touche (0,3 s) ; sauf quand la foulée, qui tourne sous le geste, le tient EN APPUI (le warp garde alors le
-  // pied libre). Mesuré : cohérence geste ↔ pied au ballon 10/22 → 26/35. Forcer aussi le pied en appui (arbitre visuel, 150 s, même
-  // match) faisait GLISSER l'appui — glisses du porteur à la touche 4 → 35 % des images — et choisir l'autre pied quand l'appui est
-  // déclaré à la prise n'y changeait rien (25/35 : l'appui change deux fois en 0,3 s). Dette : la foulée devrait lever la jambe du geste.
+  if (scene._piedLibre || !x || x.move === 'ramassage' || NOMMEES.test(x.tech ?? '') || pl.sim.keeper) return x;
+  let y = x;
+  if (!scene._controlesHier) {
+    const sit = situationPrise(scene, pl), c = choisirControle(sit);
+    y = { ...x, move: c.move, foot: c.foot ?? (/^(left|right)$/.test(x.foot ?? '') ? x.foot : sit.lat > 0 ? 'left' : 'right'), situation: c.pourquoi };
+    (scene._controles ??= {})[c.pourquoi] = (scene._controles[c.pourquoi] ?? 0) + 1;   // le relevé (atelier, bancs)
+    const L = (scene._controlesLog ??= []); if (L.length < 400) L.push({ ...sit, tech: x.tech ?? x.type, move: c.move, foot: y.foot });
+  } else if (scene.state.ball.p[1] <= HAUT) {   // les espèces d'hier, le pied du côté du ballon
+    pl.model.updateMatrixWorld(true); scene.ball.getWorldPosition(_b);
+    const lat = latRendu(pl, _b.x, _b.y, _b.z), cote = Math.abs(lat) < 0.06 ? null : lat > 0 ? 'left' : 'right';
+    if (cote && x.foot !== cote) y = x.move === 'controleOriente' ? { ...x, move: 'controleExterieur', foot: cote } : { ...x, foot: cote };
+  }
+  // LE PIED DU GESTE EST CELUI QUI VA AU BALLON : le warp de touche (rondo-touche) et la fente lisent _gestePied, prioritaire sur le
+  // pied libre le plus proche, sauf si la foulée le tient EN APPUI. Mesuré (même match, mêmes 22 contrôles au sol) : jambe du geste
+  // dans le vide pendant que l'autre va au ballon 12 → 6. Rejeté (mesuré) : forcer le pied en appui (glisses du porteur à la touche
+  // 4 → 35 % des images) ; prendre l'autre pied quand l'appui est déclaré à la prise (aucun gain : l'appui change deux fois en 0,3 s).
   if (y.foot === 'left' || y.foot === 'right') { pl._gestePied = y.foot; pl._gestePiedT = scene._t + 0.15; }
   return y;
 }

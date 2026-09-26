@@ -335,7 +335,7 @@ export class Rondo {
     this._skipBtn = document.createElement('button'); this._skipBtn.textContent = 'Passer la cérémonie (C)'; this._skipBtn.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:20;padding:8px 14px;font:14px system-ui;background:#111c;color:#fff;border:1px solid #fff6;border-radius:6px;cursor:pointer;display:none';
     this._skipBtn.addEventListener('click', () => { if (this.matchMode) skipCeremonie(this.state, this._mcfg); }); document.body.appendChild(this._skipBtn);
     window.addEventListener('keydown', (e) => { if ((e.key === 'c' || e.key === 'C') && this.matchMode) skipCeremonie(this.state, this._mcfg); });
-    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
+    this._plan = this.fullMode && !q.has('atelier') ? planDe(q, true) : 'tv'; this.cycleCam = () => planSuivant(this); if (q.has('suivre')) this._suivre = Number(q.get('suivre')); this._corpsLibres = q.has('corps-libres'); this._piedLibre = q.has('pied-libre'); this._controlesHier = q.has('controles-hier');   // les plans (rondo-cameras.js : rapprochée FM, télé, tactique, joueur)
     if (this.fullMode && !q.has('atelier')) this._produit = produitInit(this, { teams: TEAMS, nomDe: (p) => p.name ?? NOMS_DEMO[p.id % NOMS_DEMO.length], sauter: () => skipCeremonie(this.state, this._mcfg), tactiques: this._tac?.choix ?? null });   // le produit match (rondo-produit.js) : modes, bandeau, commentaire, lecture, moments
     if (this._produit && q.get('ralenti') !== '0') { this._ralenti = ralentiInit(this, { onClip: (c) => produitClip(this._produit, c) }); this.revoir = (clip) => ralentiJouer(this._ralenti, this, clip); }   // les RALENTIS (rondo-ralenti.js) : le magnétoscope du rendu, le ralenti après chaque but
     if (this.fullMode && q.has('atelier')) { atelierInit(this); skipCeremonie(this.state, this._mcfg); }
@@ -814,7 +814,7 @@ export class Rondo {
     }
     const step = Math.min(dt, 1 / 30);
     const stepV = step * (this.vitesse ?? 1);   // le temps de LECTURE (l'aval visuel vit au rythme du match, pas de la frame)
-    const before = this.state.events.length;
+    const before = this.state.events.length; this._bvAvant = [...this.state.ball.v];   // (26/09) la vitesse du ballon AVANT le pas : la situation d'un contrôle la lit (rondo-pied)
     const toBefore = this.state.turnovers;
     for (let sv = 0; sv < (this.vitesse ?? 1); sv++) {
       if (this.matchMode) matchStep(this.state, step, this._mcfg);

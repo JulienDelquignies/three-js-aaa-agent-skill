@@ -42,6 +42,24 @@ export const CONTROL_KINDS = {
   // (« amorti » sert aussi de réception PAR DÉFAUT — un ballon sans technique nommée — : la poitrine
   // s'offre, mais sans théâtre : un cambré modéré, des genoux qui plient)
   amorti:            { duration: 1.0,  contact: 0.3,  chest: true, lean: 14, yaw: 0, head: [-8, 6], arms: { elev: 48, fwd: 24, elbow: 44 }, dip: 0.06, lat: 0, back: -0.02, cushionDt: 0.25 },
+  // (26/09, « les positions de réception ne sont jamais les mêmes… multiplie les contrôles selon la situation ») — recensement de 1 794
+  // réceptions de joueurs de champ (2 matchs, sim seule) : 15 % arrivent de DOS ou de biais arrière, 33 % demandent un virage > 90°,
+  // 18 % se prennent en COURSE, 12 % sur un ballon MORT (< 2 m/s), 9 % sur un ballon APPUYÉ (> 9 m/s), 26 % avec un adversaire à < 3 m,
+  // 5 % sur un REBOND (0,2-0,5 m) — tous joués hier par le même intérieur « de face ». Six espèces de plus ; le choix est à
+  // controle-situation.js (situation → espèce, pied), pas à la scène.
+  //   controleCourse    dans la course : court, le pied reçoit ET pousse devant (pas d'arrêt), buste en avant, bras bas ;
+  //   controlePivot     le ballon de dos / le demi-tour : intérieur très ouvert (turn 50), bassin, buste et regard qui tournent (yaw 44) ;
+  //   controleProtection  l'adversaire collé : bassin bas (dip 9 cm), buste penché, le bras du côté de l'appui écarté VERS lui (72°) —
+  //                     le ballon sur le pied loin de lui, l'épaule dedans (yaw −18) ;
+  //   controleAmortiFort  le ballon appuyé : la jambe va loin (flex 40) et RECULE franchement avec lui (cushion flex −16, genou 62) ;
+  //   priseSimple       le ballon mort : petit geste (flex 20), sans théâtre (bras 24°), tête basse ;
+  //   controleRebond    le rebond : pied levé au-dessus du ballon (genou 44, pointe relevée), qui l'écrase au sol.
+  controleCourse:    { duration: 0.45, contact: 0.14, reach: { flex: 30, knee: 18, abd: 8, turn: 22, toe: -4, evert: 8 },   cushion: { flex: 44, knee: 14, abd: 6, turn: 12, dt: 0.12 }, lean: -8, yaw: -2, head: [12, 6], arms: { elev: 30, fwd: 12, elbow: 34 }, dip: 0.02, lat: -0.02, back: 0, excursion: 0.14, height: [0.02, 0.2], pousse: true },
+  controlePivot:     { duration: 0.7,  contact: 0.22, reach: { flex: 30, knee: 30, abd: 16, turn: 50, toe: -6, evert: 12 }, cushion: { flex: 10, knee: 44, abd: 14, turn: 34, dt: 0.18 }, lean: -4, yaw: 44, head: [10, 6], arms: { elev: 46, fwd: 16, elbow: 40 }, dip: 0.04, lat: -0.06, back: -0.02, excursion: 0.18, height: [0.02, 0.22], oriente: true },
+  controleProtection: { duration: 0.75, contact: 0.24, reach: { flex: 38, knee: 40, abd: 12, turn: 30, toe: -10, evert: 10 }, cushion: { flex: 4, knee: 60, abd: 8, turn: 16, dt: 0.18 }, lean: -12, yaw: -18, head: [12, 10], arms: { elev: 72, fwd: 4, elbow: 22 }, dip: 0.06, lat: -0.05, back: -0.04, excursion: 0.16, height: [0.02, 0.22], protege: true },
+  controleAmortiFort: { duration: 0.7, contact: 0.2,  reach: { flex: 40, knee: 26, abd: 10, turn: 26, toe: -6, evert: 8 },  cushion: { flex: -14, knee: 66, abd: 6, turn: 14, dt: 0.22 }, lean: -2, yaw: -6, head: [16, 14], arms: { elev: 48, fwd: 22, elbow: 40 }, dip: 0.045, lat: -0.04, back: -0.05, excursion: 0.22, height: [0.02, 0.22], cede: true },
+  priseSimple:       { duration: 0.45, contact: 0.16, reach: { flex: 20, knee: 14, abd: 6, turn: 20, toe: -4, evert: 6 },   cushion: { flex: 4, knee: 22, abd: 4, turn: 8, dt: 0.12 },   lean: -8, yaw: -4, head: [18, 12], arms: { elev: 24, fwd: 10, elbow: 30 }, dip: 0.02, lat: -0.02, back: 0, excursion: 0.12, height: [0.02, 0.2] },
+  controleRebond:    { duration: 0.6,  contact: 0.22, reach: { flex: 52, knee: 44, abd: 6, turn: 10, toe: -20, evert: 2 },  cushion: { flex: 26, knee: 40, abd: 2, turn: 0, dt: 0.16 },  lean: -8, yaw: 0, head: [18, 14], arms: { elev: 44, fwd: 20, elbow: 40 }, dip: 0.04, lat: -0.04, back: -0.02, excursion: 0.16, height: [0.14, 0.42] },
   tacleDebout:       { duration: 0.7,  contact: 0.28, reach: { flex: 58, knee: 30, abd: 4, turn: 14, toe: -20, evert: 6 },  cushion: { flex: 36, knee: 68, abd: 2, turn: 6, dt: 0.2 },  lean: -24, yaw: -6, head: [-6, 4], arms: { elev: 50, fwd: 32, elbow: 40 }, dip: 0.11, lat: -0.02, back: -0.10, lunge: true, excursion: 0.40, height: [0.02, 0.24] },
 };
 
@@ -158,6 +176,12 @@ export function checkControlGen(spec, P, kindName, { foot = 'right' } = {}) {
     const kC = spec.keys.find((k) => Math.abs(k.t - spec.contact) < 1e-6), q = kC?.pose?.Hips || [0, 0, 0, 1];
     const hy = Math.atan2(2 * (q[0] * q[2] + q[3] * q[1]), 1 - 2 * (q[0] * q[0] + q[1] * q[1])) * 180 / Math.PI;
     if (Math.abs(hy) < 8) issues.push(`les hanches ne s'OUVRENT pas vers la course (lacet du bassin ${hy.toFixed(0)}° au contact < 8)`);
+  }
+  if (K.protege && p.dipC > -0.04) issues.push(`la protection ne se baisse pas (bassin ${(p.dipC * 100).toFixed(0)} cm au contact > −4)`);   // (26/09) le corps bas, l'épaule dedans
+  if (K.cede) {   // (26/09) l'amorti du ballon appuyé : le pied RECULE avec lui après le contact (≥ 10 cm d'excursion rendus)
+    const F = foot === 'right' ? 'RightFoot' : 'LeftFoot', r0 = p.samples[0].w[F].p;
+    let minApres = Infinity; for (const { t, w } of p.samples) if (t > spec.contact && t <= spec.contact + (K.cushion?.dt ?? 0.2) + 0.05) minApres = Math.min(minApres, hyp(w[F].p[0] - r0[0], w[F].p[2] - r0[2]));
+    if (!(p.excC - minApres >= 0.1)) issues.push(`l'amorti ne CÈDE pas (le pied recule de ${((p.excC - minApres) * 100).toFixed(0)} cm après le contact < 10)`);
   }
   if (K.lunge) {
     if (p.dipC > -0.09) issues.push(`la fente ne descend pas (bassin ${(p.dipC * 100).toFixed(0)} cm > −9)`);
