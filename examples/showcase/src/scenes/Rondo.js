@@ -1137,7 +1137,7 @@ export class Rondo {
         // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
         // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
         const lying2 = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub;   // l'expulsé (Loi 12) et le remplacé (Loi 3) marchent
-        if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(dtP, [!lying2 && striking !== 0, !lying2 && striking !== 1], s.yaw, pl.ctrl.groundSpeed ?? 0);
+        const pose2 = !!s._face && Math.hypot(s.v[0], s.v[1]) < 0.3; if (pose2 && pl.ctrl.footLock?.state) for (const fs of pl.ctrl.footLock.state) fs.fadeOut = 0.25;   /* (face.js) LE FACE-À-FACE PLANTÉ relâche l'appui de la course (le verrou le tenait 0,6 m derrière, jambe tendue — l'arrêt semelle freine sous geste, la foulée ne re-plantait plus) : il glisse sous la hanche en 0,25 s */ if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(dtP, [!lying2 && striking !== 0 && !pose2, !lying2 && striking !== 1 && !pose2], s.yaw, pl.ctrl.groundSpeed ?? 0);
       }
       // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);

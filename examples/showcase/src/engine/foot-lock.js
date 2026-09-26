@@ -121,7 +121,7 @@ export class FootLockIK {
         st.drvOn = on;
         if (on) st.lock.set(st.dx + st.off[0], _foot.y, st.dz + st.off[1]);
         st.grounded = on;
-        st.w = Math.max(0, Math.min(1, st.w + (on ? dt : -dt) / 0.03));
+        st.w = Math.max(0, Math.min(1, st.w + (on ? dt / 0.03 : -dt / (st.fadeOut ?? 0.03)))); if (on) st.fadeOut = null;   // (2026-09-26) fadeOut : un relâché LENT posé par la scène (le face-à-face planté : l'appui glisse sous la hanche en 0,25 s, pas en deux images)
         if (st.w > 1e-3) {
           _tgt.set(_foot.x + (st.lock.x - _foot.x) * st.w, Math.max(_foot.y, st.floor), _foot.z + (st.lock.z - _foot.z) * st.w);
           l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee);
