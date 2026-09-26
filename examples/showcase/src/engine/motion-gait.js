@@ -602,6 +602,14 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     if (fp.phase === 'swing' && wJ > 0) volArticulaire(fp, (u - pS(side).s) / (1 - pS(side).s), wJ, p.v, L, hipW,
       hipJointAt(((side === 'Left' ? 0 : 0.5) + pS(side).s) % 1, side), hipJointAt(side === 'Left' ? 0 : 0.5, side),
       ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot, axeDe(side)), b = footPath(0, pS(side), c, vC, ankleY, L.foot, axeDe(side)); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
+    // (26/09, « le genou qui saute ») LE VOL PART D'OÙ LE PIED ÉTAIT : l'appui est ancré au monde (le point réel de la pose) et le vol
+    // reprenait la trajectoire du générateur — mesuré au décollage, le pied sautait de 15 cm (p90, 27 max) en une image, le genou de 30-40°.
+    // opts.swingOff[side] (repère corps, m) : l'écart ancre − générateur au décollage, effacé par le contrôleur sur le début du vol.
+    // RÉFUTÉ comme défaut (mesuré, même fenêtre de match, pieds + genoux > 30°/image en 20 s ; en ligne : 169) : effacé en 0,12 s → 211,
+    // en 0,25 s → 231, plafonné 15 cm en 0,35 s → 214 — décaler la cible du pied en vol fait plier le genou brutalement (l'IK, le pied haut
+    // derrière le corps) ; l'écart au décollage est réel (15 cm p90) mais se corrige en PLANIFIANT le vol depuis le vrai point de décollage,
+    // pas en décalant une trajectoire faite ailleurs. Option : ?vol-ancre (le contrôleur, volAncre).
+    if (fp.phase === 'swing' && opts.swingOff?.[side]) { const o = opts.swingOff[side]; fp.p[0] += o[0]; fp.p[2] += o[1]; }
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;

@@ -285,7 +285,7 @@ export class Rondo {
         };
       })();
       const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite }), cast = castStrikes(entry, p, Number(q.get('seed')) || 7, this._reports.gestes);
-      ctrl.lockExternal = true; ctrl.gaitFondu = q.has('foulee-fondue') ? 0.1 : 0; ctrl.gaitPietine = !q.has('sans-pietine'); ctrl.pivotAppui = q.has('appui-vrille') ? null : 35; ctrl.gaitVraie = !q.has('foulee-intention'); ctrl.gaitDepart = !q.has('sans-depart'); if (ctrl.footLock) ctrl.footLock.carryTau = q.has('pied-sec') ? 0 : 0.1; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
+      ctrl.lockExternal = true; ctrl.gaitFondu = q.has('foulee-fondue') ? 0.1 : 0; ctrl.gaitPietine = !q.has('sans-pietine'); ctrl.pivotAppui = q.has('appui-vrille') ? null : 35; ctrl.volAncre = q.has('vol-ancre'); ctrl.volAncreT = Number(q.get('vol-t')) || 0.25; ctrl.gaitVraie = !q.has('foulee-intention'); ctrl.gaitDepart = !q.has('sans-depart'); if (ctrl.footLock) ctrl.footLock.carryTau = q.has('pied-sec') ? 0 : 0.1; ctrl.gaitGriffe = q.has('griffe') ? Number(q.get('griffe')) || 0 : this.duelMode ? 1 : 0;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas) ; (duel) LE GRIFFÉ de la foulée, ?griffe=0|1
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.

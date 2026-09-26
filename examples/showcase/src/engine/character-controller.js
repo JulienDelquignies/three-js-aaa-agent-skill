@@ -456,6 +456,8 @@ export class CharacterController {
         // premières secondes du vol (opts.swingYaw) — il retombait dans l'axe du corps en une image (mesuré : 32-37° par image, toujours le
         // pied, toujours au décollage, l'axe qui change de signe avec le virage)
         if (this._plants[side] && this._pyLast?.[side] && this.pivotAppui != null) { (this._liftYaw ??= {})[side] = { deg: this._pyLast[side], t: this._clk ?? 0 }; lifted = true; }
+        // …ET D'OÙ IL ÉTAIT : l'écart entre le dernier point ancré (monde) et le pied du générateur à cette image, effacé sur 0,12 s (opts.swingOff)
+        if (this._plants[side] && this._plantW?.[side] && this.volAncre && f) { const pc = toC(this._plantW[side]); const ox = pc[0] - f.p[0], oz = pc[1] - f.p[2], ol = Math.hypot(ox, oz), km = ol > (this.volAncreMax ?? 0.15) ? (this.volAncreMax ?? 0.15) / ol : 1; (this._liftOff ??= {})[side] = { off: [ox * km, oz * km], t: this._clk ?? 0 }; lifted = true; }
         this._plants[side] = null; this.footLock?.drive(li, null); continue; }
       const own = f.own ?? [0, 0, 0], base = [f.p[0] - own[0], f.p[2] - own[2]];
       let a = this._plants[side];
@@ -470,10 +472,11 @@ export class CharacterController {
       if (this.pivotAppui != null) { let d = a.yaw - yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; const m = this.pivotAppui * Math.PI / 180; if (Math.abs(d) > m) a.yaw = yaw + Math.sign(d) * m; }
       const pc = toC(a.w);
       plant[side] = [pc[0] + own[0], 0, pc[1] + own[2]];
-      const tw = toW(plant[side]); this.footLock?.drive(li, tw[0], tw[1]);   // …et le verrou, dernier écrivain de la jambe, le tient là
+      const tw = toW(plant[side]); this.footLock?.drive(li, tw[0], tw[1]); (this._plantW ??= {})[side] = tw;   // …et le verrou, dernier écrivain de la jambe, le tient là
       plantYaw[side] = ((a.yaw - yaw) * 180) / Math.PI; (this._pyLast ??= {})[side] = ((plantYaw[side] % 360) + 540) % 360 - 180;   // ramené à ]−180 ; 180] : −342° = +18° (sinon l'effacement du vol faisait tourner le pied d'un tour)
       any = true;
     }
+    if (this._liftOff) { const so = {}; let n = 0; for (const sd in this._liftOff) { const L = this._liftOff[sd], age = (this._clk ?? 0) - L.t; const TV = this.volAncreT ?? 0.25; if (age >= TV || plant[sd] || Math.hypot(L.off[0], L.off[1]) > 0.5) { delete this._liftOff[sd]; continue; } const u = age / TV, k = 1 - u * u * (3 - 2 * u); so[sd] = [L.off[0] * k, L.off[1] * k]; n++; } if (this._lastGaitOpts) this._lastGaitOpts.swingOff = n ? so : undefined; if (n) lifted = true; }
     if (this._liftYaw) { const sy = {}; let n = 0; for (const sd in this._liftYaw) { const L = this._liftYaw[sd], age = (this._clk ?? 0) - L.t; if (age >= 0.15 || plant[sd]) { delete this._liftYaw[sd]; continue; } const u = age / 0.15; sy[sd] = L.deg * (1 - u * u * (3 - 2 * u)); n++; } if (this._lastGaitOpts) this._lastGaitOpts.swingYaw = n ? sy : undefined; if (n) lifted = true; }
     return any || lifted ? repose(plant, plantYaw) : gait;
   }
