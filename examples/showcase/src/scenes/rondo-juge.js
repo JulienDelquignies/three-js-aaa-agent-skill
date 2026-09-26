@@ -19,7 +19,7 @@ export function jugeInit() {
 export function jugeImage(J, scene) {
   const st = scene.state, t = st.t, dt = J.t == null ? 0 : t - J.t; J.t = t;
   if (!(dt > 0) || dt > 0.1) { J.ball = scene.ball?.position.clone(); for (const pl of scene.players ?? []) J.P.set(pl.sim.id, { root: pl.model.position.clone(), feet: {} }); return; }
-  J.n++;
+  J.n++; { const c = st.possession?.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && !c.keeper && !st.restart && Math.hypot(c.v[0], c.v[1]) > 1.5) J.porteS = (J.porteS ?? 0) + dt; }
   // le ballon
   if (scene.ball) { const b = scene.ball.position, vb1 = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]), vb = Math.max(vb1, J.vb ?? vb1); J.vb = vb1;   // la plus grande des vitesses de début et de fin d'image (une touche qui amortit est légitime)
     if (J.ball && b.distanceTo(J.ball) > vb * dt * 1.5 + 0.03 && !st.restart) { J.sautsBallon++; const hp = (scene.players ?? []).find((x) => (x._holdW ?? 0) > 0); J.pires.push({ k: 'ballon', t: +t.toFixed(2), d: +b.distanceTo(J.ball).toFixed(2), vb: +vb.toFixed(1), simSaut: J.bs ? +Math.hypot(st.ball.p[0] - J.bs[0], st.ball.p[1] - J.bs[1], st.ball.p[2] - J.bs[2]).toFixed(2) : null, owner: st.ball.owner ?? null, hold: hp ? [hp.sim.id, +hp._holdW.toFixed(2), !!hp.sim.keeper] : null, rendu_sim: +Math.hypot(b.x - st.ball.p[0], b.y - st.ball.p[1], b.z - st.ball.p[2]).toFixed(2), phase: st.phase }); }
@@ -83,7 +83,7 @@ export function jugeBilan(J) {
   const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s.length ? +s[Math.floor(p * (s.length - 1))].toFixed(2) : null; };
   const A = J.allonges.map((x) => x.r);
   const P = J.phases ?? [];
-  return { traverse: { images: J.traverse ?? 0, sur: J.traverseImages ?? 0, par: J.travK ?? {}, detail: J.travD ?? {}, penP50: q(J.travP ?? [], 0.5), penP90: q(J.travP ?? [], 0.9) }, plans: (J.plans ?? []).slice(-40), phasePied: { n: P.length, finDeVol: P.filter((u) => u >= 0.8).length, milieu: P.filter((u) => u >= 0 && u < 0.8).length, aucunEnVol: P.filter((u) => u < 0).length }, images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
+  return { porteS: +(J.porteS ?? 0).toFixed(0), traverse: { images: J.traverse ?? 0, sur: J.traverseImages ?? 0, par: J.travK ?? {}, detail: J.travD ?? {}, penP50: q(J.travP ?? [], 0.5), penP90: q(J.travP ?? [], 0.9) }, plans: (J.plans ?? []).slice(-40), phasePied: { n: P.length, finDeVol: P.filter((u) => u >= 0.8).length, milieu: P.filter((u) => u >= 0 && u < 0.8).length, aucunEnVol: P.filter((u) => u < 0).length }, images: J.n, sautsBallon: J.sautsBallon, sautsCorps: J.sautsCorps, glissePct: +(100 * J.glisses / Math.max(1, J.piedsPoses)).toFixed(1), glisseM: +J.glisseM.toFixed(1),
     jambesEtireesPct: +(100 * J.jambes / Math.max(1, J.jambeImages)).toFixed(2), jambeMax: +J.jambesMax.toFixed(2),
     cases: Object.fromEntries(Object.entries(J.cases ?? {}).map(([k, [n, g]]) => [k, `${Math.round(100 * g / Math.max(1, n))} % de ${n}`])), vGlisse: { p50: q(J.vGl ?? [], 0.5), p90: q(J.vGl ?? [], 0.9) }, diag: J.diag,
     allonge: { n: A.length, p50: q(A, 0.5), p90: q(A, 0.9), max: q(A, 1), au_dela_1_1: A.filter((r) => r > 1.1).length }, pires: J.pires.slice(-30) };

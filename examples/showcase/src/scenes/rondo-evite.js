@@ -50,3 +50,23 @@ export function eviteBallon(scene, pl) {
     pl._evite = (pl._evite ?? 0) + 1;
   }
 }
+
+/** LE BALLON BUTE CONTRE LE PIED D'APPUI (chantier foulée) : un pied POSÉ ne bouge pas (il glisserait) — mais un ballon qui roule DANS un appui y buterait.
+ *  L'écart AFFICHÉ (≤ max m, horizontal) qui sort le ballon rendu des pieds posés des joueurs proches ; Rondo le fond au décalage rendu − sim (≤ 3 m/s).
+ *  Jamais contre le pied qui JOUE la touche. Rend [dx, dz] ou null. La sim ne bouge pas. */
+export function ballonDegage(scene, max = 0.12) {
+  if (scene._piedTraverse) return null;
+  const st = scene.state, b = st.ball.p; if (b[1] > 0.5) return null;
+  _g.set(b[0], b[1], b[2]); let ox = 0, oz = 0;
+  for (const pl of scene.players ?? []) {
+    if (Math.hypot(pl.sim.p[0] - b[0], pl.sim.p[2] - b[2]) > 1.3) continue;
+    for (const f of ['left', 'right']) {
+      const leg = pl.legs?.[f], gf = pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']; if (!leg?.foot || !gf || gf.phase === 'swing') continue;
+      if ((pl._touchFootPlan === f || pl._touchFoot === f) && ((pl._touchT != null && Math.abs(scene._t - pl._touchT) < 0.18) || (pl._touchPlanT != null && Math.abs(scene._t - pl._touchPlanT) < 0.18))) continue;
+      const toe = leg.foot.children.find((o) => /ToeBase/i.test(o.name)); leg.foot.getWorldPosition(_f); if (toe) toe.getWorldPosition(_t); else _t.copy(_f);
+      const d = segDist(_f, _t, _g, _e) - 0.045, pen = 0.11 + 0.01 - d; if (pen <= 0) continue;
+      const nx = _g.x - _e.x, nz = _g.z - _e.z, nh = Math.hypot(nx, nz) || 1; ox += nx / nh * pen; oz += nz / nh * pen;
+    }
+  }
+  const l = Math.hypot(ox, oz); if (l < 1e-4) return null; const k = l > max ? max / l : 1; return [ox * k, oz * k];
+}

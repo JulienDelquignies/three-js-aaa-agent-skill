@@ -11,6 +11,9 @@ const wrap = (x) => ((x + 0.5) % 1 + 1) % 1 - 0.5;
 /** L'instant (horloge scène) de la prochaine touche connue du porteur, ou null. */
 function prochaineTouche(scene, pl) {
   const st = scene.state, s = pl.sim;
+  // LA FRAPPE (passe, tir) : son contact est connu dès l'armé — la foulée s'y cale pour que le pied de frappe soit EN VOL au contact, l'autre en appui
+  if (s.act && !s.act.fired && s.act.payload?.pick?.foot && (s.act.anticipation ?? 0) > s.act.t) { pl._frappePied = s.act.payload.pick.foot; return scene._t + (s.act.anticipation - s.act.t); }
+  pl._frappePied = null;
   if (pl._touchPre != null && pl._touchPre > scene._t) return pl._touchPre;
   // le RECEVEUR : la passe arrive à t + vol (la sim le sait dès le départ — 0,5-2 s d'avance : le contrôle au pas)
   if (st.pass && st.pass.to === s.id && !st.restart && st.ball.p[1] < 1.2) { let dt = st.pass.t + (st.pass.flight ?? 1) - st.t;
@@ -43,6 +46,7 @@ export function fouleeSteer(scene, pl, dt, K = {}) {
   // le cycle du porté (329 : une touche par foulée, du côté du pied fort) se joue du PIED FORT — la foulée s'y cale d'un cycle à l'autre
   const fort = s.strongFoot && s.strongFoot !== 'both' ? s.strongFoot : null;
   if (fort && scene.state.ball.owner === s.id && s._resp) foot = fort;
+  if (pl._frappePied) foot = pl._frappePied;   // la frappe : le pied de la technique, en fin de vol au contact
   const e = foot === 'left' ? eL : eR, borne = (K.borne ?? 0.35) * fq;
   const r = Math.max(-borne, Math.min(borne, e / D));
   g.phi = ((g.phi + r * dt) % 1 + 1) % 1;

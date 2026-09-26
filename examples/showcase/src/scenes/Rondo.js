@@ -24,7 +24,7 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon } from './rondo-evite.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
@@ -147,7 +147,7 @@ export class Rondo {
     // en plein format, la portée de tir suit l'échelle (les frappes du 11c11 partent de 16-25 m)
     // …et le CYCLE DE MATCH (chrono — l'enveloppe produit) : deux mi-temps de 3 min, sifflet
     // final, feuille. Le réduit garde son monde sans fin (calibré 76 clauses).
-    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } })
+    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, ...(() => { try { return JSON.parse(q.get('cfg') || '{}'); } catch { return {}; } })() })   /* ?cfg={…} : les clés du moteur surchargées (l'A/B d'une loi dans l'atelier, même match) */
       : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
       ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
@@ -1101,7 +1101,7 @@ export class Rondo {
         // (chantier foulée) LA JAMBE DE FRAPPE N'EST LIBÉRÉE QUE QUAND ELLE PART : masquée dès le début de l'armé, la jambe encore EN APPUI
         // glissait sous le corps qui approche (89 % des appuis du passeur en armé, mesuré). Elle reste verrouillée tant que la foulée la dit
         // posée et que l'armé n'a pas passé la moitié de son anticipation ; en l'air, en fin d'armé ou à l'accompagnement : à la frappe.
-        if (striking >= 0 && !this._frappeLibre) { const gfS = pl.ctrl._gaitFeet?.[striking === 0 ? 'Left' : 'Right']; if (gfS && gfS.phase !== 'swing' && !act2.fired && act2.t < (act2.anticipation ?? 0) * 0.5) striking = -1; }
+        if (striking >= 0 && !this._frappeLibre) { const gfS = pl.ctrl._gaitFeet?.[striking === 0 ? 'Left' : 'Right']; if (gfS && gfS.phase !== 'swing' && !act2.fired) striking = -1; }   // jamais une jambe de frappe encore POSÉE (la foulée est calée pour qu'elle parte avant le contact — rondo-foulee.js)
         // un corps COUCHÉ (tacle, down > 0) n'a pas de pied d'appui : verrouiller un pied de la
         // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
         // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
@@ -1141,7 +1141,8 @@ export class Rondo {
     }
     // (chantier foulée) LE BALLON NE SAUTE PAS AUX MAINS : l'écart rendu − sim (l'attache aux gants) avance au plus à ballOffV m/s, à l'aller comme au retour —
     // fondu en 0,12 s, un ballon tenu à 1 m des mains rendues y volait à 8 m/s puis revenait d'un bloc au lâcher (arbitre visuel : les seuls sauts de ballon)
-    { const W = this._ballOffW ?? [0, 0, 0], O = (this._ballOff ??= [0, 0, 0]), dx = W[0] - O[0], dy = W[1] - O[1], dz = W[2] - O[2], dl = Math.hypot(dx, dy, dz), mv = (this._ballOffV ?? 3) * step;
+    let vOff = this._ballOffV ?? 2.4; if (!this._ballOffW) { vOff = 1.2; const D = ballonDegage(this); if (D) this._ballOffW = [D[0], 0, D[1]]; }   /* le dégagement du pied à ≤ 1,2 m/s (les mains à 2,4) : invisible */   // (chantier foulée) le ballon bute contre l'appui au lieu d'y entrer (rondo-evite.js)
+    { const W = this._ballOffW ?? [0, 0, 0], O = (this._ballOff ??= [0, 0, 0]), dx = W[0] - O[0], dy = W[1] - O[1], dz = W[2] - O[2], dl = Math.hypot(dx, dy, dz), mv = vOff * step;
       const k = dl > mv ? mv / dl : 1; O[0] += dx * k; O[1] += dy * k; O[2] += dz * k; this._ballOffW = null;
       if (Math.hypot(O[0], O[1], O[2]) > 1e-4) this.ball.position.set(b.p[0] + O[0], b.p[1] + O[1], b.p[2] + O[2]); }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;

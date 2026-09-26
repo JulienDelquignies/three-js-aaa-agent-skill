@@ -23,5 +23,6 @@ export function respireDe(st, c, K, pt, espace = 99) {
   const A = (F ? F.amp ?? 0.25 : K.amp ?? 0.6) * Math.min(1, espace / 4) * (c.skill?.dribbleLeadF ?? 1) * (c.speed >= (K.vSprint ?? 5) ? (F ? F.sprintA ?? 1.3 : K.sprintA ?? 1.8) : 1);
   const v = hyp(c.v[0], c.v[1]) || 1, ux = c.v[0] / v, uz = c.v[1] / v;
   const sd = F && c.strongFoot && c.strongFoot !== 'both' ? (c.strongFoot === 'left' ? 1 : -1) * (F.cote ?? 0.06) : 0;   // à gauche du sens de course : (uz, −ux) — la convention de footPoint
-  return { pt: [pt[0] + ux * A * f + uz * sd, pt[1] + uz * A * f - ux * sd], touche };
+  const bx = pt[0], bz = pt[1];
+  return { pt: [bx + ux * A * f + uz * sd, bz + uz * A * f - ux * sd], touche };
 }
