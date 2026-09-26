@@ -92,6 +92,7 @@ export function duelCfg(overrides = {}) {
     // (2026-09-26, « lancer le chantier face-à-face au pas façon Taarabt ») LE FACE-À-FACE AU PAS (face.js) : pose à 1,5-2,6 m corps à corps (le
     // ballon à ~1,4 m du défenseur à sa garde : Headrick 1,15-1,69), un roulé de semelle (0,7 s) toutes les 0,8-1,15 s (Taarabt : une feinte toutes
     // les 0,3-0,6 s, 2-4 par duel), 5 s de tenue au plus (Headrick : 1c1 prudent 5,0 s) ; la fente s'annonce 0,2 s (la charge lue)
+    perteReaction: overrides.perteReaction ?? true,   // (reperte.mjs) le dépossédé n'agit sur le ballon (pique, charge d'épaule) qu'après son temps de réaction (skill.reaction) — il repiquait à 0,12 s
     gardeTiers: base.gardeTiers ? { ...base.gardeTiers, proche: 1.4, milieu: 1.6, loin: 3 } : base.gardeTiers,   // (face.js) LA GARDE DU 1c1 À L'ÉCHELLE (Headrick : 1,15-1,69 m du ballon) — celle du 105 m (2 / 4 / 6 m) tenait le défenseur à 4 m au milieu : le porteur qui allait le chercher ne l'atteignait jamais (74 % des images d'approche au-delà de 2,6 m)
     jockeyConduite: overrides.jockeyConduite ?? 1.2, jockey: base.jockey ? { ...base.jockey, dist: 1.4 } : base.jockey, mord: base.mord ? { ...base.mord, porte: 1.1 } : base.mord,   // (face.js) LA GARDE aussi en conduite : 1,4 m du ballon (Headrick 1,15-1,69), le défenseur ne mord qu'à 1,1 m (× aggrF)
     noyau: base.noyau ? { ...base.noyau, latence: true } : base.noyau,   // (face.js) le disque d'atteinte du take-on part après la latence du défenseur (mordu, fente engagée) — noyau.latenceDe

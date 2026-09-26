@@ -193,3 +193,11 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   « contrôles » sans technique sont les prises de turnover (rondo.turnover). ESSAYÉ ET RETIRÉ : le retournement en course (crochet
   dans la foulée jusqu'à 150° vers le défenseur, freiné Dos'Santos) — 0 face-à-face sur 20, la moitié des ballons perdus (on sert le
   poursuivant). Ce qui ressort : 48 % des prises se font AU CONTACT (< 1,5 m) et 39 % d'entre elles sont reperdues en 1,5 s.
+- Les ballons reperdus juste après une prise AU CONTACT (2026-09-26) : `reperte.mjs` (chaque prise avec le défenseur à < 1,5 m, suivie 1,5 s :
+  reperdue ou non, comment, par un ballon libre et pourquoi, la géométrie, le délai du perdant à sa première action sur le ballon). Le 39 % de
+  prise-balle était GONFLÉ : il comptait le ballon mis en jeu libre (passe, tir, touche) comme perdu ; la vraie reperte SUBIE est 17 % (43 sur
+  251, 32 graines) — un contre-pressing honnête : le perdant agit à 0,42 s (p50), par un pique surtout. Le reliquat : il repiquait 0,12 s
+  après la perte, et chargeait à 0,17 s (le minuteur de charge, GLOBAL, accumulé les rôles inversés) — plus vite qu'un réflexe ; les autres
+  reprises éclair sont des gardiens qui ramassent. Remède (cfg.perteReaction, duel) : le dépossédé ne pique ni ne charge avant son temps de
+  réaction (skill.reaction) — les actions du perdant sous 0,25 s 22 → 8 %, la reperte subie inchangée. verify-charge : 2 ✗ PRÉEXISTANTS (même
+  sur le commit d'avant).

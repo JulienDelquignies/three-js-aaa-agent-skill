@@ -226,7 +226,7 @@ export function chargeStep(st, c, dt, cfg) {
   if (c.keeper) return;
   const B = cfg.charge;
   const foe = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0 && !q.act
-    && d2(q.p, c.p) < (B.dist ?? 0.85) && (q._chgCd ?? 0) <= st.t)
+    && d2(q.p, c.p) < (B.dist ?? 0.85) && (q._chgCd ?? 0) <= st.t && !(st.full && cfg.perteReaction && st.t - (st._lossAt?.[q.id] ?? -9) < (q.skill?.reaction ?? 0.2)))   // (le duel, reperte.mjs) le dépossédé ne charge qu'après sa réaction — et le minuteur, global, repart de zéro : accumulé les rôles inversés, il chargeait 0,17 s après la perte
     .sort((a, b) => d2(a.p, c.p) - d2(b.p, c.p))[0];
   if (!foe || (st.full && (c._bouclier || (c._bouclierGrace ?? -1) > st.t))) { st._chgT = 0; return; }   // (A10 ter, bouclier.js) le porteur qui TIENT ne se charge pas : dans son dos c'est la poussée, jugée là-bas
   st._chgT = (st._chgT ?? 0) + dt;

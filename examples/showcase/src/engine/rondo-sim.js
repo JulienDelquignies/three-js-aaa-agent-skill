@@ -680,7 +680,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       && !(c.act && c.act.payload?.ownsBody)) {
       for (const q of st.players) {
         if (q.team === c.team || q.keeper || q.down > 0) continue;
-        if ((q._pokeCd ?? -1) > st.t) continue;
+        if ((q._pokeCd ?? -1) > st.t) continue; if (st.full && cfg.perteReaction && st.t - (st._lossAt?.[q.id] ?? -9) < (q.skill?.reaction ?? 0.2)) continue;   // (le duel, reperte.mjs) LE DÉPOSSÉDÉ NE REPIQUE QU'APRÈS SA RÉACTION : il piquait 0,12 s après avoir perdu le ballon (4 fois / 64 min)
         const dq = d2(q.p, st.ball.p); const TD = st.full && cfg.tacleDebout ? cfg.tacleDebout : null;   /* (291) LE TACLE DEBOUT (tacle-debout.js) : le cône du pied, la réussite du book, le battu */
         // …et la NOTE de tacle joue la portée du pique (loi attributs no 3 : la note agit sur
         // l'EXÉCUTION) — sans elle, un défenseur faible piquait comme un fort et ÉGALISAIT le
