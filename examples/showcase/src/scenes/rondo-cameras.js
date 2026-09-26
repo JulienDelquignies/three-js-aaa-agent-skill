@@ -13,7 +13,7 @@ export const NOMS_PLANS = { rapprochee: 'Rapprochée', tv: 'Télé', tactique: '
 
 const _p = new THREE.Vector3(), _l = new THREE.Vector3();
 
-export function planDe(q, produit) { const c = q.get('cam'); return PLANS.includes(c) ? c : produit ? 'rapprochee' : 'tv'; }
+export function planDe(q, produit) { const c = q.get('cam'); return PLANS.includes(c) || c === 'etude' ? c : produit ? 'rapprochee' : 'tv'; }   // 'etude' : le plan d'analyse des gestes (hors cycle)
 
 /** Le plan suivant (V) ; rend son nom. */
 export function planSuivant(scene) {
@@ -51,6 +51,9 @@ export function camerasUpdate(scene, dt) {
     L.lerp(_l, neuf ? 1 : k(1.2));
     _p.set(L.x, 62, -34);
     fov = 52;
+  } else if (P === 'etude') {   // L'ÉTUDE (hors cycle, ?cam=etude) : de côté, à hauteur d'homme, 6 m du porteur — les gestes se lisent image par image
+    const id = scene._suivre ?? st.possession?.carrier, c = id >= 0 ? st.players[id] : null, o = c ? c.p : b;   // scene._suivre (?suivre=id) : un joueur précis, ballon ou non
+    L.set(o[0], 0.95, o[2]); cam.position.set(o[0] - 1.5, 1.6, o[2] - 5); cam.fov = 40; cam.updateProjectionMatrix(); cam.lookAt(L); return true;   // rigide : l'étude ne lisse rien
   } else {   // joueur
     const id = st.possession?.carrier, c = id >= 0 ? st.players[id] : null, tm = c ? c.team : st.possession?.team;
     const sg = tm >= 0 ? Math.sign(st.pitch.attackGoal(tm).x || 1) : 1, o = c ? c.p : b;

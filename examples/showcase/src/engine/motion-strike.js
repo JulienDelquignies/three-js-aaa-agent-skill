@@ -348,7 +348,8 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
     const pelvRoll = K.backheel ? 0 : S.hipRoll * bump(t, 0.3 * tc, tTopKnee, tc + 0.1);
     // tronc : arrière à l'armé (lean), avant à l'accompagnement ; contre-rotation ; latéral loin de la jambe
     // (rx + = le haut du corps part vers l'ARRIÈRE — sonde du profil : rx − sur Spine avance la tête)
-    const lean = K.lean * S.lean * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-K.lean * S.lean - 14) * ramp(t, tTopHip, tc + 0.02, tFt) + (14) * ramp(t, tFt, (tFt + T) / 2, T);
+    // (26/09, plan d'étude : le buste restait droit AU contact — il ne basculait qu'après) : le tronc passe AU-DESSUS du ballon autour du contact
+    const lean = K.lean * S.lean * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-K.lean * S.lean - 14) * ramp(t, tTopHip, tc - 0.03, Math.min(tFt, tc + 0.08)) + (14) * ramp(t, tFt, (tFt + T) / 2, T);
     const trunkYaw = K.backheel ? 0 : K.pivot ? -0.6 * K.pivot * turnEnv
       : 10 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-10 - K.open * S.open) * ramp(t, tTopHip, tc + 0.03, tFt) + (K.open * S.open) * ramp(t, tFt, (tFt + T) / 2, T);
     const side = S.sideLean * bump(t, tPlant, tc, T);
