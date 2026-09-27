@@ -104,6 +104,21 @@ for (const parent of ['passe', 'passeRapide', 'deviation']) for (const [v, mods]
   KINDS[`${parent}_${v}`] = { ...KINDS[parent], ...m, amp: AMP_VARIANTES[`${parent}_${v}`] ?? KINDS[parent].amp, variante: v, parent };
 }
 
+// (348) LES GESTES DE LA UNE-TOUCHE PAR ORIENTATION (une-touche-geste.js choisit) — dérivés de la déviation (même durée 0,38, même
+// contact 0,16 : la sim n'arme pas la une-touche, la scène la joue au contact) :
+//   remise     rendue d'où elle vient : le plat du pied BLOQUÉ, l'armé minimal (hipTop −4, genou 24 → 14°), la cheville ferme ;
+//   exterieur  vers le côté du pied qui joue : le pied se RETOURNE (invert −14, turnOut −16), la jambe ne croise pas ;
+//   prolonge   dans la ligne du ballon : la pichenette (flick) de l'extérieur, un effleurement qui laisse filer.
+// (les vitesses du pied — 8,5 et 9 m/s — sont le plancher du générateur à ce contact de 0,16 s : l'amplitude résolue est bornée à 0,7 ;
+// le réel d'une remise est 6-9 m/s)
+export const VARIANTES_UNE_TOUCHE = {
+  remise: { hipTop: -4, hipEnd: 14, kneeTop: 24, kneeMin: 14, turnOut: 24, vFoot: 8.5, follow: 0.05, lean: 3, open: 4, headDown: 24, armElev: 36 },
+  exterieur: { surface: 'outside', turnOut: -16, abdTop: 6, abdContact: -8, invert: -14, toeDown: 12, hipEnd: 28, kneeTop: 22, open: 4 },
+  prolonge: { surface: 'outside', flick: true, vFoot: 9, hipTop: 0, hipEnd: 8, kneeTop: 18, kneeMin: 16, turnOut: -8, invert: -8, follow: 0.05, open: 2, armElev: 36 },
+};
+const AMP_UNE_TOUCHE = { remise: 0.7, exterieur: 0.7, prolonge: 1.0 };
+for (const [v, mods] of Object.entries(VARIANTES_UNE_TOUCHE)) KINDS[`deviation_${v}`] = { ...KINDS.deviation, ...mods, amp: AMP_UNE_TOUCHE[v] ?? KINDS.deviation.amp, variante: v, parent: 'deviation' };
+
 /** Les bornes du STYLE — un détail par joueur, jamais un autre geste (verify-motion les balaye). */
 export const STYLE_RANGES = {
   backswing: [0.86, 1.14],   // × amplitude d'armé (extension de hanche, flexion du genou)

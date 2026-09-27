@@ -14324,6 +14324,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   le ballon mord le visage ~0,1 s ; le genou n'a pas de geste à lui (la cuisse le couvre) ; l'armé ne précède pas toujours l'amorti de
   la tête (réactif : le clip démarre dans sa montée). Bloc 223 ; défaut `15930db45dceb085 / 0a157c6dc6ae7174` ; bloc 1 : `amortiOriente:
   null` DATÉ ; verify-motion 371/10 (inchangé).
+- **Lot 348 — un geste de passe en une touche par orientation (`cfg.uneToucheGeste`, `engine/une-touche-geste.js`).** Demande : « ajoute
+  tous les gestes de passes en une touche nécessaires, pour chaque orientation ». Avant : la une-touche (premiere-intention.js) émettait
+  receive + pass SANS geste — la scène dessinait le CONTRÔLE de réception pendant que le ballon repartait à 6-12 m/s ; la déviation et ses
+  variantes n'existaient que pour la passe ARMÉE (rondo-passe). Maintenant la sim nomme le geste, le pied et la surface dans l'événement
+  (lus AVANT la frappe : vitesse entrante, sortie dans le repère du corps) — la physique ne bouge pas d'un bit (empreinte = 347) :
+  rendu d'où il vient (> 140°) → REMISE (plat du pied bloqué) ou TALONNADE s'il repart dans son dos ; dans sa ligne (< 35°, ou dans son dos
+  sans casser la ligne < 80°) → PROLONGATION (pichenette de l'extérieur, corps ouvert) ; dans son dos en changeant de sens → TALONNADE ; de
+  côté (≥ 50°) → EXTÉRIEUR du côté du pied qui joue, DÉVIATION OUVERTE (intérieur) de l'autre ; sinon déviation, protégée (≤ 1,5 m) ou en
+  course (≥ 3 m/s). Pied : celui du côté du ballon (pied fort dans l'axe). Trois gestes générés neufs (motion-strike, dérivés de la
+  déviation, même durée/contact) : deviation_remise, deviation_exterieur, deviation_prolonge (vitesses du pied 8,5 / 9,5 / 9 m/s : le
+  plancher du générateur à 0,16 s de contact, amplitude résolue bornée à 0,7). Rendu (Rondo, 'pass' une-touche) : le geste nommé joué au
+  pied nommé, démarré 0,06 s avant son contact, à la place du clip de réception ; `?une-touche-hier`.
+  Mesuré (2 × 60 min) : 9,5-11 % des passes en une touche ; prolongation 40 %, remise 22 %, extérieur 15 %, déviation 8 %, ouverte 8 %,
+  talonnade 4-5 % (43 % avant la mise en ordre : des ballons venus de face qui continuaient leur ligne), protégée/course 2 %. Filmé
+  (5 espèces, contact et +0,1 s). verify-motion 401/10 (les 10 rouges d'hier ; 7 refus sur 4 080 gestes au lieu de 6). Bloc 224.
+  Reste : la une-touche n'est pas ARMÉE (décidée au contact) — la fin du swing seule se voit ; le relevé réel (15-25 %) est au-dessus.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

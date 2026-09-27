@@ -8129,5 +8129,22 @@ if (__bloc()) {
     mA.tete >= 3 && mN.tete === 0 && mA.perdus <= mN.perdus + 2 && mA.derr <= mN.derr + 0.02);
 }
 
+if (__bloc()) {
+  // LE GESTE DE LA UNE-TOUCHE PAR ORIENTATION (348, cfg.uneToucheGeste — 27/09 : « ajoute tous les gestes de passes en une touche, pour
+  // chaque orientation »). Avant : la une-touche n'avait pas de geste (la scène dessinait un contrôle). Après : chaque passe en une touche
+  // nomme son geste (remise, prolongation, extérieur, déviation ouverte / protégée / en course, talonnade) et son pied — la physique ne
+  // bouge pas d'un bit (l'empreinte du défaut est celle du 347). La talonnade reste rare (le ballon qui change de sens derrière lui).
+  const GESTES = ['deviation', 'deviation_remise', 'deviation_prolonge', 'deviation_exterieur', 'deviation_ouverte', 'deviation_protegee', 'deviation_course', 'talonnade'];
+  const mesure = (cfg) => { let n = 0, nommees = 0, inconnus = 0, talon = 0, pied = 0; const vus = new Set();
+    for (const seed of [11, 19]) { const st = makeMatch({ full: true, seed }); let ev = 0;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type !== 'pass' || e.style !== 'une-touche') continue; n++;
+          if (e.move) { nommees++; vus.add(e.move); if (!GESTES.includes(e.move)) inconnus++; if (e.move === 'talonnade') talon++; if (e.foot === 'left' || e.foot === 'right') pied++; } } } }
+    return { n, nommees, inconnus, talon, pied, especes: vus.size }; };
+  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 } }, mA = mesure(matchCfg(C)), mN = mesure(matchCfg({ ...C, uneToucheGeste: null }));
+  ok(`lot 348 — LE GESTE DE LA UNE-TOUCHE : ${mA.nommees}/${mA.n} une-touches nommées (hier ${mN.nommees}/${mN.n}), ${mA.especes} gestes distincts, talonnades ${mA.talon}, pied nommé ${mA.pied}, inconnus ${mA.inconnus}`,
+    mA.n === mN.n && mA.nommees === mA.n && mN.nommees === 0 && mA.inconnus === 0 && mA.pied === mA.n && mA.especes >= 4 && mA.talon <= 0.15 * mA.n);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -1,4 +1,4 @@
-import { rendezVousDe } from './rendezvous.js';
+import { rendezVousDe } from './rendezvous.js'; import { gesteUneTouche } from './une-touche-geste.js';   // (348) le geste de la une-touche selon l'orientation
 import { tirage } from './rng.js'; import { sigmaLayoffF, scoreLayoffDe, impossibleDe } from './layoff.js';
 // premiere-intention.js — JOUER LE BALLON SANS LE POSSÉDER : la famille de la première
 // intention. La remise de tête et la volée vivent dans tete.js (le répertoire aérien) ; ICI
@@ -128,6 +128,7 @@ export function uneTouche(st, p, cfg) {
       // garanti qu'elle tient sous le cap de déviation — le layoff reste doux ET arrive)
       const spdU = mate.sol ? mate.sol.speed
         : Math.min(Math.min(12, Math.max(6, mate.d * 0.85)), 4 + 8 * (0.5 + 0.5 * cosDev));
+      const gU = gesteUneTouche(st, p, [st.ball.v[0], st.ball.v[1], st.ball.v[2]], mate.c, cfg);   // (348) lu AVANT la frappe : la vitesse entrante
       st.ball.strike({ speed: spdU, dirYaw: yawU, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
       // LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une première
       // intention n'a PAS d'armé — seen 0, TOUT LE MONDE paie sa réaction pleine. Mesuré avant :
@@ -147,7 +148,7 @@ export function uneTouche(st, p, cfg) {
           ? { team: p.team, side: zS || F.side, n: F.n + 1 } : { team: p.team, side: zS, n: 1 };
       }
       st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
-      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(st.full && cfg.selection ? { cls: 'LAY_OFF' } : {}), ...(pressOk ? {} : { calme: true }), ...(force ? { appui: true } : {}) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(st.full && cfg.selection ? { cls: 'LAY_OFF' } : {}), ...(pressOk ? {} : { calme: true }), ...(force ? { appui: true } : {}), ...(gU ? { move: gU.geste, foot: gU.foot, surface: gU.surface, dev: gU.dev, sortie: gU.sortie } : {}) });
       // …LA COMBINAISON SE COMPTE (240) : le coureur du troisième homme SERVI en une touche = A → B → C abouti ; et la remise
       // d'appui garde la course de C vivante le temps du relais (vie s) — la chaîne A → B → A → C du vrai football
       if (AR) {
