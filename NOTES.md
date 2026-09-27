@@ -14160,6 +14160,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   (rondo-lisse — jamais la jambe au sol). Même instant : le genou monte 71 → 84 → 98 → 112 → 124°, le bassin ne descend plus sous 0,79.
   Segment apparié 20 s, 22 joueurs : sauts genou/cuisse > 30°/image 342 → 280, appuis identiques au bit. ?fente-hier, ?vol-libre : hier.
   Déployé Rondo-C3GVsVMH.js.
+- 339 (27/09, « un joueur en conduite peut-il faire un 60°, un 90°, se retourner avec un râteau ou une feinte ? assez de diversité ? »).
+  SONDÉ (2 × 900 s) : 510 virages de 60-90° par match, 315 de 90-150°, 90 demi-tours (le cap en 0,8 s) — 65 % SANS aucune touche (le ballon
+  collé, le corps pivotait sur la foulée), 4 clips de touche dont aucun ne tourne de plus de 26° ; gestes techniques (sim) : passement 138,
+  crochets ~80, râteau 3, roulette 3-6, feinte de frappe 0, double contact 0, petit pont 0. LE RÉPERTOIRE DES VIRAGES (rondo-virage, rendu) :
+  quand la conduite voulue s'écarte de ≥ 60° du cap d'il y a 0,4 s (l'écart instantané ne le voit pas — la poussée est lissée), le porteur
+  joue : 60-110° l'extérieur du pied côté ballon (crochetExterieur, NOUVEAU) ou l'intérieur de l'autre (crochet / court lancé / chaloupé face
+  à un adversaire si technique ≥ 0,9) ; 110-150° le râteau lent, le crochet lancé ; ≥ 150° le CRUYFF (NOUVEAU : armé, fausse frappe, l'intérieur
+  passe devant le ballon et le tire derrière l'appui) face à un adversaire, le râteau à l'arrêt, la roulette si technique ≥ 1,0, sinon
+  Cruyff / râteau en alternance. Le pied du geste va au VRAI ballon (warp de touche centré sur le contact : 13-15 cm du centre, hier la semelle
+  se posait à 50 cm). Contrats du générateur : les deux nouveaux verts sur 40 styles (le Cruyff : ballon ramené à 0,24 m — à 0,30 la jambe
+  se tendait devant le ballon et le genou claquait à 38 rad/s). Le garde-fou des sauts d'os couvre aussi la FIN de tout geste (le retour à la
+  foulée sautait de 50-55°) et la durée d'un virage. Apparié 45 s porteur (1 366 images, 3 virages) : sauts > 30,5° 68 → 62, > 40° 40 → 34,
+  > 50° 26 → 21 ; appuis des 22 joueurs identiques. Sim inchangée (empreinte 306d463183184f5a / 9b889eb1e1555dc9). ?virages-hier, ?fin-libre.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

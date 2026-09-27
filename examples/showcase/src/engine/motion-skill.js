@@ -35,6 +35,11 @@ export const SKILL_KINDS = {
   crochet:         { duration: 0.55, contact: 0.2,  ball: [0.0, BALL_R, -0.32], cut: true, reach: [0.34, 0.14, -0.28], cross: -0.12, tPlant: 0.36, lean: 14, yawCut: 12, dip: 0.08, headDown: 14 },
   crochetCourt:    { duration: 0.4,  contact: 0.14, ball: [0.0, BALL_R, -0.28], cut: true, reach: [0.27, 0.12, -0.24], cross: -0.07, tPlant: 0.26, lean: 4, yawCut: 4, dip: 0.03, headDown: 12 },
   crochetChaloupe: { duration: 0.8,  contact: 0.42, ball: [0.0, BALL_R, -0.32], cut: true, reach: [0.34, 0.14, -0.28], cross: -0.12, tPlant: 0.58, lean: 12, yawCut: 10, dip: 0.06, headDown: 12, sway: 0.28, swayX: 0.06, swayYaw: 16, swayLean: 8 },
+  // (339) LE CROCHET DE L'EXTÉRIEUR : le pied droit va au côté GAUCHE du ballon et le pousse à DROITE de l'extérieur (le virage du côté du pied)
+  crochetExterieur: { duration: 0.5,  contact: 0.18, ball: [0.0, BALL_R, -0.30], cut: true, ext: true, reach: [-0.20, 0.14, -0.26], cross: 0.34, tPlant: 0.32, lean: 10, yawCut: 10, dip: 0.06, headDown: 14 },
+  // (339) LE CRUYFF : l'armé et la FAUSSE frappe à côté du ballon, puis l'intérieur passe DEVANT le ballon et le tire en arrière, derrière la
+  // jambe d'appui — le demi-tour qui ment (le corps pivote à gauche, écrit par la sim ; le clip anticipe)
+  cruyff: { duration: 0.9, contact: 0.44, ball: [0.0, BALL_R, -0.24], cruyff: true, tArm: 0.14, tFake: 0.28, tPre: 0.36, frac: 0.3, tPlant: 0.74, lean: 10, yawTurn: 26, dip: 0.09, headDown: 14 },
   // LA CROQUETA : deux touches sèches, deux pieds — l'intérieur droit balaie le ballon vers la gauche, le gauche le pousse devant
   doubleContact: { duration: 0.36, contact: 0.18, ball: [0.05, BALL_R, -0.30], croqueta: true, push1: 0.10, lean: 7, dip: 0.04, headDown: 12 },
   // LA PICHENETTE : armé puis extension SÈCHE entre les jambes du fermeur — le corps est déjà bas et penché, les bras restent à la locomotion
@@ -201,10 +206,11 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
   } else if (K.cut) {
     // LA COUPE : (chaloupe : le buste MENT à droite d'abord) — le pied va au côté droit du ballon, balaie vers la gauche À TRAVERS lui (contact), se plante croisé, revient
     const tSway = K.sway ?? 0, tReach = tSway + 0.55 * (tc - tSway);
+    const sg = K.ext ? -1 : 1;   // (339) l'extérieur : le miroir de la coupe (le pied au côté gauche du ballon, la poussée à droite)
     const reachP = [K.reach[0] * reach, restR[1] + K.reach[1] - 0.08, K.reach[2]];
-    const contactP = [b[0] + BALL_R + 0.04, restR[1] + 0.04, b[2] + 0.02];
+    const contactP = [b[0] + sg * (BALL_R + 0.04), restR[1] + 0.04, b[2] + 0.02];
     const crossP = [K.cross, restR[1] + 0.07, b[2] + 0.02];
-    const plantP = [Math.max(K.cross + 0.04, -0.08), restR[1], b[2] + 0.14];
+    const plantP = [sg > 0 ? Math.max(K.cross + 0.04, -0.08) : Math.min(K.cross - 0.04, 0.30), restR[1], b[2] + 0.14];
     // UN balayage de reachP à crossP : le pic de vitesse tombe SUR le contact, où le pied est AU ballon
     // (ramp vaut (tp − t0)/(t1 − t0) en tp : on choisit la fin du balayage pour que ce soit la fraction du chemin au ballon)
     const alpha = (reachP[0] - contactP[0]) / (reachP[0] - crossP[0]);
@@ -215,10 +221,10 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
     };
     const hipsOf = (t) => {
       const sw = tSway ? bump(t, 0, 0.55 * tSway, tSway + 0.08) : 0, cut = ramp(t, tReach, tc, tc + 0.08), back = ramp(t, K.tPlant, (K.tPlant + T) / 2, T);
-      return [(K.swayX ?? 0) * sw - 0.04 * cut * (1 - back), -dip * (0.4 * ramp(t, tSway, tc, tc + 0.05) + 0.6 * cut) * (1 - back) - 0.02 * sw, 0];
+      return [(K.swayX ?? 0) * sw - 0.04 * sg * cut * (1 - back), -dip * (0.4 * ramp(t, tSway, tc, tc + 0.05) + 0.6 * cut) * (1 - back) - 0.02 * sw, 0];
     };
-    const hipsR = (t) => ry(K.yawCut * 0.4 * ramp(t, tReach, tc, tc + 0.08) * (1 - ramp(t, K.tPlant, (K.tPlant + T) / 2, T)));
-    const footR = (t) => ry(-24 * bump(t, tReach - 0.02, tc, K.tPlant));
+    const hipsR = (t) => ry(sg * K.yawCut * 0.4 * ramp(t, tReach, tc, tc + 0.08) * (1 - ramp(t, K.tPlant, (K.tPlant + T) / 2, T)));
+    const footR = (t) => ry(-24 * sg * bump(t, tReach - 0.02, tc, K.tPlant));
     const solReach = solveLeg(P, 'Right', hipsOf(tReach), hipsR(tReach), { p: reachP, foot: footR(tReach) });
     const solPlant = solveLeg(P, 'Right', hipsOf(K.tPlant), hipsR(K.tPlant), { p: plantP, foot: footR(K.tPlant) });
     poseAt = (t) => {
@@ -227,20 +233,52 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       const J = {};
       trunk(J, {
         lean: K.lean * S.lean * (0.5 * ramp(t, tSway, tc, tc + 0.05) + 0.5 * cut) * (1 - back) + 4 * sw,
-        side: -(K.swayLean ?? 0) * sw + K.lean * 0.8 * cut * (1 - back),
-        yaw: -(K.swayYaw ?? 0) * sw + K.yawCut * cut * (1 - back),
+        side: -(K.swayLean ?? 0) * sw + sg * K.lean * 0.8 * cut * (1 - back),
+        yaw: -(K.swayYaw ?? 0) * sw + sg * K.yawCut * cut * (1 - back),
         headDown: K.headDown * S.headDown * (1 - back) * (1 - 0.5 * sw), headYaw: -(K.swayYaw ?? 0) * 0.8 * sw,
       });
       J.Hips = hipsR(t);
       if (t < tReach) applyLeg(J, 'Right', solReach, ramp(t, tSway, (tSway + tReach) / 2, tReach));
       else if (t > K.tPlant) applyLeg(J, 'Right', solPlant, 1 - ramp(t, K.tPlant + 0.02, (K.tPlant + T) / 2, T));
       const bal = cut * (1 - back);
-      Object.assign(J, armJoints('Left', { elev: 14 + 28 * S.armElev * bal + 10 * sw, fwd: 6 + 12 * bal, elbow: 14 + 22 * bal }), armJoints('Right', { elev: 14 + 12 * bal + 16 * sw, fwd: 6 - 10 * bal + 8 * sw, elbow: 14 + 10 * bal + 10 * sw }));
+      const bA = sg > 0 ? 'Left' : 'Right', bB = sg > 0 ? 'Right' : 'Left';   // le bras d'équilibre est du côté de la coupe
+      Object.assign(J, armJoints(bA, { elev: 14 + 28 * S.armElev * bal + 10 * sw, fwd: 6 + 12 * bal, elbow: 14 + 22 * bal }), armJoints(bB, { elev: 14 + 12 * bal + 16 * sw, fwd: 6 - 10 * bal + 8 * sw, elbow: 14 + 10 * bal + 10 * sw }));
       J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
       return { J, hips: hipsOf(t) };
     };
     // l'intérieur tourné vers la coupe : la pointe part à droite pendant le balayage
     ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tReach || t > K.tPlant ? null : { p: footPath(t), foot: footR(t) } });
+  } else if (K.cruyff) {
+    // (339) LE CRUYFF : rest → armé derrière (joint) ; IK : armé → fausse frappe à droite du ballon → devant le ballon → le balayage qui le
+    // TIRE en arrière à travers lui (contact à frac du balayage, le pic de vitesse sur le ballon) → derrière la jambe d'appui → planté ; retour (joint)
+    const h = restR[1];
+    const armP = [0.15, h + 0.24, 0.32], fakeP = [b[0] + 0.17, h + 0.08, b[2] - 0.02], preP = [b[0] + 0.03, h + 0.07, b[2] - 0.12];
+    const behindP = [-0.24, h + 0.05, 0.10], plantP = [-0.12, h, 0.06];
+    const tB = K.tPre + (tc - K.tPre) / K.frac;                              // la fin du balayage : ramp(tc) = frac (le contact au ballon)
+    const footPath = (t) => {
+      if (t <= K.tFake) return lerp3(armP, fakeP, ramp(t, K.tArm, (K.tArm + K.tFake) / 2, K.tFake));
+      if (t <= K.tPre) return lerp3(fakeP, preP, ramp(t, K.tFake, (K.tFake + K.tPre) / 2, K.tPre));
+      if (t <= tB) return lerp3(preP, behindP, ramp(t, K.tPre, tc, tB));
+      return lerp3(behindP, plantP, ramp(t, tB, (tB + K.tPlant) / 2, K.tPlant));
+    };
+    const fake = (t) => bump(t, 0, K.tFake, tc), turn = (t) => ramp(t, K.tPre, tc, tB) * (1 - ramp(t, K.tPlant, (K.tPlant + T) / 2, T));
+    const hipsOf = (t) => [-0.03 * turn(t), -dip * Math.max(0.6 * fake(t), turn(t)), 0];
+    const hipsR = (t) => ry(K.yawTurn * 0.4 * turn(t));
+    const footR = (t) => ry(-18 * bump(t, K.tPre, tc, K.tPlant)) ;
+    const solArm = solveLeg(P, 'Right', hipsOf(K.tArm), hipsR(K.tArm), { p: armP }), solPlant = solveLeg(P, 'Right', hipsOf(K.tPlant), hipsR(K.tPlant), { p: plantP, foot: footR(K.tPlant) });
+    poseAt = (t) => {
+      const f = fake(t), u = turn(t), back = ramp(t, K.tPlant, (K.tPlant + T) / 2, T);
+      const J = {};
+      trunk(J, { lean: K.lean * S.lean * Math.max(f, 0.7 * u), side: 6 * u, yaw: K.yawTurn * u, headDown: K.headDown * S.headDown * Math.max(f, u) * (1 - back) });
+      J.Hips = hipsR(t);
+      if (t < K.tArm) applyLeg(J, 'Right', solArm, ramp(t, 0, 0.6 * K.tArm, K.tArm));
+      else if (t > K.tPlant) applyLeg(J, 'Right', solPlant, 1 - back);
+      // la fausse frappe vend du bras (le gauche s'ouvre comme à la frappe), le pivot ouvre les deux
+      Object.assign(J, armJoints('Left', { elev: 14 + 34 * S.armElev * f + 18 * u, fwd: 6 + 14 * f, elbow: 14 + 20 * Math.max(f, u) }), armJoints('Right', { elev: 14 + 8 * f + 22 * u, fwd: 6 - 16 * f, elbow: 14 + 12 * Math.max(f, u) }));
+      J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
+      return { J, hips: hipsOf(t) };
+    };
+    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < K.tArm || t > K.tPlant ? null : { p: footPath(t), foot: footR(t) } });
   } else if (K.croqueta) {
     // LA CROQUETA : jambe droite balaie le ballon vers la gauche (touche 1 à push1), se plante croisée ;
     // le poids transfère ; jambe gauche va au ballon déplacé et le POUSSE devant (touche 2 = contact)
@@ -338,7 +376,7 @@ export function skillPortrait(spec, P) {
   for (const { t, w } of body.samples) {
     const f = w[K.croqueta && t > K.push1 ? 'LeftFoot' : 'RightFoot'].p, toe = w.RightToeBase.p;
     peakH = Math.max(peakH, f[1] - ground);
-    if (K.cut || t <= spec.contact + 1e-9) { xMin = Math.min(xMin, f[0]); xMax = Math.max(xMax, f[0]); }
+    if (K.cut || K.cruyff || t <= spec.contact + 1e-9) { xMin = Math.min(xMin, f[0]); xMax = Math.max(xMax, f[0]); }
     for (const q of [f, toe]) minBall = Math.min(minBall, hyp(q[0] - b[0], q[1] - b[1], q[2] - b[2]));
     if (t >= spec.contact) backMost = Math.max(backMost, f[2]);
     fwdMost = Math.min(fwdMost, f[2]);
@@ -415,11 +453,18 @@ export function checkSkillGen(spec, P, kindName) {
   if (K.cut) {
     if (p.vFootC < 1.2) issues.push(`la coupe ne BALAIE pas (pied à ${p.vFootC.toFixed(1)} m/s au contact < 1,2)`);
     if (p.distBallC > 0.22 || p.hC > 0.16) issues.push(`l'intérieur n'est pas AU ballon au contact (${(p.distBallC * 100).toFixed(0)} cm, hauteur ${(p.hC * 100).toFixed(0)} cm)`);
-    if (p.xMin > K.cross + 0.06 && p.xMin > -0.08) issues.push(`le pied ne CROISE pas la ligne médiane (x min ${p.xMin.toFixed(2)})`);
+    if (K.ext ? p.xMax < K.cross - 0.06 : p.xMin > K.cross + 0.06 && p.xMin > -0.08) issues.push(K.ext ? `l'extérieur ne POUSSE pas à droite (x max ${p.xMax.toFixed(2)})` : `le pied ne CROISE pas la ligne médiane (x min ${p.xMin.toFixed(2)})`);
     if (p.dipMin > -K.dip * 0.6) issues.push(`le corps ne s'abaisse pas dans la coupe (${(100 * p.dipMin).toFixed(0)} cm)`);
     if (K.sway) {
       if (p.swayYawMax < 8 || p.hipsXPre < 0.04) issues.push(`le chaloupé ne MENT pas du buste (épaules ${p.swayYawMax.toFixed(0)}° à droite < 8, déport ${(100 * p.hipsXPre).toFixed(0)} cm < 4)`);
     } else if (kindName === 'crochetCourt' && p.swayYawAbsPre > 6) issues.push(`le crochet court n'a pas le temps de mentir (épaules ${p.swayYawAbsPre.toFixed(0)}° > 6 avant la coupe)`);
+  }
+  if (K.cruyff) {   // (339) au ballon au contact, TIRÉ derrière la jambe d'appui, la fausse frappe devant le ballon avant
+    if (p.distBallC > 0.2 || p.hC > 0.16) issues.push(`l'intérieur n'est pas AU ballon au contact (${(p.distBallC * 100).toFixed(0)} cm, hauteur ${(p.hC * 100).toFixed(0)} cm)`);
+    if (p.backMost < 0.04) issues.push(`le Cruyff ne tire pas le ballon DERRIÈRE l'appui (pied au plus à z=${p.backMost.toFixed(2)} après le contact < 0,04)`);
+    if (p.xMin > -0.16) issues.push(`le pied ne passe pas derrière la jambe d'appui (x min ${p.xMin.toFixed(2)} > −0,16)`);
+    if (p.fwdMost > b[2] - 0.10) issues.push(`la fausse frappe ne passe pas DEVANT le ballon (z min ${p.fwdMost.toFixed(2)})`);
+    if (p.vFootC < 0.8) issues.push(`le balayage est mou au contact (${p.vFootC.toFixed(1)} m/s < 0,8)`);
   }
   if (K.croqueta) {
     if (p.sweepL < 0.22) issues.push(`la touche 1 ne BALAIE pas vers la gauche (pied droit ${(100 * p.sweepL).toFixed(0)} cm < 22)`);

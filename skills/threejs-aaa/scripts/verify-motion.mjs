@@ -177,6 +177,7 @@ for (const k of Object.keys(SKILL_KINDS)) {
   const what = K.sole ? `semelle à ${(p.hC * 100).toFixed(0)} cm du sol, ${(p.distBallC * 100).toFixed(0)} cm du ballon${K.dragTo != null ? `, tirée jusqu'à z=${p.backMost.toFixed(2)}` : ''}${K.hold ? `, tenue à ${(p.holdDrift * 100).toFixed(1)} cm` : ''}`
     : K.circle ? `pied à ${(p.peakH * 100).toFixed(0)} cm par-dessus, balayage ${((p.xMax - p.xMin) * 100).toFixed(0)} cm, jamais à moins de ${(p.minBall * 100).toFixed(0)} cm du ballon, buste ${p.leanMax.toFixed(0)}°`
     : K.cut ? `intérieur au ballon à ${p.vFootC.toFixed(1)} m/s, croise jusqu'à x=${p.xMin.toFixed(2)}, bassin ${(p.dipMin * 100).toFixed(0)} cm${K.sway ? `, épaules ${p.swayYawMax.toFixed(0)}° à droite avant la coupe` : ''}`
+    : K.cruyff ? `fausse frappe jusqu'à z=${p.fwdMost.toFixed(2)}, intérieur au ballon à ${(p.distBallC * 100).toFixed(0)} cm et ${p.vFootC.toFixed(1)} m/s, tiré derrière l'appui jusqu'à x=${p.xMin.toFixed(2)} z=${p.backMost.toFixed(2)}`
     : K.croqueta ? `pied droit balaie ${(p.sweepL * 100).toFixed(0)} cm à gauche, pied gauche pousse ${(p.pushL * 100).toFixed(0)} cm devant, appuis ${(p.supA * 100).toFixed(1)}/${(p.supB * 100).toFixed(1)} cm`
     : `genou ${p.kneeAt(K.arm).toFixed(0)}° armé → ${p.kneeAt(spec.contact).toFixed(0)}° au contact, pied ${p.vFootC.toFixed(1)} m/s, sans clé de bras`;
   ok(`« ${k} » : ${what}`, c.ok, c.issues.slice(0, 3).join(' | '));

@@ -17,7 +17,10 @@ export function lisseOs(scene, pl, dt) {
   // …SEULEMENT dans les 0,3 s qui suivent un CHANGEMENT DE GESTE (pl._switchT, posé par _playTech) : partout ailleurs le garde-fou
   // brident aussi les sauts de la foulée (le pied au décollage / à la pose — autre chantier, le verrou des pieds) et, placé après le
   // verrou, il faisait glisser les appuis (mesuré : glisses 1,3 → 2,2 %, 89 os freinés / joueur-minute)
-  const reprise = !(dt > 0 && dt < 0.1) || scene._t - L.t > 0.1, saut = reprise || !(scene._t - (pl._switchT ?? -9) < 0.3);   // hors fenêtre, une reprise : on suit sans brider
+  // (339) …et à la FIN d'un geste (le retour à la foulée : mesuré 50-55° d'une image à la sortie du râteau) et pendant tout un geste de
+  // VIRAGE (pl._lisseJusqua, rondo-virage : le balayage du Cruyff et le warp au ballon réel, 36-56° mesurés au contact) ; ?os-libres : hier
+  const actG = !!pl.gestureLayer?.active; if (L.act && !actG && !scene._finLibre) pl._switchT = scene._t; L.act = actG;
+  const reprise = !(dt > 0 && dt < 0.1) || scene._t - L.t > 0.1, saut = reprise || !(scene._t - (pl._switchT ?? -9) < 0.3 || scene._t < (pl._lisseJusqua ?? -9));   // hors fenêtre, une reprise : on suit sans brider
   L.t = scene._t;
   const max = VMAX * Math.max(dt, 1 / 240), maxVol = VVOL * Math.max(dt, 1 / 240);
   // (338 ter) LA JAMBE EN VOL (retour du 26/09 « la jambe est bizarre là ») : au décollage le genou sautait de 50-55° en UNE image (71 → 126°,
