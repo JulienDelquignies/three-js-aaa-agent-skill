@@ -14200,6 +14200,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   la hanche s'en éloigne de 24 cm, un petit pas rasant (0,12 s, 6 cm) le replace sous la hanche mené de 0,12 s. Après : 0 cm de glisse sur
   les images ancrées, le pied piétine (~60 % des images en petit pas). ?appui-geste-libre : hier. Deux fausses pistes corrigées en route : le
   pas visait le pied du clip mené (40-80 cm, hors de portée — pied traîné en montant à 22-30 cm), l'ancre prenait la hauteur du pied du clip.
+- 340 quater (27/09, « tu peux pas faire une scène exprès ? ») : L'ATELIER DRIBBLE (match11.html?atelier=dribble&geste=passement|crochet|
+  rateau|doubleContact|petitPont|roulette|frappeFeinte|semelle|feinte|tout, &ralenti=0.5, &v=3.5, &ecart=6 — rondo-dribble.js). Le même
+  moteur et les mêmes lois ; la situation est MISE EN SCÈNE en boucle : un attaquant lancé face à un défenseur qui l'attend, les 20 autres
+  garés le long des lignes, le geste choisi poussé (poids 6, les autres 0), le jeu de passe éteint ; le ballon replacé par une remise nommée
+  (ball-body refuse l'écriture de position et les causes hors règlement). Caméra de côté, HUD (geste, tours, mordu), window.__atelier.dribble.log.
+  Premier essai : 6 passements en course (2-4 tours) sur 12 cycles, défenseur mordu 3 fois — hier un passement multiple lancé par 5-10 min.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

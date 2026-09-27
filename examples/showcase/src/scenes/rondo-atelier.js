@@ -9,7 +9,8 @@
 import * as THREE from 'three/webgpu';
 import { predictPath } from '../engine/ball-predict.js';
 import { veriteInit, veriteEvent, veriteUpdate } from './rondo-verite.js';   // ?atelier=verite : la zone de vérité (les 25 derniers mètres)
-import { conduiteInit, conduiteEvent, conduiteUpdate } from './rondo-conduite.js';   // ?atelier=conduite : la conduite et le contrôle contre les repères du réel
+import { conduiteInit, conduiteEvent, conduiteUpdate } from './rondo-conduite.js';
+import { dribbleInit, dribbleEvent, dribbleUpdate, dribbleDt } from './rondo-dribble.js';   // ?atelier=dribble : le duel mis en scène en boucle (27/09)   // ?atelier=conduite : la conduite et le contrôle contre les repères du réel
 
 const h = Math.hypot;
 
@@ -30,6 +31,7 @@ export function atelierInit(scene) {
   if (filtre.includes('conduite')) conduiteInit(scene, A);
   if (typeof window !== 'undefined') window.__atelier = A;
   scene._atelier = A;
+  if (filtre.includes('dribble')) dribbleInit(scene, A);
   return A;
 }
 
@@ -45,6 +47,7 @@ function typeDe(st, e, filtre) {
 /** Le pas de temps de l'atelier : 0 quand le monde est suspendu, ralenti pendant une passe suivie. */
 export function atelierDt(scene, dt) {
   const A = scene._atelier; if (!A) return dt;
+  if (A.dribble) return dribbleDt(A, dt);
   // ?vitesse=N accélère l'attente entre deux passes suivies ; la passe suivie se joue à vitesse 1 (puis au ralenti)
   const suivi = A.verite ? A.verite.cur : A.cur, dern = A.verite ? A.verite.dernier : A.dernier;
   if (A.v0 == null) A.v0 = scene.vitesse ?? 1; scene.vitesse = suivi || A.gele || (dern && A.now - (dern.tFin ?? -9) < 1.2) ? 1 : A.v0;
@@ -57,6 +60,7 @@ function geler(A, quand) { if (A.arret) A.gele = quand; if (A.cur) A.cur.moments
 /** Les événements du pas : une passe de jeu ouvre un suivi, le contrôle du receveur le marque. */
 export function atelierEvent(scene, e) {
   const A = scene._atelier, st = scene.state; if (!A) return;
+  if (A.dribble) { dribbleEvent(scene, A, e); return; }
   if (A.verite) { veriteEvent(scene, A, e); return; }
   if (A.conduite) { conduiteEvent(scene, A, e); return; }
   if (e.type === 'pass' && !e.clear && !e.mains && e.to >= 0 && st.pass && !st.restart && !st.players[e.by]?.keeper && typeDe(st, e, A.filtre)) {
@@ -87,6 +91,7 @@ function clore(A, fin) {
 /** Chaque image : les marqueurs, le relevé −0,3 s, la 2e touche, la caméra de l'atelier, le HUD. Rend true si la caméra est prise. */
 export function atelierUpdate(scene) {
   const A = scene._atelier, st = scene.state; if (!A) return false;
+  if (A.dribble) return dribbleUpdate(scene, A);
   if (A.verite) return veriteUpdate(scene, A);
   if (A.conduite) return conduiteUpdate(scene, A);
   const c = A.cur; A.now = st.t;
