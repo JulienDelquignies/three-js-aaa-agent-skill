@@ -133,6 +133,18 @@ export function movePlayers(st, dt, cfg) {
       && d2(p.p, st.ball.p) > ((p._prepShot ?? -1) > st.t ? 0.95 : cfg.carrySurge.at)) {
       top = Math.max(top, cfg.carrySurge.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
     }
+    // (2026-09-27, cfg.courseLibre — le duel) LA COURSE LIBRE : le défenseur DÉPASSÉ (derrière le porteur, côté but, de derriere m au moins) ou loin
+    // (≥ loin m), le but à plus de but m — le porteur ACCÉLÈRE balle au pied jusqu'à top m/s (le sprint balle au pied : ≈ 85-90 % de la pointe
+    // sans ballon, Huijgen et al. 2010). Mesuré avant (16 × 120 s) : défenseur dépassé, il trottait vers le but à 3,7 m/s (p50 ; 4,7 au p90) —
+    // plafonné à l'allure du ballon collé (speeds.carry 4,2) ; « pas assez de changements de vitesse » (retour utilisateur).
+    if (st.full && cfg.courseLibre && p.job === 'carry' && !p.keeper && st.possession.carrier === p.id && !p.act) {
+      const K = cfg.courseLibre, g = st.pitch.attackGoal(p.team), gx = g.x - p.p[0], gz = -p.p[2], gl = hyp(gx, gz) || 1;
+      if (gl > (K.but ?? 5) && st.pitch.hz - Math.abs(p.p[2]) > (K.paroi ?? 0)) {   // (…dans l'ESPACE : à moins de paroi m de la grille latérale, le sprint envoyait le ballon dedans — grille.mjs : 16 % de rebonds perdus contre 7)
+        let libre = true;
+        for (const q of st.players) { if (q.team === p.team || q.keeper || q.down > 0 || q.expulse || q._sub) continue; const ax = ((q.p[0] - p.p[0]) * gx + (q.p[2] - p.p[2]) * gz) / gl; if (ax > -(K.derriere ?? 1.0) && d2(q.p, p.p) < (K.loin ?? 5)) libre = false; }
+        if (libre) top = Math.max(top, K.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
+      }
+    }
     // LA FATIGUE PLIE LA POINTE (cfg.fatigue && st.full, lot 31) — UN effet v1, une autorité :
     // le plafond de vitesse perd jusqu'à `cap` (15 %) quand l'essence est à zéro. Le drain vit
     // en fin de pas (après l'intégration), l'attribut stamina le module, la précision fatiguée
@@ -364,6 +376,20 @@ export function movePlayers(st, dt, cfg) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
       const d = hyp(dx, dz); dTgt = d;
       if (d > ARRIVEE) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
+    }
+    // (2026-09-27, cfg.paroi — la cage) LE PORTEUR LONGE LA GRILLE, IL NE FONCE PAS DEDANS : mesuré (grille.mjs), 57 % des rebonds sur la grille
+    // pendant une conduite, 4 sur 10 tournaient mal (ballon perdu 14 %, parti 24 %) — à la touche d'avant, le porteur à 0,8 m de la paroi COURAIT
+    // VERS ELLE à 60° (p50), la touche suivait sa course (le ballon à 4,8 m/s dans le mur) ; le corps s'arrête à la grille (murCorps), la course
+    // non. Près d'une paroi (d < d[1]), la part de la course voulue qui va dedans s'éteint jusqu'à d[0] — il la longe à la même allure. La paroi de
+    // fond devant le but (|z| < goalHalf + but) est le but : on y va.
+    if (st.full && cfg.paroi && (wx || wz) && !p.act && st.phase === 'carry' && st.possession?.carrier === p.id) {
+      const K = cfg.paroi, mag = hyp(wx, wz), lims = [st.pitch.hx, st.pitch.hz];
+      for (let ax = 0; ax < 2; ax++) {
+        if (ax === 0 && Math.abs(p.p[2]) < st.pitch.goalHalf + (K.but ?? 1.0)) continue;
+        const pos = ax ? p.p[2] : p.p[0], sg = Math.sign(pos) || 1, dist = lims[ax] - Math.abs(pos), wn = (ax ? wz : wx) * sg;
+        if (wn > 0 && dist < K.d[1]) { const k = Math.max(0, Math.min(1, (K.d[1] - dist) / (K.d[1] - K.d[0]))); if (ax) wz -= sg * wn * k; else wx -= sg * wn * k; }   // (essayé, 32 × 120 s : la portée qui suit l'allure — 0,6 s de course — et le rendez-vous de touche à 0,45 m de la grille : 14 % de rebonds perdus contre 7 %)
+      }
+      const m2 = hyp(wx, wz); if (m2 > 1e-3) { wx *= mag / m2; wz *= mag / m2; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
     // de plusieurs mètres en une image (churn mesuré 18-19 m/s) et la locomotion vivait en

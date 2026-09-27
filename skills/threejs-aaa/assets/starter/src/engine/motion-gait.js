@@ -230,6 +230,10 @@ export function gaitStyleFromSeed(seed) {
 }
 
 const sstep = (t) => { const u = clamp(t, 0, 1); return u * u * (3 - 2 * u); };
+// (2026-09-27) LE BASSIN NE DESCEND PAS CHERCHER UN PIED AU-DELÀ D'UNE FENTE (m) : la portée qui rabaisse le bassin était sans plafond — la feinte de
+// corps en course posait le pied de la vente à 0,97 m sur le côté, le bassin descendait à 0,08 m pour l'atteindre (bassin-chute : un joueur
+// accroupi au ras du sol à 4 m/s, 0,3 s). Au-delà, c'est la cible du pied qui est fausse, pas le corps qui doit s'accroupir.
+const DROP_PORTEE = 0.15, PIED_GESTE = 0.62;
 
 /**
  * LE CHEMIN D'UN PIED à sa phase u ∈ [0,1) (u = 0 au contact), en repère personnage RELATIF au
@@ -530,7 +534,10 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 6 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
   if (aT !== 0) p.T /= gaitTurnCadence(aT);
   if (opts.pivotHz > 1 / p.T) p.T = 1 / opts.pivotHz;                   // le pivot : la cadence minimale du corps qui tourne sur place (gaitPivotCadence)
-  if (opts.pasT > 0) p.T = opts.pasT;                                    // (2026-09-24) la durée du cycle de l'horloge de la SIM (pas.js) : la phase qu'elle impose et la durée de la pose sont UNE
+  if (opts.pasT > 0) p.T = Math.min(opts.pasT, 1.5 * p.T);             // (2026-09-24) la durée du cycle de l'horloge de la SIM (pas.js) : la phase qu'elle impose et la durée de la pose sont UNE
+  // (2026-09-27) …BORNÉE à 1,5 × le cycle naturel à l'allure RENDUE : la foulée = vitesse rendue × cycle ; un corps que la sim arrête net (le gardien
+  // arrivé à sa place pour l'engagement) a une horloge qui s'étire (f → plancher) quand le rendu décélère encore à 1,3 m/s — enjambée de 2-4 m, pieds
+  // hors de portée, le bassin descendu à 0,12 m pendant 0,1 s (plongeon-rendu, retour « le gardien plonge 2 fois »)
   const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);
   if (aT !== 0) p.swingH *= 1 - 0.15 * Math.min(1, Math.abs(aT) / 9);   // la jambe intérieure, hanche plus basse, passe plus ras (le genou reste sous 140°) ; les pas de frein rasent aussi
   const L = P.lengths, R = L.thigh + L.shank;
@@ -568,7 +575,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // jamais (le contrat) ; sans virage : la foulée d'hier au bit.
   const kX = opts.coupe ? 0 : clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // (coupe.js) pas de pas croisé pendant une coupe : c'est un pas de CÔTÉ   // …atténué au sprint (la foulée longue sature la hanche)
   if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
-  if (GV) { cL[0] -= 0.09 * (GV.Left?.elargi ?? 0); cR[0] += 0.09 * (GV.Right?.elargi ?? 0); }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui
+  if (GV) { cL[0] -= 0.09 * (GV.Left?.elargi ?? 0); cR[0] += 0.09 * (GV.Right?.elargi ?? 0); cL[0] = Math.max(cL[0], -0.5); cR[0] = Math.min(cR[0], 0.5); }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui ; (2026-09-27) le couloir du geste au plus à 0,5 m (la course latérale s'y ajoute — Brault 2010 : le pied extérieur ≈ 0,6 m)
   // (2026-09-27, coupe.js) LA COUPE : le pied planté se pose ÉCARTÉ vers l'extérieur du virage (la jambe qui pousse de côté — lat m, selon la poussée
   // latérale de l'appui) ; k monte sur la fin de son vol et tient l'appui. Absente : hier au bit.
   const CO = opts.coupe; if (CO && CO.k > 0) { if (CO.pied === 'left') cL[0] -= CO.lat * CO.k; else cR[0] += CO.lat * CO.k; }
@@ -585,7 +592,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // (2026-09-24) …et la portée y RABAISSE LOCALEMENT : chaque instant d'appui qui sortirait de portée note son besoin (demi-cycle t) ; une
   // enveloppe lisse (cosinus, ±0,08 cycle) l'applique autour de lui seulement. Global, le pire instant (la pose ou le décollage, jambe presque
   // tendue chez les coureurs — genou 11-19°) abaissait tout le cycle de 2-3 cm, et le genou se posait plié à 36-45° (coureurs : 11-13°).
-  const dropBase = drop, besoins = [], note = (u, need) => { if (kRun > 0 && need > dropBase) besoins.push([((u % 0.5) + 0.5) % 0.5, need - dropBase]); };
+  const dropBase = drop, besoins = [], note = (u, need) => { if (kRun > 0 && need > dropBase) besoins.push([((u % 0.5) + 0.5) % 0.5, Math.min(DROP_PORTEE, need - dropBase)]); };
   // (2026-09-24) L'APPUI SEULEMENT, pelage compris : c'est là qu'un pied hors de portée GLISSE. En vol le chemin de base est atteignable
   // et le griffé est borné par la portée (boundCarry, plus bas) — la marge d'hier (u ≤ s + 0,06) mettait le début du vol dans le calcul,
   // et avec les foulées de Dorn le pied qui traîne derrière faisait tomber le bassin de 10-20 cm pour une jambe qui ne touche plus le sol.
@@ -620,6 +627,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
       const need = hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.012, x = side === 'Left' ? u : u + 0.5; if (kRun > 0) note(x, needAt(x, side, fp, 0.012)); else drop = Math.max(drop, need);
     }
   }
+  drop = Math.min(drop, dropBase + DROP_PORTEE);   // (hors course, le même plafond)
   const rabais = (x) => { const t = ((x % 0.5) + 0.5) % 0.5; let e = 0; for (const [tb, n] of besoins) { let d = Math.abs(t - tb); d = Math.max(0, Math.min(d, 0.5 - d) - 0.03) / 0.08; if (d < 1) e = Math.max(e, n * (0.5 + 0.5 * Math.cos(Math.PI * d))); } return e; };   // plateau ±0,03 (la jambe qui vient se poser est déjà tendue), puis cosinus
   // (coupe.js) L'APPUI DE COUPE ABAISSE LE BASSIN autant qu'il faut pour que la jambe atteigne le pied PLANTÉ (l'ancre du contrôleur, opts.plant) — la
   // portée du « rabais » ne voit que les appuis du générateur ; le corps passe 0,7-1 m à côté du pied de coupe en 0,2-0,5 s et la jambe tendue
@@ -692,6 +700,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
       const need = GV.balle[0] - sgn * 0.17, bas = fp.phase === 'swing' ? sstep((ankleY + 0.15 - fp.p[1]) / 0.1) : 1, pres = 1 - sstep((Math.abs(fp.p[2] - GV.balle[1]) - 0.15) / 0.15);
       if (-sgn * (need - fp.p[0]) > 0) fp.p[0] += (need - fp.p[0]) * bas * pres * Math.min(1, GV[side].elargi);
     }
+    if (GV && (GV[side]?.elargi ?? 0) > 0 && !pl) fp.p[0] = clamp(fp.p[0], -PIED_GESTE, PIED_GESTE);   // (2026-09-27) le pied d'un geste (vente, arc) au plus à 0,62 m du centre du corps (Brault 2010 : ≈ 0,6 m) — 0,97 m mesurés
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;

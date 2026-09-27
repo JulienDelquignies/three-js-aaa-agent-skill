@@ -303,3 +303,26 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   37 à < 0,13 m du centre) → le 1er point de l'arc plus haut et plus en arrière, pointe relevée 18° ; le ballon des arcs tenu dans le couloir
   du pied de SORTIE et à τ·v derrière sa cible (0,13 m devant le corps à 2,5 m/s) → au milieu, à 0,40 m au moins, cible anticipée ; la pose
   de la jambe qui a cerclé contre un ballon décentré → la cheville tenue à 0,17 m de lui latéralement (avant l'ancre).
+
+## Le rythme, la grille, le double plongeon (2026-09-27)
+- « Parfois les gardiens plongent 2 fois sur le même plongeon » — `plongeon-rendu.mjs <url>` : chaque plongeon, le bassin rendu (une
+  descente, ou deux), le clip et son poids, l'acte sim. La sim ne plonge jamais deux fois (0 doublon sur 30 plongeons) : le sifflet (but,
+  sortie — referee : « une remise annule les armés ») tue l'acte encore dans son armé (la moitié des plongeons : acte fini à +0,05-0,25 s) ;
+  le rendu gardait le clip sous la loi de fusion — le poids retombait avec la vitesse du corps puis remontait à 1 à l'heure du contact : deux
+  détentes. → Rondo : le plongeon orphelin va au bout à poids plein (le clip porte le relevé).
+- `bassin-chute.mjs <url>` : les images où un bassin rendu passe sous un seuil sans geste ni chute. Trouvé : (1) la sim arrête net un corps
+  (le gardien arrivé à sa place pour l'engagement) — son horloge de foulée s'étire (f → plancher) quand le rendu décélère encore : enjambée
+  de 2-4 m, bassin à 0,12 m → motion-gait borne le cycle de la sim à 1,5 × le cycle naturel ; (2) la feinte de corps en course posait le pied
+  de la vente à 0,97 m sur le côté (Brault : ≈ 0,6), le bassin descendait à 0,08 m l'atteindre → la portée ne rabaisse plus le bassin de plus
+  de 0,15 m (DROP_PORTEE), le pied d'un geste au plus à 0,62 m du centre. Après : 0 image sous 0,40 m (86 400 joueur × image).
+- `grille.mjs` (sans navigateur) : chaque rebond sur la grille — la phase, qui avait le ballon, qui le reprend (même équipe, adversaire,
+  personne), l'éloignement du ballon, la géométrie de la touche d'avant (porteur → paroi, sa course et le ballon vers elle). Avant : pendant
+  une conduite, 4 rebonds sur 10 tournaient mal (perdu 12 %, parti 27 %) — le porteur à 0,8 m de la paroi courait VERS elle à 60°, la touche
+  suivait sa course. → movement (cfg.paroi) : près d'une paroi, la part de la course qui va dedans s'éteint entre 1,5 et 0,5 m (pas devant le
+  but). 48 × 120 s : perdu 12 → 7 %, gardé 59 → 68 %. Essayés et écartés : la portée qui suit l'allure, le rendez-vous de touche à 0,45 m.
+- `rythme.mjs` (sans navigateur) : l'allure du porteur et du défenseur en conduite — répartition, changements d'allure (≥ 1,5 m/s en ≤ 0,6 s),
+  accélérations > 3 m/s² et leur cause. Avant : porteur à 2,8 m/s (p50), jamais au sprint, 4,4 m/s au plus haut par possession ; défenseur
+  dépassé, il TROTTAIT vers le but (3,7 m/s). → movement (cfg.courseLibre) : défenseur dépassé de 2 m, dans l'espace (pas collé à la grille),
+  le sprint balle au pied jusqu'à 6,2 m/s. Accélérations 3,9 → 5,3/min. Le gardien : 84 → 75 % d'arrêts (futsal d'élite 76,5 %) ; dès 1 m
+  d'avance, 41 % de conversion et 72 % d'arrêts : trop. Essayée et retirée : la feinte d'arrêt (freiner, relancer) — le noyau juge la relance
+  sur la vitesse du contact (le porteur repart de 1,3 m/s) : 38 % de ballons perdus ; il faudrait au noyau le temps de réaction du défenseur.
