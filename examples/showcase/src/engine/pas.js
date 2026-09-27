@@ -36,12 +36,20 @@ export function pasStep(st, dt) {
     P.turn += ((fwd ? Math.max(-9, Math.min(9, aR)) : 0) - P.turn) * k;
     let f = strideLaw(v) * gaitCadenceFactor(vF, vR) * gaitLegFactor(p.legK ?? 1, v) * gaitBrakeCadence(P.brake) * gaitTurnCadence(P.turn);
     const fp = gaitPivotCadence(P.yawRate); if (fp > f) f = fp;
+    // (2026-09-27, coupe.js) L'APPUI DE COUPE TIENT LE PIED AU SOL toute sa durée (0,20-0,51 s, Dos'Santos) : la phase ralentit pour que l'appui de
+    // ce pied finisse avec la coupe — et le rendu reçoit le pied de coupe (pasFinal.coupe → motion-gait opts.coupe : la pose écartée)
+    const C = p._coupe;
+    if (C && C.etat === 'appui') {
+      const g = geo(P.v), i = Math.floor(P.phi * N_GEO) % N_GEO; let j = 0; while (j < N_GEO && !g[(i + j) % N_GEO][C.pied].vol) j++;
+      const rest = C.tA + C.G - st.t; if (j > 0 && j < N_GEO && rest > dt) f = Math.min(f, (j / N_GEO) / rest);
+    }
+    P.coupe = C && C.etat !== 'fin' ? { pied: C.pied, k: C.etat === 'appui' ? 1 : 0.6, lat: C.lat ?? 0.3, cote: C.cote, t: C.tA ?? C.t0 } : null;
     P.phiPrev = P.phi; P.phi = (P.phi + f * dt) % 1; P.f = f; P.T = 1 / Math.max(0.05, f); P.vF = vF; P.vR = vR; P.v = v;
     // LE REGISTRE DES TOUCHES (une par VOL) se rouvre quand un vol COMMENCE — pas quand le pied « est au sol » à l'échantillon le plus proche :
     // à la pose, la touche balayée sur la fin du vol et la remise à zéro se chevauchaient (60 doublons sur 219 touches, même pied à 0,02-0,12 s)
     { const g = geo(P.v), i = Math.floor(P.phi * N_GEO) % N_GEO; P.joue ??= {}; P.volAvant ??= {};
       P.evt = { left: null, right: null };   // le vol qui COMMENCE ('debut') ou FINIT ('fin') à ce pas de temps — les temps d'un geste dans la foulée
-      for (const k of ['left', 'right']) { const vol = g[i][k].vol; if (vol && P.volAvant[k] === false) { P.joue[k] = false; P.evt[k] = 'debut'; } else if (!vol && P.volAvant[k] === true) P.evt[k] = 'fin'; P.volAvant[k] = vol; } }
+      for (const k of ['left', 'right']) { const vol = g[i][k].vol; if (vol && P.volAvant[k] === false) { P.joue[k] = false; P.evt[k] = 'debut'; } else if (!vol && P.volAvant[k] === true) { P.evt[k] = 'fin'; (P.poseT ??= {})[k] = st.t; } P.volAvant[k] = vol; } }
     // (2026-09-25) LE PIED QUI VISE : le porteur en course nomme le pied qui va jouer le ballon — celui du rendez-vous planifié tant qu'il court,
     // sinon (première touche après le porté ou une prise, ballon à portée) le prochain pied à se poser — et le rendu l'AMÈNE au ballon sur la fin
     // de son vol (gaitPose, opts.vise) : sans lui, 47 des 57 touches de rattrapage (sans plan) se jouaient pied à ~0,35 m du ballon, surtout en virage

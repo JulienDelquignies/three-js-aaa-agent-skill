@@ -382,7 +382,7 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, pivotHz: gaitPivotCadence(this._yawRate) || undefined, pasT: this.pasFinal?.T, geste: this._gesteFouleeOpts(), boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
+      this._lastGaitOpts = { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0, pivotHz: gaitPivotCadence(this._yawRate) || undefined, pasT: this.pasFinal?.T, coupe: this.pasFinal?.coupe ?? undefined, geste: this._gesteFouleeOpts(), boite: this.idleCtx?.boite ?? undefined, griffe: this.gaitGriffe || undefined };   // (§ 8) la boiterie du fauché (la scène lit sim._boite)   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert;
       gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, this._lastGaitOpts);
       gait = this._anchorStance(gait, (plant, plantYaw) => gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { ...this._lastGaitOpts, plant, plantYaw }));
     }
@@ -419,12 +419,14 @@ export class CharacterController {
     for (const side of ['Left', 'Right']) {
       const f = gait.feet[side];
       const li = side === 'Left' ? 0 : 1;
-      if (!f || f.phase === 'swing') { this._plants[side] = null; this.footLock?.drive(li, null); continue; }
+      const cpF = this.pasFinal?.coupe, tientCoupe = cpF?.k === 1 && cpF.pied === (side === 'Left' ? 'left' : 'right');   // (coupe.js) l'appui de COUPE tient au monde toute sa durée : le corps passe à côté du pied planté (même si la phase du générateur le dit en vol)
+      if (tientCoupe && this._coupeT?.[side] !== cpF.t) { (this._coupeT ??= {})[side] = cpF.t; this._plants[side] = null; const L = this.footLock?.state?.[li]; if (L) L.drvOn = false; }   // un ancrage NEUF à la pose de coupe (un ancrage d'un appui d'avant survivait : le verrou tirait le pied vers un point à 1,4 m, hors de portée)
+      if (!f || (f.phase === 'swing' && !tientCoupe)) { this._plants[side] = null; this.footLock?.drive(li, null); continue; }
       const own = f.own ?? [0, 0, 0], base = [f.p[0] - own[0], f.p[2] - own[2]];
       let a = this._plants[side];
       if (!a) a = this._plants[side] = { w: toW([base[0], 0, base[1]]), yaw };
       const bc = toC(a.w);
-      if (Math.hypot(bc[0] - base[0], bc[1] - base[1]) > 0.3) { a.w = toW([base[0], 0, base[1]]); a.yaw = yaw; }   // re-plante
+      if (!tientCoupe && Math.hypot(bc[0] - base[0], bc[1] - base[1]) > 0.3) { a.w = toW([base[0], 0, base[1]]); a.yaw = yaw; }   // re-plante
       const pc = toC(a.w), py = a.yaw - yaw, cy = Math.cos(py), sy = Math.sin(py);
       // (2026-09-24) l'avance PROPRE du pied (le talon qui roule, le pivot sur les métatarses) suit l'axe du pied PLANTÉ — son lacet figé —,
       // pas celui du corps qui tourne dessus (l'orteil dérivait de 6-8 cm au p90 dans les virages lents)

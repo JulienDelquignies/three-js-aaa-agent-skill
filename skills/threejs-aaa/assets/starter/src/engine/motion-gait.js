@@ -563,9 +563,12 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // la ligne médiane et se pose à `cross` m À L'INTÉRIEUR du couloir de l'intérieure (qui s'écarte de `wide` vers l'intérieur), le bassin
   // TOURNE dans le virage (pYawTurn : la hanche extérieure vient devant). Borné (kX 0 → 1 de 7 à 9 m/s², fondu 3 → 4 m/s) ; chassés :
   // jamais (le contrat) ; sans virage : la foulée d'hier au bit.
-  const kX = clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // …atténué au sprint (la foulée longue sature la hanche)
+  const kX = opts.coupe ? 0 : clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // (coupe.js) pas de pas croisé pendant une coupe : c'est un pas de CÔTÉ   // …atténué au sprint (la foulée longue sature la hanche)
   if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
   if (GV) { cL[0] -= 0.09 * (GV.Left?.elargi ?? 0); cR[0] += 0.09 * (GV.Right?.elargi ?? 0); }   // (geste) la jambe qui a cerclé le ballon se pose à côté de lui
+  // (2026-09-27, coupe.js) LA COUPE : le pied planté se pose ÉCARTÉ vers l'extérieur du virage (la jambe qui pousse de côté — lat m, selon la poussée
+  // latérale de l'appui) ; k monte sur la fin de son vol et tient l'appui. Absente : hier au bit.
+  const CO = opts.coupe; if (CO && CO.k > 0) { if (CO.pied === 'left') cL[0] -= CO.lat * CO.k; else cR[0] += CO.lat * CO.k; }
   const pYawTurn = -6 * kX * sX;
   if (kX > 0) p.swingH *= 1 - 0.12 * kX;                                 // (A7 ter) le vol rase un peu plus dans le pas croisé (le genou reste sous 140°)
   const listAt = (x) => -p.pList * Math.cos(TAU * (x - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 12 * B.k * (0.5 + 0.5 * Math.cos(TAU * (x - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // (2026-09-24) 12° (hier 10) : sur l'appui réel, plus court, le plongeon se perdait dans le roulis normal   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
@@ -615,7 +618,12 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     }
   }
   const rabais = (x) => { const t = ((x % 0.5) + 0.5) % 0.5; let e = 0; for (const [tb, n] of besoins) { let d = Math.abs(t - tb); d = Math.max(0, Math.min(d, 0.5 - d) - 0.03) / 0.08; if (d < 1) e = Math.max(e, n * (0.5 + 0.5 * Math.cos(Math.PI * d))); } return e; };   // plateau ±0,03 (la jambe qui vient se poser est déjà tendue), puis cosinus
-  const hips = [hipX, -drop + bob - rabais(ph), 0];                    // (A7 bis) le bassin glisse vers l'intérieur du virage
+  // (coupe.js) L'APPUI DE COUPE ABAISSE LE BASSIN autant qu'il faut pour que la jambe atteigne le pied PLANTÉ (l'ancre du contrôleur, opts.plant) — la
+  // portée du « rabais » ne voit que les appuis du générateur ; le corps passe 0,7-1 m à côté du pied de coupe en 0,2-0,5 s et la jambe tendue
+  // (hanche-cheville 0,78 m, mesuré au rendu) l'arrachait en fin d'appui. Dos'Santos 2021 : genou fléchi au plus de 56 / 64 / 67° à 45 / 90 / 180°.
+  let dropC = 0; { const CO2 = opts.coupe, sd = CO2 && CO2.k >= 1 ? (CO2.pied === 'left' ? 'Left' : 'Right') : null, pl = sd && opts.plant?.[sd];
+    if (pl) { const hx = (sd === 'Left' ? -1 : 1) * L.hipWidth / 2, horiz = Math.hypot(pl[0] - hx, pl[2]), rch = reach * 0.97; dropC = clamp(hipY - ankleY - Math.sqrt(Math.max(0, rch * rch - horiz * horiz)) - drop + bob, 0, 0.12); } }
+  const hips = [hipX, -drop - dropC + bob - rabais(ph), 0];                    // (A7 bis) le bassin glisse vers l'intérieur du virage
   const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn - 5 * vente;   // (la vente) le bassin tourne peu vers le côté feint               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
   const pList = listAt(ph);
   const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
@@ -661,6 +669,10 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     // (2026-09-24) L'APPUI ANCRÉ : le contrôleur tient le pied posé AU MONDE (opts.plant[side], repère personnage de l'instant) — la
     // cible du générateur est calculée dans le repère du CORPS, et un corps qui pivote en appui entraînait le pied dans sa rotation
     // (sonde glisse-accel, duel : glisse p90 2,9 cm sous 2 rad/s de lacet, 29 cm au-delà). Hauteur et tangage restent ceux du générateur.
+    // (coupe.js) L'APPUI DE COUPE reste au sol toute sa durée, quoi qu'en dise la phase (la durée d'appui du générateur suit l'allure, qui chute
+    // pendant la coupe : le pied planté passait en vol avant la fin — ancrage lâché, pied levé) : ancré, à la hauteur d'appui, sans vol
+    const tientC = !!(CO && CO.k >= 1 && (CO.pied === 'left' ? 'Left' : 'Right') === side);
+    if (tientC && fp.phase === 'swing') { fp.phase = 'stance'; fp.p[1] = ankleY; fp.pitch = 0; fp.carry = false; }
     const pl = fp.phase !== 'swing' ? opts.plant?.[side] : null;
     if (pl) { fp.p[0] = pl[0]; fp.p[2] = pl[2]; }
     if (fp.carry) boundCarry(fp, hipW, (p.wRun > 0 ? porteeK(p.v, p.recul) : REACH_K) * R);

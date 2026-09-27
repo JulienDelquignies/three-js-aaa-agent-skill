@@ -67,6 +67,7 @@ export function duelCfg(overrides = {}) {
     // …et L'ÉQUILIBRE du répertoire (mesuré, 16 min : 22 passements, 8 crochets, 6 feintes, 1 croqueta — le passement, testé AVANT les autres
     // avec une envie doublée, prenait toutes les fenêtres de face) : l'envie du passement ramenée à celle des autres, le crochet relevé
     passements: { ...base.passements, envie: 1, plancher: 0.2 },
+    coupe: overrides.coupe ?? { vMin: 1.8, angle: 35, frein: 60, freinA: 12, attente: 0.6, repos: 0.25, lat0: 0.18, latK: 0.012, latMax: 0.35 },   // (2026-09-27) LES VIRAGES EN CHANGEMENT D'APPUI (coupe.js) : la coupe planté sur un appui, la course balistique en vol
     skill: { ...base.skill, rouletteCourse: { envie: 2.7, vSortie: 0.75 } },   // (2026-09-26) la roulette en course à deux semelles : ≈ 3 % des fenêtres réalisées (la calibration du 11c11 par occasion, ≈ 3 %), sans sa cadence de match — l'envie compense les portes « ballon sous le pied » et « appui au mi-appui » (skills-sim.maybeRoulette)
     bouclier: base.bouclier ? { ...base.bouclier, pas: 0.8 } : base.bouclier,
     murCorps: overrides.murCorps ?? 0.244,   // LA GRILLE EST UN MUR POUR LE CORPS AUSSI : le centre s'arrête à une demi-carrure (bideltoïde ANSUR II 0,488 m / 2) — borné à la ligne, le corps entrait de moitié dans la grille et, au poteau, dans le but

@@ -1,4 +1,5 @@
 import { tirage } from './rng.js';
+import { coupeStep } from './coupe.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
 // chasses), séparation des corps. Sorti de rondo.js au lot 22 (volumétrie) — au bit près, la
 // batterie est la preuve. Une famille par fichier : le cerveau décide, le mouvement PORTE.
@@ -381,7 +382,10 @@ export function movePlayers(st, dt, cfg) {
     // la cible tremblait (press : 5,6°/image à p90, 4 inversions/s). Le cap voulu passe par un filtre (tau s) puis un slew borné par la
     // vitesse (taux/v rad/s) : la demande latérale devient petite et suivie, le corps décrit des courbes. Sous des m/s (l'arrêt, le
     // pivot) et sans demande : libre. Les rôles de course y passent aussi (l'interception est un cap : mesuré au flux). null : hier au bit.
-    if (st.full && cfg.viragesLisses && (wx || wz)) {
+    // (2026-09-27, cfg.coupe — le duel) LES VIRAGES EN CHANGEMENT D'APPUI (coupe.js) : décidés sur la course voulue BRUTE — la coupe court-circuite
+    // le lissage (qui fait des courbes) ; hors coupe, la locomotion n'agit que sur l'appui (gate : 0 en vol, ÷ la part d'appui sur l'appui)
+    const CP = st.full && cfg.coupe && !p.keeper ? coupeStep(st, p, cfg, wx, wz, dt) : null;
+    if (st.full && cfg.viragesLisses && (wx || wz) && !CP?.v && !(p._coupe && p._coupe.etat !== 'fin')) {
       const VL = cfg.viragesLisses, spW = hyp(p.v[0], p.v[1]);
       if (spW >= (VL.des ?? 1.0) && dTgt > (VL.arrivee ?? 1.5)) {   // …et pas à l'ARRIVÉE (la cible à < arrivee m) : le demi-tour de l'arrivée est un frein, pas un virage — le slew le retardait (mesuré : le lanceur dépassait son point de 0,17 m)
         const want = Math.atan2(wz, wx), mag = hyp(wx, wz), have = p._capW ?? Math.atan2(p.v[1], p.v[0]);
@@ -409,15 +413,17 @@ export function movePlayers(st, dt, cfg) {
     // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
     const kBite = (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) * (p.skill?.accelF ?? 1);   // …et le DÉMARRAGE aussi
     const LOCO = st.full && cfg.locomoteur ? cfg.locomoteur : null;   // (260) LE PROFIL LOCOMOTEUR : a = ε (V − v)/τ, le freinage saturé — à la place de l'accélération constante
-    if (sp0 > 0.4) {
+    const gC = CP ? CP.gate : 1;
+    if (CP?.v) { p.v[0] = CP.v[0]; p.v[1] = CP.v[1]; }   // la coupe (ou son frein) écrit la vitesse
+    else if (sp0 > 0.4) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
       const along = LOCO ? pasLoco(p, st, LOCO, sp0, dvx * ux + dvz * uz + sp0, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) : clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
       const lat = hyp(latx, latz), cap = cfg.turnAccel * kBite * dt;
       if (lat > cap) { latx *= cap / lat; latz *= cap / lat; }
-      p.v[0] += along * ux + latx; p.v[1] += along * uz + latz;
+      p.v[0] += (along * ux + latx) * gC; p.v[1] += (along * uz + latz) * gC;
     } else if (LOCO) {                          // (260) à l'arrêt : le démarrage mono-exponentiel vers la demande
-      const dw = hyp(dvx, dvz); if (dw > 1e-6) { const step = pasLoco(p, st, LOCO, 0, dw, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1); p.v[0] += dvx / dw * step; p.v[1] += dvz / dw * step; }
+      const dw = hyp(dvx, dvz); if (dw > 1e-6) { const step = pasLoco(p, st, LOCO, 0, dw, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) * Math.min(1, gC); p.v[0] += dvx / dw * step; p.v[1] += dvz / dw * step; }
     } else {                                     // at a standstill there is no momentum to fight
       p.v[0] += clamp(dvx, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       p.v[1] += clamp(dvz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
@@ -457,7 +463,7 @@ export function movePlayers(st, dt, cfg) {
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
     // v1 de la loi (p90 156° au contact).
-    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && (p.speed < 2.2
+    const sePres = !(p._coupe && p._coupe.etat !== 'fin') && st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && (p.speed < 2.2
       || !!(cfg.ouverture && !p.keeper && (p._ouvre === st.pass || (ouvreDe(p, st.ball, cfg.ouverture, p.skill?.controlF ?? 1).ouvre && (p._ouvre = st.pass)))));   /* (288) L'OUVERTURE EN COURSE (ouverture.js) : le ballon derrière qui ne double pas devant — l'autorité du cap est le ballon, la course continue ; ouverte une fois, elle tient jusqu'à la prise (p._ouvre = la passe : pas d'oscillation au seuil) */
     // LE GARDIEN NE QUITTE PAS LE BALLON DES YEUX (lot 132, cfg.regardGardien && st.full —
     // mesuré : 3/20 plongeons déclenchés sur un regard > 60° du ballon, p90 107° — le côté
@@ -468,7 +474,8 @@ export function movePlayers(st, dt, cfg) {
     // LE JOCKEY FAIT FACE (lot A10, cfg.contact.jockey) : le presseur à ≤ d m du porteur adverse, qui RECULE ou se DÉCALE (il ne
     // court pas sur lui, ≤ vMax), garde le regard sur lui — le corps recule et chasse (la course arrière et le pas chassé
     // du lot A7 n'avaient aucun déclencheur : le cap suivait toujours la dérive). Absente : le dos au porteur d'hier, au bit.
-    const jockey = st.full && cfg.contact?.jockey && !p.keeper && p.job === 'press' && st.possession.carrier >= 0 && st.possession.carrier !== p.id
+    const enCoupe = !!(p._coupe && p._coupe.etat !== 'fin');   // (coupe.js) PENDANT UNE COUPE le regard suit la course : le jockey (face au porteur) et la présentation reprennent après — verrouillé sur le porteur, le coupeur courait de dos au rendu, le pied planté décollait
+    const jockey = !enCoupe && st.full && cfg.contact?.jockey && !p.keeper && p.job === 'press' && st.possession.carrier >= 0 && st.possession.carrier !== p.id
       && (() => { const c = st.players[st.possession.carrier]; if (!c || c.team === p.team) return false;
         const dx = c.p[0] - p.p[0], dz = c.p[2] - p.p[2], d = hyp(dx, dz);
         if (d > (cfg.contact.jockey.d ?? 4.5) || d < 0.3 || p.speed > (cfg.contact.jockey.vMax ?? 3.5)) return false;

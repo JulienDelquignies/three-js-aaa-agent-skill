@@ -65,6 +65,16 @@ if (String(T0).startsWith('arret')) {
   if (!L[k]) { console.log("pas d'arrêt n°", k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 3); await ouvre();
 }
+// T0 = 'coupe[:angle][:k]' : la k-ième COUPE (coupe.js, l'appui de coupe) d'au moins `angle`° (60 par défaut) — filmée de 1,2 s avant ; `I = porteur` suit le coupeur
+if (String(T0).startsWith('coupe')) {
+  const parts = String(T0).split(':'), amin = Number(parts[1] ?? 60), k = Number(parts[2] ?? 0);
+  const L = await pg.evaluate((amin) => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'coupe' && e.phase === 'appui' && e.ang >= amin) out.push({ t: st.t, by: e.by, ang: e.ang, v: e.v }); } }
+    return out; }, amin);
+  console.log('coupes trouvées :', L.length, JSON.stringify(L.slice(0, 12)));
+  if (!L[k]) { console.log('pas de coupe n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
+}
 // T0 = 'geste[:k]' : le k-ième GESTE de dribble dans la foulée (feinte de corps, passement, crochet, croqueta — l'événement 'windup' d'un
 // geste) — filmé de 1,5 s avant ; `I = porteur` suit alors le dribbleur
 if (String(T0).startsWith('geste')) {   // (…ou 'geste:<nom>:k' : le k-ième geste de CE nom, dans la foulée ou non — la roulette en course)
@@ -131,10 +141,10 @@ for (let f = 0; f < N; f++) {
     if (window.__camPage) { sc._broadcast(dt); e.controls.target.copy(sc._look); await window.__seekFrame(); return; }   // CAM=page : la régie de la page (ce que voit l'utilisateur)
     e.camera.position.set(...c.pos); e.controls.target.set(...c.tgt); e.camera.fov = 40; e.camera.updateProjectionMatrix(); await window.__seekFrame(); }, { i: P.i, dt: Number(LENT) / 60 });
   for (let k = 0; k < 6; k++) {   // la bande du sol sous les joueurs : verte, ou l'image est refaite
-    if (vert(await pg.screenshot({ type: 'png', clip: { x: 80, y: 470, width: 800, height: 50 } })) > 12) break;
+    if (vert(await pg.screenshot({ type: 'png', clip: { x: 80, y: 470, width: 800, height: 50 }, timeout: 180000 })) > 12) break;
     refaits++; await pg.evaluate(async () => { await window.__seekFrame(); });
   }
-  writeFileSync(`${OUT}/f${String(f).padStart(5, '0')}.jpg`, await pg.screenshot({ type: 'jpeg', quality: 92 }));
+  writeFileSync(`${OUT}/f${String(f).padStart(5, '0')}.jpg`, await pg.screenshot({ type: 'jpeg', quality: 92, timeout: 180000 }));
   if (f % 60 === 0) console.log(OUT.split('/').pop(), f, '/', N, 'refaits', refaits);
 }
 console.log('images refaites (sol gris) :', refaits, '/', N);

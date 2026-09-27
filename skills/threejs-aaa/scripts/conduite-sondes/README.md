@@ -249,3 +249,20 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   cheville) ; le clip n'écrivait pas le BASSIN (branche roulette2) : la foulée de course le tordait et la jambe d'appui balayait 12 cm en repère
   personnage (invisible dans la tenue, joueur immobile) → J.Hips au geste. Final : glissement à l'avant-pied 1,1 / 0,9 cm (roulette de la
   tenue), 2,4 / 3,9 cm (en course) ; semelles à 0,04 m du ballon ; en course, 3,0 % des fenêtres (0,17/min).
+- LES VIRAGES EN CHANGEMENT D'APPUI (2026-09-27 : « les courbes ne vont pas, les joueurs font des virages secs avec des changements
+  d'appui »). `virages-appui.mjs [graines] [s]` : chaque virage ≥ 45° en ≤ 1,2 s, lancé — durée, rayon au plus serré, allures, la part de l'angle
+  prise pendant un VOL de la foulée (physiquement impossible), le plus grand morceau pris sur UN appui, par une coupe. Avant : 45-90° en
+  0,53 s sur un arc de 1,1 m, 34 % en vol, au plus 35 % sur un appui (la loi : l'accélération latérale plafonnée à 6 m/s² partout et tout le
+  temps, un lissage qui fait des courbes). engine/coupe.js (cfg.coupe, duel) : sans appui la vitesse ne change pas ; la COUPE — pas de côté,
+  l'avant-dernier appui freine (≥ 60°), l'appui planté porte le virage en la durée mesurée (Dos'Santos et al. 2021 : 0,20 / 0,30 / 0,51 s à
+  45 / 90 / 180°, vitesses de pose et de sortie), le VECTEUR vitesse en ligne droite de l'entrée à la sortie (une poussée de direction fixe :
+  le demi-tour passe près de l'arrêt). Joueurs de champ sans le ballon, en course avant. Après : 45-90° en 0,17 s, 97 % par une coupe, 82 %
+  sur un appui ; ≥ 135° : rayon 0,04 m, allure au plus bas 0,27 × l'entrée. `coupe-rendu.mjs <url>` : le pied PLANTÉ au rendu pendant
+  l'appui (glissement de la cheville et de l'avant-pied, écart latéral au bassin, hauteur). Il a trouvé, dans l'ordre : la scène ne donnait au
+  contrôleur que la phase (pasFinal) — le pied de coupe n'arrivait pas au générateur ; l'ancrage d'appui RE-PLANTAIT le pied dès 0,3 m
+  d'écart (le corps s'éloigne du pied planté : c'est la coupe) ; la phase du générateur passait le pied en vol avant la fin (sa durée d'appui
+  suit l'allure, qui chute) ; un ancrage d'un appui d'avant survivait (le verrou tirait le pied vers un point à 1,4 m) ; la jambe TENDUE
+  (hanche-cheville 0,78 m) arrachait le pied en fin d'appui → le bassin descend autant qu'il faut pour atteindre le pied planté (≤ 0,2 m).
+  Final (avant-pied, médiane) : 2 cm sous 3 m/s, 7 cm à 3-4, 13 cm au-delà (la fin d'appui, talon levé) ; pose à 0,35-0,41 m du bassin.
+  A/B 16 graines × 120 s : tirs 2,09 → 2,28/min, xG/tir 0,205 → 0,242, pertes 5,2 → 4,8/min. verify-pas : le seuil du sabotage (servo d'hier)
+  ramené de 15 à 12 % (posé sur 16 % sans marge ; les coupes l'ont passé à 14 %, la conduite réelle à 1 %).
