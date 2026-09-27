@@ -36,6 +36,7 @@ export function situationPrise(scene, pl) {
 
 /** L'événement de geste x (déjà résolu par la scène : orienté, ramassage…) → le geste de la situation, joué du bon pied. */
 export function piedDuControle(scene, pl, x) {
+  if (x?.tech === 'amorti-tete' && !scene._aerienHier) { if (pl.gestureLayer?.active) return null; pl._ctlT = scene._t; return x; }   // (347) l'amorti de la tête s'est armé (windup amortiTete) : il ne se rejoue pas au contact
   if (!scene._controlesHier && !scene._piedLibre && x && x.tech !== 'prise-gardien' && !pl.sim.keeper && pl._ctlT != null && scene._t - pl._ctlT < 0.3 && pl.gestureLayer?.active) return null;   // (voir plus bas : un contrôle, un geste — les techniques nommées aussi)
   if (scene._piedLibre || !x || x.move === 'ramassage' || NOMMEES.test(x.tech ?? '') || pl.sim.keeper) { if (x && !pl.sim.keeper && x.tech !== 'prise-gardien') pl._ctlT = scene._t; return x; }
   // (26/09) UN CONTRÔLE, UN GESTE : la réception ('receive') et le contrôle ('control') arrivent sur deux images — le second relançait le
@@ -44,7 +45,7 @@ export function piedDuControle(scene, pl, x) {
   if (!scene._controlesHier && pl._ctlT != null && scene._t - pl._ctlT < 0.3 && pl.gestureLayer?.active) return null;
   let y = x;
   if (!scene._controlesHier) {
-    const sit = situationPrise(scene, pl), c = choisirControle(sit);
+    const sit = situationPrise(scene, pl), c = choisirControle(sit, scene._aerienHier ? { poitrine: 0.9, tete: 99 } : {});   /* (347) ?aerien-hier : les seuils d'hier */
     y = { ...x, move: c.move, foot: c.foot ?? (/^(left|right)$/.test(x.foot ?? '') ? x.foot : sit.lat > 0 ? 'left' : 'right'), situation: c.pourquoi };
     (scene._controles ??= {})[c.pourquoi] = (scene._controles[c.pourquoi] ?? 0) + 1;   // le relevé (atelier, bancs)
     const L = (scene._controlesLog ??= []); if (L.length < 400) L.push({ ...sit, tech: x.tech ?? x.type, move: c.move, foot: y.foot });

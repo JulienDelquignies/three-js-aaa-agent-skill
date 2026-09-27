@@ -13,13 +13,16 @@
 //   adv      distance de l'adversaire le plus proche (m) ; advLat : son côté (> 0 = à gauche)
 //   virage   virage voulu après la prise, ° signés (> 0 = vers la droite, la convention de la scène) ; null = inconnu
 
-export const SEUILS = { rebond: 0.2, cuisse: 0.5, poitrine: 0.9, colle: 1.5, mort: 2, fort: 9, course: 3, dos: 110, demiTour: 100, oriente: 45, droit: 45, axe: 0.06 };
+export const SEUILS = { rebond: 0.2, cuisse: 0.5, poitrine: 1.05, tete: 1.55, colle: 1.5, mort: 2, fort: 9, course: 3, dos: 110, demiTour: 100, oriente: 45, droit: 45, axe: 0.06 };
 
 /** Le geste et le pied. Rend { move, foot, pourquoi } ; foot null = le choix de l'appelant (pied fort / côté du ballon). */
 export function choisirControle(s, seuils = {}) {
   const K = { ...SEUILS, ...seuils };
   const cote = Math.abs(s.lat ?? 0) < K.axe ? null : s.lat > 0 ? 'left' : 'right';
   const vire = s.virage == null ? 0 : Math.abs(s.virage), sensVirage = s.virage == null || vire < 1 ? null : s.virage > 0 ? 'left' : 'right';   // virer à droite : l'intérieur du pied GAUCHE emmène le ballon (le miroir du contrôle orienté)
+  // (347) la tête amortit au-dessus de tete m ; la poitrine commence à 1,05 m (0,9 : le ventre — mesuré, les amortis de cuisse du sim à
+  // 0,89 m p50 se dessinaient une fois sur deux en poitrine, bras écartés)
+  if (s.h >= (K.tete ?? 99)) return { move: 'amortiTete', foot: null, pourquoi: 'tête' };
   if (s.h >= K.poitrine) return { move: 'amorti', foot: null, pourquoi: 'poitrine' };
   if (s.h >= K.cuisse) return { move: 'amortiCuisse', foot: cote, pourquoi: 'cuisse' };
   if (s.h >= K.rebond) return { move: 'controleRebond', foot: cote, pourquoi: 'rebond' };

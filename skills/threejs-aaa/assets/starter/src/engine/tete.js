@@ -1,7 +1,7 @@
 import { tirage } from './rng.js'; import { modeTeteDefensive } from './petits-gestes.js'; import { vitesseGeste } from './repertoire.js';
 import { xgDe } from './xg.js';
 import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
-import { MOVES } from './animkit.js';   // (C1) la retournée : le clip authored porte son contact (0,52 s)
+import { MOVES } from './animkit.js'; import { poserAmorti, amortiTetePossible } from './amorti-oriente.js';   // (347) l'amorti aérien orienté, l'amorti de la tête   // (C1) la retournée : le clip authored porte son contact (0,52 s)
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -123,6 +123,13 @@ export function teteStep(st, cfg, force = null) {
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'dégagement', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}), ...(presse ? { corner: true } : {}) });
     return;
   }
+  // (347, cfg.amortiOriente.tete) L'AMORTI DE LA TÊTE : le destinataire libre ne remet pas — il amortit jusqu'à ses pieds, orienté (amorti-oriente.js)
+  if (!saute && amortiTetePossible(st, joueur, bp, cfg)) {
+    const dw = cfg.amortiSpin !== false ? [-st.ball.w[0] * 0.8, -st.ball.w[1] * 0.8, -st.ball.w[2] * 0.8] : null, o = poserAmorti(st, joueur, cfg, 'head', dw);
+    st.pass = null;
+    st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'amorti-tete', move: 'amortiTete', foot: 'any', surface: 'head', h: +bp[1].toFixed(2), speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null, oriente: o, ...arme });
+    return;
+  }
   // LA REMISE DE LA TÊTE : le coéquipier proche, en cloche courte (balistique de la rentrée,
   // raccourcie — la tête part de 1,8 m, pas du sol)
   const candsT = st.players.filter((m) => m.team === joueur.team && m.id !== joueur.id && !m.keeper && m.down <= 0)
@@ -165,7 +172,8 @@ export function teteArmerStep(st, cfg) {
     const pres = st.players.filter((q) => q.down <= 0 && !q.keeper && !q._sub && b[1] <= porte(q) && d2(ou(q), b) < (T.reach ?? 1.0));
     const q = pres.filter((q) => !q.act).sort((x, y) => d2(ou(x), b) - d2(ou(y), b))[0];
     if (!q) { why = pres.length ? 'acte' : 'personne'; continue; }
-    const idG = id === 'tete' && modeTeteDefensive(st, q, b, cfg) ? 'teteDefensive' : id;   // (§ 10) le dégagement s'arme en teteDefensive (même durée, même contact : le flux d'hier)
+    const amT = !saute && amortiTetePossible(st, q, b, cfg, ou(q));   // (347) l'amorti de la tête s'arme comme la tête debout, son clip à lui
+    const idG = amT ? 'amortiTete' : id === 'tete' && modeTeteDefensive(st, q, b, cfg) ? 'teteDefensive' : id;   // (§ 10) le dégagement s'arme en teteDefensive (même durée, même contact : le flux d'hier)
     startGesture(q, { id: idG, duration: mv.duration, contact: mv.contact }, { payload: { kind: 'tete', saut: saute, ownsBody: true, mobile: true }, log: st.gestures });
     st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: idG, skill: 'tete', anticipation: +tau.toFixed(2), ...(saute ? { saut: true } : {}), h: +b[1].toFixed(2) });
     st._teteArmWhy = null; return;
@@ -282,11 +290,12 @@ export function voleeStep(st, cfg) {
     const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
     const k = (V.amortiK ?? 0.85) * ctl;
     // …et l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
-    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.85, -st.ball.v[2] * k],
-      st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
+    const dwR = st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null;
+    const oR = poserAmorti(st, joueur, cfg, bp[1] > 0.7 ? 'thigh' : 'instep', dwR);   // (347) orienté : posé devant, dans la direction de la suite
+    if (oR == null) st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.85, -st.ball.v[2] * k], dwR);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'amorti-retombée', foot: 'any',
-      surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+      surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null, h: +bp[1].toFixed(2), ...(oR != null ? { oriente: oR } : {}) });
     return;
   }
   // sinon : ON NE VOLLEYE PAS — le contrôle au sol est le vrai geste du milieu de terrain
@@ -352,9 +361,10 @@ export function chestStep(st, cfg, dt = 1 / 60) {
     st._teteCd = st.t + tau - 0.05; mode = 'volee';
   } else {
     st._teteCd = st.t + 0.8;
-    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k], dw);
+    mode = poserAmorti(st, joueur, cfg, 'chest', dw) != null ? 'oriente' : null;   // (347) hors surface : posé devant, dans la direction de la suite
+    if (!mode) st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k], dw);
   }
-  if (mode) st._enchaine = { id: joueur.id, mode, until: st.t + 1.4 };
+  if (mode && mode !== 'oriente') st._enchaine = { id: joueur.id, mode, until: st.t + 1.4 };
   st.pass = null;
   st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'poitrine', foot: 'any',
     surface: 'chest', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null, ...(mode ? { enchaine: mode } : {}) });

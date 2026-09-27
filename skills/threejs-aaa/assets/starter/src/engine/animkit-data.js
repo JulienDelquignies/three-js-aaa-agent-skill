@@ -576,6 +576,20 @@ export const MOVES = {
       { t: 0.38, pose: { Spine1: [8, 0, 0], Head: [8, 0, 0] }, hips: [0, 0, 0] },
       { t: 0.55, pose: {}, hips: [0, 0, 0] },
     ] },
+  /** (347) L'AMORTI DE LA TÊTE — le receveur libre d'un ballon haut ne le remet pas : il l'amortit jusqu'à ses pieds. La tête MONTE
+   *  chercher le ballon (le regard dessus, les bras s'écartent pour l'équilibre), CÈDE au contact (le cou et le buste reculent, les
+   *  genoux absorbent — l'inverse du fouetté de teteDebout), puis s'ABAISSE vers les pieds où le ballon retombe. Contact 0,22 = celui
+   *  de la tête debout (le sim l'arme au même temps). */
+  amortiTete: {
+    name: 'amortiTete', duration: 0.6, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.12, pose: { Spine1: [-6, 0, 0], Neck: [-6, 0, 0], Head: [-16, 0, 0], LeftArm: [-18, 0, 26], RightArm: [-18, 0, -26], LeftUpLeg: [10, 0, 0], RightUpLeg: [10, 0, 0], LeftLeg: [-16, 0, 0], RightLeg: [-16, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 0.22, pose: { Spine1: [-12, 0, 0], Neck: [-8, 0, 0], Head: [-20, 0, 0], LeftArm: [-22, 0, 30], RightArm: [-22, 0, -30], LeftUpLeg: [18, 0, 0], RightUpLeg: [18, 0, 0], LeftLeg: [-30, 0, 0], RightLeg: [-30, 0, 0] }, hips: [0, -0.07, 0] },
+      { t: 0.36, pose: { Spine1: [2, 0, 0], Neck: [6, 0, 0], Head: [14, 0, 0], LeftArm: [-12, 0, 20], RightArm: [-12, 0, -20], LeftUpLeg: [14, 0, 0], RightUpLeg: [14, 0, 0], LeftLeg: [-22, 0, 0], RightLeg: [-22, 0, 0] }, hips: [0, -0.05, 0] },
+      { t: 0.48, pose: { Spine1: [6, 0, 0], Head: [18, 0, 0], LeftLeg: [-12, 0, 0], RightLeg: [-12, 0, 0] }, hips: [0, -0.02, 0] },
+      { t: 0.6, pose: {}, hips: [0, 0, 0] },
+    ] },
   /** CONSULTING the laptop (loop, subtle sway): left forearm raised flat to carry it at chest
    *  height, right hand over the keys, head down toward the screen */
   consulter: {

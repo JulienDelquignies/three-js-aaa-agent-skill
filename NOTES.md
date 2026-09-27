@@ -14304,6 +14304,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   centres 6,98 (345 : 20,75 / 3,20 / 7,03) — neutre. Filmé (8 images, 1 s) : touche, 4 foulées sans toucher, ballon à 0,8-0,9 m, retouche.
   Bloc 222 ; défaut `c7f5ef1f4ea10349 / 600da1936344656f` (jumeau `rattrape` sans `laisse` = 345 au bit) ; bloc 1 : `conduiteLibre: CL346()`
   DATÉ (même dette du 334 que le 345).
+- **Lot 347 — les contrôles aériens et ce qui les suit (`cfg.amortiOriente`, `engine/amorti-oriente.js`, clip `amortiTete`).** Demande :
+  « continue sur les contrôles poitrine, tête, genou… et les enchaînements ». Audit (sondes `hauts.mjs`, `ctl-aerien*.mjs`,
+  `retombee-dbg*.mjs`, filmé) : 83 ballons hauts / h — premier contact 39 amortis de retombée (cuisse / cou-de-pied), 16 têtes,
+  5 poitrines ; l'amorti TUAIT le vol sur place, le ballon cabriolait 0,6 s aux pieds puis le corps pivotait vers sa suite, le ballon
+  DANS LE DOS (filmé : un demi-tour complet autour de son ballon) ; au-dessus de 1,55 m jamais d'amorti de la tête (remise ou dégagement).
+  Sim : libre (personne à ≤ 4 m), l'amorti (cuisse, cou-de-pied, poitrine hors surface, tête) POSE le ballon 0,6 m devant, là où le
+  corps sera, au sol en 0,4-0,55 s, dans la direction de la suite (controle-oriente.capControle) bornée à ±70° du regard (jamais dans le
+  dos : posé derrière, il traversait le corps) ; yawWant suit ; la prise attend la retombée (fenêtre _enchaine, prise ≤ 0,45 m — mesuré :
+  un 'amorti-poursuite' le saisissait à 1,39 m et le tenait en l'air). Pressé : l'amorti d'hier (orienté sous pression, pertes 17 → 30 %).
+  L'amorti de la TÊTE : le destinataire libre (≤ 3,5 m personne), ballon ≤ 2 m et DEVANT (≤ 60°), hors tête au but et dégagement —
+  s'arme comme la tête debout (clip amortiTete : la tête monte, cède au contact, genoux qui absorbent, regard vers les pieds).
+  Rendu : poitrine dès 1,05 m (0,9 : les amortis de cuisse à 0,89 m se dessinaient en poitrine), tête dès 1,55 m ; le virage d'un amorti
+  aérien ne le transforme plus en contrôle orienté DU PIED ; la tête réactive démarre dans sa montée (0,14 s). `?aerien-hier`.
+  Mesuré (2 jeux de 4 graines × 900 s) : amortis aériens 71 → 86 et 87 → 83 / h, dont 12 et 8 de la tête (0 hier) ; perdus avant de
+  jouer 10 → 1 % et 6 → 7 % ; ballon dans le dos (1,2 s suivantes) 19,8 → 18,6 % et 25,3 → 21,1 % (poitrine 35 → 10 %, tête 11 %).
+  Banc 16 matchs (f347 / f346) : passes 564 / 559, pertes 122,75 / 117,75, tirs 20,25 / 21,25, buts 3,35 / 2,80, centres 6,92 / 6,95.
+  Filmé (8 images) : regard levé, contact au front, la tête cède, le ballon tombe devant, cuisse, au pied. Reste : à l'image du contact
+  le ballon mord le visage ~0,1 s ; le genou n'a pas de geste à lui (la cuisse le couvre) ; l'armé ne précède pas toujours l'amorti de
+  la tête (réactif : le clip démarre dans sa montée). Bloc 223 ; défaut `15930db45dceb085 / 0a157c6dc6ae7174` ; bloc 1 : `amortiOriente:
+  null` DATÉ ; verify-motion 371/10 (inchangé).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
