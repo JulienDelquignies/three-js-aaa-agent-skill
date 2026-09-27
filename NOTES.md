@@ -14340,6 +14340,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   talonnade 4-5 % (43 % avant la mise en ordre : des ballons venus de face qui continuaient leur ligne), protégée/course 2 %. Filmé
   (5 espèces, contact et +0,1 s). verify-motion 401/10 (les 10 rouges d'hier ; 7 refus sur 4 080 gestes au lieu de 6). Bloc 224.
   Reste : la une-touche n'est pas ARMÉE (décidée au contact) — la fin du swing seule se voit ; le relevé réel (15-25 %) est au-dessus.
+- **Audit contre les vidéos de référence (27/09 : « les animations, les collisions, le rapport au ballon, l'intelligence de jeu »).**
+  Sonde `audit-ref.mjs` (2 × 900 s) contre FM (soliste, collectif, « Pep »), FC (4 extraits), Taarabt : collisions — paires de corps
+  < 0,5 m 0,03 / image (la sim tient les corps écartés : pas de contact d'épaule), 83 duels/fautes/chutes / 30 min ; rapport au ballon
+  — 21 % des joueurs sans ballon à ≤ 30 m DOS au ballon ; forme — bloc en possession 40 × 55 m, défensif 29 × 39 (réalistes) ; options
+  — 5 lignes ouvertes mais UN seul appui < 15 m (réel : 2-3, les triangles) ; marquage des attaquants proches p50 7 m (réel 2-4). Ordre
+  des lots : regard du jeu (349), appuis courts et marquage, contacts de corps, animation de près (centre de gravité, bras).
+- **Lot 349 — le joueur sans ballon regarde le jeu (`cfg.regardJeu`, `engine/regard-jeu.js`).** Le cap d'un joueur sans ballon suivait
+  sa course (movement : yaw ← v) ; la course arrière et le pas chassé du rendu (motion-gait) n'avaient pas de déclencheur hors gardien
+  et jockey. Joueur de champ sans ballon à ≤ 35 m du ballon : cap = course tournée vers le ballon de 75 % de l'écart (le regard fait le
+  reste), borné à 180° sous 3,2 m/s (il recule face au jeu), 100° sous 5 (pas chassé), 45° au-delà (épaules ouvertes) ; biais personnel
+  ±10° ; à l'arrêt, face au jeu. Toujours par le slew borné. Première version tournée plein : p50 0,2° — des tourelles, écartée.
+  Mesuré : dos au ballon 21,4 → 0,2 %, regard→ballon p50 62 → 16° ; filmé (4 images) : un défenseur recule de trois quarts, en chassés.
+  Banc 16 matchs (2 jeux de graines, 349 / hier) : pertes 122,75 → 141,25 et 124,25 → 140,75, complétion 91,0 → 89,4 et 90,8 → 89,8,
+  tirs 20,25 → 21,0 et 20,5 → 18,25, buts 3,35 → 3,28 et 3,27 → 2,83 — un effet RÉEL : les pertes montent partout (récupérations
+  89 → 105, interceptions 67 → 80, tacles 41 → 55 / 60 min) — la défense qui regarde le jeu lit mieux ; la complétion va vers le réel
+  (~82). Bloc 225 ; défaut `a09da66359b49321 / 17aee553815c7dbe` ; bloc 1 : `regardJeu: null` DATÉ (dette du 334).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

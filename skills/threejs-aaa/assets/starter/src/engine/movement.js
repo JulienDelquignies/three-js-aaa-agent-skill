@@ -1,3 +1,4 @@
+import { regardJeu, regardJeuArret } from './regard-jeu.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
@@ -497,7 +498,7 @@ export function movePlayers(st, dt, cfg) {
       // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
       // 200-400°/s). Le cap de dérive passe par un SLEW borné — rate × accelF (l'explosivité
       // du joueur pivote son corps). false (et rondo/réduit) : le claquement d'hier au bit.
-      const wantY = Math.atan2(p.v[1], p.v[0]);
+      const wantY = regardJeu(st, p, cfg) ?? Math.atan2(p.v[1], p.v[0]);   // (349) le joueur sans ballon regarde le jeu (regard-jeu.js)
       if (st.full && cfg.yawSlew !== false) {
         let dY = wantY - p.yaw;
         while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
@@ -548,6 +549,8 @@ export function movePlayers(st, dt, cfg) {
       } else p.yawWant = versB;
     } else if (jockey) {
       p.yawWant = Math.atan2(jockey[1], jockey[0]);
+    } else if (p.speed <= 0.25 && p.yawWant == null && !regardGk && (p._rgA = regardJeuArret(st, p, cfg)) != null) {
+      p.yawWant = p._rgA;   // (349) à l'arrêt, il se tourne vers le jeu
     } else if (regardGk && p.yawWant == null) {
       // …et quand rien d'autre ne pilote son regard (marche de relance), le gardien le pose
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.
