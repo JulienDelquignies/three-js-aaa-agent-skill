@@ -14288,6 +14288,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   Sans le volet gardien (f345g) : tirs 21,25, buts 3,40. Bloc 221 ; défaut `60f2a600bf079657 / f7161894f4c89bee` (jumeau
   `chasseProche: null` = 343 au bit). Bloc 1 : `chasseProche: null` DATÉ 345 dans le contrat à 22 (la graine 7 tombe sur la dette du 334).
   verify-remises 48/5 (base 46/7). Reste : l'adversaire à 0,6 m d'une passe mourante qui s'en détourne (intercepteurVol).
+  Suite (tâche buts) : le volet gardien ne se déclenche qu'UNE fois par heure de jeu (sonde gk-sort) ; le volet champ 267 fois/h,
+  0,27 % des images, ~1,3 s/h dans les surfaces. Banc sur 16 AUTRES graines (73-151) : 343 buts 3,03, tirs 21,5, centres 7,03 ;
+  345 buts 3,20, tirs 20,75, centres 7,03 — le même monde 343 bouge de 0,9 but d'un jeu de graines à l'autre : la baisse des buts
+  était du bruit. Sur 32 matchs : tirs 22,0 → 20,4 (−7 %, le seul signal constant, à surveiller), buts 3,49 → 3,09 (dans le bruit).
+  La passe mourante ignorée : 2 épisodes / 60 min, 0,2-0,4 s après 345 — pas de loi.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
