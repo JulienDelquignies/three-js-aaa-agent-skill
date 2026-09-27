@@ -14210,6 +14210,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   de l'IK d'appui (rondo-appui-geste), le genou passait DERRIÈRE l'axe hanche-cheville en fin de geste (jusqu'à −23 cm : la jambe pliée à
   l'envers — le clip tend cette jambe vers l'arrière). Le pôle est désormais l'avant du corps : 716 images, 0 genou derrière, ≥ 4 cm devant,
   écart latéral ≤ 1 cm.
+- 340 sexies (27/09, « fais pareil pour les autres gestes dans l'atelier ») : L'ATELIER JOUE CHAQUE GESTE — un scénario par geste
+  (rondo-dribble SCEN : le défenseur qui charge pour le crochet / râteau / double contact, le glisseur en navette pour le petit pont, le
+  poursuivant en diagonale pour la roulette, le contreur à 23 m du but pour la feinte de frappe). Mesuré avant : 0-1 geste sur 10 cycles — la
+  cadence du dribble (1 geste / 60 s / joueur) et le volume (0,35) sont des lois du match, levées dans l'atelier ; le porteur donnait au garé
+  à 30 m (les garés sont désormais hors jeu : expulse) ; les planchers d'appétit du passement et du crochet contournaient le poids 0.
+  Déclenchements sur 10 cycles : crochet 6, râteau 3, double contact 9, petit pont ~5, roulette 2-3, feinte de frappe 9, semelle 9. La feinte
+  (de passe) n'a pas de scénario (elle vit dans une intention de passe) : geste sur place, couvert par la même ancre.
+  L'APPUI de tous les gestes (rondo-appui-geste) : mesuré, apparié hier/ici à l'atelier (glisse cumulée du pied d'appui au sol) —
+  crochet 27-164 cm (sauts jusqu'à 44 cm/image) → 0-15 ; râteau 59-110 → 1-9 ; double contact 15-134 → 0-7 ; semelle ≤ 40 → ≤ 12 ;
+  roulette 46 → 4 ; petit pont 5 → 0 ; feinte de frappe 0-9 → 0-7 ; passement inchangé (0). Genou derrière : 0-13 images → 0-2. L'ancre couvre
+  les gestes techniques, les gestes de virage et la TRAÎNE du même clip (l'acte fini, le clip joue sa fin pendant que le corps repart : 30-60 cm
+  de patin au râteau) ; quand le clip LÈVE l'appui (roulette, râteau), l'ancre le suit (τ 0,06 s) et se repose où est le pied rendu ; la
+  sortie est fondue (0,12 s — lâché d'un coup, le pied sautait de 3-8 cm). Rendu seul (sceaux inchangés). ?appui-geste-porte : hier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
