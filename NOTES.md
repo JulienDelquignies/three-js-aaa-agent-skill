@@ -14206,6 +14206,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   garés le long des lignes, le geste choisi poussé (poids 6, les autres 0), le jeu de passe éteint ; le ballon replacé par une remise nommée
   (ball-body refuse l'écriture de position et les causes hors règlement). Caméra de côté, HUD (geste, tours, mordu), window.__atelier.dribble.log.
   Premier essai : 6 passements en course (2-4 tours) sur 12 cycles, défenseur mordu 3 fois — hier un passement multiple lancé par 5-10 min.
+- 340 quinquies (27/09, captures de l'atelier : « problème avec la jambe d'appui ») : mesuré sur 6 passements, avec le genou DU CLIP pour pôle
+  de l'IK d'appui (rondo-appui-geste), le genou passait DERRIÈRE l'axe hanche-cheville en fin de geste (jusqu'à −23 cm : la jambe pliée à
+  l'envers — le clip tend cette jambe vers l'arrière). Le pôle est désormais l'avant du corps : 716 images, 0 genou derrière, ≥ 4 cm devant,
+  écart latéral ≤ 1 cm.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -1,7 +1,7 @@
 // rondo-appui-geste.js — LE PIED D'APPUI RESTE PLANTÉ PENDANT UN GESTE QUI AVANCE (340 ter, 27/09 : « vérifie si le pied d'appui glisse »).
 // MESURÉ en page : pendant un passement double en course (cfg.passementLance, le corps glisse à 0,45 × v0 et porte le ballon), le pied d'appui
 // du clip — écrit dans le repère du corps — PATINAIT : 130 cm de glisse pour 1,40 m de corps (61 images au sol, jusqu'à 7,7 cm d'une image).
-// Ici, après la couche de geste : le pied d'appui est ANCRÉ au sol où il s'est posé (IK deux os, le genou du clip pour pôle) ; quand le pied
+// Ici, après la couche de geste : le pied d'appui est ANCRÉ au sol où il s'est posé (IK deux os, le genou vers l'avant du corps) ; quand le pied
 // du clip (qui suit le corps) s'en écarte de plus de pas m, ou que la hanche sort de la portée de la jambe, le joueur PIÉTINE — un petit pas rasant (haut m, dur s) vers le pied du clip
 // mené de avance s. Les gestes qui n'avancent pas (payload.porte absent) ne sont pas touchés. ?appui-geste-libre : hier.
 import { twoBoneIK } from '../engine/strike-warp.js';
@@ -34,8 +34,10 @@ export function appuiGeste(scene, pl, dt) {
   leg.knee.getWorldPosition(scene._wk);
   const dT = scene._wh.distanceTo(scene._wt), R = (lens.A + lens.B) * 0.995;
   if (dT > R) scene._wt.set(scene._wh.x + (scene._wt.x - scene._wh.x) * (R / dT), scene._wh.y + (scene._wt.y - scene._wh.y) * (R / dT), scene._wh.z + (scene._wt.z - scene._wh.z) * (R / dT));
+  // le genou pointe VERS L'AVANT DU CORPS (retour du 27/09, captures de l'atelier : « problème avec la jambe d'appui ») — mesuré : avec le genou
+  // du clip pour pôle, en fin de geste le genou passait DERRIÈRE l'axe hanche-cheville (−23 cm) : la jambe pliée à l'envers
   const sol = twoBoneIK([scene._wh.x, scene._wh.y, scene._wh.z], [scene._wt.x, scene._wt.y, scene._wt.z], lens.A, lens.B,
-    [scene._wk.x - scene._wh.x, scene._wk.y - scene._wh.y, scene._wk.z - scene._wh.z]);
+    [Math.cos(s.yaw), 0.1, Math.sin(s.yaw)]);
   aimChildAt(leg.up, leg.knee, scene._wm.fromArray(sol.mid));
   aimChildAt(leg.knee, leg.foot, scene._wm.fromArray(sol.end));
 }
