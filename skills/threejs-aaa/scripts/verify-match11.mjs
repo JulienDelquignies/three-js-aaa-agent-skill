@@ -8027,5 +8027,23 @@ if (__bloc()) {
     pA.n <= pN.n * 0.8 && pA.pl >= 0.6 && pN.pl <= 0.5 && pA.multiL >= 2 && pN.multiL === 0);
 }
 
+if (__bloc()) {
+  // L'ENCHAÎNEMENT CONTRÔLE → CONDUITE → PASSE LATÉRALE (341, cfg.passeOuverte + cfg.controleOriente — 27/09 : « l'enchaînement est
+  // catastrophique », l'atelier match11.html?atelier=enchaine). Mesuré avant : la passe latérale en course (porteur ≥ 2,5 m/s, sortie à
+  // 50-110° de sa course) tournait le corps de 70° pendant l'armé (le corps face à la sortie au contact) et glissait à 7,5 m/s (p50) vers
+  // son ancre. Après : le corps OUVERT garde sa ligne, le ballon porté va à la stance, l'allure du coureur tient. Et (342, cfg.gestesAmples)
+  // le crochet court coupe à 75° (52° hier).
+  const W = (a) => Math.atan2(Math.sin(a), Math.cos(a)), D = 180 / Math.PI, med = (a) => { const q = [...a].sort((x, y) => x - y); return q.length ? q[Math.floor(q.length / 2)] : 0; };
+  const mesure = (cfg) => { const tour = [], vmax = [], cc = []; for (const seed of [11, 19]) { const st = makeMatch({ full: true, seed }); let ev = 0; const M = new Map();
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+      for (const p of st.players) { const A = p.act?.payload; if (A?.kind === 'pass' && !M.has(p.id) && p.act.t < 0.05) { const v = Math.hypot(p.v[0], p.v[1]), d = Math.abs(W(A.outYaw - Math.atan2(p.v[1], p.v[0]))) * D; if (v >= 2.5 && d >= 50 && d <= 110) M.set(p.id, { act: p.act, y0: p.yaw, t: 0, v: v }); }
+        const w = M.get(p.id); if (w) { if (p.act !== w.act || p.act.fired) { tour.push(w.t); vmax.push(w.v); M.delete(p.id); } else { w.t = Math.max(w.t, Math.abs(W(p.yaw - w.y0)) * D); w.v = Math.max(w.v, Math.hypot(p.v[0], p.v[1])); } } }
+      for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type === 'skill' && e.espece === 'crochetCourt') cc.push(Math.abs(e.dYaw ?? 0)); } } }
+    return { n: tour.length, tour: med(tour), vmax: med(vmax), cc: cc.length ? med(cc) : null }; };
+  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 } }, mA = mesure(matchCfg(C)), mN = mesure(matchCfg({ ...C, passeOuverte: null, controleOriente: null, gestesAmples: null }));
+  ok(`lots 341-342 — LA PASSE LATÉRALE EN COURSE, LE CORPS OUVERT : ${mA.n} passes (hier ${mN.n}), tour à l'armé p50 ${mA.tour.toFixed(0)}° (hier ${mN.tour.toFixed(0)}°), pointe de vitesse p50 ${mA.vmax.toFixed(1)} m/s (hier ${mN.vmax.toFixed(1)}) ; crochet court ${mA.cc ?? '—'}° (hier ${mN.cc ?? '—'}°)`,
+    mA.n >= 20 && mA.tour <= 45 && mN.tour >= 55 && mA.vmax <= 5 && mN.vmax >= 6.5 && (mA.cc == null || mA.cc >= 70) && (mN.cc == null || mN.cc <= 55));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

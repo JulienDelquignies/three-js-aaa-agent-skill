@@ -11,7 +11,7 @@ import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
-import { pressionDe, sigmaPasse } from './reception.js';
+import { pressionDe, sigmaPasse } from './reception.js'; import { corpsOuvert } from './passe-ouverte.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
 import { role } from './roles.js';
@@ -120,6 +120,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // adversaire est en train de le gagner ; on le joue MAINTENANT, du geste légal le plus prompt)
   const urgent = opts.forceUrgent || st.hold >= cfg.holdMax - 0.1;
   const outYaw = Math.atan2(choice.lead[2] - bref[1], choice.lead[0] - bref[0]);
+  const corps = corpsOuvert(st, c, outYaw, cfg, { shot: !!opts.shot, clear: !!opts.clear, mains: !!mains, cross: !!choice.cross });   // LA PASSE EN COURSE, LE CORPS OUVERT (passe-ouverte.js — cfg.passeOuverte) : null = face à la sortie, l'hier
   // LE BALLON DE CONDUITE EST UN BALLON DU COUPLE (lot 77 — la gâchette : 3 401 refus
   // ballon-vif pour 4 tirs sur 4×180 s depuis que la conduite vit libre). Un ballon qui roule
   // AVEC son homme ne fuit l'ancre de personne : si la vitesse RELATIVE porteur-ballon tient
@@ -187,7 +188,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // holdMin d'origine, pas à la tenue calme (le preneur courait 1 s vers l'avant avant de pivoter). Premier essai (le regard tenu en
     // course) : −27 % de passes, le cône du porté lâchait le ballon — refusé à la mesure. Tir, centre, main, dégagement, élan : l'hier.
     if (st.full && cfg.orientationPasse && !mains && !opts.shot && !opts.clear && !opts.elan && !choice.cross) {
-      const KO = cfg.orientationPasse, dY = Math.abs(wrapA(outYaw - c.yaw)), tour = (KO.marge ?? 0.8) * (cfg.retournement?.rate ?? 4) * (c.skill?.accelF ?? 1);
+      const KO = cfg.orientationPasse, dY = Math.abs(wrapA((corps ?? outYaw) - c.yaw)), tour = (KO.marge ?? 0.8) * (cfg.retournement?.rate ?? 4) * (c.skill?.accelF ?? 1);
       const libre = st.full && cfg.presseLue && c._presse?.t === st.t ? !c._presse.presse : nearFoe > (KO.presse ?? 2.2);   /* (289) le libre lu au temps d'arrivée (presse-lue.js), pas « personne à 2,2 m » */   // libre : le pivot n'est pas un tour (son clip ne tourne le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) — il finit de se tourner et joue la passe posée
       const fits = cands.filter((cd) => cd.data?.surface !== 'heel' && !(libre && cd.clip === 'passePivot') && Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic >= dY);
       if (fits.length) { cands = fits; if (c._regardOri) { c._regard = null; c._regardUntil = null; c._regardOri = false; } }
@@ -214,7 +215,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
       && !talonOse(st, c, cfg.orientationPasse.talonP)) cands = cands.filter((cd) => cd.data?.surface !== 'heel');   // (315) …PAR TOUS LES CHEMINS : le plan d'approche aussi (le talon au score)
     const talonDos = !!(st.full && cfg.orientationPasse?.talon && !mains);   // (401) LA TALONNADE HONNÊTE (cfg.orientationPasse.talon) : le corps dos à la cible
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
-      { rushed: nearFoe < cfg.rushedRadius, talonDos, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
+      { rushed: nearFoe < cfg.rushedRadius, talonDos, corps, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
     // UN REFUS PILOTE L'APPROCHE : même sans stance atteignable, le plan dit OÙ MARCHER (steer) —
     // sans ce cap, le porteur restait sur son standoff d'évasion à p50 = 1,07 m de l'ancre,
     // image après image, jusqu'au tacle (1 573 refus, 122 tacles, médiane de possession 0 passe).
@@ -256,7 +257,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     pick = good.reduce((b, o) => (antic(o) < antic(b) ? o : b), good[0]);
     move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe;
     stance = STANCES[pick.tech.clip] || STANCES.passe;
-    anchor = anchorFor(bref, outYaw, pick.foot, stance, st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' ? { dos: true } : null);   // (401)
+    anchor = anchorFor(bref, outYaw, pick.foot, stance, st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' ? { dos: true } : corps != null && pick.tech?.surface !== 'heel' ? { corps } : null);   // (401) ; le corps ouvert
     c.anchorHint = { p: anchor.p, t: st.t };
     // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
     // (porté : le couple s'arrange ensemble — la borne est celle du plan, pas celle du ballon libre)
@@ -338,7 +339,8 @@ export function beginPass(st, choice, cfg, opts = {}) {
   }
   c.foot = pick.foot;
   c.intent = null;                                          // l'intention a abouti : le geste prend le relais
-  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains, ...(st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' && !mains ? { dos: true } : {}),   /* (401) le pick planifié n'a pas de .surface : la ligne de la table fait foi (mesuré : 13 talonnades au corps tourné de 115-179° vers la cible pendant l'armé) */
+  if (corps != null && stance && st.ball.owner !== c.id && hyp(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2]) < (cfg.passeOuverte.prise ?? 1.4)) st.ball.possess(c.id);   // (passe-ouverte.js) la passe EN COURSE prend son ballon de conduite : le couple porté glisse à l'allure du coureur (hier le ballon libre freiné, le corps stoppé sur lui)
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, ...(corps != null && pick.tech?.surface !== 'heel' ? { corps } : {}), from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains, ...(st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' && !mains ? { dos: true } : {}),   /* (401) le pick planifié n'a pas de .surface : la ligne de la table fait foi (mesuré : 13 talonnades au corps tourné de 115-179° vers la cible pendant l'armé) */
     // …l'ÉLAN du commit (lot 45) : la foulée de frappe le porte DANS le geste (stepGestures)
     v0: hyp(c.v[0], c.v[1]), vYaw: Math.atan2(c.v[1], c.v[0]) }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });

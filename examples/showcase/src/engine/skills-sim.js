@@ -370,7 +370,7 @@ export function maybeCrochet(st, c, cfg) {
   const uE = tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))();
   const espece = fd >= 1.45 && c.speed >= 2.0 && uE < 0.4 + 0.35 * (c.persona?.flair ?? 0.5) ? 'crochetChaloupe'
     : fd < 1.45 || uE > 0.75 ? 'crochetCourt' : 'crochet';
-  const turn = espece === 'crochetChaloupe' ? 1.7 : espece === 'crochetCourt' ? 0.9 : (K.crochetTurn ?? 1.4);
+  const turn = espece === 'crochetChaloupe' ? 1.7 : espece === 'crochetCourt' ? ((st.full && cfg.gestesAmples?.crochetCourt) || 0.9) : (K.crochetTurn ?? 1.4);   // (342) le crochet court CASSE la course (retour 27/09 : « invisible, ça ne change pas de direction » — 52° hier)
   const exitYawE = c.yaw + away * turn;
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId.crochet, sit);
@@ -413,7 +413,7 @@ export function maybeDoubleContact(st, c, cfg) {
   if (sitFoe.bearing > (K.doubleCone ?? 55)) return false;        // de FACE (le dos appartient à la tenure)
   // la sortie garde le cap, à peine décalée du CÔTÉ OPPOSÉ au foe — et elle doit être libre
   const away = sitFoe.side === 'left' ? -1 : 1;
-  const exitYaw = c.yaw + away * (K.doubleTurn ?? 0.45);
+  const exitYaw = c.yaw + away * ((st.full && cfg.gestesAmples?.doubleTurn) || (K.doubleTurn ?? 0.45));   // (342, cfg.gestesAmples) la croqueta d'Iniesta DÉCALE : sortie plus ouverte (retour 27/09 : « pas assez d'amplitude »)
   const ex = c.p[0] + Math.cos(exitYaw) * 1.6, ez = c.p[2] + Math.sin(exitYaw) * 1.6;
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'double-hors-carré');
   for (const q of st.players) {
@@ -583,7 +583,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
   const move = MOVE_TIMING.feinteFrappe;
   startGesture(c, { id: 'feinteFrappe', ...move }, {
     // outYaw : le REGARD vise le but — c'est lui qui vend la frappe
-    payload: { kind: 'skill', skill: 'frappeFeinte', pick: { foot }, fakeYaw: gYaw, outYaw: gYaw },
+    payload: { kind: 'skill', skill: 'frappeFeinte', pick: { foot }, fakeYaw: gYaw, outYaw: gYaw, ...(st.full && cfg.gestesAmples?.feinteV && c.speed >= cfg.gestesAmples.feinteV ? { mobile: true, pinRel: cfg.gestesAmples.feintePin ?? 0.45 } : {}) },   // (342) LA FEINTE DE FRAPPE EN COURSE (retour 27/09 : « trop à l'arrêt ») : lancé, le corps court sous l'armé, le ballon tenu devant le pied
     log: st.gestures,
   });
   (c._skillCd ??= {}).frappeFeinte = st.t + K.frappeFeinteCd;

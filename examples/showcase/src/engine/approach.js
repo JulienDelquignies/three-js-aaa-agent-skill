@@ -89,7 +89,7 @@ export function anchorFor(ball, outYaw, foot, stance, opts = null) {   // (401) 
   // corps, un gaucher avec le ballon à droite. Attrapé par la mesure (écart uniforme de 76°), et
   // c'est désormais une clause avec ce sabotage précis.
   const side = foot === 'left' ? 1 : -1;
-  const yaw = opts?.dos ? outYaw + Math.PI : outYaw;         // le regard au contact = la direction de passe (le talon honnête : son opposé)
+  const yaw = opts?.dos ? outYaw + Math.PI : opts?.corps != null ? opts.corps : outYaw;         // le regard au contact = la direction de passe (le talon honnête : son opposé ; la passe en course : le corps OUVERT, passe-ouverte.js)
   const b = stance.bearing * side * D2R;
   // ballon = corps + R(yaw + b) · dist  ⇒  corps = ballon − R(yaw + b) · dist
   const a = yaw + b;
@@ -176,14 +176,14 @@ export function glide(from, fromYaw, anchor, t01) {
  */
 export function planStrike(playerP, ball, outYaw, candidates, {
   stances = STANCES, adjustSpeed = 3.6, hardMax = 0.6,
-  rushed = false, rushedSlack = 0.2, farCost = 0.35, extraReach = 0, talonDos = false,
+  rushed = false, rushedSlack = 0.2, farCost = 0.35, extraReach = 0, talonDos = false, corps = null,
 } = {}) {
   const all = [];
   for (const cand of candidates) {
     const s = stances[cand.clip];
     if (!s) continue;
     for (const foot of ['right', 'left']) {
-      const anchor = anchorFor(ball, outYaw, foot, s, talonDos && cand.data?.surface === 'heel' ? { dos: true } : null);   // (401)
+      const anchor = anchorFor(ball, outYaw, foot, s, talonDos && cand.data?.surface === 'heel' ? { dos: true } : corps != null && cand.data?.surface !== 'heel' ? { corps } : null);   // (401) ; le corps ouvert (passe-ouverte.js)
       const d = hyp(anchor.p[0] - playerP[0], anchor.p[1] - playerP[1]);
       // `extraReach` : mètres de MARCHE déjà acquis avant que le glissement ne commence — le cas de
       // la livraison en route (le corps se place PENDANT que le ballon voyage). La borne du

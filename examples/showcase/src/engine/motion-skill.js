@@ -35,7 +35,9 @@ export const SKILL_KINDS = {
   passementJambes: { duration: 0.66, contact: 0.3, ball: [0.05, BALL_R, -0.40], circle: true, tour: 0.3, tours: 1, entry: 0.15, plant: 0.16, dip: 0.06, sell: 22, plantLean: 14, yawSell: -30, circR: [0.34, 0.24], leanFwd: 12, armsWide: 1, marks: [0.15] },
   // LA COUPE : l'intérieur va chercher le ballon de l'autre côté du corps et le coupe vers la gauche
   crochet:         { duration: 0.55, contact: 0.2,  ball: [0.0, BALL_R, -0.32], cut: true, reach: [0.34, 0.14, -0.28], cross: -0.12, tPlant: 0.36, lean: 14, yawCut: 12, dip: 0.08, headDown: 14 },
-  crochetCourt:    { duration: 0.4,  contact: 0.14, ball: [0.0, BALL_R, -0.28], cut: true, reach: [0.27, 0.12, -0.24], cross: -0.07, tPlant: 0.26, lean: 4, yawCut: 4, dip: 0.03, headDown: 12 },
+  // (342, 27/09 « le crochet court est invisible, ça ne change pas de direction ») : le chop SEC mais FRANC — l'intérieur va loin de l'autre côté
+  // (cross 7 → 15 cm), le buste casse (lean 4 → 12°, épaules 4 → 12°), le bassin plonge (3 → 7 cm) ; la sim coupe à 75° (gestesAmples.crochetCourt)
+  crochetCourt:    { duration: 0.44, contact: 0.15, ball: [0.0, BALL_R, -0.28], cut: true, reach: [0.32, 0.13, -0.26], cross: -0.15, tPlant: 0.28, lean: 12, yawCut: 11, dip: 0.07, headDown: 12 },
   crochetChaloupe: { duration: 0.8,  contact: 0.42, ball: [0.0, BALL_R, -0.32], cut: true, reach: [0.34, 0.14, -0.28], cross: -0.12, tPlant: 0.58, lean: 12, yawCut: 10, dip: 0.06, headDown: 12, sway: 0.28, swayX: 0.06, swayYaw: 16, swayLean: 8 },
   // (339) LE CROCHET DE L'EXTÉRIEUR : le pied droit va au côté GAUCHE du ballon et le pousse à DROITE de l'extérieur (le virage du côté du pied)
   crochetExterieur: { duration: 0.5,  contact: 0.18, ball: [0.0, BALL_R, -0.30], cut: true, ext: true, reach: [-0.20, 0.14, -0.26], cross: 0.34, tPlant: 0.32, lean: 10, yawCut: 10, dip: 0.06, headDown: 14 },
@@ -43,7 +45,9 @@ export const SKILL_KINDS = {
   // jambe d'appui — le demi-tour qui ment (le corps pivote à gauche, écrit par la sim ; le clip anticipe)
   cruyff: { duration: 0.9, contact: 0.44, ball: [0.0, BALL_R, -0.24], cruyff: true, tArm: 0.14, tFake: 0.28, tPre: 0.36, frac: 0.3, tPlant: 0.74, lean: 10, yawTurn: 26, dip: 0.09, headDown: 14 },
   // LA CROQUETA : deux touches sèches, deux pieds — l'intérieur droit balaie le ballon vers la gauche, le gauche le pousse devant
-  doubleContact: { duration: 0.36, contact: 0.18, ball: [0.05, BALL_R, -0.30], croqueta: true, push1: 0.10, lean: 7, dip: 0.04, headDown: 12 },
+  // (342, 27/09 « le double contact n'a pas assez d'amplitude » — la référence Iniesta) : le balayage traverse le corps (18 → 30 cm), le bassin
+  // GLISSE avec le ballon (5 → 13 cm), le buste ment plus (7 → 12°), deux touches lisibles (0,36 → 0,5 s)
+  doubleContact: { duration: 0.5, contact: 0.29, ball: [0.05, BALL_R, -0.30], croqueta: true, push1: 0.16, sweep: 0.30, sweepT: [0.14, 0.07], shift: 0.13, lean: 12, dip: 0.07, headDown: 12 },
   // LA PICHENETTE : armé puis extension SÈCHE entre les jambes du fermeur — le corps est déjà bas et penché, les bras restent à la locomotion
   feinteAppel: { duration: 0.55, contact: 0.3, feint: true, upperOnly: true, sell: 0.15, sellSide: 16, yawSell: 24, lean: 6, dip: 0, headDown: 6 },   // (§ 10) LA FEINTE D'APPEL — sans ballon : le buste VEND un départ d'un côté (l'épaule qui plonge, le lacet) puis repart de l'autre au contact ; haut du corps seul (la foulée garde les jambes : le démarrage est celui de la sim)
   petitPont: { duration: 0.3, contact: 0.12, ball: [0.08, BALL_R, -0.30], flick: true, arm: 0.07, lean: 8, dip: 0.06, noArms: true, headDown: 12, marks: [0.07] },
@@ -285,13 +289,13 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
   } else if (K.croqueta) {
     // LA CROQUETA : jambe droite balaie le ballon vers la gauche (touche 1 à push1), se plante croisée ;
     // le poids transfère ; jambe gauche va au ballon déplacé et le POUSSE devant (touche 2 = contact)
-    const t1 = K.push1, tPlantR = t1 + 0.05, tGo = t1 - 0.01, tEnd2 = tc + 0.08, tBack = tEnd2 + 0.02;
-    const r1 = [b[0] + BALL_R + 0.05, restR[1] + 0.05, b[2] + 0.02], r2 = [b[0] - 0.18, restR[1] + 0.05, b[2] + 0.02], rPlant = [b[0] - 0.17, restR[1], b[2] + 0.10];
-    const l1 = [b[0] - 0.36, restL[1] + 0.05, b[2] + 0.12], l2 = [b[0] - 0.36, restL[1] + 0.04, b[2] - 0.08];
-    const tR0 = t1 - 0.06;
-    const footR = (t) => { const sweep = ramp(t, tR0, t1, t1 + 0.03), plant = ramp(t, t1 + 0.03, (t1 + 0.03 + tPlantR) / 2, tPlantR); return lerp3(lerp3(r1, r2, sweep), rPlant, plant); };
+    const t1 = K.push1, sT = K.sweepT ?? [0.06, 0.03], tPlantR = t1 + sT[1] + 0.02, tGo = t1 - 0.01, tEnd2 = tc + 0.08, tBack = tEnd2 + 0.02;
+    const sw = K.sweep ?? 0.18, r1 = [b[0] + BALL_R + 0.05, restR[1] + 0.05, b[2] + 0.02], r2 = [b[0] - sw, restR[1] + 0.05, b[2] + 0.02], rPlant = [b[0] - sw + 0.01, restR[1], b[2] + 0.10];
+    const l1 = [b[0] - sw - 0.18, restL[1] + 0.05, b[2] + 0.12], l2 = [b[0] - sw - 0.18, restL[1] + 0.04, b[2] - 0.08];
+    const tR0 = t1 - sT[0];
+    const footR = (t) => { const sweep = ramp(t, tR0, t1, t1 + sT[1]), plant = ramp(t, t1 + sT[1], (t1 + sT[1] + tPlantR) / 2, tPlantR); return lerp3(lerp3(r1, r2, sweep), rPlant, plant); };
     const footL = (t) => { const push = ramp(t, tc - 0.01, tc + 0.03, tEnd2); return lerp3(l1, l2, push); };
-    const hipsOf = (t) => { const one = bump(t, 0, t1, tc), two = ramp(t, t1, tc, tEnd2) * (1 - ramp(t, tBack, (tBack + T) / 2, T)); return [-0.05 * two, -dip * Math.max(one, two), 0]; };
+    const hipsOf = (t) => { const one = bump(t, 0, t1, tc), two = ramp(t, t1, tc, tEnd2) * (1 - ramp(t, tBack, (tBack + T) / 2, T)); return [-(K.shift ?? 0.05) * two, -dip * Math.max(one, two), 0]; };
     const I = [0, 0, 0, 1];
     const footRotR = (t) => ry(-20 * bump(t, t1 - 0.06, t1, t1 + 0.04)), footRotL = (t) => rx(-6 * bump(t, tGo, tc, tEnd2));
     const restSol = (side, t) => solveLeg(P, side, hipsOf(t), I, { p: side === 'Right' ? restR : restL });
@@ -406,10 +410,10 @@ export function skillPortrait(spec, P) {
   // les deux appuis de la croqueta : gauche planté avant la touche 1, droit planté après
   let supA = 0, supB = 0;
   if (K.croqueta) {
-    const r0 = near(K.push1 + 0.05).w.RightFoot.p;
+    const tP = K.push1 + (K.sweepT?.[1] ?? 0.03) + 0.02, r0 = near(tP).w.RightFoot.p;   // le droit planté À LA FIN de son balayage (342 : la fenêtre suit sweepT)
     for (const { t, w } of body.samples) {
       if (t <= K.push1 - 0.02) supA = Math.max(supA, hyp(w.LeftFoot.p[0] - l0[0], w.LeftFoot.p[2] - l0[2]));
-      if (t >= K.push1 + 0.05 && t <= spec.contact + 0.08) supB = Math.max(supB, hyp(w.RightFoot.p[0] - r0[0], w.RightFoot.p[2] - r0[2]));
+      if (t >= tP && t <= spec.contact + 0.08) supB = Math.max(supB, hyp(w.RightFoot.p[0] - r0[0], w.RightFoot.p[2] - r0[2]));
     }
   }
   const handsSpread = (t) => { const w = near(t).w; return Math.max(Math.abs(w.LeftHand.p[0] - w.Hips.p[0]), Math.abs(w.RightHand.p[0] - w.Hips.p[0])); };

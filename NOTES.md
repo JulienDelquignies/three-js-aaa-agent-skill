@@ -14223,6 +14223,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   les gestes techniques, les gestes de virage et la TRAÎNE du même clip (l'acte fini, le clip joue sa fin pendant que le corps repart : 30-60 cm
   de patin au râteau) ; quand le clip LÈVE l'appui (roulette, râteau), l'ancre le suit (τ 0,06 s) et se repose où est le pied rendu ; la
   sortie est fondue (0,12 s — lâché d'un coup, le pied sautait de 3-8 cm). Rendu seul (sceaux inchangés). ?appui-geste-porte : hier.
+- 341 (27/09, « un atelier contrôle, conduite puis passe latérale — l'enchaînement est catastrophique ») : L'ATELIER ENCHAÎNEMENT
+  (match11.html?atelier=enchaine[&conduite=2.5][&lat=12][&passe=14][&recul=4.5]) — P donne à R, R contrôle, conduit, puis donne au latéral M
+  qui entre à 12 m ; les autres garés hors jeu. Mesuré : (1) la passe latérale en course voulait le CORPS FACE À LA SORTIE au contact
+  (approach.anchorFor) — le porteur à 4 m/s tournait de 64-78° pendant l'armé, glissait de côté à 6-7,5 m/s vers son ancre, ratait sa
+  stance (« stance-au-contact ») et réarmait ; puis, le corps ouvert, il S'ARRÊTAIT pour passer (4,3 → 0,2 m/s en 0,38 s : le frein
+  d'assise du ballon de conduite, l'ancre lue sur un ballon soudé au corps, l'évitement du ballon qui le jetait de côté) ; (2) le contrôle
+  du receveur libre gardait le regard vers le passeur et comptait les joueurs hors jeu comme adversaires. Lois : cfg.passeOuverte
+  (passe-ouverte.js — porteur ≥ 1,5 m/s, sortie ≤ 110° de sa course : le corps ne tourne que de ce qui dépasse 50° d'ouverture ; le ballon
+  de conduite pris et porté vers la stance calculée sur la ligne du coureur ; dans l'axe le corps garde son allure) ; cfg.controleOriente
+  (controle-oriente.js — libre à 6 m : la première touche VERS L'AVANT ; les expulsés ne comptent plus). Atelier : tour à l'armé 64-78 → 21-33°,
+  vitesse tenue 3,5-4,1 m/s jusqu'au départ, un seul armé. Match (2 × 900 s) : tour p50 70 → 36°, pointe p50 7,5 → 4,1 m/s, plus de 6 m/s
+  81/96 → 18/76. Banc 16 : passes 554,75 → 558,50, complétion 90,88 → 91,08, pertes 109,25 → 97,25, tirs 25,00 → 23,25, buts 3,80 → 4,08.
+- 342 (27/09, « la feinte de frappe est trop à l'arrêt ; le crochet court est invisible ; le double contact manque d'amplitude » — la
+  référence Iniesta) : cfg.gestesAmples — le crochet court coupe à 75° (52°), la croqueta sort à 40° (26°), la feinte de frappe se joue EN
+  COURSE (≥ 1,8 m/s : le corps court sous l'armé, le ballon tenu 45 cm devant). Clips (motion-skill) : crochet court cross 7 → 15 cm, buste
+  4 → 12°, épaules 4 → 11°, bassin 3 → 7 cm ; croqueta balayage 18 → 30 cm, le bassin glisse 5 → 13 cm, buste 7 → 12°, deux touches
+  lisibles (0,36 → 0,5 s). verify-motion : 371 ✓ / 10 ✗ (les 10 d'avant), 6 refus au balayage (inchangé). Bloc 219 ; défaut 0cf804599da02e77 /
+  20ca8481b1cba54e (jumeau = 340).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
