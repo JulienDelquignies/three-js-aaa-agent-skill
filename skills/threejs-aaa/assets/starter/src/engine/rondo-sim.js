@@ -115,7 +115,7 @@ function stepGestures(st, dt, cfg) {
       // plantées (passement 2,3, râteau 1,2, roulette 2,4 m/s à +1,5 s), le ralenti existait, l'explosion
       // jamais. Durée × accelF (l'attribut) ; la feinte garde son burst propre, la semelle protège. Absente : hier.
       const SB = st.full && cfg.skill?.sortieBurst;
-      if (SB && (st.ball.owner === p.id || A.reussi) && A.skill !== 'plongeon' && A.skill !== 'semelle' && A.skill !== 'feinte' && A.face?.fin == null) {
+      if (SB && (st.ball.owner === p.id || A.reussi) && A.skill !== 'plongeon' && A.skill !== 'semelle' && A.skill !== 'feinte' && A.face?.fin == null && !A.face?.plante) {   // (face.js, plante) la série de la tenue finit sur la tenue : pas de sortie
         p._pace = { until: st.t + (SB.dur ?? 1.2) * (p.skill?.accelF ?? 1), kind: 'sortie-geste', next: p._pace?.next ?? 0 };
         st.events.push({ type: 'burst', kind: 'sortie-geste', by: p.id, t: +st.t.toFixed(2) });
       }

@@ -266,3 +266,24 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   Final (avant-pied, médiane) : 2 cm sous 3 m/s, 7 cm à 3-4, 13 cm au-delà (la fin d'appui, talon levé) ; pose à 0,35-0,41 m du bassin.
   A/B 16 graines × 120 s : tirs 2,09 → 2,28/min, xG/tir 0,205 → 0,242, pertes 5,2 → 4,8/min. verify-pas : le seuil du sabotage (servo d'hier)
   ramené de 15 à 12 % (posé sur 16 % sans marge ; les coupes l'ont passé à 14 %, la conduite réelle à 1 %).
+
+## La série de passements alternés, façon Mancini (2026-09-27)
+- Cible mesurée : Mancini contre Réveillère (Roma-Lyon, C1 2007, ralenti serré image par image) — 4 passements en 1,2 s, un toutes les 0,30 s
+  sans pause, les jambes ALTERNÉES, le ballon quasi immobile entre les pieds, accroupi, les deux bras écartés, la dernière vente la plus
+  appuyée, la sortie 0,3-0,4 s après. Avant : le passement de la tenue était un geste isolé de 0,66 s, jamais une série.
+- motion-skill `passementSerie2/3/4` : la semelle roule le ballon de la tenue au milieu devant le corps, n passements alternés (l'autre pied
+  d'abord), la semelle le reprend et le ramène à la tenue ; contrat par passement (au-dessus ou devant le ballon, de l'intérieur vers
+  l'extérieur, jamais à < 13 cm du centre, l'appui qui ne glisse pas) + la semelle au départ, au milieu et à l'arrivée.
+- `face-serie.mjs` (sans navigateur) : chaque série — passements joués, la morsure (à quel passage), la fin (menée au bout, sortie sur la
+  morsure, fente lue, perdue), le face-à-face à +2 s, l'écart du ballon au point du clip. `face-feintes.mjs` : un passage de série se juge dans
+  l'image même de son événement (mords0 corrigé).
+- `serie-rendu.mjs <url>` (FORCE : toutes les feintes en séries) : au rendu, la semelle sur le ballon (roulé, reprise), la jambe qui passe au
+  plus près du ballon (3D), l'appui au monde. `capture-geste.mjs` : SERIE=n (la démonstration : séries de n, défenseur patient).
+- Trouvé en route : la bande morte d'arrivée de la locomotion (0,18 m) valait plus que la moitié du jab du défenseur (0,35 m) — arrêté à
+  mi-chemin, à 0,17 m de la garde ET du jab, il ne bougeait plus jusqu'à la fente (verify-duel graine 5 : 0,9 s gelé), les jabs suivants
+  invisibles → face.garde vise au-delà de movement.ARRIVEE.
+- Après (32 graines × 120 s, face-serie) : 49 séries (n2 37 %, n3 37 %, n4 27 %), mordues 53 %, perdues pendant la série 8 % (la fente
+  franche, non lue : le ballon immobile au milieu, un pied en l'air — le vrai risque du geste) ; le ballon à 0,3 cm du point du clip (p90).
+  Au rendu : la jambe qui passe à 0,17-0,18 m du ballon (29/29 ≥ 0,13), l'appui à 1 mm, le bassin qui rebondit de 3,3 cm. Duel (16 × 120 s,
+  duel-face, avec la garde réparée) : battu 58 → 64 %, perdu 34 → 31 %, oscillation latérale 0,41 → 0,59 m (réf. 0,6-0,9). verify-duel 22/22,
+  verify-pas 10/10, matchday 88/88 au bit, animkit 171/171, sync 9/9, verify-motion sans échec nouveau (0 refus des séries sous 40 styles).

@@ -25,7 +25,9 @@ const vert = (b) => { const { w, h, bpp, px } = png(b); let s = 0; for (let i = 
 const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 let pg = await b.newPage({ viewport: { width: 960, height: 540 } });
 const ouvre = async () => { await pg.goto(`${URL}${URL.includes('?') ? '&' : '?'}seed=${SEED}&webgl&capture`, { waitUntil: 'load', timeout: 240000 });
-  await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 }); };
+  await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 });
+  // SERIE=n (la démonstration de la série de passements, face.js) : toutes les feintes de la tenue sont des séries de n, le défenseur patient
+  if (process.env.SERIE) await pg.evaluate((n) => { const K = window.__scene._mcfg?.face; if (K?.feintes?.serie) { K.feintes.passement = { ...K.feintes.passement, p: 5 }; K.feintes.serie = { ...K.feintes.serie, part: 5, n }; K.patience = [30, 40]; } }, +process.env.SERIE); };
 await ouvre();
 // T0 = 'conduite' : la partie de CETTE page (la même config que le film) est d'abord parcourue sans rendu jusqu'à 90 s ; la plus longue conduite en
 // course (≥ 1,8 m/s, au moins une touche) est retenue, la page rechargée, la fenêtre filmée de 0,6 s avant son début.

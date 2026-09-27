@@ -25,6 +25,7 @@ import { MOVE_TIMING } from './skills-sim.js';
 import { SKILL_KINDS } from './motion-skill.js';
 import { situation, footFor, byId } from './technique.js';
 import { chuter } from './duel.js';
+import { ARRIVEE } from './movement.js';
 
 const rnd = (st, id) => tirage(st, 'geste', id, st.rnd ?? (() => 0.5))();
 const tir = (a, u) => a[0] + (a[1] - a[0]) * u;
@@ -61,6 +62,18 @@ function semelle(st, c, kind, S, x1, z1, fin = S.dragEnd) {
   F.x = x1;
 }
 
+/** LA SÉRIE DE PASSEMENTS ALTERNÉS (Mancini contre Réveillère, Roma-Lyon 2007 : un passement toutes les 0,30 s, les jambes alternées, le ballon
+ *  quasi immobile entre les pieds) : la semelle roule le ballon au milieu devant le corps, n passements alternés — l'autre pied d'abord (côté −m),
+ *  puis celui de la semelle, … —, la semelle le reprend et le ramène à la tenue. Chaque passage se juge (la morsure du côté que la jambe vend). */
+function serie(st, c, q, n, dq) {
+  const F = c._face, kind = `passementSerie${n}`, S = SKILL_KINDS[kind], T = S.duration, tA = S.entry + n * S.tour + S.lift, bx = F.m * S.ball[0], bz = -S.ball[2];
+  startGesture(c, { id: kind, duration: T, contact: S.contact }, { payload: { kind: 'skill', skill: kind, pick: { foot: F.pied }, ownsBody: true, foeId: q.id, ballMax: 0,
+    face: { plante: true, chemin: [[0, F.x, DEV], [S.roll, bx, bz], [tA, bx, bz], [T, F.x, DEV]], yaw0: c.yaw, tour: 0, cap: [0, T], dir: [Math.cos(c.yaw), Math.sin(c.yaw)], v: 0 } }, log: st.gestures });
+  F.serie = { kind, n, j: 0 }; F.roule = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: kind, foot: F.pied, skill: kind, anticipation: S.contact });
+  return S;
+}
+
 /** Le côté où la semelle RATISSE depuis la tenue : du ballon dehors, en travers devant le corps (−m) ; du ballon croisé, vers l'extérieur (+m). */
 const coteRateau = (F) => (F.x * F.m > -0.02 ? -F.m : F.m);
 
@@ -76,6 +89,7 @@ function sortir(st, c, q, cote, issue, K, geste = null) {
   const g = st.pitch.attackGoal(c.team), gx = g.x - q.p[0], gz = -q.p[2], gl = hyp(gx, gz) || 1;
   const ax = q.p[0] + F.n[0] * cote * K.sortie.lat + (gx / gl) * K.sortie.au, az = q.p[2] + F.n[1] * cote * K.sortie.lat + (gz / gl) * K.sortie.au;
   const exitYaw = Math.atan2(az - c.p[2], ax - c.p[0]), SK = K.sorties;
+  if (F.serie) geste = 'croqueta';   // (la série) le ballon au milieu, la semelle loin de lui : ni râteau ni roulette, la croqueta le prend où il est
   if (!geste) geste = SK && cote === coteRateau(F) && rnd(st, c.id) < SK.rateau ? 'rateau' : 'croqueta';
   if (busy(c)) abortGesture(c, 'face-sortie', { log: st.gestures });
   if (geste !== 'croqueta') {   // LE RÂTEAU, LA ROULETTE : le chemin du ballon en repère personnage (les points des clips : x la droite, z devant), le cap, l'élan
@@ -225,15 +239,25 @@ export function faceAvant(st, cfg) {
   c._regard = Math.atan2(dz, dx); c._regardUntil = st.t + 0.15;
   const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
   const age = st.t - F.t0, Fn = F.fente, A = c.act?.payload;
+  // LA SÉRIE : au milieu de chaque passement (le pied par-dessus le ballon), une morsure s'arme du côté que la jambe vend — l'autre pied d'abord (−m),
+  // puis alterné ; la dernière vente plus appuyée. Le pied se repose à la fin du passement (libre) : la sortie sur la morsure l'attend
+  if (F.serie && A?.skill !== F.serie.kind) F.serie = null;
+  if (F.serie) { const S = SKILL_KINDS[F.serie.kind], j = F.serie.j, FS = K.feintes.serie;
+    if (j < F.serie.n && c.act.t >= S.entry + (j + 0.5) * S.tour) {
+      F.serie.j++; F.feintes++;
+      F.roule = { cote: F.m * (j % 2 === 0 ? -1 : 1), t: st.t, juge: false, kind: F.serie.kind, vente: j === F.serie.n - 1 ? FS.venteFin : FS.vente, libre: S.entry + (j + 1) * S.tour, serie: true };
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passementSerie', n: F.serie.n, passage: j + 1, by: c.id, foe: +hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]).toFixed(2), face: F.feintes });   // (une feinte par passage)
+    } }
   // LA FENTE : la charge, la lecture (le tiré de semelle), le départ, puis le jugement du contact
   if (Fn) {
     const piedLibre = !busy(c) || !F.roule || A?.skill !== F.roule.kind || c.act.t >= F.roule.libre;   // (une semelle en plein roulé ne ratisse pas : la réponse attend la fin du roulé — trop tard, la fente gagne)
+    if (F.serie && Fn.lu != null && !Fn.tire && st.t >= Fn.lu && piedLibre && !Fn.repondu) { Fn.repondu = true; return sortir(st, c, q, (dx * F.n[0] + dz * F.n[1]) > 0 ? -1 : 1, 'fente-lue', K, 'croqueta'); }   // (la série) la semelle loin du ballon : la croqueta du côté ouvert, dès que le pied se repose
     if (Fn.lu != null && !Fn.tire && st.t >= Fn.lu && K.sorties && piedLibre && !Fn.repondu) {   // LA FENTE LUE, trois réponses au tirage, chacune du côté OUVERT (à l'opposé du flanc du défenseur) : la ROULETTE (geste de flair ; pivot sur le pied de semelle → elle sort de SON côté, +m), le RÂTEAU (la semelle ratisse le ballon hors du couloir de la fente et part avec), le TIRÉ (plus bas)
       Fn.repondu = true; const u = rnd(st, c.id), ouvert = (dx * F.n[0] + dz * F.n[1]) > 0 ? -1 : 1, pR = ouvert === F.m ? K.sorties.roulette * (0.6 + 0.8 * (c.persona?.flair ?? 0.5)) : 0, pA = coteRateau(F) === ouvert ? K.sorties.rateau : 0;
       if (u < pR) return sortir(st, c, q, F.m, 'roulette-fente', K, 'roulette');
       if (u < pR + pA) return sortir(st, c, q, ouvert, 'rateau-fente', K, 'rateau');
     }
-    if (Fn.lu != null && !Fn.tire && st.t >= Fn.lu) { Fn.tire = true; if (busy(c)) abortGesture(c, 'face-tire', { log: st.gestures }); const dehors = F.x * F.m > -0.02, S = dehors ? TIRE : TIRE_IN; semelle(st, c, dehors ? 'tireSemelle' : 'tireSemelleIn', S, F.m * S.dragX, -S.dragTo); }   // le clip tire le ballon de (ball[0], ball[2]) à (dragX, dragTo) — z < 0 devant ; depuis le ballon dehors ou croisé
+    if (Fn.lu != null && !Fn.tire && st.t >= Fn.lu && !F.serie) { Fn.tire = true; if (busy(c)) abortGesture(c, 'face-tire', { log: st.gestures }); const dehors = F.x * F.m > -0.02, S = dehors ? TIRE : TIRE_IN; semelle(st, c, dehors ? 'tireSemelle' : 'tireSemelleIn', S, F.m * S.dragX, -S.dragTo); }   // le clip tire le ballon de (ball[0], ball[2]) à (dragX, dragTo) — z < 0 devant ; depuis le ballon dehors ou croisé
     if (!Fn.contact && st.t >= Fn.part && q.down <= 0 && !busy(q)) lancerFente(st, q, c, K, cfg);
     if (Fn.contact && !Fn.juge && st.t > Fn.contact + 0.02) {   // le ballon toujours à lui : manquée — au SOL (tirage) ou déséquilibré, puis la sortie
       Fn.juge = true;   // (la chute s'est jugée sur la fente elle-même, en tête d'image)
@@ -242,7 +266,7 @@ export function faceAvant(st, cfg) {
   }
   // LA MORSURE : au contact de la feinte (le roulé, la vente de la feinte de corps, le passage du passement), le défenseur mord (ou non) du côté
   // VENDU ; mordu, il peut se jeter de ce côté-là
-  if (F.roule && !F.roule.juge && A?.skill === F.roule.kind && c.act.fired) {
+  if (F.roule && !F.roule.juge && A?.skill === F.roule.kind && (c.act.fired || F.roule.serie)) {
     F.roule.juge = true;
     const pM = Math.min(0.85, (K.morsure.base + K.morsure.cumul * (F.feintes - 1)) * F.roule.vente * (c.skill?.gesteF ?? 1) * (2 - (q.skill?.anticipF ?? 1)));
     if (!Fn && !busy(q) && q.down <= 0 && rnd(st, q.id) < pM) {
@@ -264,13 +288,18 @@ export function faceAvant(st, cfg) {
     const dehors = F.x * F.m > -0.02, FK = K.feintes, u = FK ? rnd(st, c.id) : 1;
     const pP = FK && dehors ? FK.passement.p * (0.6 + 0.8 * (c.persona?.flair ?? 0.5)) : 0, pC = FK ? FK.corps.p : 0;
     let kind, S, x1 = F.x, cote, vente = 1;
-    if (u < pP) { kind = 'passementFace'; S = SKILL_KINDS.passementFace; cote = F.m; vente = FK.passement.vente; }
-    else if (u < pP + pC) { kind = dehors ? 'feinteSemelle' : 'feinteSemelleIn'; S = SKILL_KINDS[kind]; cote = -F.m; vente = FK.corps.vente; }
-    else { kind = dehors ? 'semelleRoule' : 'semelleRouleOut'; S = dehors ? ROULE : ROULE_OUT; x1 = F.m * S.dragX; cote = Math.sign(x1 - F.x); }
-    F.feintes++; F.roule = { cote, t: st.t, juge: false, kind, vente, libre: libre(S) };
-    semelle(st, c, kind, S, x1, DEV, S.dragEnd ?? S.duration);
-    F.prochain = st.t + S.duration + tir(K.pause, rnd(st, c.id));
-    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: /^semelleRoule/.test(kind) ? 'semelleRoule' : kind, by: c.id, foe: +dq.toFixed(2), face: F.feintes });
+    const fl = c.persona?.flair ?? 0.5;
+    if (u < pP && FK.serie && rnd(st, c.id) < FK.serie.part * (0.5 + fl)) {   // LA SÉRIE (Mancini) : le passement du flair se répète, 2 à 4 passements alternés selon le flair
+      const nS = Math.min(4, 2 + Math.floor(rnd(st, c.id) * (1 + 2 * fl))), S2 = serie(st, c, q, FK.serie.n ?? nS, dq);   // (serie.n : un nombre fixé — la démonstration) F.prochain = st.t + S2.duration + tir(K.pause, rnd(st, c.id));
+    } else {
+      if (u < pP) { kind = 'passementFace'; S = SKILL_KINDS.passementFace; cote = F.m; vente = FK.passement.vente; }
+      else if (u < pP + pC) { kind = dehors ? 'feinteSemelle' : 'feinteSemelleIn'; S = SKILL_KINDS[kind]; cote = -F.m; vente = FK.corps.vente; }
+      else { kind = dehors ? 'semelleRoule' : 'semelleRouleOut'; S = dehors ? ROULE : ROULE_OUT; x1 = F.m * S.dragX; cote = Math.sign(x1 - F.x); }
+      F.feintes++; F.roule = { cote, t: st.t, juge: false, kind, vente, libre: libre(S) };
+      semelle(st, c, kind, S, x1, DEV, S.dragEnd ?? S.duration);
+      F.prochain = st.t + S.duration + tir(K.pause, rnd(st, c.id));
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: /^semelleRoule/.test(kind) ? 'semelleRoule' : kind, by: c.id, foe: +dq.toFixed(2), face: F.feintes });
+    }
   }
   // LA FENTE À BOUT DE PATIENCE (le défenseur posé à sa garde, pas mordu)
   if (!F.fente && age > 0.4 && st.t >= F.patience && !busy(q) && q.down <= 0 && !((q._bite ?? -1) > st.t) && hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) < K.garde + 0.6)
@@ -292,5 +321,8 @@ function garde(st, c, q, F, K) {
   const og = st.pitch.ownGoal(q.team), wx = og.x - st.ball.p[0], wz = -st.ball.p[2], wl = hyp(wx, wz) || 1, gd = Math.max(1.1, Math.min(1.8, K.garde * (2 - (q.skill?.aggrF ?? 1)))) - (st.t >= F.jab ? K.jab.pas : 0);
   let tx = st.ball.p[0] + (wx / wl) * gd, tz = st.ball.p[2] + (wz / wl) * gd;
   if (F.mordu && st.t < F.mordu.until) { tx += F.n[0] * F.mordu.cote * K.morsure.decale; tz += F.n[1] * F.mordu.cote * K.morsure.decale; }
+  // LE PAS VISE AU-DELÀ DE LA BANDE MORTE (movement.ARRIVEE) : une cible à moins de 0,18 m ne met pas le corps en marche — le jab (0,35 m) laissait le
+  // défenseur arrêté à mi-chemin, à 0,17 m de la garde ET du jab : immobile jusqu'à la fente (verify-duel, graine 5 : 0,9 s), les jabs suivants invisibles
+  const ex = tx - q.p[0], ez = tz - q.p[2], ed = hyp(ex, ez); if (ed > 0.06) { tx += ex / ed * ARRIVEE; tz += ez / ed * ARRIVEE; }
   q.job = 'press'; q.target = [tx, 0, tz];
 }

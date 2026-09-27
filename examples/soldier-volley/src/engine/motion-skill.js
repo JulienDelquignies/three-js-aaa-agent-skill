@@ -73,6 +73,11 @@ export const SKILL_KINDS = {
 };
 // (face.js) LE PASSEMENT DE LA TENUE : le même cercle, autour du ballon à la distance de la tenue (sous la semelle, 0,28 m devant, au pied)
 SKILL_KINDS.passementFace = { ...SKILL_KINDS.passementJambes, ball: [0.10, BALL_R, -0.28] };
+// (face.js) LA SÉRIE DE PASSEMENTS ALTERNÉS — Mancini contre Réveillère (Roma-Lyon, C1 2007, ralenti serré mesuré image par image) : 4 passements
+// en 1,2 s, un toutes les 0,30 s SANS pause, les jambes ALTERNÉES (droite, gauche, droite, gauche), le ballon quasi immobile entre les pieds,
+// le corps qui sautille d'un appui sur l'autre, la dernière vente la plus appuyée (penché, bras écartés), la sortie 0,3-0,4 s après. Chaque jambe
+// passe devant le ballon de l'INTÉRIEUR vers l'EXTÉRIEUR et se repose de SON côté (le passement d'une jambe finit là où l'autre commence).
+for (const n of [2, 3, 4]) SKILL_KINDS[`passementSerie${n}`] = { serie: n, roll: 0.10, entry: 0.22, tour: 0.30, lift: 0.12, ball0: [0.10, -0.28], ball: [0, BALL_R, -0.28], duration: +(0.22 + 0.30 * n + 0.26).toFixed(2), contact: 0.04, dip: 0.07, dipSerie: 0.11, lat: 0.28, sell: 16, sellFin: 24, yawSell: 14, arms: 35, armsBase: 40, marks: [0.22] };   // (le gros plan : accroupi, les deux bras écartés tout du long, celui du côté vendu presque à l'horizontale, la jambe qui balaie large)
 // les passements à N tours (2..6) : le même cercle, répété — durée et contact avancent d'un tour
 for (let n = 2; n <= 6; n++) {
   const base = SKILL_KINDS.passementJambes;
@@ -138,7 +143,54 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
   const dip = K.dip * S.dip, reach = 0.9 + 0.1 * S.backswing;
   let poseAt, ik, marks = K.marks || [];
 
-  if (K.roulette2) {
+  if (K.serie) {
+    // LA SÉRIE ALTERNÉE, DEPUIS LA TENUE : la semelle (droite) ROULE le ballon de la tenue (ball0) au milieu devant le corps (roll) et se repose à son
+    // appui ; puis n passements alternés — la GAUCHE d'abord (la droite vient de le lâcher), la droite, … : pour le passement k, le pied part de SON
+    // appui, se lève, passe PAR-DESSUS l'avant du ballon de l'intérieur vers l'extérieur (au plus haut : la vente), redescend dehors et se repose à
+    // son appui ; l'autre tient. Le buste vend du côté de la jambe qui passe (roulis, lacet, bassin décalé, le bras de ce côté s'ouvre), la dernière
+    // vente plus appuyée, le corps sautille (le bassin monte quand la jambe passe). Puis la semelle REPREND le ballon et le ramène à la tenue.
+    const n = K.serie, E = K.entry, TR = K.tour, R0 = K.roll, tR = E + n * TR, tA = tR + K.lift, bx = b[0], bz = b[2], g0 = restR[1];
+    const way = (sg, P0) => [P0, [P0[0] - sg * 0.02, g0 + 0.15, P0[2] - 0.02], [bx - sg * 0.06, g0 + 0.24, bz + 0.10], [bx + sg * 0.10, g0 + 0.26, bz - 0.05], [bx + sg * K.lat, g0 + 0.10, bz - 0.01], P0];   // (d'abord LEVÉ sur place : la pointe frôlait l'arrière du ballon)
+    const cat = (Ps, u) => {   // Catmull-Rom uniforme sur les points (pas de rebroussement), u ∈ [0, 1]
+      const m = Ps.length - 1, x = Math.min(m - 1e-9, Math.max(0, u * m)), i = Math.floor(x), f = x - i;
+      const p0 = Ps[Math.max(0, i - 1)], p1 = Ps[i], p2 = Ps[i + 1], p3 = Ps[Math.min(m, i + 2)];
+      return [0, 1, 2].map((k) => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * f + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * f * f + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * f * f * f));
+    };
+    const sm = (u) => u * u * (3 - 2 * u), arc = (a, c, u, h) => { const p = lerp3(a, c, sm(u)); p[1] += h * Math.sin(Math.PI * u); return p; };
+    const rest = { Right: [restR[0], restR[1], restR[2]], Left: [restL[0], restL[1], restL[2]] }, on0 = soleAnkle(K.ball0[0], K.ball0[1]), onC = soleAnkle(bx, bz);
+    const kAt = (t) => Math.floor((t - E) / TR), uAt = (t) => ((t - E) - kAt(t) * TR) / TR;
+    const sgOf = (k) => (k % 2 === 0 ? -1 : 1), sideOf = (k) => (k % 2 === 0 ? 'Left' : 'Right');
+    // la semelle : le roulé vers le milieu, lâché (le pied à son appui), repris à la fin (levé sur le ballon), ramené à la tenue
+    const semelleP = (t) => (t <= R0 ? lerp3(on0, onC, sm(t / R0)) : t <= E ? arc(onC, rest.Right, (t - R0) / (E - R0), 0.04) : t <= tA ? arc(rest.Right, onC, (t - tR) / (tA - tR), 0.06) : lerp3(onC, on0, sm((t - tA) / (T - tA))));
+    const soleW = (t) => (t <= R0 ? 1 : t <= E ? 1 - sm((t - R0) / (E - R0)) : t < tR ? 0 : t <= tA ? sm((t - tR) / (tA - tR)) : 1);   // la part « semelle sur le ballon » de la pose
+    const footAt = (side, t) => {
+      if (side === 'Right' && (t <= E || t >= tR)) return semelleP(t);
+      const k = kAt(t); if (t < E || k >= n || sideOf(k) !== side) return rest[side];
+      return cat(way(sgOf(k), rest[side]), sm(uAt(t)));
+    };
+    const L = (a, c, w) => a + (c - a) * w;
+    poseAt = (t) => {
+      const J = {}, k = kAt(t), live = t >= E && k < n, u = live ? uAt(t) : 0, sg = live ? sgOf(k) : 0, fin = live && k === n - 1, w = soleW(t);
+      const vente = live ? bump(u, 0.15, 0.6, 1.05) : 0, sellK = fin ? K.sellFin : K.sell, ouvre = live ? Math.sin(Math.PI * u) : 0;   // (le bras en balancier : un sinus sur le passement — la bosse de la vente, plus raide, le faisait dépasser 14 rad/s sous les styles amples)
+      trunk(J, { lean: L(14, 8, w) * S.lean, side: -sg * sellK * S.lean * vente, yaw: -sg * K.yawSell * vente, headDown: L(16, 10, w) * S.headDown });
+      J.Hips = ry(-sg * 6 * vente);
+      // les bras : ceux de la semelle (l'équilibre du pied sur le ballon) aux deux bouts, ceux de la vente pendant la série
+      const aS = sg > 0 ? 'Right' : 'Left', arm = (side) => {
+        const base = K.armsBase * S.armElev, se = live ? (side === aS ? { elev: base + K.arms * S.armElev * ouvre * (fin ? 1.2 : 1), fwd: 4, elbow: 30 + 12 * ouvre } : { elev: base + 8 * ouvre, fwd: 8, elbow: 30 }) : { elev: base, fwd: 8, elbow: 28 };   // (les bras ÉCARTÉS tout du long — l'équilibre des appuis qui alternent ; le côté vendu monte en plus)   // (coude fléchi ≥ 26° : un bras levé tendu se lit raide — bodyIssues)
+        const so = side === 'Left' ? { elev: 14 + 26 * S.armElev, fwd: 6 + 16 * S.armFwd, elbow: 34 } : { elev: 22, fwd: -8, elbow: 22 };
+        return armJoints(side, { elev: L(se.elev, so.elev, w), fwd: L(se.fwd, so.fwd, w), elbow: L(se.elbow, so.elbow, w) });
+      };
+      Object.assign(J, arm('Left'), arm('Right'));
+      J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
+      return { J, hips: [sg * 0.06 * vente, -L(K.dipSerie, K.dip, w) * S.dip * (1 - 0.3 * (live ? Math.sin(Math.PI * u) : 0)), 0] };   // (accroupi pendant la série, la hauteur de la tenue aux deux bouts)   // (le sautillé : la jambe d'appui s'étend quand l'autre passe)
+    };
+    const pointe = (side, t) => {
+      if (side === 'Right' && (t <= E || t >= tR)) return -14 * soleW(t);   // la semelle sur le ballon, pointe basse
+      const k = kAt(t); return t < E || k >= n || sideOf(k) !== side ? 0 : 25 * Math.sin(Math.PI * uAt(t));   // la pointe se RELÈVE pour enjamber
+    };
+    ik = (t) => ({ Left: { p: footAt('Left', t), foot: rx(pointe('Left', t)) }, Right: { p: footAt('Right', t), foot: rx(pointe('Right', t)) } });
+    marks = Array.from({ length: n }, (_, k) => +(E + (k + 0.5) * TR).toFixed(3));
+  } else if (K.roulette2) {
     // LA ROULETTE À DEUX SEMELLES (face.js) : la semelle DROITE part sur le ballon (la tenue) et le tire sous le corps (drag1), le pied droit se
     // repose à côté (l'appui du tour), la GAUCHE monte en arc sur le ballon (on2) et le tire (drag2), puis revient ; tout en IK de cheville
     // (les semelles SUR le ballon, genou fléchi : loin de l'extension), des arcs levés entre les poses, le bassin qui descend au pivot
@@ -380,7 +432,7 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
 /** Le portrait : le chemin du pied libre au fil du temps, le ballon, l'appui, le buste. */
 export function skillPortrait(spec, P) {
   const K = SKILL_KINDS[spec.name] || {};
-  const support = K.croqueta || K.roulette2 ? null : 'Left';
+  const support = K.croqueta || K.roulette2 || K.serie ? null : 'Left';
   const body = bodyPortrait(spec, P, { support });
   const ground = P.lengths.groundY, b = K.ball || [0, BALL_R, -0.3];
   const near = (t) => body.samples.reduce((bst, x) => (Math.abs(x.t - t) < Math.abs(bst.t - t) ? x : bst), body.samples[0]);
@@ -439,7 +491,7 @@ export function skillPortrait(spec, P) {
 export function checkSkillGen(spec, P, kindName) {
   const K = SKILL_KINDS[kindName] || {};
   const p = skillPortrait(spec, P);
-  const issues = bodyIssues(p, { support: !K.croqueta && !K.feint && !K.roulette2, finInitiale: !K.startOn }).filter((s) => !(K.noArms && /coude|main/.test(s)));
+  const issues = bodyIssues(p, { support: !K.croqueta && !K.feint && !K.roulette2 && !K.serie, finInitiale: !K.startOn }).filter((s) => !(K.noArms && /coude|main/.test(s)));
   if (K.startOn) {   // (face.js) le tiré PART de la semelle sur le ballon (la tenue) et REVIENT au repos (le fondu vers la tenue ou la locomotion)
     const w0 = p.samples[0].w, wN = p.samples[p.samples.length - 1].w, bb = K.ball || [0, BALL_R, -0.3], g0 = P.lengths.groundY;
     if (hyp(w0.RightFoot.p[0] - bb[0], w0.RightFoot.p[2] - bb[2]) > 0.14 || w0.RightFoot.p[1] - g0 < 0.21) issues.push(`le tiré ne PART pas de la semelle sur le ballon (cheville à ${(100 * (w0.RightFoot.p[1] - g0)).toFixed(0)} cm, ${(100 * hyp(w0.RightFoot.p[0] - bb[0], w0.RightFoot.p[2] - bb[2])).toFixed(0)} cm du ballon)`);
@@ -483,6 +535,28 @@ export function checkSkillGen(spec, P, kindName) {
       if (p.kneeAt(spec.contact) > -28) issues.push(`la roulette n'ARME pas la semelle (genou ${p.kneeAt(spec.contact).toFixed(0)}° > −28 au contact)`);
       if ((p.hipsAt(K.pivot)[1] ?? 0) > -0.07) issues.push(`la roulette ne PIVOTE pas bas (bassin ${(100 * p.hipsAt(K.pivot)[1]).toFixed(0)} cm > −7 au pivot)`);
       if (p.handsSpread(K.pivot) < 0.42) issues.push(`les bras ne s'OUVRENT pas au pivot (main à ${(100 * p.handsSpread(K.pivot)).toFixed(0)} cm de l'axe < 42)`);
+    }
+  }
+  if (K.serie) {   // chaque passement : devant le ballon, de l'intérieur vers l'extérieur, sans le toucher, l'autre appui tenu
+    const g0 = P.lengths.groundY, bb = [K.ball[0], g0 + BALL_R, K.ball[2]];
+    for (let k = 0; k < K.serie; k++) {
+      const side = k % 2 === 0 ? 'Left' : 'Right', oth = side === 'Right' ? 'Left' : 'Right', sg = k % 2 === 0 ? -1 : 1, t0 = K.entry + k * K.tour, t1 = t0 + K.tour;
+      const X = p.samples.filter((x) => x.t >= t0 && x.t <= t1); if (!X.length) continue;
+      let hMax = 0, zMin = Infinity, xIn = Infinity, xOut = -Infinity, dMin = Infinity, slip = 0, dessus = false; const o0 = X[0].w[`${oth}Foot`].p;
+      for (const { w } of X) { const f = w[`${side}Foot`].p, toe = w[`${side}ToeBase`].p; hMax = Math.max(hMax, f[1] - g0); zMin = Math.min(zMin, f[2]); xIn = Math.min(xIn, sg * f[0]); xOut = Math.max(xOut, sg * f[0]);
+        if (Math.abs(f[0] - bb[0]) < 0.06 && Math.abs(f[2] - bb[2]) < 0.16 && f[1] - g0 > 2 * BALL_R) dessus = true;
+        for (const q of [f, toe]) dMin = Math.min(dMin, hyp(q[0] - bb[0], q[1] - bb[1], q[2] - bb[2])); const o = w[`${oth}Foot`].p; slip = Math.max(slip, hyp(o[0] - o0[0], o[2] - o0[2])); }
+      if (hMax < 0.16) issues.push(`passement ${k + 1} : la jambe ne monte pas (cheville au plus haut ${(100 * hMax).toFixed(0)} cm < 16)`);
+      if (!dessus && zMin > bb[2] - 0.08) issues.push(`passement ${k + 1} : le pied ne passe ni PAR-DESSUS ni devant le ballon (z au plus ${zMin.toFixed(2)})`);
+      if (xIn > 0.02 || xOut < 0.14) issues.push(`passement ${k + 1} : pas de l'intérieur vers l'extérieur (x ${xIn.toFixed(2)} → ${xOut.toFixed(2)}, côté ${side})`);
+      if (dMin < 0.13) issues.push(`passement ${k + 1} : le pied TOUCHE le ballon (${(100 * dMin).toFixed(0)} cm du centre < 13)`);
+      if (slip > 0.02) issues.push(`passement ${k + 1} : l'appui ${oth} glisse (${(100 * slip).toFixed(1)} cm)`);
+    }
+    // la semelle PART de la tenue et Y REVIENT (le fondu depuis/vers la tenue), et au bout du roulé elle est sur le ballon du milieu
+    const w0 = p.samples[0].w, wN = p.samples[p.samples.length - 1].w, near = (t) => p.samples.reduce((bs, x) => (Math.abs(x.t - t) < Math.abs(bs.t - t) ? x : bs), p.samples[0]).w;
+    for (const [nom, w, x, z] of [['part de', w0, K.ball0[0], K.ball0[1]], ['finit sur', wN, K.ball0[0], K.ball0[1]], ['roule jusqu\'au milieu :', near(K.roll), K.ball[0], K.ball[2]]]) {
+      const f = w.RightFoot.p, d = hyp(f[0] - x + 0.02, f[2] - z - 0.10);
+      if (d > 0.03 || f[1] - g0 < 0.21) issues.push(`la semelle ne ${nom} la tenue sur le ballon (cheville à ${(100 * (f[1] - g0)).toFixed(0)} cm, ${(100 * d).toFixed(0)} cm du point)`);
     }
   }
   if (K.circle) {

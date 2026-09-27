@@ -11,6 +11,8 @@ import { ouvreDe } from './ouverture.js';
 import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
 import { intentionDe, appelPertinent } from './effort.js';
 import { feinteAppelAt } from './petits-gestes.js';
+/** La bande morte d'arrivée (m) : une cible plus proche ne met pas le corps en marche (face.js vise au-delà d'un petit pas). */
+export const ARRIVEE = 0.18;
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -361,7 +363,7 @@ export function movePlayers(st, dt, cfg) {
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
       const d = hyp(dx, dz); dTgt = d;
-      if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
+      if (d > ARRIVEE) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
     // de plusieurs mètres en une image (churn mesuré 18-19 m/s) et la locomotion vivait en

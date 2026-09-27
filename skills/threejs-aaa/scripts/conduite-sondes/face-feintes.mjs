@@ -16,7 +16,7 @@ for (let seed = 1; seed <= Number(NG); seed++) {
     matchStep(st, 1 / 60, cfg);
     for (const p of st.players) { const F = p._face, o = cur[p.id]; if (!F || !o || o.roule !== F.roule) continue; if (F.roule.juge && o.juge == null) { o.juge = st.t - o.t0; const q = st.players[F.par]; o.bloque = F.fente ? 'fente' : q.act ? 'défenseur-en-geste:' + (q.act.payload?.kind ?? q.act.id) : q.down > 0 ? 'au-sol' : null; o.n = F.feintes; } if (F.mords > o.mords0 && o.mord == null) o.mord = st.t - o.t0; }
     while (ne < st.events.length) { const e = st.events[ne++];
-      if (e.type === 'skill' && e.face != null && typeof e.face === 'number') { const p = st.players[e.by], F = p._face; const o = { kind: F.roule.kind, t0: st.t, roule: F.roule, mords0: F.mords - 0, juge: null, mord: null, suite: null, seed }; if (cur[p.id] && !cur[p.id].suite) cur[p.id].suite = 'feinte'; cur[p.id] = o; Fe.push(o); }
+      if (e.type === 'skill' && e.face != null && typeof e.face === 'number') { const p = st.players[e.by], F = p._face; const o = { kind: F.roule.kind, t0: st.t, roule: F.roule, mords0: F.mords - (F.roule.juge && F.mordu?.t === st.t ? 1 : 0), juge: null, mord: null, suite: null, seed }; if (cur[p.id] && !cur[p.id].suite) cur[p.id].suite = 'feinte'; cur[p.id] = o; Fe.push(o); }
       if (e.type === 'face' && e.phase === 'charge') { const o = cur[e.by]; if (o && !o.suite) o.suite = 'fente-' + e.fente; }
       if (e.type === 'face' && e.phase === 'fin' && e.sortie) So.push({ seed, t: st.t, by: e.by, par: e.par, sortie: e.sortie, issue: e.issue, suite: null, fente: null });
       if (e.type === 'chute' && So.length && So[So.length - 1].seed === seed && st.t - So[So.length - 1].t < 1.2 && e.by === So[So.length - 1].par) So[So.length - 1].fente = 'au-sol';
