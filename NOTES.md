@@ -14272,6 +14272,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      7 cm dans le ballon (exempté du dégagement ±0,18 s) : il garde 2 cm de contact, le reste se dégage — appuis de touche dans le
      ballon 1,74 % → 0,30 % des images, aucun saut de ballon (> 6 cm/image) (`?degage-touche-hier`). Essayé et écarté : dégager à
      6 m/s (0,49 → 0,24 % mais 19 sauts visibles) — `scene._degageV` reste pour la sonde, 3 m/s par défaut.
+- **Lot 345 — le ballon libre n'est plus oublié (`cfg.chasseProche`, `engine/chasse-proche.js`).** Retour du 27/09, capture :
+  « le 10 est parti sans ballon ». Sonde `libre.mjs` / `abandon2.mjs` (4 graines × 900 s). Deux causes :
+  1. l'élu du ballon libre (match-sim, hunter) visait la MÈNE, 1,2 m devant le ballon qui roule : à 0,8 m, dos au ballon, sa prise
+     était refusée à chaque image (`controle-dos`, 30 « loose-kept » en 0,5 s) et il s'éloignait à 1,5-2,2 m/s pendant 1-2 s. Remède :
+     à ≤ portee 2,5 m et pas derrière le ballon (≥ −recul 0,3 m le long du roulement), la cible est le ballon ;
+  2. les gardiens ne sont jamais candidats (attackers/defenders = joueurs de champ) : une passe morte à 2,9 m de SON gardien dans SA
+     surface restait 3 s sans personne. Remède : dans la boucle des gardiens, ballon libre lent (≤ 3 m/s) dans sa surface, à ≤ gardien 8 m,
+     aucun coéquipier plus près → il y va (Loi 12.2 : la prise aux mains reste l'affaire de ses lois).
+  Mesuré (60 min) : ballons libres lents ≥ 1,5 s 18 → 6, le plus long 3,8 → 2,2 s, abandonnés (personne à 1,5 m, ≥ 1 s) 7 → 3, porteur à
+  > 1,5 m de son ballon 23 → 16. Première version écartée : ballon ciblé quel que soit le côté + « devant la trajectoire » jusqu'à 6 m —
+  les appels revenaient au ballon (banc 16 matchs : tirs 22,5 → 19,0, centres 10,5 → 6,7) ; `devant` reste en option, off.
+  Banc 16 matchs (f345b vs f343e) : passes 542 = 542,75, complétion 90,9 / 91,4, pertes 118 / 117,5, centres 9,5 / 10,5, tirs 20,0 / 22,5,
+  buts 2,97 / 3,95 — dans la fourchette des variantes du 343 (tirs 19,5-22,5, buts 3,2-3,95), buts au plancher : À SURVEILLER.
+  Sans le volet gardien (f345g) : tirs 21,25, buts 3,40. Bloc 221 ; défaut `60f2a600bf079657 / f7161894f4c89bee` (jumeau
+  `chasseProche: null` = 343 au bit). Bloc 1 : `chasseProche: null` DATÉ 345 dans le contrat à 22 (la graine 7 tombe sur la dette du 334).
+  verify-remises 48/5 (base 46/7). Reste : l'adversaire à 0,6 m d'une passe mourante qui s'en détourne (intercepteurVol).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -399,7 +399,7 @@ function assignMatchJobs(st, cfg) {
     }
     // 'battu' n'a pas de spot (l'état honnête) : le gardien se replace quand même sur sa loi
     const s = dec.spot ?? keeperSpot(pitch, gk.team, st.ball.p);
-    gk.job = 'keeper'; gk.target = [s.x, 0, s.z];
+    gk.job = 'keeper'; gk.target = [s.x, 0, s.z]; gardienSort(st, cfg, gk);   /* (345) le ballon mort à ses pieds (chasse-proche.js) */
     gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
   }
 
@@ -443,7 +443,7 @@ function assignMatchJobs(st, cfg) {
       for (const q of defenders) if (q.down <= 0) foeD = Math.min(foeD, hyp(q.p[0] - leadP[0], q.p[2] - leadP[1]));
       const myD = hyp(hunter.p[0] - leadP[0], hunter.p[2] - leadP[1]);
       hunter.job = foeD > myD + 2.5 ? 'support' : 'receive';
-      hunter.target = [leadP[0], 0, leadP[1]];
+      hunter.target = cibleChasse(st, hunter, leadP, cfg);   // (345) le chasseur proche va AU ballon, pas devant lui (chasse-proche.js)
     }
   }
 
@@ -1246,4 +1246,4 @@ export function playMatch(st, seconds, { dt = 1 / 60, cfg = matchCfg(), sample =
 export { checkMatch } from './match-check.js';   // le contrat du match, déporté (202)
 export const matchInternals = { assignMatchJobs, tryShot, tryCross, onOut, onDive, canTake, placeKickoff, kickoffSpots, ballFetch };
 export { checkRondo };
-import { hyp } from './hyp.js';
+import { hyp } from './hyp.js'; import { cibleChasse, gardienSort } from './chasse-proche.js';
