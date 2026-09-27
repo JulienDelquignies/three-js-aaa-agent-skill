@@ -14293,6 +14293,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   345 buts 3,20, tirs 20,75, centres 7,03 — le même monde 343 bouge de 0,9 but d'un jeu de graines à l'autre : la baisse des buts
   était du bruit. Sur 32 matchs : tirs 22,0 → 20,4 (−7 %, le seul signal constant, à surveiller), buts 3,49 → 3,09 (dans le bruit).
   La passe mourante ignorée : 2 épisodes / 60 min, 0,2-0,4 s après 345 — pas de loi.
+- **Lot 346 — le rythme des touches au trot (`cfg.conduiteLibre.rattrape.laisse`, `dribble.js`).** La dette du 343 (« une touche toutes
+  les 0,42 s au trot, réel 0,6-1,0 »). Cause (sondes `rythme*.mjs`) : le POKE du lot 58 — ballon fuyant joué à pleine allonge (reach 0,75 m) —
+  repoussait tout ballon qui atteignait 0,71 m : il ne pouvait jamais s'éloigner, la touche suivante partait à la porte minimale (0,27-0,37 s).
+  Remède : avec de l'espace (adversaire ≥ espace 3 m) et un ballon qui cessera de gagner avant avance 2,2 m (écart + v²rel / 2a), pas de poke —
+  le ballon roule, le corps le rejoint, la touche se prend au pied. Pressé, ou ballon qui s'enfuit vraiment : le poke d'hier.
+  Mesuré (2 × 900 s, en ligne, cassure < 20°) : intervalle p50 au trot 0,37 → 0,77 s, en course 0,28 → 0,55 s ; écart p90 1,85 → 1,89 m
+  (pas d'emballement), oublis 9 = 9, pertes 98 → 81. Au virage, les touches rapprochées (0,3 s, la touche de côté) restent : c'est le geste.
+  Banc 16 matchs : graines usuelles tirs 21,25 buts 2,80 centres 6,95 (345 : 20,0 / 2,97 / 9,48) ; autres graines tirs 20,5 buts 3,27
+  centres 6,98 (345 : 20,75 / 3,20 / 7,03) — neutre. Filmé (8 images, 1 s) : touche, 4 foulées sans toucher, ballon à 0,8-0,9 m, retouche.
+  Bloc 222 ; défaut `c7f5ef1f4ea10349 / 600da1936344656f` (jumeau `rattrape` sans `laisse` = 345 au bit) ; bloc 1 : `conduiteLibre: CL346()`
+  DATÉ (même dette du 334 que le 345).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

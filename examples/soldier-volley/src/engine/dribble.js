@@ -181,7 +181,13 @@ export function dribbleStep(d, ball, player, dt) {
   // sous la prise 0,62) — il ne revenait jamais au pied, la bulle de 0,5 m touchée toutes les 0,13-0,37 s (réel au trot : 0,6-1,0 s). Le pied
   // joue le ballon quand le corps l'a REJOINT (≤ pied m).
   const piedOk = !RT?.pied || dist <= RT.pied || (bvAway > player.speed + 0.3 && dist < c.reach);
-  if ((auPied && piedOk && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride) || rattrape) {
+  // (346, RT.laisse — cfg.conduiteLibre.rattrape.laisse) LE BALLON QUI FILE SE LAISSE ROULER : le poke (ballon fuyant, pleine allonge) repoussait
+  // tout ballon qui atteignait 0,71 m — mesuré au trot (2-4 m/s) : une touche toutes les 0,37 s (p50), écart max 0,79 m, le ballon ne pouvait
+  // jamais s'éloigner (réel : il roule 1-2 m, une touche toutes les 0,6-1 s). Avec de l'espace (≥ espace m) et un ballon qui cessera de gagner
+  // avant avance m (écart + v²rel / 2a), on le laisse filer : le corps le rejoint et la touche se prend au pied. Pressé, ou ballon qui s'enfuit : le poke.
+  const L = RT?.laisse, vRelL = L && dist > 1e-4 ? bvAway - ((player.vel?.[0] ?? 0) * bx + (player.vel?.[1] ?? 0) * bz) / dist : 0;
+  const laisse = !!L && dist >= prise && vRelL > 0.1 && (player.space ?? 99) >= (L.espace ?? 3) && dist + vRelL * vRelL / (2 * touchDecel(player.speed)) <= (L.avance ?? 2.2);
+  if ((auPied && piedOk && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride && !laisse) || rattrape) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
