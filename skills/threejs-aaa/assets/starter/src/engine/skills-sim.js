@@ -52,6 +52,12 @@ const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 
 // lieu : l'aile (|z| > 0,6 hz) × aile, sinon × axe ; le tiers propre × propreTiers, l'adverse ×
 // adverseTiers ; cadence : 0 (aucune tentative) tant que la dernière date de moins de cadence s ×
 // axe(role.dribble, 1.5, 0.5). Le tirage est consommé de la même façon : clé absente = l'hier au bit.
+/** (339) LA VARIÉTÉ DES GESTES (cfg.varieteGestes && st.full — retour du 27/09 « assez de diversité en conduite ? ») : sondé 2 × 900 s,
+ *  passement 138 / 90 min, crochets ~80, râteau 3, roulette 3-6, feinte de frappe 0, double contact 0, petit pont 0 — le volume total
+ *  est calibré (dribble.volume, ~15 vrais dribbles réels / 30 min), sa RÉPARTITION ne l'était pas : le passement, aux portes larges,
+ *  prenait tout. Un poids par geste multiplie sa tentative (1 = hier). Pure. */
+export function poidsGeste(st, cfg, k) { return st.full && cfg.varieteGestes?.poids ? (cfg.varieteGestes.poids[k] ?? 1) : 1; }
+
 export function dribM(st, c, cfg) {
   const rd = role(c).dribble ?? 0.5;
   let m = axe(rd, 0.4, 1.6);   // centré sur 1 : l'identité à 0,5 (0,5/1,6 valait 1,05 — le jumeau le dénonçait)
@@ -116,7 +122,7 @@ export function maybeRateau(st, c, cfg) {
   }
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'rateau-hors-carré');
   // QUI tente : le flair (tirage seedé) — un refus de tempérament re-tire dans 2 s, pas à 60 Hz
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.12 + 0.3 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197 — le rateau vivait au flair SEUL, sans la note)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'rateau') * ((0.12 + 0.3 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197 — le rateau vivait au flair SEUL, sans la note)
     (c._skillCd ??= {}).rateau = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -155,7 +161,7 @@ export function maybeFeinte(st, c, cfg, contested) {
   // …et PERSONNE en duel vivant sur le ballon : se figer 0,4 s avec un homme à portée de vol,
   // c'est offrir le tacle — la sonde des graines 2/4 a mesuré le temps « collé » gonfler de 10 %
   if (pressPredicate(st, c, cfg).length) return false;
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * (0.15 + 0.45 * (c.persona?.flair ?? 0.5))) { c.intent.feinted = true; return false; }
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'feinte') * (0.15 + 0.45 * (c.persona?.flair ?? 0.5))) { c.intent.feinted = true; return false; }
   if (st.ball.owner !== c.id) {
     if (d2(c.p, st.ball.p) > cfg.captureRadius) return false;
     st.ball.possess(c.id);
@@ -205,7 +211,7 @@ export function maybeSemelle(st, c, cfg, calm, foeBody) {
     const sty = tac(st, c.team).style;                            // l'axe (identité 0,5)
     placeF = (cfg.semellePlace?.tirage ?? 0.45) * (1 + (0.5 - sty) * 0.7); // possession ×~1,3, direct ×~0,7
   }
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * (placeF * (0.2 + 0.5 * Math.max(0, (c.persona?.calm ?? 1) - 0.85) + 0.25 * (c.persona?.flair ?? 0.5)))) {
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'semelle') * (placeF * (0.2 + 0.5 * Math.max(0, (c.persona?.calm ?? 1) - 0.85) + 0.25 * (c.persona?.flair ?? 0.5)))) {
     (c._skillCd ??= {}).semelle = st.t + 1.2; return false;       // pas cette fois — on re-tire plus tard
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -260,7 +266,7 @@ export function maybePassement(st, c, cfg) {
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > (st.full && cfg.decalage ? (cfg.decalage.chargeCourse ?? 2.0) : 0.6)) return false;   // lancé : le jockey RECULE devant, il ne charge pas — (397) jusqu'à chargeCourse m/s sous cfg.decalage
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg) * poidsGeste(st, cfg, 'passement')) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -347,7 +353,7 @@ export function maybeCrochet(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     if (hyp(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KD ? (KD.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197) — (397) sur un plancher d'appétit
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KD ? (KD.plancher ?? 0) : 0, dribM(st, c, cfg) * poidsGeste(st, cfg, 'crochet')) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197) — (397) sur un plancher d'appétit
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
   }
   // L'ESPÈCE (la variété demandée : « du Dembélé, du Yamal ») : le CHALOUPÉ veut du TEMPS — le
@@ -411,7 +417,7 @@ export function maybeDoubleContact(st, c, cfg) {
   // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
   // fenêtres leur arrivent plus souvent, et la part de tirs élite tombait de 49 à 33 % sur
   // un jeu de graines ; le joueur limité ne tente pas la croqueta, il dégage)
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'doubleContact') * ((0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
     (c._skillCd ??= {}).double = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -468,7 +474,7 @@ export function maybePetitPont(st, c, cfg) {
   // QUI le tente : flair × la note AU CARRÉ — le pont est le PARI le plus cher du
   // répertoire (47 % de réussite) : la note filtre fort (le même contrat de risque que la
   // croqueta — les gestes de contrôle restent en gesteF simple)
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.15 + 0.35 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …l'exhibition au cube (197)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'petitPont') * ((0.15 + 0.35 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3))) {   // …l'exhibition au cube (197)
     (c._skillCd ??= {}).pont = st.t + 2.5; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -520,7 +526,7 @@ export function maybeRoulette(st, c, cfg) {
   // 0,5, sortie 0,75 — retour utilisateur « ça manque d'envergure ») et l'A/B à tirage constant
   // crevait la bande (34 buts > 33) — l'envergure se paie en RARETÉ, pas en toupie : la
   // roulette réelle est un éclair (~1-2/match), et chacune qui part GAGNE ses mètres.
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3) * (2 - (c.skill?.getupF ?? 1)))) {
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'roulette') * ((0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3) * (2 - (c.skill?.getupF ?? 1)))) {
     (c._skillCd ??= {}).roulette = st.t + 3; return false;
   }
   const sit2 = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -550,7 +556,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
   if (st.hold < 0.3 || d2(c.p, st.ball.p) > 0.65) return false;
   const goal = st.pitch.attackGoal(c.team);
   const dGoal = hyp(goal.x - c.p[0], 0 - c.p[2]);
-  if (dGoal > (cfg.shotRange ?? 15) + 1) return false;            // hors zone : feinter quoi ?
+  if (dGoal > (st.full && cfg.varieteGestes?.feinteZone ? cfg.varieteGestes.feinteZone : (cfg.shotRange ?? 15) + 1)) return false;   // hors zone : feinter quoi ? (339) la zone de la feinte de frappe : 25 m (varieteGestes) — sondé, le porteur n'est dans les 16 m que 86 images sur 32 000 : il frappe ou donne avant
   const gYaw = Math.atan2(0 - c.p[2], goal.x - c.p[0]);
   let blocker = null;
   for (const q of st.players) {
@@ -561,7 +567,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
   }
   if (!blocker) return false;                                     // pas de contreur : on tire, on ne mime pas
   if (pressPredicate(st, c, cfg).length) return false;            // en duel vivant, pas de pantomime
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * (0.18 + 0.4 * (c.persona?.flair ?? 0.5))) {
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * poidsGeste(st, cfg, 'frappeFeinte') * (0.18 + 0.4 * (c.persona?.flair ?? 0.5))) {
     (c._skillCd ??= {}).frappeFeinte = st.t + 2.5; return false;
   }
   if (st.ball.owner !== c.id) st.ball.possess(c.id);

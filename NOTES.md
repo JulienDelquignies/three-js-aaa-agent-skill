@@ -14173,6 +14173,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   se tendait devant le ballon et le genou claquait à 38 rad/s). Le garde-fou des sauts d'os couvre aussi la FIN de tout geste (le retour à la
   foulée sautait de 50-55°) et la durée d'un virage. Apparié 45 s porteur (1 366 images, 3 virages) : sauts > 30,5° 68 → 62, > 40° 40 → 34,
   > 50° 26 → 21 ; appuis des 22 joueurs identiques. Sim inchangée (empreinte 306d463183184f5a / 9b889eb1e1555dc9). ?virages-hier, ?fin-libre.
+- 339 bis (27/09, la suite : « réveiller les gestes absents ») : l'entonnoir — la feinte de frappe exigeait le porteur à ≤ shotRange + 1 = 16 m
+  du but (86 images porteur sur 32 000 : il frappe ou donne avant) ; le râteau avait ~99 occasions / match (presseur de face ≤ 1,45 m, lancé
+  ≥ 1,5 m/s) mais le tirage au volume de dribble (0,35 — calibré sur le réel) n'en gardait que 3 ; le passement aux portes larges prenait tout.
+  LA VARIÉTÉ DES GESTES (cfg.varieteGestes, skills-sim.poidsGeste) : un poids par geste sur sa tentative (rateau 8, doubleContact 3, petitPont 2,
+  roulette 2, frappeFeinte 3, passement 0,6) et la feinte de frappe jusqu'à 25 m. 4 × 900 s : 4-5 espèces → 8-9 (double contact 6, petit pont
+  3-6, roulette 3-6, râteau 0-6, feinte de frappe 0-3 / 90 min), passement 111-138 → 96-102, le volume total tient. 16 × 90 min : buts 3,88 →
+  3,40, tirs 22,0 → 22,0, complétion 91,5 → 91,1, pertes 120 → 123. Bloc 217 (7 espèces c. 4, volume 53 c. 54). Empreinte du jumeau inchangée.
+  Dette : le râteau reste rare (la porte « lancé ≥ 1,5 m/s » et la sortie arrière libre) ; la feinte de frappe dépend des tirs refusés.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

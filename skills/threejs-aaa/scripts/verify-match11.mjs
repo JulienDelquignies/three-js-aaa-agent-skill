@@ -37,7 +37,7 @@ import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { choixEV } from '../assets/starter/src/engine/choix.js'; import { arbitre as arbitre335 } from '../assets/starter/src/engine/menace.js'; import { resoudreRole as role335 } from '../assets/starter/src/engine/roles.js';
 import { attendDe, ouvreDe } from '../assets/starter/src/engine/ouverture.js';
 import { seuilPresseDe, presseLueDe } from '../assets/starter/src/engine/presse-lue.js';
-import { serreDe } from '../assets/starter/src/engine/serre.js'; import { rejointDe } from '../assets/starter/src/engine/effort.js'; import { postesEngagement } from '../assets/starter/src/engine/coup-envoi.js';
+import { serreDe } from '../assets/starter/src/engine/serre.js'; import { rejointDe } from '../assets/starter/src/engine/effort.js'; import { poidsGeste } from '../assets/starter/src/engine/skills-sim.js'; import { postesEngagement } from '../assets/starter/src/engine/coup-envoi.js';
 import { piqueTenteDe, piqueReussiteDe } from '../assets/starter/src/engine/tacle-debout.js';
 import { toucheCorpsDe } from '../assets/starter/src/engine/touche-corps.js';
 import { porteePasseDe } from '../assets/starter/src/engine/portee.js';
@@ -7995,6 +7995,24 @@ if (__bloc()) {
     return null; };
   const lA = lance(matchCfg({})), lN = lance(matchCfg({ lanceurPasseur: null }));
   ok(`lot 338 — LE LANCEUR PASSE : après la première rentrée, le dernier passeur est le lanceur (${lA}) ; hier ${lN}`, lA === true && lN === false);
+}
+
+if (__bloc()) {
+  // LA VARIÉTÉ DES GESTES (339, cfg.varieteGestes — « assez de diversité en conduite ? », 27/09). Sondé 2 × 900 s : passement 138 / 90 min,
+  // crochets ~80, râteau 3, roulette 3-6, feinte de frappe 0, double contact 0, petit pont 0 — le volume est calibré (dribble.volume), sa
+  // RÉPARTITION ne l'était pas. Un poids par geste (rateau 8, doubleContact 3, petitPont 2, roulette 2, frappeFeinte 3, passement 0,6) et la
+  // feinte de frappe à 25 m (le porteur n'est dans les 16 m que 86 images sur 32 000). 4 × 900 s : 4-5 espèces → 8-9 ; 16 × 90 min : buts
+  // 3,88 → 3,40, tirs 22,0 → 22,0, complétion 91,5 → 91,1. (1) LA LOI (pure) : 1 hors clé, le poids sous clé, 1 au réduit
+  { const st = makeMatch({ full: true, seed: 3 }), cA = matchCfg({}), cN = matchCfg({ varieteGestes: null });
+    ok(`lot 339 — LE POIDS D'UN GESTE : râteau ${poidsGeste(st, cA, 'rateau')}, passement ${poidsGeste(st, cA, 'passement')}, crochet ${poidsGeste(st, cA, 'crochet')} ; hors clé ${poidsGeste(st, cN, 'rateau')}`,
+      poidsGeste(st, cA, 'rateau') === 8 && poidsGeste(st, cA, 'passement') === 0.6 && poidsGeste(st, cA, 'crochet') === 1 && poidsGeste(st, cN, 'rateau') === 1 && poidsGeste({ ...st, full: false }, cA, 'rateau') === 1); }
+  // (2) LE MONDE : 2 × 900 s (graines 11, 19) — les espèces de gestes techniques jouées
+  const especes = (cfg) => { const K = new Set(); let n = 0; for (const seed of [11, 19]) { const st = makeMatch({ full: true, seed }); let ev = 0;
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type === 'skill' && e.kind && !/-vendu$/.test(e.kind)) { K.add(e.kind); n++; } } } }
+    return { k: K.size, n, liste: [...K].sort().join(', ') }; };
+  const eA = especes(matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 } })), eN = especes(matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, varieteGestes: null }));
+  ok(`lot 339 — LA VARIÉTÉ DU MONDE : ${eA.k} espèces de gestes (${eA.liste} ; ${eA.n} gestes) c. ${eN.k} hier (${eN.liste} ; ${eN.n}) sur 2 × 900 s ; le volume tient (± 35 %)`,
+    eA.k >= eN.k + 2 && eA.n >= eN.n * 0.65 && eA.n <= eN.n * 1.35);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
