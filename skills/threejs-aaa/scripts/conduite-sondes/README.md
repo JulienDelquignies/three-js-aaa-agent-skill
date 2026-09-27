@@ -287,3 +287,19 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   Au rendu : la jambe qui passe à 0,17-0,18 m du ballon (29/29 ≥ 0,13), l'appui à 1 mm, le bassin qui rebondit de 3,3 cm. Duel (16 × 120 s,
   duel-face, avec la garde réparée) : battu 58 → 64 %, perdu 34 → 31 %, oscillation latérale 0,41 → 0,59 m (réf. 0,6-0,9). verify-duel 22/22,
   verify-pas 10/10, matchday 88/88 au bit, animkit 171/171, sync 9/9, verify-motion sans échec nouveau (0 refus des séries sous 40 styles).
+
+## Les passements en course, façon Mancini lancé (2026-09-27)
+- La référence relue : dans le plan large du direct, Mancini et Réveillère dérivent lentement pendant les passements ; au ralenti serré,
+  un arc toutes les 0,30 s, les jambes alternées, accroupi, les bras écartés. Le passement mesuré en course (Taga et al. 2026) : 2,2 → 2,9 →
+  4,3 m/s. Avant (16 × 120 s) : 1,06 passement en course/min, 50 % à un seul arc (l'enchaînement ne jouait que pour le calé), au plus 3.
+- `passement-course.mjs` (sans navigateur) : chaque passement dans la foulée — arcs, écart entre arcs, allures, défenseur (distance, recul,
+  au plus près avant la morsure), morsure, sortie, issue à +1,5 s, par nombre d'arcs ; les OCCASIONS (lancé, défenseur devant à 1,5-4 m).
+- `passement-course-rendu.mjs <url>` : au rendu, la jambe en arc contre le ballon (3D, cheville/orteils ; où et quand elle en est au plus
+  près), l'avant-pied d'appui au monde (référence : la conduite hors geste), la posture de la série (bassin, mains écartées).
+  `capture-geste.mjs` : T0 = 'serie[:n][:k]' (le k-ième passement en course d'au moins n arcs ; AVANT=0 pour un ralenti sans divergence).
+- Écarté après mesure : lancer la série depuis l'APPROCHE du face-à-face (le défenseur venait au contact, repris 35 %) puis avec sa garde
+  (plus sûr, mais le duel perdait 11 points de défenseurs battus — l'approche détournée finissait souvent en rien) : retiré.
+- Trouvé en route (au rendu, préexistant) : la pointe du pied qui cercle rasait le dessus du ballon au premier tiers de l'arc (33 arcs sur
+  37 à < 0,13 m du centre) → le 1er point de l'arc plus haut et plus en arrière, pointe relevée 18° ; le ballon des arcs tenu dans le couloir
+  du pied de SORTIE et à τ·v derrière sa cible (0,13 m devant le corps à 2,5 m/s) → au milieu, à 0,40 m au moins, cible anticipée ; la pose
+  de la jambe qui a cerclé contre un ballon décentré → la cheville tenue à 0,17 m de lui latéralement (avant l'ancre).

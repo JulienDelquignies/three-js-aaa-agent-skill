@@ -36,6 +36,9 @@ export function pasStep(st, dt) {
     P.turn += ((fwd ? Math.max(-9, Math.min(9, aR)) : 0) - P.turn) * k;
     let f = strideLaw(v) * gaitCadenceFactor(vF, vR) * gaitLegFactor(p.legK ?? 1, v) * gaitBrakeCadence(P.brake) * gaitTurnCadence(P.turn);
     const fp = gaitPivotCadence(P.yawRate); if (fp > f) f = fp;
+    // (2026-09-27) LE PASSEMENT EN SÉRIE PIÉTINE : un arc par pas, au plus foulee.pasMin s le pas (Mancini : 0,30) — à l'allure d'un footing la
+    // foulée naturelle en prenait 0,38 ; les pas raccourcissent d'autant (la longueur de pas suit la vitesse sur la cadence)
+    const pm = p.act?.payload?.foulee?.pasMin; if (pm && f < 0.5 / pm) f = 0.5 / pm;
     // (2026-09-27, coupe.js) L'APPUI DE COUPE TIENT LE PIED AU SOL toute sa durée (0,20-0,51 s, Dos'Santos) : la phase ralentit pour que l'appui de
     // ce pied finisse avec la coupe — et le rendu reçoit le pied de coupe (pasFinal.coupe → motion-gait opts.coupe : la pose écartée)
     const C = p._coupe;
@@ -287,7 +290,14 @@ export function gesteFouleeStep(st, p, dt, cfg, contactNow) {
   // la vente) ; joué, il roule — personne d'autre ne l'écrit pendant l'acte (la branche occupée de la sim s'efface devant un geste en foulée)
   if (st.ball.owner === p.id) {
     const Bc = Bs.find((b) => b.type === 'touche' && !b.joue && b.etat !== 'fait') ?? B, r = Bc && pasProchains(p, { cycles: 1 }).find((x) => x.pied === Bc.pied);
-    const av = (r ? r.avant : 0.4) + 0.08, dr = Bc?.type === 'touche' && r ? r.droite * 1.1 : 0;
-    st.ball.carry([p.p[0] + fx * av - fz * dr, p.p[2] + fz * av + fx * dr], dt, { tau: 0.08, vMax: 7 });
+    // (F.balleMin, le duel) PENDANT LES ARCS, le ballon est tenu AU MILIEU, entre les pieds, au moins à balleMin m devant (Mancini) — tenu dans le
+    // couloir du pied de la touche de sortie dès le départ, et à 0,1-0,3 m aux petites allures, le pied qui cerclait se reposait dessus
+    const enArc = B?.type === 'arc' && F.balleMin != null;
+    const av = Math.max((r ? r.avant : 0.4) + 0.08, enArc ? F.balleMin : 0), dr = !enArc && Bc?.type === 'touche' && r ? r.droite * 1.1 : 0;
+    const tx = p.p[0] + fx * av - fz * dr, tz = p.p[2] + fz * av + fx * dr;
+    // (F.balleMin, le duel) LA CIBLE ANTICIPÉE : le servo du porté (τ 0,08) laisse le ballon à τ·v derrière une cible qui file — 0,2 m à 2,5 m/s,
+    // le ballon des arcs à 0,13 m devant le corps au lieu de 0,40 (passement-course-rendu) ; comme skillFollowStep (chemin), la cible avance de sa vitesse × τ
+    let ax = tx, az = tz; if (F.balleMin != null) { const pv = F._tgt ? [(tx - F._tgt[0]) / Math.max(1e-4, dt), (tz - F._tgt[1]) / Math.max(1e-4, dt)] : [p.v[0], p.v[1]]; F._tgt = [tx, tz]; ax += pv[0] * 0.08; az += pv[1] * 0.08; }
+    st.ball.carry([ax, az], dt, { tau: 0.08, vMax: 7 });
   } else st.ball.integrate(dt);
 }

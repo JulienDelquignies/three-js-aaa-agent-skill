@@ -88,6 +88,16 @@ if (String(T0).startsWith('geste')) {   // (…ou 'geste:<nom>:k' : le k-ième g
   if (!L[k]) { console.log('pas de geste n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.5); suitId = L[k].by; await ouvre();
 }
+// T0 = 'serie[:n][:k]' : le k-ième PASSEMENT EN COURSE d'au moins n arcs (skills-sim.passementFoulee — Mancini lancé), filmé de 1,2 s avant ; `I = porteur` suit le porteur
+if (String(T0).startsWith('serie')) {
+  const parts = String(T0).split(':'), nmin = Number(parts[1] ?? 3), k = Number(parts[2] ?? 0);
+  const L = await pg.evaluate((nmin) => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'skill' && e.kind === 'passement' && e.foulee && e.tours >= nmin) out.push({ t: st.t, by: e.by, tours: e.tours, sortie: e.sortie, foe: e.foe }); } }
+    return out; }, nmin);
+  console.log('séries en course trouvées :', L.length, JSON.stringify(L.slice(0, 10)));
+  if (!L[k]) { console.log('pas de série n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - Number(process.env.AVANT ?? 1.2)); suitId = L[k].by; await ouvre();   // (AVANT=0 pour un ralenti : la partie se rejoue au pas de 1/60 jusqu'à la décision, le ralenti ne diverge qu'après)
+}
 // T0 = 'face[:issue][:k]' : le k-ième FACE-À-FACE AU PAS (face.js : événements 'face' entre → fin), de cette issue si donnée (mordu, fente-lue,
 // fente-manquee, perdu…) ou contenant ce geste (passementFace, feinteSemelle…) — filmé de 1,0 s avant l'entrée ; `I = porteur` suit le porteur du face-à-face
 if (String(T0).startsWith('face')) {

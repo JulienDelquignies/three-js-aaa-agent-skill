@@ -255,11 +255,7 @@ export function maybePassement(st, c, cfg) {
   const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
   if (closing > (KP?.charge ?? 1.5)) return false;               // il charge : c'est l'affaire du râteau — (passements) jusqu'à charge m/s le passement le fige quand même (mesuré : 476 images de face-à-face sur 300 s, 56 sous 1,5 m/s — les défenseurs du moteur pressent plus qu'ils ne jockeyent)
   // une sortie latérale au moins est libre (le passement PRÉPARE un départ de côté)
-  const sides = [c.yaw + 0.9, c.yaw - 0.9].filter((a) => {
-    const ex = c.p[0] + Math.cos(a) * 1.5, ez = c.p[2] + Math.sin(a) * 1.5;
-    if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return false;
-    return !st.players.some((q) => q.team !== c.team && q.down <= 0 && hyp(q.p[0] - ex, q.p[2] - ez) < 1.2);
-  });
+  const sides = sortiesLaterales(st, c);
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > (st.full && cfg.decalage ? (cfg.decalage.chargeCourse ?? 2.0) : 0.6)) return false;   // lancé : le jockey RECULE devant, il ne charge pas — (397) jusqu'à chargeCourse m/s sous cfg.decalage
   if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > envieFace(st, c, cfg, Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1))) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
@@ -277,7 +273,7 @@ export function maybePassement(st, c, cfg) {
   // de plus se re-tire à passementEnchaine × gesteF² — le CARRÉ fait le style (l'élite ~4-5
   // tours, le moyen ~2-3, le faible s'arrête à 2) ; le bite du contact reste UNIQUE : les
   // tours ajoutés EXPOSENT le ballon calé au jockey qui ose — le risque est le prix du style.
-  if (tours === 2 && !enCourse) {
+  if (tours === 2 && (!enCourse || (st.full && cfg.pas && cfg.dribble1c1?.passementMax))) {   // (2026-09-27) …et EN COURSE sous dribble1c1.passementMax : Mancini contre Réveillère, 4 arcs alternés lancé sur lui
     const g2 = (c.skill?.gesteF ?? 1) ** 2;
     while (tours < (K.passementMaxTours ?? 6) && tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() < (K.passementEnchaine ?? 0.35) * g2) tours++;
   }
@@ -297,24 +293,7 @@ export function maybePassement(st, c, cfg) {
   // la morsure au milieu du dernier vol, la sortie du côté OPPOSÉ à la dernière jambe (le contre-pied), un départ (burst) au bout.
   if (st.full && cfg.dribble1c1?.passementV && cfg.pas && c.speed < cfg.dribble1c1.passementV) return false;   // (le duel) sous l'allure du passement DANS la foulée, pas de passement du tout : le calé (0 m/s) se lit « FIFA 95 »
   if (st.full && cfg.pas && c._pas && c.speed >= (cfg.dribble1c1?.passementV ?? 0.8)) {   // (2026-09-25) dès le pas de marche : le passement calé (corps à 0 m/s) se lisait « FIFA 95 » ; le duel : dès 1,1 m/s (dribble1c1.passementV — Taga 2026 : approche ≈ 2,2 m/s ; lancé au pas, le corps tombait sous 1,2), et dessous RIEN (ligne précédente)
-    const n = Math.max(1, Math.min(3, tours)), vols = pasVols(c, 8).filter((v) => v.t0 >= 0.03);
-    let seq = vols.slice(0, n);
-    const cote = (pd) => (pd === 'right' ? -1 : 1);   // la sortie part du côté opposé à la dernière jambe : droite → à gauche (yaw +)
-    const libre = (a) => sides.some((x) => Math.abs(wrapA(x - a)) < 0.3);
-    if (sortie === 'contre-pied' && !libre(c.yaw + cote(seq[seq.length - 1].pied) * 0.9) && vols.length > n) seq = vols.slice(1, n + 1);   // commencer d'un vol plus tard : la dernière jambe change de côté
-    const last = seq[seq.length - 1], ex = sortie === 'fixe' ? c.yaw : sortie === 'temporise' ? exitYaw : c.yaw + cote(last.pied) * 0.9;
-    // (2026-09-25, cfg.dribble1c1.sortie) …et LA SORTIE EST UNE TOUCHE : l'autre pied, au vol qui suit le dernier arc, pousse le ballon vers la sortie à la vitesse
-    // que le porteur aura en démarrant (vSortie) — sans elle la conduite reprenait à son allure : 3,2 m/s mesurés à la sortie (Taga et al. 2026 : ≈ 4,3).
-    if (st.ball.owner !== c.id) st.ball.possess(c.id);
-    startGesture(c, { id: 'passementFoulee', contact: 9, duration: 9 }, {   // les temps de la foulée décident de la morsure et de la fin (pas.js)
-      payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { beats: [...seq.map((v, i) => ({ pied: v.pied, type: 'arc', vend: i === seq.length - 1 })), ...(cfg.dribble1c1?.sortie && sortie !== 'temporise' ? [{ pied: last.pied === 'right' ? 'left' : 'right', type: 'touche', dir: ex, v: vSortie(c, cfg) }] : [])] }, v0: c.speed, foeId: foe.id, ballMax: 0 },
-      log: st.gestures,
-    });
-    (c._skillCd ??= {}).passement = st.t + K.passementCd;
-    if (KP) { c._regard = null; c._regardUntil = null; }
-    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'passementFoulee', foot: seq[0].pied, skill: 'passement', foulee: true, anticipation: +((last.t0 + last.t1) / 2).toFixed(3) });
-    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: seq.length, sortie, enCourse: true, foulee: true, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
-    return true;
+    return passementFoulee(st, c, foe, { tours, sortie, exitYaw, sides, fd, bear }, cfg);
   }
   const clip = tours >= 2 && !enCourse ? 'passementJambes' + Math.min(tours, 6) : 'passementJambes';   // le multiple exige le ballon calé
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -332,6 +311,39 @@ export function maybePassement(st, c, cfg) {
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: clip, foot, skill: 'passement', anticipation: move.contact });
   c._dribAt = st.t;   // (219) la cadence du dribble
   st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: enCourse ? 1 : tours, sortie, enCourse, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  return true;
+}
+
+/** Les sorties latérales libres du porteur (±0,9 rad de sa course, 1,5 m devant de côté) : dans l'aire, aucun adversaire à 1,2 m. */
+export function sortiesLaterales(st, c) {
+  return [c.yaw + 0.9, c.yaw - 0.9].filter((a) => {
+    const ex = c.p[0] + Math.cos(a) * 1.5, ez = c.p[2] + Math.sin(a) * 1.5;
+    if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return false;
+    return !st.players.some((q) => q.team !== c.team && q.down <= 0 && hyp(q.p[0] - ex, q.p[2] - ez) < 1.2);
+  });
+}
+
+/** LE PASSEMENT DANS LA FOULÉE (maybePassement ; face.js, la série en course de l'approche) : `tours` arcs sur les prochains vols (pieds
+ *  alternés, au plus dribble1c1.passementMax — 3 sans la clé), la morsure au dernier, la sortie (touche) au vol suivant. */
+export function passementFoulee(st, c, foe, { tours, sortie, exitYaw, sides, fd, bear }, cfg) {
+  const K = cfg.skill, KP = st.full ? cfg.passements : null;
+  const n = Math.max(1, Math.min(cfg.dribble1c1?.passementMax ?? 3, tours)), vols = pasVols(c, 8).filter((v) => v.t0 >= 0.03);
+  let seq = vols.slice(0, n);
+  const cote = (pd) => (pd === 'right' ? -1 : 1);   // la sortie part du côté opposé à la dernière jambe : droite → à gauche (yaw +)
+  const libre = (a) => sides.some((x) => Math.abs(wrapA(x - a)) < 0.3);
+  if (sortie === 'contre-pied' && !libre(c.yaw + cote(seq[seq.length - 1].pied) * 0.9) && vols.length > n) seq = vols.slice(1, n + 1);   // commencer d'un vol plus tard : la dernière jambe change de côté
+  const last = seq[seq.length - 1], ex = sortie === 'fixe' ? c.yaw : sortie === 'temporise' ? exitYaw : c.yaw + cote(last.pied) * 0.9;
+  // (2026-09-25, cfg.dribble1c1.sortie) …et LA SORTIE EST UNE TOUCHE : l'autre pied, au vol qui suit le dernier arc, pousse le ballon vers la sortie à la vitesse
+  // que le porteur aura en démarrant (vSortie) — sans elle la conduite reprenait à son allure : 3,2 m/s mesurés à la sortie (Taga et al. 2026 : ≈ 4,3).
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'passementFoulee', contact: 9, duration: 9 }, {   // les temps de la foulée décident de la morsure et de la fin (pas.js)
+    payload: { kind: 'skill', skill: 'passement', pick: { foot: seq[0].pied }, mobile: true, exitYaw: ex, sortie, tours: seq.length, enCourse: true, foulee: { ...(cfg.dribble1c1?.passementPas ? { pasMin: cfg.dribble1c1.passementPas } : {}), ...(cfg.dribble1c1?.passementBalle ? { balleMin: cfg.dribble1c1.passementBalle } : {}), beats: [...seq.map((v, i) => ({ pied: v.pied, type: 'arc', vend: i === seq.length - 1 })), ...(cfg.dribble1c1?.sortie && sortie !== 'temporise' ? [{ pied: last.pied === 'right' ? 'left' : 'right', type: 'touche', dir: ex, v: vSortie(c, cfg) }] : [])] }, v0: c.speed, foeId: foe.id, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).passement = st.t + K.passementCd;
+  if (KP) { c._regard = null; c._regardUntil = null; }
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'passementFoulee', foot: seq[0].pied, skill: 'passement', foulee: true, anticipation: +((last.t0 + last.t1) / 2).toFixed(3) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: seq.length, sortie, enCourse: true, foulee: true, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
   return true;
 }
 

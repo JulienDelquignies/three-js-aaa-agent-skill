@@ -501,6 +501,9 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // A10 cfg.contact.jockey) est BAS et ouvert — bassin plus bas, buste penché, pieds plus larges, bras ouverts, balancier
   // réduit (Van Dijk : « recule au tempo de l'attaquant, hanches de trois-quarts, sans se jeter »). `opts.jockey` ; absent : hier au bit.
   if (opts.jockey) { const jk = opts.jockey === true ? {} : opts.jockey; p.drop += jk.drop ?? 0.05; p.lean += jk.lean ?? 10; p.hw += jk.hw ?? 0.04; p.armElev += jk.elev ?? 14; p.elbow += jk.elbow ?? 20; }
+  // (2026-09-27) LA POSTURE DE LA SÉRIE DE PASSEMENTS (opts.geste.serie ∈ [0,1], character-controller : ≥ 2 arcs dans la foulée) : Mancini lancé
+  // sur Réveillère — plus bas, le buste sur le ballon, la base large, les deux bras écartés (l'équilibre des appuis qui alternent). Absente : hier au bit.
+  if (opts.geste?.serie > 0) { const w = Math.min(1, opts.geste.serie); p.drop += 0.05 * w; p.lean += 6 * w; p.hw += 0.03 * w; p.armElev += 24 * w; p.elbow += 14 * w; }
   // (A7 bis) LE FREINAGE (`opts.brake` 0..1 — le contrôleur : décélération mesurée / 6 m/s²) : le buste se retient en ARRIÈRE, le pied
   // se pose plus LOIN devant le bassin (bias négatif : l'appui de frein), talon d'abord, la base s'élargit, le bassin descend, les bras
   // viennent devant et s'ouvrent. LE VIRAGE (`opts.turn`, accélération latérale mesurée en m/s², + = vers la droite du corps) : le bassin
@@ -681,6 +684,14 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
       ...(() => { const a = footPath(pS(side).s, pS(side), c, vC, ankleY, L.foot, axeDe(side)), b = footPath(0, pS(side), c, vC, ankleY, L.foot, axeDe(side)); return [a.p, b.p, B && side === B.side ? 1 - 0.2 * B.k : 1, (1 - pS(side).s) * p.T, a.pitch, b.pitch, porteeK(p.v, p.recul), { ...axeDe(side), orteil0: P.bones[`${side}Foot`].bindP[1] - axeDe(side).L * Math.sin(axeDe(side).a0 * D2R) }, p.recul]; })());   // (§ 8) la jambe qui boite plie moins le genou en vol — le vol qui rase, en articulaire
     if (GV && GV.vise === side && fp.phase === 'swing' && !GV[side]?.arc) viseBallon(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, hipW);   // (2026-09-25) le pied qui va jouer le ballon y va
     if (GV && GV[side]?.arc && fp.phase === 'swing') arcPassement(fp, (u - pS(side).s) / (1 - pS(side).s), GV.balle, -sgn, ankleY);   // (geste) la jambe CERCLE le ballon, sur SON vol (−sgn : +1 = couloir droit)
+    // (2026-09-27) …ET SE POSE À CÔTÉ DU BALLON, JAMAIS CONTRE LUI : la jambe qui a cerclé (arc, puis l'appui qui suit — non ancré : l'ancre retient
+    // la pose de sa première image) tient sa cheville à 0,17 m au moins du ballon latéralement, de son côté, quand elle est BAS et À SA HAUTEUR
+    // (avant/arrière ≤ 0,15-0,30 m). Le couloir élargi ne suffisait pas : la pose, c'est le couloir PLUS le chemin du corps sur le cycle (vitesse
+    // latérale, virage, frein) — 6 arcs sur 39 se reposaient contre un ballon décentré (passement-course-rendu : 0,07-0,12 m du centre)
+    if (GV?.balle && (GV[side]?.elargi ?? 0) > 0 && !pl) {
+      const need = GV.balle[0] - sgn * 0.17, bas = fp.phase === 'swing' ? sstep((ankleY + 0.15 - fp.p[1]) / 0.1) : 1, pres = 1 - sstep((Math.abs(fp.p[2] - GV.balle[1]) - 0.15) / 0.15);
+      if (-sgn * (need - fp.p[0]) > 0) fp.p[0] += (need - fp.p[0]) * bas * pres * Math.min(1, GV[side].elargi);
+    }
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
@@ -715,7 +726,7 @@ function viseBallon(fp, w, balle, cote, hip) {
  *  arrière), une courbe de Catmull-Rom sur w, fondue au chemin normal aux deux bouts (le décollage et la pose restent ceux de la foulée). */
 function arcPassement(fp, w, balle, sgn, ankleY) {
   const [bx, bz] = balle, base = [fp.p[0], fp.p[1], fp.p[2]];
-  const K = [[0.15, null], [0.36, [bx - sgn * 0.12, ankleY + 0.16, bz + 0.1]], [0.56, [bx - sgn * 0.03, ankleY + 0.22, bz - 0.21]], [0.76, [bx + sgn * 0.21, ankleY + 0.14, bz - 0.12]], [1.0, null]];
+  const K = [[0.15, null], [0.36, [bx - sgn * 0.10, ankleY + 0.24, bz + 0.20]], [0.56, [bx - sgn * 0.03, ankleY + 0.24, bz - 0.22]], [0.76, [bx + sgn * 0.21, ankleY + 0.14, bz - 0.12]], [1.0, null]];   // (2026-09-27) le 1er point plus HAUT et plus en ARRIÈRE : la pointe (0,14 m devant la cheville) rasait le dessus du ballon au premier tiers de l'arc (0,10 m au-dessus du centre, 33 arcs sur 37 à < 0,13 m — passement-course-rendu)
   if (w <= K[0][0] || w >= 1) return;
   const pts = K.map(([, q]) => q ?? base);                            // les bouts : le chemin normal de l'instant (fondu, pas de saut)
   let i = 0; while (i < K.length - 2 && w > K[i + 1][0]) i++;
@@ -724,7 +735,7 @@ function arcPassement(fp, w, balle, sgn, ankleY) {
   const arc = [0, 1, 2].map((j) => cr(P0[j], P1[j], P2[j], P3[j]));
   const env = sstep((w - 0.15) / 0.15) * (1 - sstep((w - 0.85) / 0.15));
   for (let j = 0; j < 3; j++) fp.p[j] = base[j] + (arc[j] - base[j]) * env;
-  fp.pitch = fp.pitch * (1 - env) + 8 * env;                          // le pied franchit le ballon pointe relevée, à plat
+  fp.pitch = fp.pitch * (1 - env) + 18 * env;                         // le pied franchit le ballon pointe relevée (18° : à 8 la pointe accrochait le ballon)
 }
 
 /** Un CYCLE en spec animkit (une clé par 1/fps s sur la durée T, loop) — la planche-contact, checkClip. */

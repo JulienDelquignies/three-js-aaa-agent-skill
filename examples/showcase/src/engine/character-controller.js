@@ -202,6 +202,7 @@ export class CharacterController {
   forward(out = new THREE.Vector3()) { const [dx, dz] = WORLD.facingDir(this.yaw, this.fa); return out.set(dx, 0, dz); }
 
   update(dt) {
+    this._dtLast = dt;
     if (this.seated) {                                     // seated: no locomotion; idle anim + sit pose
       const s = this.seated;
       this.pos.set(s.pos[0], this.groundY + (s.seatH + 0.08 - this.hipH), s.pos[2]);   // hanches posées sur l'assise
@@ -466,6 +467,11 @@ export class CharacterController {
     const R = this.rootFinal, m = this.model, ox = R ? R[0] : m.position.x, oz = R ? R[1] : m.position.z, yaw = R ? R[2] : m.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
     const dx = G.ball[0] - ox, dz = G.ball[1] - oz;
     out.balle = [c * dx - sn * dz, sn * dx + c * dz];
+    // (2026-09-27) LA POSTURE DE LA SÉRIE (≥ 2 arcs — Mancini contre Réveillère, le gros plan : accroupi, les deux bras écartés, la base large) :
+    // un poids fondu (τ 0,12 s) tant qu'un arc reste à jouer ou vient de se jouer ; motion-gait l'applique (opts.geste.serie)
+    const nArcs = M?.file ? M.beats.filter((b) => b.type === 'arc').length : 0, enSerie = nArcs >= 2 && (M.file.some((b) => b.type === 'arc') || ['Left', 'Right'].some((k) => S[k].e === 'arc' || S[k].e === 'pose'));
+    this._serieW = (this._serieW ?? 0) + ((enSerie ? 1 : 0) - (this._serieW ?? 0)) * (1 - Math.exp(-(this._dtLast ?? 1 / 60) / 0.12));
+    if (this._serieW > 0.01) out.serie = this._serieW;
     out.vise = globalThis.__sabotage === 'vise' ? null : G.vise === 'left' ? 'Left' : G.vise === 'right' ? 'Right' : null;   // (2026-09-25) le pied que la sim envoie au ballon (pas.js) ; sabotage nommé 'vise' : le pied n'y va plus
     return out;
   }
