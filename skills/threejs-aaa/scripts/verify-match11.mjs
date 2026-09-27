@@ -8015,5 +8015,17 @@ if (__bloc()) {
     eA.k >= eN.k + 2 && eA.n >= eN.n * 0.65 && eA.n <= eN.n * 1.35);
 }
 
+if (__bloc()) {
+  // LE PASSEMENT LANCÉ (340, cfg.passementLance — 27/09 : « à l'arrêt ils sont trop nombreux et trop timides », la référence Mancini face à
+  // Réveillère). Sondé 4 × 900 s : 99 passements / 90 min, 62 % sous 2,5 m/s (p25 1,4), les tours multiples à l'arrêt seulement. La tentative
+  // × 0,2 à l'arrêt, les tours s'enchaînent lancé (ballon porté devant le corps qui glisse). Après : 54 / 90, 69 % lancés, 42 % à plusieurs tours.
+  const pass = (cfg) => { let n = 0, lance = 0, multiL = 0; for (const seed of [11, 19]) { const st = makeMatch({ full: true, seed }); let ev = 0;
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type === 'skill' && e.kind === 'passement') { n++; if (e.enCourse) { lance++; if ((e.tours ?? 1) >= 2) multiL++; } } } } }
+    return { n, pl: n ? lance / n : 0, multiL }; };
+  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 } }, pA = pass(matchCfg(C)), pN = pass(matchCfg({ ...C, passementLance: null }));
+  ok(`lot 340 — LE PASSEMENT LANCÉ : ${pA.n} passements (hier ${pN.n}) sur 2 × 900 s, ${Math.round(100 * pA.pl)} % lancés (hier ${Math.round(100 * pN.pl)}), ${pA.multiL} à plusieurs tours EN COURSE (hier ${pN.multiL})`,
+    pA.n <= pN.n * 0.8 && pA.pl >= 0.6 && pN.pl <= 0.5 && pA.multiL >= 2 && pN.multiL === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

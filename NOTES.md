@@ -14181,6 +14181,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   3-6, roulette 3-6, râteau 0-6, feinte de frappe 0-3 / 90 min), passement 111-138 → 96-102, le volume total tient. 16 × 90 min : buts 3,88 →
   3,40, tirs 22,0 → 22,0, complétion 91,5 → 91,1, pertes 120 → 123. Bloc 217 (7 espèces c. 4, volume 53 c. 54). Empreinte du jumeau inchangée.
   Dette : le râteau reste rare (la porte « lancé ≥ 1,5 m/s » et la sortie arrière libre) ; la feinte de frappe dépend des tirs refusés.
+- 340 (27/09, « les passements de jambe : à l'arrêt trop nombreux et trop timides » — la référence : Mancini face à Réveillère, Lyon-Roma
+  2007, lancé, plusieurs tours, le buste qui plonge). SONDÉ 4 × 900 s : 99 passements / 90 min, 62 % sous 2,5 m/s (p25 1,4), les tours multiples
+  à l'arrêt seulement (ballon calé), 33 % de défenseurs mordus. LE GESTE (motion-skill, rendu) : cercle 0,25 → 0,34 m de côté (balayage 68 cm),
+  buste 12 → 22° du côté vendu puis 14° à la pose, épaules −30°, bassin −6 cm, les deux bras ouverts (coude plié : le verrou bras levé),
+  sans descente à la pose (la pointe passait sous la pelouse au retour). LA SIM (cfg.passementLance, skills-sim) : tentative × 0,2 à l'arrêt,
+  lancé les tours s'ENCHAÎNENT (× gesteF²) avec le ballon PORTÉ devant le corps qui glisse (hier il roulait libre : un seul tour). Après :
+  54 / 90 min, 69 % lancés, 42 % à plusieurs tours, 36 % mordus. 16 × 90 min : passes 538 → 555, pertes 123 → 109, tirs 22 → 25, buts 3,40 →
+  3,80. Bloc 218 ; verify-motion « le passement est AMPLE ». Défaut 306d463183184f5a / be7a1bdb97f28e3d (jumeau = 339).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

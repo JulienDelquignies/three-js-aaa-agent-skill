@@ -240,7 +240,12 @@ export function maybePassement(st, c, cfg) {
   // LE PASSEMENT LANCÉ (l'espèce qui manquait à l'œil — « je n'ai toujours pas vu de passement ») :
   // en course sur un jockey qui RECULE devant, le cercle se joue PAR-DESSUS le ballon qui roule
   // (pas de pin) ; à l'arrêt, le cercle classique sur ballon calé. Au-delà de 6 m/s : sprint, non.
-  const enCourse = c.speed > 2.5, KP = st.full ? cfg.passements : null;   // (passements, note 385) le jockey plus loin, le porteur qui FIXE son vis-à-vis, le ballon calé au point du clip, l'envie ; null : hier
+  const enCourse = c.speed > 2.5, KP = st.full ? cfg.passements : null;
+  // (340) LE PASSEMENT LANCÉ PAR DÉFAUT (cfg.passementLance && st.full — 27/09 : « à l'arrêt ils sont trop nombreux et trop timides », la référence
+  // Mancini–Réveillère) : sondé 4 × 900 s, 99 passements / 90 min dont 62 % sous 2,5 m/s (p25 1,4 m/s), les tours multiples à l'arrêt seulement.
+  // La tentative × arret à l'arrêt, × course lancé ; lancé, les tours s'ENCHAÎNENT (même tirage que le calé, × gesteF²) et le ballon avance
+  // AVEC le corps (point porté spot m devant, le corps glisse à glisse × v0) — le multiple exigeait un ballon calé. null : hier.
+  const PL = st.full ? cfg.passementLance : null;   // (passements, note 385) le jockey plus loin, le porteur qui FIXE son vis-à-vis, le ballon calé au point du clip, l'envie ; null : hier
   if (c.speed > 6.0) return false;
   if (d2(c.p, st.ball.p) > (KP?.ballon ?? 0.6)) return false;   // (passements) le ballon jusqu'à ballon m : l'entrée le ramène au point du clip (mesuré : 256-541 refus « ballon loin » sur 600-1000 appels, le porteur conduit ballon devant)
   let foe = null, fd = Infinity;
@@ -266,7 +271,7 @@ export function maybePassement(st, c, cfg) {
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > (st.full && cfg.decalage ? (cfg.decalage.chargeCourse ?? 2.0) : 0.6)) return false;   // lancé : le jockey RECULE devant, il ne charge pas — (397) jusqu'à chargeCourse m/s sous cfg.decalage
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg) * poidsGeste(st, cfg, 'passement')) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg) * poidsGeste(st, cfg, 'passement')) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1) * (PL ? (enCourse ? (PL.course ?? 1) : (PL.arret ?? 1)) : 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -281,7 +286,8 @@ export function maybePassement(st, c, cfg) {
   // de plus se re-tire à passementEnchaine × gesteF² — le CARRÉ fait le style (l'élite ~4-5
   // tours, le moyen ~2-3, le faible s'arrête à 2) ; le bite du contact reste UNIQUE : les
   // tours ajoutés EXPOSENT le ballon calé au jockey qui ose — le risque est le prix du style.
-  if (tours === 2 && !enCourse) {
+  if (PL && enCourse && fd >= 1.4) tours = tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() < (PL.multi ?? 0.5) * (c.skill?.gesteF ?? 1) ** 2 ? 2 : 1;   // (340) lancé, le second tour se tente aussi
+  if (tours === 2 && (!enCourse || PL)) {
     const g2 = (c.skill?.gesteF ?? 1) ** 2;
     while (tours < (K.passementMaxTours ?? 6) && tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() < (K.passementEnchaine ?? 0.35) * g2) tours++;
   }
@@ -293,13 +299,13 @@ export function maybePassement(st, c, cfg) {
   else if (fd < 1.25) { sortie = 'temporise'; exitYaw = c.yaw + (diag > c.yaw ? 2.4 : -2.4); }
   else if (fd >= 1.5 && uT > 0.62) { sortie = 'fixe'; exitYaw = c.yaw; }
   else { sortie = 'contre-pied'; exitYaw = diag; }
-  const clip = tours >= 2 && !enCourse ? 'passementJambes' + Math.min(tours, 6) : 'passementJambes';   // le multiple exige le ballon calé
+  const clip = tours >= 2 && (!enCourse || PL) ? 'passementJambes' + Math.min(tours, 6) : 'passementJambes';   // le multiple exige le ballon calé — ou porté (340)
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId['passement-jambes'], sit);
   const move = MOVE_TIMING[clip];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: clip, ...move }, {
-    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours: enCourse ? 1 : tours, enCourse, v0: c.speed, foeId: foe.id, ballMax: 0,
+    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours: enCourse && !PL ? 1 : tours, enCourse, v0: c.speed, foeId: foe.id, ballMax: 0, ...(PL && enCourse ? { porte: { spot: PL.spot ?? 0.42, lat: (KP?.lat ?? 0.05) * (foot === 'right' ? 1 : -1), glisse: PL.glisse ?? 0.45 } } : {}),
       /* (passements) LE BALLON CALÉ AU POINT DU CLIP : dès l'entrée, spot m devant, lat m du côté du pied (le clip le cercle à [0,05 ; −0,40]) — calé là où il traînait au contact, le pied d'appui finissait DANS le ballon (mesuré en page : 7 cm du centre) */
       ...(KP && !enCourse ? { pin: [c.p[0] + Math.cos(c.yaw) * (KP.spot ?? 0.40) - Math.sin(c.yaw) * (KP.lat ?? 0.05) * (foot === 'right' ? 1 : -1), c.p[2] + Math.sin(c.yaw) * (KP.spot ?? 0.40) + Math.cos(c.yaw) * (KP.lat ?? 0.05) * (foot === 'right' ? 1 : -1)] } : {}) },
     log: st.gestures,
@@ -308,7 +314,7 @@ export function maybePassement(st, c, cfg) {
   if (KP) { c._regard = null; c._regardUntil = null; }   // il a fixé, il joue
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: clip, foot, skill: 'passement', anticipation: move.contact });
   c._dribAt = st.t;   // (219) la cadence du dribble
-  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: enCourse ? 1 : tours, sortie, enCourse, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: enCourse && !PL ? 1 : tours, sortie, enCourse, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
   return true;
 }
 
@@ -785,10 +791,12 @@ export function skillFollowStep(st, p, dt, cfg) {
     if (A.enCourse) {
       // LANCÉ : le corps glisse sur son élan (freiné à 45 %), le ballon roule libre sous le
       // cercle — sa friction le garde devant le pied (conduite protégée en amont)
-      const vG = (A.v0 ?? 3) * 0.45;
-      p.v[0] = Math.cos(A.yaw0 ?? c_yaw(p)) * vG; p.v[1] = Math.sin(A.yaw0 ?? c_yaw(p)) * vG;
+      const vG = (A.v0 ?? 3) * (A.porte?.glisse ?? 0.45), y0 = A.yaw0 ?? c_yaw(p);
+      p.v[0] = Math.cos(y0) * vG; p.v[1] = Math.sin(y0) * vG;
       p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
       p.speed = vG;
+      // (340) le ballon PORTÉ devant le corps qui avance : les tours s'enchaînent au-dessus d'un ballon qui suit
+      if (A.porte) st.ball.carry([p.p[0] + Math.cos(y0) * A.porte.spot - Math.sin(y0) * A.porte.lat, p.p[2] + Math.sin(y0) * A.porte.spot + Math.cos(y0) * A.porte.lat], dt, { tau: 0.05 });
     } else {
       p.v[0] = 0; p.v[1] = 0; p.speed = 0;
       if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });

@@ -30,7 +30,9 @@ export const SKILL_KINDS = {
   arretSemelle: { duration: 0.85, contact: 0.24, ball: [0.10, BALL_R, -0.30], sole: true, hold: 0.62, headDown: 14, headUp: -5, dip: 0.05 },
   roulette:     { duration: 0.7,  contact: 0.1,  ball: [0.10, BALL_R, -0.26], sole: true, toe: true, dragTo: -0.02, dragEnd: 0.34, pivot: 0.32, armsOpen: 74, dip: 0.10, lean: 10, headDown: 10, marks: [0.32] },
   // LE CERCLE : la jambe passe PAR-DESSUS un ballon qui ne bouge pas, puis se plante à côté
-  passementJambes: { duration: 0.66, contact: 0.3, ball: [0.05, BALL_R, -0.40], circle: true, tour: 0.3, tours: 1, entry: 0.15, plant: 0.16, dip: 0.04, sell: 12, plantLean: 8, yawSell: -20, marks: [0.15] },
+  // (340, 27/09 « trop timides » — la référence : Mancini face à Réveillère) : le cercle s'élargit (0,25 → 0,34 m de côté), le buste PLONGE du
+  // côté vendu (12 → 22°) puis de l'autre à la pose (8 → 14°), les épaules vendent (−20 → −30°), le bassin descend (4 → 6 cm), les bras s'ouvrent
+  passementJambes: { duration: 0.66, contact: 0.3, ball: [0.05, BALL_R, -0.40], circle: true, tour: 0.3, tours: 1, entry: 0.15, plant: 0.16, dip: 0.06, sell: 22, plantLean: 14, yawSell: -30, circR: [0.34, 0.24], leanFwd: 12, armsWide: 1, marks: [0.15] },
   // LA COUPE : l'intérieur va chercher le ballon de l'autre côté du corps et le coupe vers la gauche
   crochet:         { duration: 0.55, contact: 0.2,  ball: [0.0, BALL_R, -0.32], cut: true, reach: [0.34, 0.14, -0.28], cross: -0.12, tPlant: 0.36, lean: 14, yawCut: 12, dip: 0.08, headDown: 14 },
   crochetCourt:    { duration: 0.4,  contact: 0.14, ball: [0.0, BALL_R, -0.28], cut: true, reach: [0.27, 0.12, -0.24], cross: -0.07, tPlant: 0.26, lean: 4, yawCut: 4, dip: 0.03, headDown: 12 },
@@ -151,13 +153,13 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
     ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tc ? null : { p: footPath(t), foot: rx(-pitch * (1 - ramp(t, tRel, (tRel + T) / 2, T))) } });
   } else if (K.circle) {
     // LE CERCLE : hors du ballon (0), devant (¼), dedans (½ = contact), derrière (¾), hors (1)
-    const c = [b[0], groundY + 0.26, b[2] + 0.10], RX = 0.25 * reach, RZ = 0.20 * reach;
+    const c = [b[0], groundY + 0.26, b[2] + 0.10], RX = (K.circR?.[0] ?? 0.25) * reach, RZ = (K.circR?.[1] ?? 0.20) * reach;
     const circle = (u) => { const th = 2 * Math.PI * (u / K.tour); return [c[0] + RX * Math.cos(th), c[1] + 0.07 * Math.sin(th), c[2] - RZ * Math.sin(th)]; };
     const out = circle(0), inn = circle(K.tour / 2);
     const tE = K.entry, tLast = tE + K.tour * (K.tours - 1);        // début du dernier tour
     const tPlant = tLast + K.tour / 2 + K.plant;                     // le pied planté après le dernier passage dedans
     const plantP = [inn[0] + 0.08, restR[1], inn[2] + 0.10];
-    const plantDip = 0.04;
+    const plantDip = K.armsWide ? 0 : 0.04;   // (340) la pose remonte : le bassin plus bas du cercle + la pose passait la pointe sous la pelouse au retour (−3 cm)
     // ce qui bouge PENDANT un tour n'est fonction que de u (le double passement répète le simple os pour os)
     const tourBody = (u) => ({
       side: -K.sell * S.lean * bump(u, 0, 0.08, 0.2) + K.plantLean * bump(u, 0.15, 0.25, 0.3),
@@ -194,15 +196,16 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
         body = { side: tb.side * (1 - back), yaw: tb.yaw * (1 - back), dip: tb.dip * (1 - back), armL: tb.armL * (1 - back) };
       }
       const J = {};
-      trunk(J, { lean: 6, side: body.side, yaw: body.yaw, headDown: 14 * S.headDown });
+      trunk(J, { lean: K.leanFwd ?? 6, side: body.side, yaw: body.yaw, headDown: 14 * S.headDown });
       J.Hips = ry(body.yaw * 0.5);
       if (ph.kind === 'entry') applyLeg(J, 'Right', solOut, ph.a);
       else if (ph.kind === 'exit' && t > tPlant) applyLeg(J, 'Right', solPlant, 1 - ramp(t, tPlant + 0.02, (tPlant + T) / 2, T));
-      Object.assign(J, armJoints('Left', { elev: 14 + 22 * S.armElev * body.armL, fwd: 6 + 8 * body.armL, elbow: 14 + 14 * body.armL }), armJoints('Right', { elev: 14 + 10 * body.armL, fwd: 6 - 8 * body.armL, elbow: 14 + 6 * body.armL }));
+      const aw = K.armsWide ?? 0;   // (340) les deux bras ouverts en balancier (le gauche vend, le droit équilibre)
+      Object.assign(J, armJoints('Left', { elev: 14 + (22 + 20 * aw) * S.armElev * body.armL + 10 * aw, fwd: 6 + 8 * body.armL, elbow: 14 + (14 + 22 * aw) * body.armL + 8 * aw }), armJoints('Right', { elev: 14 + (10 + 18 * aw) * body.armL + 10 * aw, fwd: 6 - 8 * body.armL, elbow: 14 + (6 + 20 * aw) * body.armL + 8 * aw }));
       J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
       return { J, hips: hipsOf(t) };
     };
-    ik = (t) => { const ph = phase(t); return { Left: [restL[0], restL[1], restL[2]], Right: ph.kind === 'entry' || (ph.kind === 'exit' && t > tPlant) ? null : { p: footPath(t), foot: footPitch(t), pole: [0.35, 0, -1] } }; };
+    ik = (t) => { const ph = phase(t); return { Left: K.armsWide ? { p: [restL[0], restL[1], restL[2]], foot: [0, 0, 0, 1] } : [restL[0], restL[1], restL[2]], Right: ph.kind === 'entry' || (ph.kind === 'exit' && t > tPlant) ? null : { p: footPath(t), foot: footPitch(t), pole: [0.35, 0, -1] } }; };
   } else if (K.cut) {
     // LA COUPE : (chaloupe : le buste MENT à droite d'abord) — le pied va au côté droit du ballon, balaie vers la gauche À TRAVERS lui (contact), se plante croisé, revient
     const tSway = K.sway ?? 0, tReach = tSway + 0.55 * (tc - tSway);

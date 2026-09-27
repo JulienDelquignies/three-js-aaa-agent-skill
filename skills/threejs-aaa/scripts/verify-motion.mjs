@@ -184,6 +184,10 @@ for (const k of Object.keys(SKILL_KINDS)) {
   const cc = checkClip(resolveTracks(spec));
   ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
 }
+{ // (340) LE PASSEMENT AMPLE (« trop timides », la référence Mancini–Réveillère) : le cercle balaie ≥ 60 cm de côté, le buste plonge ≥ 20°
+  const pp = checkSkillGen(generateSkill('passementJambes', P), P, 'passementJambes').portrait;
+  ok(`le passement est AMPLE : balayage ${((pp.xMax - pp.xMin) * 100).toFixed(0)} cm ≥ 60 (hier ~50), buste ${pp.leanMax.toFixed(0)}° ≥ 20 (hier ~12), pied à ${(pp.peakH * 100).toFixed(0)} cm par-dessus`, pp.xMax - pp.xMin >= 0.6 && pp.leanMax >= 20);
+}
 {
   // le double passement répète le simple os pour os (la clause de verify-gestes, re-prouvée ici)
   const p1 = generateSkill('passementJambes', P), p2 = generateSkill('passementJambes2', P);
