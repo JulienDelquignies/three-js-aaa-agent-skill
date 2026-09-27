@@ -14258,6 +14258,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   558,50 → 542,75, complétion 91,08 → 91,42, pertes 97,25 → 117,50 (le ballon libre entre deux touches se dispute), tirs 23,25 → 22,50,
   buts 4,08 → 3,95, centres 11,45 → 10,48. Bloc 220 ; défaut 9c0c1f7822822b1f / 10a30e52c1070ae4 (jumeau = 342). Dette : le rythme du trot
   reste un peu vif (p50 0,42 s pour 0,6-1,0), 23 % des touches encore pied dans le ballon au rendu, 21 oublis / 30 min.
+- **Lot 344 — C4, les pieds dans le ballon (rendu seul, la sim au bit).** Mesure : jambe (tibia/pied moins l'épaisseur) enfoncée
+  > 2 cm dans le ballon rendu, images de conduite du porteur, A/B apparié dans le même match (drapeaux alternés toutes les 2 s).
+  Avant : 21,5 % des images (touche 4,7 % p50 10 cm · appui 7,0 % · vol 9,8 %). Après : 3,0 % (touche 2,0 % p50 6 cm · appui 0,3 % ·
+  vol 0,7 % p50 3 cm). Causes et remèdes (`scenes/rondo-evite.js`, `Rondo.js`) :
+  1. l'évitement lisait `scene.ball.position` — le maillage est posé APRÈS la pile des joueurs : le ballon de l'image passée, 8-12 cm
+     en retard à 5-7 m/s → la sim + l'écart rendu courant (`?evite-image-passee` : hier) — le gros du gain ;
+  2. l'évitement passait avant le lissage des os (qui le défaisait) → après (`?evite-avant`) ;
+  3. le pied de touche et le pied du contrôle (`_gestePied`) étaient exemptés → contraints à la SURFACE, marge 0, presque à plat
+     (`?touche-traverse`, `?geste-traverse`) ; jusqu'à 3 passes d'IK (le point le plus enfoncé est souvent mi-tibia) (`?evite-une-passe`) ;
+  4. le dégagement du ballon hors des appuis compte le tibia, 0,16 m à 3 m/s (`?degage-lent`).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
