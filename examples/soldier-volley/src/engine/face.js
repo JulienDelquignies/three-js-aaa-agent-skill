@@ -89,7 +89,7 @@ function sortir(st, c, q, cote, issue, K, geste = null) {
     c._faceSortie = { dir: [Math.cos(exitYaw), Math.sin(exitYaw)], t: st.t + T };
     startGesture(c, { id: kind, duration: T, contact: S.contact }, { payload: { kind: 'skill', skill: kind, pick: { foot: F.pied }, ownsBody: true, foeId: q.id, ballMax: 0,
       face: { chemin, yaw0: c.yaw, tour, cap: geste === 'roulette' ? [S.drag1End - 0.06, T] : [S.contact, T], dir: [Math.cos(exitYaw), Math.sin(exitYaw)], v: K.sortie.v?.[geste] ?? 2.2,
-        ...(geste === 'roulette' ? { pivots: [[0, -0.15 * m, -0.05], [S.plantR, 0.18 * m, -0.02]], libre: S.drag2End } : {}) } }, log: st.gestures });
+        ...(geste === 'roulette' ? { pivots: [[0, -0.175 * m, 0.07], [S.plantR, 0.215 * m, 0.11]], libre: S.drag2End } : {}) } }, log: st.gestures });
     (c._skillCd ??= {}).double = st.t + 2; c._dribAt = st.t;
     st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: kind, foot: F.pied, skill: kind, anticipation: S.contact });
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind, by: c.id, foe: +hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]).toFixed(2), face: issue });

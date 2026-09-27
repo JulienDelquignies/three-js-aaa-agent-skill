@@ -230,3 +230,22 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   la portée radiale reprenait le ballon ratissé à 0,5 m (3 râteaux sur 24) ; seul, le couloir laisse le jeu d'hier identique à l'octet près
   (32 graines). face-feintes.mjs juge chaque SORTIE à +2 s : croqueta passé 23 %, râteau 48 %, roulette 4/4 (rare : ~1 par 16 min de duel) ;
   face-à-face perdus 19 → 15 (32 graines), perdu à +2 s 13 → 9 % (duel-face, 16 graines).
+- La roulette EN COURSE (2026-09-26). `roulette-fenetre.mjs [graines] [s]` : les portes de maybeRoulette image par image et le goulot, la
+  probabilité du tirage aux fenêtres ouvertes, et chaque roulette réalisée (verdict du noyau au contact, ballon à +2 s). Il a trouvé : 0
+  roulette en course en 40 graines × 120 s — la fenêtre s'ouvre (202 épisodes / 32 min) mais le duel hérite de la CADENCE DE DRIBBLE du
+  11c11 (dribble.cadence 60 : 5-8 dribbles/90 min pour un ailier) → dribM = 0 dans 97 % des fenêtres. cfg.skill.rouletteCourse (duel) : la
+  même probabilité par occasion que la calibration du 11c11 (≈ 3 % des fenêtres) sans la cadence de match, et la roulette à DEUX semelles
+  (motion-skill.rouletteCourse). Au rendu (`sortie-rendu.mjs`, FORCE=1 pousse l'envie pour l'échantillon ; glissement des appuis par phase) :
+  une approche freinée (0,2 s) faisait patiner l'appui de 0,35-0,45 m (le corps avance, le clip tient l'appui en repère personnage) → l'ÉLAN
+  DEVIENT LE TOUR : l'appui planté, le corps tourne autour de lui dès la pose (ω0 = v/0,19 m, plafonné), la semelle PREND un ballon sous le
+  pied (≤ 0,28 m) ; le relâché lent du verrou (0,25 s, fait pour la tenue immobile) tirait l'appui vers l'ancien point de course → il garde
+  son verrou jusqu'au changement d'appui puis relâche vite ; le fondu du geste déplaçait le pied de la foulée jusqu'à l'appui du clip (0,26 m)
+  → déclenchée au MI-APPUI de l'autre pied (pas.pasPositions : à l'appui, |avant| ≤ 0,1 m ; l'appui de course est étroit, 7,5 cm de l'axe —
+  appuiA du clip) ; les pieds RENDUS sont à l'échelle du joueur (×≈1,18 sur le profil brut du Biped, squad.js) → ancres de pivot à
+  l'écartement rendu. Le noyau au contact : 46 % de dépossessions (n = 13) — la niche la plus exposée (poursuivant qui ferme de côté-dos à
+  0,8-1,8 m, µ p50 −1,15 contre −0,5 au crochet) ; le noyau ne crédite pas la protection du corps (piste ouverte).
+  Le PIVOT juste : mesuré à l'AVANT-PIED (la tête des métatarses, là où un joueur pivote — sortie-rendu le lit désormais), autour de la
+  cheville l'avant-pied balayait 0,15-0,30 m (un pivot sur le talon) → la sim tourne autour de l'avant-pied de l'appui (≈ 0,14 m devant la
+  cheville) ; le clip n'écrivait pas le BASSIN (branche roulette2) : la foulée de course le tordait et la jambe d'appui balayait 12 cm en repère
+  personnage (invisible dans la tenue, joueur immobile) → J.Hips au geste. Final : glissement à l'avant-pied 1,1 / 0,9 cm (roulette de la
+  tenue), 2,4 / 3,9 cm (en course) ; semelles à 0,04 m du ballon ; en course, 3,0 % des fenêtres (0,17/min).

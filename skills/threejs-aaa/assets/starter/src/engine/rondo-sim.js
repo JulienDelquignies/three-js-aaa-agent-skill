@@ -100,7 +100,7 @@ function stepGestures(st, dt, cfg) {
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     }
     // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI — movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
-    if (p.act?.payload?.foulee) gesteFouleeStep(st, p, dt, cfg); else if ((following(p) || p.act?.payload?.skill === 'plongeon') && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);   // (2026-09-25) un geste DANS LA FOULÉE s'exécute sur les vols (pas.js), armé comme accompagnement
+    if (p.act?.payload?.foulee) gesteFouleeStep(st, p, dt, cfg); else if ((following(p) || p.act?.payload?.skill === 'plongeon' || p.act?.payload?.course) && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);   // (2026-09-25) un geste DANS LA FOULÉE s'exécute sur les vols (pas.js), armé comme accompagnement
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {

@@ -67,11 +67,11 @@ if (String(T0).startsWith('arret')) {
 }
 // T0 = 'geste[:k]' : le k-ième GESTE de dribble dans la foulée (feinte de corps, passement, crochet, croqueta — l'événement 'windup' d'un
 // geste) — filmé de 1,5 s avant ; `I = porteur` suit alors le dribbleur
-if (String(T0).startsWith('geste')) {
-  const k = Number(String(T0).split(':')[1] ?? 0);
-  const L = await pg.evaluate(() => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
-    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'windup' && e.foulee && e.skill) out.push({ t: st.t, by: e.by, skill: e.skill }); } }
-    return out; });
+if (String(T0).startsWith('geste')) {   // (…ou 'geste:<nom>:k' : le k-ième geste de CE nom, dans la foulée ou non — la roulette en course)
+  const parts = String(T0).split(':'), nom = parts[1] && isNaN(Number(parts[1])) ? parts[1] : null, k = Number(nom ? parts[2] ?? 0 : parts[1] ?? 0);
+  const L = await pg.evaluate((nom) => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'windup' && e.skill && (nom ? e.skill === nom : e.foulee)) out.push({ t: st.t, by: e.by, skill: e.skill }); } }
+    return out; }, nom);
   console.log('gestes trouvés :', L.length, JSON.stringify(L.slice(0, 10)));
   if (!L[k]) { console.log('pas de geste n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.5); suitId = L[k].by; await ouvre();

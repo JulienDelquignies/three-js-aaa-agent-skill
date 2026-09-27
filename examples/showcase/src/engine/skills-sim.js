@@ -15,6 +15,8 @@ import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
+import { SKILL_KINDS } from './motion-skill.js';
+import { pasPositions } from './pas.js';
 import { pasPointPorte, pasVols, pasPose, sortieFoulee, vSortie, freinCoupe } from './pas.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -615,8 +617,31 @@ export function maybeRoulette(st, c, cfg) {
   // 0,5, sortie 0,75 — retour utilisateur « ça manque d'envergure ») et l'A/B à tirage constant
   // crevait la bande (34 buts > 33) — l'envergure se paie en RARETÉ, pas en toupie : la
   // roulette réelle est un éclair (~1-2/match), et chacune qui part GAGNE ses mètres.
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3) * (2 - (c.skill?.getupF ?? 1)))) {
+  // (duel, cfg.skill.rouletteCourse) …la MÊME probabilité par occasion que la calibration du 11c11 (≈ 3 % des fenêtres : 1-2 roulettes pour 52
+  // fenêtres par match), SANS la cadence de match de dribM (le rythme d'un ailier sur 90 min — dans le duel, 97 % des fenêtres la voyaient
+  // à 0 : aucune roulette en 80 min) : envie × le même produit flair × note × agilité
+  const RC = K.rouletteCourse;
+  if (RC) { const S0 = SKILL_KINDS.rouletteCourse, m0 = side === 1 ? -1 : 1, f0 = Math.cos(c.yaw), g0 = Math.sin(c.yaw), ex = st.ball.p[0] - c.p[0], ez = st.ball.p[2] - c.p[2];
+    if (hyp(ex * -g0 + ez * f0 - m0 * S0.ball[0], ex * f0 + ez * g0 + S0.ball[2]) > (RC.sousPied ?? 0.28)) return false;
+    // …et L'APPUI DU TOUR EST CELUI DE LA FOULÉE : l'autre pied À L'APPUI, au mi-appui (|avant| ≤ miAppui m — là où le clip le tient, sous la hanche) ;
+    // hors de là, le fondu du geste déplaçait le pied rendu jusqu'au clip (0,26 m mesurés au départ)
+    const pp = pasPositions(c)?.[m0 === 1 ? 'left' : 'right']; if (!pp || pp.vol || Math.abs(pp.ch[0]) > (RC.miAppui ?? 0.1)) return false; }   // la semelle PREND un ballon qui est sous le pied (≤ 0,28 m du point : pendant la prise, 0,1 s, l'élan porte le corps de ≈ 0,25 m vers lui) — sinon on attend la touche qui l'y met
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > (RC ? RC.envie : dribM(st, c, cfg)) * ((0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3) * (2 - (c.skill?.getupF ?? 1)))) {
     (c._skillCd ??= {}).roulette = st.t + 3; return false;
+  }
+  if (RC) {   // LA ROULETTE À DEUX SEMELLES EN COURSE (motion-skill.rouletteCourse) : la semelle du côté du poursuivant va chercher le ballon (le corps
+    // freine dessous), le corps pivote sur son appui — le dos au poursuivant au demi-tour —, l'autre semelle reprend, et la sortie repart sur le cap
+    // d'entrée, lancée (vSortie × l'élan) ; le chemin du ballon et les appuis en repère personnage (skillFollowStep, payload.course)
+    const foot = side === 1 ? 'left' : 'right', m = foot === 'right' ? 1 : -1, S = SKILL_KINDS.rouletteCourse, T = S.duration, fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
+    const rx = st.ball.p[0] - c.p[0], rz = st.ball.p[2] - c.p[2], bx = rx * -fz + rz * fx, bz = rx * fx + rz * fz;
+    const chemin = [[0, bx, bz], [S.contact, m * S.ball[0], -S.ball[2]], [S.drag1End, m * S.drag1[0], -S.drag1[1]], [(S.drag1End + S.on2) / 2, m * (S.drag1[0] + S.ball2[0]) / 2, -S.drag1[1] - 0.04], [S.on2, m * S.ball2[0], -S.ball2[1]], [S.drag2End, m * S.drag2[0], -S.drag2[1]], [T, 0, 0.38]];
+    if (st.ball.owner !== c.id) st.ball.possess(c.id);
+    startGesture(c, { id: 'rouletteCourse', duration: T, contact: S.contact }, { payload: { kind: 'skill', skill: 'rouletteCourse', pick: { foot }, ownsBody: true, foeId: foe.id, ballMax: 0,
+      course: { chemin, yaw0: c.yaw, tour: -m * 2 * Math.PI, cap: [0, T], w0: Math.min(RC.w0Max ?? 9, c.speed / 0.19), dir: [fx, fz], v: Math.max(1.5, c.speed * (RC.vSortie ?? 0.75)), v0: c.speed, pivots: [[0, -0.075 * m, 0.14], [S.plantR, 0.215 * m, 0.11]], libre: S.drag2End } }, log: st.gestures });   // (le pivot est l'AVANT-PIED de l'appui, ≈ 0,14 m devant la cheville : autour de la cheville, l'avant-pied balayait 0,15-0,30 m — un pivot sur le talon)   // (l'appui du CLIP rendu — appuiA × l'échelle du joueur : ancré sur l'appui réel, écart ≤ 0,1 m, le pied orbitait de 8 cm pendant le tour ; la porte du mi-appui borne l'ajustement du départ)
+    (c._skillCd ??= {}).roulette = st.t + (K.rouletteCd ?? 12); c.intent = null; c._dribAt = st.t;
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'rouletteCourse', foot, skill: 'rouletteCourse', anticipation: S.contact });
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'rouletteCourse', by: c.id, foe: +fd.toFixed(2) });
+    return true;
   }
   const sit2 = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId.rateau, sit2);                        // la semelle — la patte du râteau
@@ -679,7 +704,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
 export function skillContactNow(st, p, cfg) {
   const A = p.act.payload;
   // LE NOYAU COMMUN DE DUEL (268, cfg.noyau && st.full — doc noyau.js) : le take-on se juge UNE fois au contact, huit issues ; N.franchi gate la morsure d'hier, le pas de jeu applique le reste (st._noyau). Clé absente : la géométrie d'hier au bit.
-  const N = st.full && cfg.noyau && !A.face && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(A.skill) ? noyauAuContact(st, p, A, cfg) : null;   // (face.js) la sortie du face-à-face au pas a DÉJÀ son duel (la morsure, la fente lue) : pas de second tirage — la physique juge la suite
+  const N = st.full && cfg.noyau && !A.face && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette', 'rouletteCourse'].includes(A.skill) ? noyauAuContact(st, p, A, cfg) : null;   // (face.js) la sortie du face-à-face au pas a DÉJÀ son duel (la morsure, la fente lue) : pas de second tirage — la physique juge la suite
   if (N) { st._noyau = { ...N, p: p.id }; A.issue = N.issue; }
   const mord = !N || N.franchi;
   if (A.skill === 'feinte') {
@@ -756,7 +781,7 @@ export function skillContactNow(st, p, cfg) {
     if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (cfg.dribble1c1?.feinteBite ?? 0.5) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
     p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.5, kind: 'sortie' };
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'feinteCorps-vendu', by: p.id, bitten, foot: A.pick.foot });
-  } else if (A.skill === 'roulette') {
+  } else if (A.skill === 'roulette' || A.skill === 'rouletteCourse') {
     // le poursuivant PREND L'ÉPAULE : le corps s'interpose tout le tour — sa course se casse
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
@@ -1052,11 +1077,17 @@ export function skillFollowStep(st, p, dt, cfg) {
     const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
     st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
-  } else if (A.face?.chemin) {   // (face.js) LE RÂTEAU, LA ROULETTE DE LA TENUE : le ballon suit un chemin en repère personnage [t, x (droite), z (devant)] — le cap tourne de face.tour (rad) sur face.cap, le corps part vers la sortie (face.dir) en accélérant jusqu'à face.v
+  } else if ((A.face ?? A.course)?.chemin) {   // (face.js) LE RÂTEAU, LA ROULETTE DE LA TENUE : le ballon suit un chemin en repère personnage [t, x (droite), z (devant)] — le cap tourne de face.tour (rad) sur face.cap, le corps part vers la sortie (face.dir) en accélérant jusqu'à face.v
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-sortie', { log: st.gestures }); return; }
-    const S = A.face, t = p.act.t, C = S.chemin; let k = 1; while (k < C.length - 1 && C[k][0] < t) k++;
+    const S = A.face ?? A.course, t = p.act.t, C = S.chemin; let k = 1; while (k < C.length - 1 && C[k][0] < t) k++;
     const a = C[k - 1], b = C[k], u = Math.max(0, Math.min(1, (t - a[0]) / Math.max(1e-3, b[0] - a[0]))), e = u * u * (3 - 2 * u);
-    const uy0 = Math.max(0, Math.min(1, (t - S.cap[0]) / Math.max(1e-3, S.cap[1] - S.cap[0]))), r = 0.2, ey = uy0 < r ? uy0 * uy0 / (2 * r * (1 - r)) : uy0 > 1 - r ? 1 - (1 - uy0) * (1 - uy0) / (2 * r * (1 - r)) : (uy0 - r / 2) / (1 - r), uv = Math.min(1, t / Math.max(1e-3, p.act.anticipation + p.act.follow)), v = S.v * uv * uv * (3 - 2 * uv);
+    const uy0 = Math.max(0, Math.min(1, (t - S.cap[0]) / Math.max(1e-3, S.cap[1] - S.cap[0]))), r = 0.2;
+    let ey = uy0 < r ? uy0 * uy0 / (2 * r * (1 - r)) : uy0 > 1 - r ? 1 - (1 - uy0) * (1 - uy0) / (2 * r * (1 - r)) : (uy0 - r / 2) / (1 - r);
+    if (S.w0) {   // (en course) le tour PART à la vitesse de l'élan : w0 (normalisé) → plateau wp en 15 %, plateau, arrêt sur les 25 derniers %
+      const W = S.cap[1] - S.cap[0], a = Math.min(2, S.w0 * W / Math.abs(S.tour)), wp = (1 - 0.075 * a) / 0.8, u = uy0;
+      ey = u < 0.15 ? a * u + (wp - a) * u * u / 0.3 : u < 0.75 ? 0.075 * (a + wp) + wp * (u - 0.15) : 0.075 * (a + wp) + 0.6 * wp + wp * (u - 0.75) - wp * (u - 0.75) * (u - 0.75) / 0.5;
+    }
+    const uv = Math.min(1, t / Math.max(1e-3, p.act.anticipation + p.act.follow)), v = S.v * uv * uv * (3 - 2 * uv);
     // (roulette) le corps PIVOTE SUR SON APPUI : face.pivots [t, x, z] = à partir de t, le pied d'appui en repère personnage (planté : sa place au
     // monde est figée au changement d'appui) ; le corps tourne autour de lui jusqu'à face.libre, puis court vers la sortie (l'élan repris)
     let i = -1; if (S.pivots) for (let j = 0; j < S.pivots.length; j++) if (t >= S.pivots[j][0]) i = j;
@@ -1069,7 +1100,8 @@ export function skillFollowStep(st, p, dt, cfg) {
       p.v[0] = (nx - p.p[0]) / Math.max(1e-4, dt); p.v[1] = (nz - p.p[2]) / Math.max(1e-4, dt); p.p[0] = nx; p.p[2] = nz; p.speed = A._vPiv = hyp(p.v[0], p.v[1]);
     } else {
       p.yaw = wrapA(S.yaw0 + S.tour * ey); p.yawWant = null;
-      const vv = S.pivots ? (A._vL ??= Math.min(S.v, A._vPiv ?? 0)) + (S.v - A._vL) * Math.min(1, (t - S.libre) / Math.max(1e-3, p.act.anticipation + p.act.follow - S.libre)) : v;
+      const vv = S.pivots && t < S.pivots[0][0] ? S.v0 + (Math.min(0.8, S.v0) - S.v0) * (t / S.pivots[0][0])   // (en course) l'APPROCHE : le corps freine sous la semelle qui va chercher le ballon
+        : S.pivots ? (A._vL ??= Math.min(S.v, A._vPiv ?? 0)) + (S.v - A._vL) * Math.min(1, (t - S.libre) / Math.max(1e-3, p.act.anticipation + p.act.follow - S.libre)) : v;
       p.v[0] = S.dir[0] * vv; p.v[1] = S.dir[1] * vv; p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt; p.speed = vv;
     }
     const x = a[1] + (b[1] - a[1]) * e, z = a[2] + (b[2] - a[2]) * e, fx = Math.cos(p.yaw), fz = Math.sin(p.yaw), tx = p.p[0] + fx * z - fz * x, tz = p.p[2] + fz * z + fx * x;
