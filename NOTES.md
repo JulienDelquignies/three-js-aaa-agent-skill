@@ -14268,6 +14268,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   3. le pied de touche et le pied du contrôle (`_gestePied`) étaient exemptés → contraints à la SURFACE, marge 0, presque à plat
      (`?touche-traverse`, `?geste-traverse`) ; jusqu'à 3 passes d'IK (le point le plus enfoncé est souvent mi-tibia) (`?evite-une-passe`) ;
   4. le dégagement du ballon hors des appuis compte le tibia, 0,16 m à 3 m/s (`?degage-lent`).
+  5. (filmé image par image, 18 images de conduite + 6 de réception vérifiées) le pied qui JOUE la touche, une fois POSÉ, restait jusqu'à
+     7 cm dans le ballon (exempté du dégagement ±0,18 s) : il garde 2 cm de contact, le reste se dégage — appuis de touche dans le
+     ballon 1,74 % → 0,30 % des images, aucun saut de ballon (> 6 cm/image) (`?degage-touche-hier`). Essayé et écarté : dégager à
+     6 m/s (0,49 → 0,24 % mais 19 sauts visibles) — `scene._degageV` reste pour la sonde, 3 m/s par défaut.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

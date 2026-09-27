@@ -72,10 +72,11 @@ export function ballonDegage(scene, max = 0.12, tibia = false) {   // (C4) tibia
     if (Math.hypot(pl.sim.p[0] - b[0], pl.sim.p[2] - b[2]) > 1.3) continue;
     for (const f of ['left', 'right']) {
       const leg = pl.legs?.[f], gf = pl.ctrl?._gaitFeet?.[f === 'left' ? 'Left' : 'Right']; if (!leg?.foot || !gf || gf.phase === 'swing') continue;
-      if ((pl._touchFootPlan === f || pl._touchFoot === f) && ((pl._touchT != null && Math.abs(scene._t - pl._touchT) < 0.18) || (pl._touchPlanT != null && Math.abs(scene._t - pl._touchPlanT) < 0.18))) continue;
+      const joue = (pl._touchFootPlan === f || pl._touchFoot === f) && ((pl._touchT != null && Math.abs(scene._t - pl._touchT) < 0.18) || (pl._touchPlanT != null && Math.abs(scene._t - pl._touchPlanT) < 0.18));
+      if (joue && scene._degageTouche === false) continue;   // (C4, filmé) le pied qui JOUE, posé, restait jusqu'à 7 cm DANS le ballon (1,7 % des images) : il garde le contact (2 cm), le reste se dégage
       const toe = leg.foot.children.find((o) => /ToeBase/i.test(o.name)); leg.foot.getWorldPosition(_f); if (toe) toe.getWorldPosition(_t); else _t.copy(_f);
       let d = segDist(_f, _t, _g, _e) - 0.045; if (tibia && leg.knee) { leg.knee.getWorldPosition(_k); const d1 = segDist(_k, _f, _g, _m) - 0.055; if (d1 < d) { d = d1; _e.copy(_m); } }
-      const pen = 0.11 + 0.01 - d; if (pen <= 0) continue;
+      const pen = 0.11 + (joue ? -0.02 : 0.01) - d; if (pen <= 0) continue;
       const nx = _g.x - _e.x, nz = _g.z - _e.z, nh = Math.hypot(nx, nz) || 1; ox += nx / nh * pen; oz += nz / nh * pen;
     }
   }
