@@ -14189,6 +14189,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   lancé les tours s'ENCHAÎNENT (× gesteF²) avec le ballon PORTÉ devant le corps qui glisse (hier il roulait libre : un seul tour). Après :
   54 / 90 min, 69 % lancés, 42 % à plusieurs tours, 36 % mordus. 16 × 90 min : passes 538 → 555, pertes 123 → 109, tirs 22 → 25, buts 3,40 →
   3,80. Bloc 218 ; verify-motion « le passement est AMPLE ». Défaut 306d463183184f5a / be7a1bdb97f28e3d (jumeau = 339).
+- 340 bis (27/09, « filme le passement en course ») : rejoué en page, le premier passement double lancé (t 383) révèle deux défauts —
+  le porteur restait PLANTÉ pendant tout l'armé (v = 0 jusqu'au contact à 0,6 s : skillFollowStep n'écrit le corps qu'après le contact) et le
+  passement partait sur un ballon à 1,33 m (la porte ne lisait que la distance au sol). Sous cfg.passementLance : le passement PORTÉ glisse
+  dès l'armé (rondo-sim), un ballon au-dessus de 0,3 m ne se passe pas. 4 × 900 s : 42 passements / 90 min, 64 % lancés, 43 % à plusieurs
+  tours. Filmé (réglages gonflés en page pour le tournage seulement) : deux tours en avançant à 1,6 m/s, le ballon suit. Empreintes inchangées.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

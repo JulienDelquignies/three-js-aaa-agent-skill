@@ -247,6 +247,7 @@ export function maybePassement(st, c, cfg) {
   // AVEC le corps (point porté spot m devant, le corps glisse à glisse × v0) — le multiple exigeait un ballon calé. null : hier.
   const PL = st.full ? cfg.passementLance : null;   // (passements, note 385) le jockey plus loin, le porteur qui FIXE son vis-à-vis, le ballon calé au point du clip, l'envie ; null : hier
   if (c.speed > 6.0) return false;
+  if (PL && st.ball.p[1] > 0.3) return false;   // (340) un ballon en l'air ne se passe pas (rejoué en page : un passement parti sur un ballon à 1,33 m)
   if (d2(c.p, st.ball.p) > (KP?.ballon ?? 0.6)) return false;   // (passements) le ballon jusqu'à ballon m : l'entrée le ramène au point du clip (mesuré : 256-541 refus « ballon loin » sur 600-1000 appels, le porteur conduit ballon devant)
   let foe = null, fd = Infinity;
   for (const q of st.players) {
