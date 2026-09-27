@@ -8045,5 +8045,29 @@ if (__bloc()) {
     mA.n >= 20 && mA.tour <= 45 && mN.tour >= 55 && mA.vmax <= 5 && mN.vmax >= 6.5 && (mA.cc == null || mA.cc >= 70) && (mN.cc == null || mN.cc <= 55));
 }
 
+if (__bloc()) {
+  // LA CONDUITE À TOUCHES (343, cfg.conduiteLibre + toucheOrientee.statique — 27/09 : « est-ce que le ballon est poussé correctement ? il faut
+  // qu'on soit réaliste, c'est la base du foot »). Mesuré avant (2 × 900 s) : 52 % du temps de conduite le ballon PORTÉ (servo au point du
+  // pied), 5 480 images où il tournait sans être touché, 7,3 % des images lancées ballon derrière le corps, une touche toutes les 0,3 s au
+  // trot. Après : le porté réservé à l'assise d'un contrôle lent, au geste et à l'armé ; le ballon se rejoue au pied, de côté quand il revient
+  // à hauteur ; la touche dosée sur l'allure visée en espace, serrée sous pression.
+  const W = (a) => Math.atan2(Math.sin(a), Math.cos(a)), med = (a) => { const q = [...a].sort((x, y) => x - y); return q.length ? q[Math.floor(q.length / 2)] : 0; };
+  const mesure = (cfg) => { let fr = 0, porte = 0, aimant = 0, derr = 0, lances = 0; const presse = [];
+    for (const seed of [11, 19]) { const st = makeMatch({ full: true, seed }); let ev = 0, prev = null, last = null;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); let touche = false;
+        for (; ev < st.events.length; ev++) { const e = st.events[ev]; if (e.type !== 'touche') continue; touche = true; const c = st.players[e.by];
+          if (last && last.by === e.by && last.p) presse.push(st.t - last.t);
+          const pr = Math.min(99, ...st.players.filter((x) => x.team !== c.team && x.down <= 0).map((x) => Math.hypot(x.p[0] - c.p[0], x.p[2] - c.p[2]))); last = { by: e.by, t: st.t, p: pr < 3 }; }
+        const cid = st.possession?.carrier; if (cid == null || cid < 0 || st.phase !== 'carry' || st.restart) { prev = null; last = null; continue; } const c = st.players[cid]; if (c.keeper || (c.act && c.act.payload?.kind !== 'skill')) { prev = null; continue; }
+        fr++; const own = st.ball.owner === c.id; if (own) porte++; const v = Math.hypot(c.v[0], c.v[1]);
+        if (v > 2) { lances++; const hd = Math.atan2(c.v[1], c.v[0]); if ((st.ball.p[0] - c.p[0]) * Math.cos(hd) + (st.ball.p[2] - c.p[2]) * Math.sin(hd) < -0.25) derr++; }
+        const bv = [st.ball.v[0], st.ball.v[2]]; if (prev && own && !touche && Math.hypot(...bv) > 1 && Math.hypot(...prev) > 1 && Math.abs(W(Math.atan2(bv[1], bv[0]) - Math.atan2(prev[1], prev[0]))) > 2.5 * Math.PI / 180) aimant++; prev = bv; } }
+    return { porte: porte / fr, aimant, derr: derr / Math.max(1, lances), presse: med(presse) }; };
+  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 } }, TO = matchCfg({}).toucheOrientee;
+  const mA = mesure(matchCfg(C)), mN = mesure(matchCfg({ ...C, conduiteLibre: null, toucheOrientee: { ...TO, statique: undefined } }));
+  ok(`lot 343 — LA CONDUITE À TOUCHES : porté ${Math.round(100 * mA.porte)} % (hier ${Math.round(100 * mN.porte)} %), virages sans touche ${mA.aimant} images (hier ${mN.aimant}), ballon derrière ${(100 * mA.derr).toFixed(1)} % des images lancées (hier ${(100 * mN.derr).toFixed(1)} %), touche pressée toutes les ${mA.presse.toFixed(2)} s`,
+    mA.porte <= mN.porte * 0.75 && mA.aimant <= mN.aimant * 0.5 && mA.derr <= mN.derr && mA.presse >= 0.25 && mA.presse <= 0.55);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

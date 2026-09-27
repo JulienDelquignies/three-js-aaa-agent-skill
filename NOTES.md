@@ -14241,6 +14241,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   4 → 12°, épaules 4 → 11°, bassin 3 → 7 cm ; croqueta balayage 18 → 30 cm, le bassin glisse 5 → 13 cm, buste 7 → 12°, deux touches
   lisibles (0,36 → 0,5 s). verify-motion : 371 ✓ / 10 ✗ (les 10 d'avant), 6 refus au balayage (inchangé). Bloc 219 ; défaut 0cf804599da02e77 /
   20ca8481b1cba54e (jumeau = 340).
+- 343 (27/09, « commence par la conduite de balle : le ballon est-il toujours sous contrôle, les pieds cohérents, jamais oublié, suit-il
+  les changements de direction, est-il poussé correctement, et Messi ? il faut qu'on soit réaliste, c'est la base du foot ») : L'AUDIT
+  (2 × 900 s + rendu) — 52 % du temps de conduite le ballon PORTÉ (un servo le ramène au point du pied), 5 480 images où il tournait sans
+  être touché, 7,3 % des images lancées ballon derrière le corps (39 oublis de 0,3-1 s), une touche toutes les 0,3 s au trot (réel 0,6-1,0),
+  le pied dans le ballon à 13 touches sur 30, les hanches du porteur 1 cm plus bas qu'un coureur sans ballon, 11 % d'extérieur. LES LOIS
+  (cfg.conduiteLibre, conduite-libre.js + dribble.js) : le porteur lancé ne RAMASSE plus son propre ballon de conduite (145 reprises / 15 min
+  suivies de 0,3 s soudé) ni pendant une intention de passe ; l'assise d'un contrôle lent FIGE le ballon au sol et bride le corps à 1,2 m/s ;
+  le statique qui doit tourner > 35° s'oriente par sa TOUCHE (toucheOrientee.statique) ; le ballon qui revient à HAUTEUR se rejoue de côté
+  (lu sur le mouvement du corps, pas sur son cap voulu) ; la touche attend le PIED (≤ 0,42 m — la porte du rythme la rejouait à l'écart
+  maximal) ; en espace (personne à 3,5 m) elle se dose sur l'ALLURE VISÉE (bornée à la vitesse + 1,5 m/s) et la touche de DÉPART suit le
+  contrôle ; le dribbleur d'élite (dribbleLeadF 0,94) garde le ballon près (× 0,55) et le pousse de l'extérieur de son pied fort (22°).
+  Rendu : le pied de touche vise DERRIÈRE le ballon dans le sens de la poussée (?touche-hier) ; le dribbleur d'élite conduit assis (bassin
+  −5 cm, buste +7°, ?porteur-hier). Après (2 × 900 s) : porté 32 %, virages sans touche 1 519, ballon derrière 3,1 %, touche pressée 0,30 s /
+  0,52 m (réel 0,3-0,5 / < 0,6), trot 0,42 s / 0,81 m ; l'élite à 0,73 m du ballon (autres 1,04), 32 % d'extérieur. Banc 16 : passes
+  558,50 → 542,75, complétion 91,08 → 91,42, pertes 97,25 → 117,50 (le ballon libre entre deux touches se dispute), tirs 23,25 → 22,50,
+  buts 4,08 → 3,95, centres 11,45 → 10,48. Bloc 220 ; défaut 9c0c1f7822822b1f / 10a30e52c1070ae4 (jumeau = 342). Dette : le rythme du trot
+  reste un peu vif (p50 0,42 s pour 0,6-1,0), 23 % des touches encore pied dans le ballon au rendu, 21 oublis / 30 min.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -49,7 +49,13 @@ export function conduitePose(scene, pl, dt) {
   if (C.w * C.g < 1e-3) return;
   const B = os(pl); if (!B) return;
   const w = C.w * C.g, p = C.pr * w;
-  if (pl.hipsNudge) pl.hipsNudge([0, -(0.02 * w + 0.03 * p), 0]);
+  // (343, 27/09 « Messi et sa conduite : centre de gravité bas, ballon presque collé ») LE STYLE DU DRIBBLEUR : l'élite de la note de dribble
+  // (dribbleLeadF 0,94 → style 1 ; 0,995 et au-delà → 0) conduit ASSIS — le bassin −5 cm de plus, le buste +7°, et davantage quand le ballon est
+  // collé (< 0,8 m). Les genoux plient d'eux-mêmes (le verrou des pieds re-plante sous le bassin descendu). ?porteur-hier : hier.
+  const sty = scene._porteurHier ? 0 : Math.max(0, Math.min(1, (0.995 - (s.skill?.dribbleLeadF ?? 1)) / 0.055));
+  const bd = Math.hypot(st.ball.p[0] - s.p[0], st.ball.p[2] - s.p[2]), colle = bd < 0.8 ? 1 : bd < 1.4 ? (1.4 - bd) / 0.6 : 0;
+  C.sty = (C.sty ?? 0) + (sty * (0.5 + 0.5 * colle) - (C.sty ?? 0)) * k;
+  if (pl.hipsNudge) pl.hipsNudge([0, -(0.02 * w + 0.03 * p + 0.05 * C.sty * w), 0]);
   pl.model.updateMatrixWorld(true);
   pl.model.getWorldDirection(_f); _f.y = 0; _f.normalize(); _f.negate();          // l'avant du corps (−z local)
   _ax.crossVectors(_up, _f).normalize();                                            // pencher vers l'avant
@@ -63,7 +69,7 @@ export function conduitePose(scene, pl, dt) {
     if (ax.lengthSq() > 1e-4) { ax.normalize(); const flex = Math.acos(Math.max(-1, Math.min(1, u1.dot(u2)))); tourne(fo, ax, -Math.min(40 * D2R * w, Math.max(0, flex - 25 * D2R))); }
     tourne(up, _f, sg * 10 * D2R * w);
   }
-  const lean = (11 * w + 5 * p) * D2R; tourne(B.Spine, _ax, lean * 0.6); tourne(B.Spine1, _ax, lean * 0.4);
+  const lean = (11 * w + 5 * p + 7 * C.sty * w) * D2R; tourne(B.Spine, _ax, lean * 0.6); tourne(B.Spine1, _ax, lean * 0.4);
   tourne(B.Spine1, _up, -C.cote * 12 * D2R * p * 0.5); tourne(B.Spine2, _up, -C.cote * 12 * D2R * p * 0.5);   // le dos vers l'adversaire
   if (Math.abs(C.cote) > 0.1 && p > 0.02) {                                         // le bras de son côté s'écarte (plancher des coudes : + ouvre le gauche)
     pl.model.getWorldDirection(_f); _f.y = 0; _f.normalize(); _f.negate();

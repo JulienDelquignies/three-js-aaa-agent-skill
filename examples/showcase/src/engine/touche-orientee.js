@@ -20,7 +20,11 @@ export function toucheOrientee(st, p, cfg, RC) {
   const sg = Math.sign(st.pitch.attackGoal(p.team).x || 1);
   const sp = p.speed, vx = sp > 0.5 ? p.v[0] / sp : Math.cos(p.yaw), vz = sp > 0.5 ? p.v[1] / sp : Math.sin(p.yaw);
   const dosJeu = Math.cos(p.yaw) * sg < -(K.dos ?? 0.3);                     // dos au jeu : la touche le retourne
-  if (!(sp >= (K.v ?? 1.5) || dosJeu)) return false;
+  // (343, K.statique °) LE STATIQUE QUI DOIT TOURNER S'ORIENTE PAR SA TOUCHE : capturé puis tourné, le ballon soudé tournait avec le corps
+  // (mesuré : sous 2 m/s, 27-31 % des images de conduite le ballon changeait de direction sans être touché). Au-delà de statique ° entre le
+  // regard et le cap voulu du contrôle (yawWant), la première touche l'emmène — courte (tournant). Absent : hier.
+  const tourne = K.statique != null && p.yawWant != null && Math.abs(Math.atan2(Math.sin(p.yawWant - p.yaw), Math.cos(p.yawWant - p.yaw))) > K.statique * Math.PI / 180;
+  if (!(sp >= (K.v ?? 1.5) || dosJeu || tourne)) return false;
   let lead = Math.max(K.leadMin ?? 0.6, Math.min(K.leadMax ?? 1.6, (K.lead ?? 1.0) * (0.6 + sp / 5)));
   // LE CÔTÉ OUVERT : douze directions ; le sens du jeu (× sens, un peu vers l'axe), l'élan (× elan), du champ devant (aucun corps à moins de
   // champ m dans le couloir de devant m), jamais vers la craie (le ballon roule lead m et un peu plus)

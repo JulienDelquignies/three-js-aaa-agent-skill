@@ -125,7 +125,12 @@ export function touchWarpApply(scene, pl) {
   if (!side) return;
   const leg = pl.legs[side], lens = pl.legLens[side];
   leg.foot.getWorldPosition(scene._wf);
-  const plan = planWarp([scene._wf.x, scene._wf.z], [b[0], b[2]], { standoff: 0.13, warpMax: 0.6 });   // (304) 0,42 → 0,6 : la touche prise à 0,62 m du corps avec la jambe arrière ; la longueur de jambe borne l'IK (R)
+  // (343, 27/09 « la position des pieds est-elle cohérente ? ») LE PIED POUSSE LE BALLON PAR DERRIÈRE : visée hier sur le centre (la cheville à
+  // 0,13 m sur la ligne cheville→ballon), la pointe du pied entrait dans le ballon (mesuré : 9 touches sur 25 à < 9 cm du centre). La cible
+  // recule derrière le ballon dans le sens de la poussée (la vitesse du ballon, sinon le cap du corps). ?touche-hier : hier.
+  const vb = scene.state.ball.v, sb = Math.hypot(vb[0], vb[2]), s = pl.sim, dx = sb > 0.5 ? vb[0] / sb : Math.cos(s.yaw), dz = sb > 0.5 ? vb[2] / sb : Math.sin(s.yaw);
+  const cible = scene._toucheHier ? [b[0], b[2]] : [b[0] - dx * (scene._toucheRecul ?? 0.11), b[2] - dz * (scene._toucheRecul ?? 0.11)];
+  const plan = planWarp([scene._wf.x, scene._wf.z], cible, { standoff: 0.13, warpMax: 0.6 });   // (304) 0,42 → 0,6 : la touche prise à 0,62 m du corps avec la jambe arrière ; la longueur de jambe borne l'IK (R)
   const env = Math.sin(Math.PI * u);
   scene._wt.set(scene._wf.x + plan.offset[0] * env, scene._wf.y + Math.max(0, b[1] - 0.12 - scene._wf.y) * env, scene._wf.z + plan.offset[1] * env);   // (305) le ballon qui rebondit : le pied MONTE à lui (0,12 : sous le centre)
   leg.up.getWorldPosition(scene._wh); leg.knee.getWorldPosition(scene._wk);

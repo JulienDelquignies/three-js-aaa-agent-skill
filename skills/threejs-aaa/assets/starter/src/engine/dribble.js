@@ -168,7 +168,20 @@ export function dribbleStep(d, ball, player, dt) {
   // qui ne s'échappe plus du pied (vitesse radiale relative ≤ fuite m/s) et jamais deux fois dans la même foulée (tMin s). Absent : hier au bit.
   const R = player.rythme, vRel = R && dist > 1e-4 ? ((ball.v[0] - (player.vel?.[0] ?? 0)) * bx + (ball.v[2] - (player.vel?.[1] ?? 0)) * bz) / dist : 0;
   const rythmeOk = !R || (d.tSince >= (R.tMin ?? 0.25) && (vRel <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
-  if (auPied && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride) {
+  // (343, player.rattrape — cfg.conduiteLibre.rattrape) LE BALLON QUI REVIENT À HAUTEUR SE JOUE DE CÔTÉ : mesuré, une touche faible (ou le
+  // lâcher du porté) laissait le ballon à 1,5-2 m/s sous un coureur à 3-4 m/s — il le dépassait, le ballon finissait à côté puis derrière
+  // (7-10 % des images lancées, 26-39 épisodes / 15 min), jamais retouché (ni dans le cône avant, ni la foulée écoulée). Le vrai joueur ne
+  // dépasse pas son ballon : revenu à moins de devant m devant lui et à portée du pied (≤ cote ° de côté), il le rejoue aussitôt.
+  // …l'avance se lit sur le MOUVEMENT du corps (player.vel) : le cap voulu (heading, déjà braqué par dribbleSteer) regardait ailleurs — mesuré, un
+  // ballon à 18 cm, à hauteur du pied, jamais rejoué
+  const RT = player.rattrape, vv = player.vel ? hyp(player.vel[0], player.vel[1]) : 0, aheadV = vv > 0.5 ? (bx * player.vel[0] + bz * player.vel[1]) / vv : ahead;
+  const aCote = dist > 1e-4 ? Math.acos(Math.max(-1, Math.min(1, aheadV / dist))) * 180 / Math.PI : 0;
+  const rattrape = !!RT && aheadV < (RT.devant ?? 0.25) && dist < c.reach && aCote <= (RT.cote ?? 115) && d.tSince >= (RT.tMin ?? 0.12);
+  // (343, RT.pied) …ET LA TOUCHE ATTEND LE PIED : la porte du rythme (ballon qui ne fuit plus) retouchait le ballon à son écart MAXIMAL (0,4-0,5 m,
+  // sous la prise 0,62) — il ne revenait jamais au pied, la bulle de 0,5 m touchée toutes les 0,13-0,37 s (réel au trot : 0,6-1,0 s). Le pied
+  // joue le ballon quand le corps l'a REJOINT (≤ pied m).
+  const piedOk = !RT?.pied || dist <= RT.pied || (bvAway > player.speed + 0.3 && dist < c.reach);
+  if ((auPied && piedOk && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride) || rattrape) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
@@ -186,13 +199,14 @@ export function dribbleStep(d, ball, player, dt) {
     // temps de conduite à > 2 m du ballon — le temps s'accumule sur le PLATEAU lointain de
     // chaque poussée (homme et ballon filent à la même allure, la fermeture n'arrive qu'en fin
     // de roulement). Mesuré : bursts nommés = 0,1 % du porté — le geste long était devenu la règle.
-    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1) * (player.serreK ?? 1);   // (290) × serreK : la touche se serre sous la pression lue (serre.js ; absent : 1)
+    const partir = RT?.cible && player.vCible && !((player.colle ?? 0) > 0.15) && (player.space ?? 99) >= (RT.libreD ?? 5) && (player.speed >= (RT.cibleMin ?? 2) || (RT.depart && player.reprise)), vRef = partir ? Math.max(player.speed, Math.min(player.vCible, player.speed + (RT.gain ?? 1.5))) : player.speed;   // …et LA TOUCHE DE DÉPART (RT.depart) : juste après le contrôle (player.reprise), EN ESPACE (personne à libreD m — pressé ou lent, la touche lourde se perdait : 26 pertes sans pression / 30 min), le ballon posé repart devant pour l'allure visée — bornée à la vitesse du corps + gain m/s (le coureur accélère dessus, il ne le perd pas) — dosée sur la marche, le porteur ne relançait jamais   // (343, rattrape.cible) la touche se dose sur l'ALLURE VISÉE : dosée sur 2,7 m/s pendant que le corps accélère vers 4,2, le ballon était rejoint en 0,2 s et couru collé
+    const lead = (touchDistance(vRef) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1) * (player.serreK ?? 1) * (player.rattrape && space >= (player.rattrape.libreD ?? 5) ? (player.rattrape.libreF ?? 1) : 1) * (1 - (player.colle ?? 0));   // (343, player.colle — cfg.conduiteLibre.colle) le dribbleur d'élite garde le ballon PRÈS du pied (Messi) : la touche × (1 − colle × style)   // (343, rattrape.libreF) LIBRE, ON POUSSE : la touche × 0,62 (régime serré par défaut) laissait le ballon à 0,2 m du pied au trot (réel 0,5-1,5 m) — sans adversaire à libreD m, elle s'allonge   // (290) × serreK : la touche se serre sous la pression lue (serre.js ; absent : 1)
     // …et le canal VITESSE (player.touchDamp, absent = 1 : bit-près) : une touche d'AMORTI EN
     // COURSE absorbe au lieu de relancer — le ballon roule SOUS l'allure du corps et se cale
     // pour la frappe. Mesuré sans lui : pushSpeed lit la vitesse du porteur, donc chaque touche
     // « courte » RELANÇAIT le ballon à v+1 (7,0 mesuré à 6,1 de course) — le ballon de course ne
     // se posait jamais, le tir jamais armé (l'empalement sur le gardien).
-    const sp0 = Math.max(2.0, Math.max(c.minPush, pushSpeed(player.speed, lead)) * (player.touchDamp ?? 1)), sp = player.serreV != null ? Math.min(sp0, Math.max(2.0, player.speed + player.serreV)) : sp0;   // (290) pressé : le ballon pas plus vite que le corps de plus de serreV
+    const sp0 = Math.max(2.0, Math.max(c.minPush, pushSpeed(vRef, lead)) * (player.touchDamp ?? 1)), sp = player.serreV != null ? Math.min(sp0, Math.max(2.0, player.speed + player.serreV)) : sp0;   // (290) pressé : le ballon pas plus vite que le corps de plus de serreV
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction
     const cvx = ball.v[0], cvz = ball.v[2];
@@ -205,6 +219,10 @@ export function dribbleStep(d, ball, player, dt) {
     const steerK = div > Math.PI / 3 ? 1 : c.steer;
     let dx = curX + (wantX - curX) * steerK, dz = curZ + (wantZ - curZ) * steerK;
     const dl = hyp(dx, dz) || 1; dx /= dl; dz /= dl;
+    // (343, player.exterieur — cfg.conduiteLibre.exterieur) LA CONDUITE DE L'EXTÉRIEUR (Messi) : le dribbleur d'élite pousse son ballon un peu
+    // DEHORS, du côté de son pied fort (exterieur.deg ° × style) — le ballon court sur l'extérieur du pied, la touche suivante le rejoint du même
+    // côté (le cap voulu corrige la dérive). Convention : la gauche du regard [fx, fz] est (fz, −fx), soit un angle négatif.
+    if (player.exterieur) { const a = player.exterieur.deg * Math.PI / 180 * (player.exterieur.side === 'left' ? -1 : 1), ca = Math.cos(a), sa = Math.sin(a), rx = dx * ca - dz * sa, rz = dx * sa + dz * ca; dx = rx; dz = rz; }
     // LEAD THE TURN: by the time the player catches this touch they will have rotated further, so
     // aim inside the curve rather than down the current tangent. Touching the tangent is exactly
     // what leaves the ball drifting to the outside and behind on a curved run.
@@ -224,7 +242,7 @@ export function dribbleStep(d, ball, player, dt) {
     // un corps qui GARDE sa vitesse dans le sens de la touche — lue scalaire, une touche de côté ou de retournement à 3 m/s partait à
     // 4,4 m/s et roulait ~8 m pendant que le corps allait ailleurs (le porteur retiré à 2,2 m, « il contrôle et le perd »). La vitesse
     // du corps PROJETÉE sur la touche, et le plancher de la touche d'arrêt (plancher m/s, ~1 m de roule) au lieu de minPush.
-    const spA = player.axe ? (() => { const vA = Math.max(0, player.vel[0] * dx + player.vel[1] * dz), s0 = Math.max(player.axe.plancher ?? 1.6, pushSpeed(vA, lead) * (player.touchDamp ?? 1));
+    const spA = player.axe ? (() => { const vA = Math.max(0, player.vel[0] * dx + player.vel[1] * dz, partir ? Math.min(player.vCible, player.speed + (RT.gain ?? 1.5)) * 0.95 : 0), s0 = Math.max(player.axe.plancher ?? 1.6, pushSpeed(vA, lead) * (player.touchDamp ?? 1));
       return player.serreV != null ? Math.min(s0, Math.max(2.0, vA + player.serreV)) : s0; })() : sp;
     const spT = player.corpsK ? toucheCorpsDe(spA, dx, dz, player.corps, player.speed, player.corpsK) : spA;   // (292) LA TOUCHE SUIT LE CORPS (touche-corps.js) : on pousse loin devant soi, on crochète court
     setVelocity(ball, [dx * spT, Math.max(ball.v[1], 0), dz * spT],
