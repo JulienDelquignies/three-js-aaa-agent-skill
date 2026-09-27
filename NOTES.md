@@ -14194,6 +14194,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   passement partait sur un ballon à 1,33 m (la porte ne lisait que la distance au sol). Sous cfg.passementLance : le passement PORTÉ glisse
   dès l'armé (rondo-sim), un ballon au-dessus de 0,3 m ne se passe pas. 4 × 900 s : 42 passements / 90 min, 64 % lancés, 43 % à plusieurs
   tours. Filmé (réglages gonflés en page pour le tournage seulement) : deux tours en avançant à 1,6 m/s, le ballon suit. Empreintes inchangées.
+- 340 ter (27/09, « vérifie si le pied d'appui glisse ») : OUI — mesuré en page sur un passement double lancé, le pied d'appui du clip (écrit
+  dans le repère du corps qui glisse à 0,45 × v0) PATINAIT de 113 cm pour 1,34 m de corps. rondo-appui-geste (rendu, après la couche de geste) :
+  pendant un geste qui avance (payload.porte), le pied d'appui est ANCRÉ au sol (IK deux os, à la hauteur de la cheville au sol ≤ 11 cm) ; quand
+  la hanche s'en éloigne de 24 cm, un petit pas rasant (0,12 s, 6 cm) le replace sous la hanche mené de 0,12 s. Après : 0 cm de glisse sur
+  les images ancrées, le pied piétine (~60 % des images en petit pas). ?appui-geste-libre : hier. Deux fausses pistes corrigées en route : le
+  pas visait le pied du clip mené (40-80 cm, hors de portée — pied traîné en montant à 22-30 cm), l'ancre prenait la hauteur du pied du clip.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
