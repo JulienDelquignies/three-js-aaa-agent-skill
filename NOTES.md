@@ -14469,6 +14469,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   403 ✓ / 10 ✗ (les 10 d'hier). Jumeau `grandPont: null` = 349 au bit (empreinte `a09da66359b49321 / 17aee553815c7dbe`, le grand pont ne
   sort pas dans les 90 s de l'empreinte). Bloc 226. Filmé : le porteur arrive, épaule contre épaule, le ballon passe d'un côté, le
   défenseur reste. Ticker « grand pont » / « grand pont (mal dosé) », commentaire « élimine son adversaire ».
+- **Lot 358 — le corps suit la course quand elle va vite (`cfg.allureCorps`, `engine/allure-corps.js`).** Retour utilisateur du 28/09
+  (capture) : « il y a un joueur sous le terrain ? » — un coureur ASSIS, le bassin à 0,45-0,6 m. Sonde bassin (40 s de match, rendu) :
+  12 joueurs sur 20 passent le bassin sous 0,7 m en course ; même rig pour tous (repos 0,928) — pas un modèle. Cause : le pas chassé
+  du rendu (motion-gait) descend le bassin avec l'angle corps↔course et la vitesse (gait-angle, SHANON : 90° → −13 cm en marche, −17 à
+  3 m/s, −30 à 4, −41 à 4,6, −76 à 5,5 ; de face −7), et la sim le demandait : la loi 349 (regard-jeu) permet 100° jusqu'à 5 m/s, le
+  jockey, le regard tenu davantage. Le réel : personne ne court de côté à 5 m/s — au-delà de ~3 m/s le corps se ferme sur la course,
+  seuls les épaules et la tête regardent le jeu. La loi (movement, AVANT les deux slews bornés — le cap voulu est capé, jamais le cap
+  lui-même : aucun saut) : joueur de champ au-delà de 2,8 m/s, l'écart cap voulu ↔ course est capé par la table `pts` (90° à 2,8 m/s,
+  60° à 3,5, 48° à 4,5, 40° à 6) — chaque point garde la descente du bassin ≤ ~13 cm, celle d'une marche de côté ; la course arrière
+  (≥ 135°) reste permise jusqu'à 3,2 m/s. La cible capée n'efface pas le voulu (yawWant reste, le cap le rejoint quand la course ralentit).
+  Mesuré (sim, 2 × 300 s) : course de côté (60-120°) au-delà de 4 m/s 15,6 % → 0,6 % ; au-delà de 3 m/s 19,9 % → 10,3 %. Rendu (40 s) :
+  images de coureurs (≥ 2,5 m/s) au bassin < 0,7 m 296 → 12, joueurs 7 → 2, minimum 0,31 → 0,54 m (le pire restant : 2,66 m/s à 90°,
+  sous le seuil — laissé). Le 349 tient : dos au ballon 0,6 % (hier 20,8 %), regard→ballon p50 16°. Banc 16 matchs (358 / clé nulle ;
+  les jumeaux = le 357 au chiffre près) : pertes 138,25 / 138,5 et 141,25 / 137,25, tirs 20,5 / 20,75 et 19,75 / 18,25, tirs de la surface
+  17,2 / 17,25 et 18,5 / 17,95, buts 3,55 / 2,92 et 2,83 / 2,90 (bruit, sens opposés). Jumeau `allureCorps: null` = le 357 au bit
+  (`a09da66359b49321 / 17aee553815c7dbe`) ; défaut `31431569f7d6ae47 / f7e6ff713dff206e`. Bloc 227. Filmé : un coureur à 4,5 m/s, 45° de
+  sa course, droit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
