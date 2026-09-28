@@ -14426,6 +14426,15 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   Après : 27 images au-delà de 3 cm (−64 %), 15 épisodes dont 8 d'une image (16 ms), 4 de deux, 3 de 3-4 ; 1 saut ; appuis qui bougent
   10,5 → 10,8 % (en geste 12,0 → 12,5, le bruit) ; filmé : le ballon qui roule dans l'appui bute contre lui puis passe entre les pieds,
   l'écart revenu à 0. Le 0 strict coûterait des sauts ou des appuis qui glissent (mesuré ci-dessus). `?degage-appui` : hier.
+- **Lot 355 — le défenseur approche en garde (rendu seul, la sim au bit ; la tactique n'est pas touchée).** Mesuré : au contact (porteur ↔
+  adversaire le plus proche à < 1,8 m, 143 images), le jockey de la foulée (bassin bas, pieds larges, bras ouverts, balancier réduit —
+  motion-gait A12d) ne se levait que 28 % du temps. Causes (Rondo, idleCtx.jockey, qui relisait la condition sim A10) : (1) il lisait
+  `ball.owner` — vide entre deux touches depuis la conduite libre du 343 (le bogue du bouclier au 350) → le PORTEUR de la possession ;
+  (2) le seul `job === 'press'` → tout défenseur à ≤ 2,5 m du porteur ; (3) il tombait dès que le défenseur avançait sur le porteur ou
+  dépassait 3,5 m/s (46 + 20 images sur 107, relevé) → à ≤ 2 m il APPROCHE en garde jusqu'à 5 m/s, même en avançant (la charge au
+  sprint reste debout). Après : jockey au contact 28 → 96 % ; bassin du défenseur p50 10,7 → 13,6 cm (hors geste 12,5 → 15,9),
+  appuis qui bougent inchangés (10,8 / 12,6 %). Filmé à la même image (t 75,3, le presseur à 1,7 m, 4,5 m/s) : hier droit, le poing au
+  menton ; aujourd'hui bas, buste en avant, bras ouverts. `?jockey-hier` : hier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
