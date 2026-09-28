@@ -167,7 +167,10 @@ export function dribbleStep(d, ball, player, dt) {
   // changeait, et entre les rafales le ballon restait collé (réel : une touche toutes les 0,6-1 s, le ballon respire). On ne touche que le ballon
   // qui ne s'échappe plus du pied (vitesse radiale relative ≤ fuite m/s) et jamais deux fois dans la même foulée (tMin s). Absent : hier au bit.
   const R = player.rythme, vRel = R && dist > 1e-4 ? ((ball.v[0] - (player.vel?.[0] ?? 0)) * bx + (ball.v[2] - (player.vel?.[1] ?? 0)) * bz) / dist : 0;
-  const rythmeOk = !R || (d.tSince >= (R.tMin ?? 0.25) && (vRel <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
+  // (359, player.mortOk — cfg.priseSuivie) LE BALLON MORT AU PIED SE REJOUE : sa fuite se lit à SA vitesse (le joueur qui s'éloigne d'un ballon
+  // arrêté ne le voit pas « fuir »), et la foulée minimale ne l'interdit pas (le dribbleur neuf part de 0 m). Absent : hier au bit.
+  const mort = player.mortOk != null && hyp(ball.v[0], ball.v[2]) < player.mortOk;
+  const rythmeOk = !R || (d.tSince >= (R.tMin ?? 0.25) && ((mort ? 0 : vRel) <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
   // (343, player.rattrape — cfg.conduiteLibre.rattrape) LE BALLON QUI REVIENT À HAUTEUR SE JOUE DE CÔTÉ : mesuré, une touche faible (ou le
   // lâcher du porté) laissait le ballon à 1,5-2 m/s sous un coureur à 3-4 m/s — il le dépassait, le ballon finissait à côté puis derrière
   // (7-10 % des images lancées, 26-39 épisodes / 15 min), jamais retouché (ni dans le cône avant, ni la foulée écoulée). Le vrai joueur ne
@@ -187,7 +190,7 @@ export function dribbleStep(d, ball, player, dt) {
   // avant avance m (écart + v²rel / 2a), on le laisse filer : le corps le rejoint et la touche se prend au pied. Pressé, ou ballon qui s'enfuit : le poke.
   const L = RT?.laisse, vRelL = L && dist > 1e-4 ? bvAway - ((player.vel?.[0] ?? 0) * bx + (player.vel?.[1] ?? 0) * bz) / dist : 0;
   const laisse = !!L && dist >= prise && vRelL > 0.1 && (player.space ?? 99) >= (L.espace ?? 3) && dist + vRelL * vRelL / (2 * touchDecel(player.speed)) <= (L.avance ?? 2.2);
-  if ((auPied && piedOk && rythmeOk && player.coneOk !== false && d.sinceTouch >= c.minStride && !laisse) || rattrape) {
+  if ((auPied && piedOk && rythmeOk && player.coneOk !== false && (d.sinceTouch >= c.minStride || mort) && !laisse) || rattrape) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);

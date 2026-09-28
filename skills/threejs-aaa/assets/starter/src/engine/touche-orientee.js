@@ -50,6 +50,7 @@ export function toucheOrientee(st, p, cfg, RC) {
   st.ball.impulse([best.dx * v - st.ball.v[0], -st.ball.v[1], best.dz * v - st.ball.v[2]],
     [(best.dz * v) / BALL.radius - st.ball.w[0], -st.ball.w[1], -(best.dx * v) / BALL.radius - st.ball.w[2]]);
   p.yawWant = Math.atan2(best.dz, best.dx);                                   // il tourne SUR sa touche — movePlayers slew, jamais un claquement
+  p._toT = st.t;   // (359) prise-suivie : l'heure de la touche orientée (le ramassage la respecte)
   st._pousse = { dir: +Math.atan2(best.dz, best.dx).toFixed(2), lead: +lead.toFixed(2), v: +v.toFixed(1) };
   return true;
 }
