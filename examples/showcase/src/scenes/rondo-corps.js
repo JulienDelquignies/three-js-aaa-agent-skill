@@ -154,10 +154,13 @@ export function specBas(scene, pl, move, spec) {
     // (une génération + son contrat : 4-14 ms) la mémoire des échecs PARTAGÉE entre joueurs : un palier refusé 3 fois sans jamais passer
     // pour cette espèce est sauté — une à deux tentatives après les premiers joueurs, pas quatre (54 ms au passement)
     const M = (ECHECS[move] ??= {});
-    for (const [i, F0] of [1.8 + 0.6 * agil, 1.8, 1.5, 1.3, 1.15].entries()) {
+    // (353) + le buste au-dessus du ballon, 8-12° par l'agilité ; le contrat qui le refuse (le crochet court : « les épaules mentent avant la
+    // coupe » à 12°, 12 styles sur 40) le reprend à moitié avant de remonter le bassin
+    const L = 8 + 4 * agil, paliers = [[1.8 + 0.6 * agil, L], [1.8 + 0.6 * agil, L / 2], [1.8, L / 2], [1.5, L / 2], [1.3, L / 2], [1.15, 0]];
+    for (const [i, [F0, lean]] of paliers.entries()) {
       const F = d0 > 1e-3 ? Math.min(F0, 0.14 / d0) : 1; if (F <= 1.05) break;
       const m = (M[i] ??= { ko: 0, ok: 0 }); if (m.ko >= 3 && !m.ok) continue;
-      try { const c = GENERATORS[move].generate(pl.profile, { style: { ...pl.style, dip: (pl.style.dip ?? 1) * F, bas: true } }); if (GENERATORS[move].check?.(c, pl.profile)?.ok !== false) { v = c; v.bas = F; m.ok++; break; } m.ko++; } catch { m.ko++; }
+      try { const c = GENERATORS[move].generate(pl.profile, { style: { ...pl.style, dip: (pl.style.dip ?? 1) * F, bas: true, basLean: scene._busteHaut ? 0 : lean } }); if (GENERATORS[move].check?.(c, pl.profile)?.ok !== false) { v = c; v.bas = F; m.ok++; break; } m.ko++; } catch { m.ko++; }
     }
     pl.moves[k] = v;                                                                 // null : pas de variante (l'espèce sans affaissement, ou refusée par son contrat)
   }

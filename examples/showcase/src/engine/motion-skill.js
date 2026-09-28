@@ -366,6 +366,12 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       return { J, hips: [0, 0, 0] };   // pas de bassin : la foulée possède les jambes (un bassin qui descend sans jambes passait les pieds sous la pelouse)
     };
   }
+  // (353) LE BUSTE AU-DESSUS DU BALLON de la variante basse (S.bas, specBas) : +basLean° vers l'avant sur toute la colonne, entrée et sortie
+  // en rampe (jamais d'arête avec la foulée) — mesuré au contact en match : 4° de buste en geste de dribble (le clip décide). Sans S.bas : au bit.
+  if (S.bas && S.basLean > 0 && poseAt) {
+    const p0 = poseAt, e = (t) => S.basLean * ramp(t, 0, 0.12 * T, 0.3 * T) * (1 - ramp(t, 0.7 * T, 0.85 * T, T));
+    poseAt = (t) => { const r = p0(t), a = e(t); if (a > 1e-3) for (const [bn, w] of [['Spine', 0.35], ['Spine1', 0.35], ['Spine2', 0.30]]) if (r.J[bn]) r.J[bn] = chain(r.J[bn], rx(-a * w)); return r; };
+  }
   const keys = emitSpec(P, { duration: T, contact: tc, fps, poseAt, ik, marks });
   return { name: kindName, duration: T, contact: tc, foot: 'right', generated: true, family: 'skill', ...(K.upperOnly ? { upperOnly: true } : {}), keys };
 }

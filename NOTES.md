@@ -14401,6 +14401,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   10 d'hier). En match (même tranche) : bassin du porteur en geste de dribble au contact p50 7,6 → 10,4 cm, p90 12,5 → 17,2 ; pointe
   p01 −2,8 → −2,8 cm ; C4 pied dans le ballon 133 → 129 / 3 590. Filmé à la même image (t 123, passement ×2,0, défenseur à 1,1 m) :
   le porteur assis sur le ballon, genoux pliés, bras ouverts ; hier plus haut et droit. `?geste-haut` : hier (351).
+- **Lot 353 — le buste au-dessus du ballon dans la variante basse (générateur ; la sim au bit).** Le 352 abaissait le bassin, le buste
+  restait celui du clip (4° p50 en geste de dribble au contact). `motion-skill`, sous `S.bas` seulement : `S.basLean`° de plus vers
+  l'avant sur la colonne (Spine 35 %, Spine1 35 %, Spine2 30 %), entrée en rampe sur le premier tiers, sortie sur le dernier. `specBas`
+  : 8-12° par l'agilité ; le crochet court refuse 12° (« les épaules mentent avant la coupe », 12 styles / 40) et passe à 8 — les paliers
+  reprennent le buste à moitié avant de remonter le bassin. 40 styles : toutes les espèces passent comme au 352 (le crochet court au
+  second palier), verify-motion 401 ✓ / 10 ✗ inchangé. En match (même tranche) : buste en geste de dribble au contact 4,0 → 7,5° p50
+  (les gestes sans variante et les rampes comptent), bassin et pointes inchangés, C4 129 → 129. Filmé (t 123, le même passement) :
+  la tête plus basse et plus avancée, au-dessus du ballon. `?buste-haut` : hier (352).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
