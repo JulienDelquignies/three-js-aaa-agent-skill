@@ -166,12 +166,19 @@ export function gaitParams(vF, vR, style = NEUTRAL_GAIT_STYLE, override = null, 
   return p;
 }
 
+/** (358) LE CHASSÉ NE S'ÉLARGIT PAS AU-DELÀ DE vMax (28/09, « un joueur sous le terrain ») : la demi-largeur suit la vitesse latérale
+ *  × la durée du cycle ; à 4 m/s de côté les pieds s'écartaient tant que le bassin descendait de 30 cm pour les atteindre (−76 à 5,5).
+ *  Au-delà de vMax m/s latéraux, c'est la CADENCE qui monte (× |vR| / vMax, ≤ kMax) — la largeur reste celle de vMax. null : hier. */
+export const GAIT_CHASSE = { vMax: 2.6, kMax: 2.2 };
+export function setGaitChasse(c) { GAIT_CHASSE.off = !c; }
+
 /** Le facteur de cadence d'une direction (1 en avant, 1,3 à reculons, 1,9 de côté — fondu continu). */
 export function gaitCadenceFactor(vF, vR) {
   const v = Math.hypot(vF, vR);
   if (v < 1e-6) return 1;
-  const bk = Math.max(0, -vF / v), lat = Math.abs(vR) / v;
-  return 1 + 0.3 * bk + 0.9 * lat;
+  const bk = Math.max(0, -vF / v), lat = Math.abs(vR) / v, aR = Math.abs(vR);
+  const k = 1 + 0.3 * bk + 0.9 * lat;
+  return !GAIT_CHASSE.off && aR > GAIT_CHASSE.vMax ? k * Math.min(GAIT_CHASSE.kMax, aR / GAIT_CHASSE.vMax) : k;
 }
 
 /** LE STYLE D'UNE FOULÉE — la signature de course d'un joueur, bornée (reconnaissable, pas caricaturale). */

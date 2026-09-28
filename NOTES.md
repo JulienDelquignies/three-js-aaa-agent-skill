@@ -14486,6 +14486,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   17,2 / 17,25 et 18,5 / 17,95, buts 3,55 / 2,92 et 2,83 / 2,90 (bruit, sens opposés). Jumeau `allureCorps: null` = le 357 au bit
   (`a09da66359b49321 / 17aee553815c7dbe`) ; défaut `31431569f7d6ae47 / f7e6ff713dff206e`. Bloc 227. Filmé : un coureur à 4,5 m/s, 45° de
   sa course, droit.
+  358 bis — « on doit être à 0 non ? ». Les 12 images restantes (sonde enrichie : la sortie du générateur, vBody) : TOUTES pendant un
+  APPUI PLANTÉ, et la foulée y lisait 4,2 m/s DE CÔTÉ (vBody 0,22 / 4,19) quand la sim disait 2,66 — le déplacement rendu de l'appui, pas
+  le cap. Le générateur (motion-gait) élargit le chassé avec |vR| × T (les pieds ne se croisent jamais) : à 4 m/s latéraux les pieds
+  s'écartaient tant que le bassin descendait de 30 cm pour les atteindre (−76 à 5,5 ; hanche, pas appui : sortie libre = ancrée). La loi
+  (rendu, `GAIT_CHASSE`, `?chasse-large` : hier) : au-delà de 2,6 m/s latéraux la CADENCE monte (× |vR| / 2,6, ≤ 2,2) — la largeur reste
+  celle de 2,6 m/s. gait-angle : 90° → −13 cm à toutes les allures jusqu'à 5,5 (hier −17 / −30 / −41 / −76). Sonde rendu 150 s (dès
+  1,5 m/s) : 3 images sous 0,7 m (0,686-0,70), aucune sous 0,65 — deux défenseurs en garde de jockey au contact (jockey + duelPose, le bassin
+  à 74 % de la station : la garde basse voulue du 355) et un appui ; 0 coureur assis. verify-foulee 111/0 (+ le contrat « le bassin en
+  foulée ne descend jamais de plus de 15 cm, 0-110°, ≤ 5,5 m/s » et son sabotage), verify-gait 24/0, verify-locomotion 6/0,
+  verify-motion 403/10 (les 10 d'hier). Rendu seul : l'empreinte ne bouge pas (`31431569f7d6ae47 / f7e6ff713dff206e`). Filmé : un chassé
+  à 3,2 m/s latéraux pendant l'appui, debout.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

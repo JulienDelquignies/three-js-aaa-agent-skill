@@ -11,7 +11,7 @@
 // Lancer : node skills/threejs-aaa/scripts/verify-foulee.mjs
 
 import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
-import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, LEG_REF, gaitBrakeCadence, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
+import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, LEG_REF, gaitBrakeCadence, checkGaitGen, setGaitChasse, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
 import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
@@ -359,6 +359,18 @@ console.log('\n— le griffé : le pied se pose et décolle sans patiner —');
   ok(pr2 <= 0.03, `course : l'orteil ne rase pas la pelouse en repartant (≤ ${(1000 * pr2).toFixed(0)} ms par vol ; les coureurs 17-27 ms, p90 20-33 : plafond 30 ms)`);
   ok(hr >= 0.04, `sabotage — le chemin cartésien d'hier fait raser l'orteil ${(1000 * hr).toFixed(0)} ms à chaque vol : la clause mord`);
   ok(JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 4, 0.5, NEUTRAL_GAIT_STYLE, { griffe: 0 })), 'griffé 0 / absent : la foulée d\'hier au bit');
+}
+
+console.log('— (358) le chassé rapide ne s’assoit pas —');
+{
+  // 28/09 « un joueur sous le terrain » : la demi-largeur du chassé suivait |vR| × T — à 4 m/s de côté le bassin descendait de 30 cm
+  // (−76 à 5,5). Au-delà de GAIT_CHASSE.vMax la cadence monte, la largeur reste : le bassin ne descend jamais de plus de 15 cm,
+  // de 0 à 90° de la course, jusqu'à 5,5 m/s. Sabotage : le chassé d'hier (setGaitChasse(false)).
+  const pire = () => { let mn = 9; for (const v of [2, 3, 4, 5.5]) for (const a of [0, 45, 60, 75, 90, 110]) { const r = a * Math.PI / 180;
+    for (let i = 0; i < 32; i++) mn = Math.min(mn, gaitPose(SHANON_PROFILE, i / 32, v * Math.cos(r), v * Math.sin(r), NEUTRAL_GAIT_STYLE, {}).hips[1]); } return mn; };
+  const avec = pire(); setGaitChasse(false); const hier = pire(); setGaitChasse(true);
+  ok(avec >= -0.15, `le bassin en foulée ne descend jamais de plus de 15 cm (0-110°, ≤ 5,5 m/s) : ${(avec * 100).toFixed(1)} cm (hier ${(hier * 100).toFixed(1)} cm)`);
+  ok(hier < -0.15, 'sabotage « le chassé qui s’élargit » attrapé');
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
