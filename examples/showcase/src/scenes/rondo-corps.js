@@ -166,3 +166,46 @@ export function specBas(scene, pl, move, spec) {
   }
   return pl.moves[k] ?? spec;
 }
+
+// LES JAMBES NE SE TRAVERSENT PAS (356). Sonde des capsules (4 min, 389 paires d'adversaires à < 0,9 m) : 15 paires où une jambe entre dans
+// l'autre, TOUTES avec un geste d'un côté, surtout deux jambes EN VOL (tibia/tibia, cuisse/cuisse — le tacle debout, le dribble, le duel).
+// Le patron des bras : la cuisse pivote à la hanche, puis le tibia au genou, du plus petit angle (≤ 30°) qui la pose sur la jambe de l'autre
+// (rayons cuisse 0,08, tibia 0,06, 2 cm de contact tolérés). Seule une jambe LIBRE bouge : en vol, ou menée par un geste (son pied a bougé
+// de plus de 5 mm à l'image d'avant) — jamais un appui planté (il glisserait). ?jambes-libres : hier.
+const OS_J = ['LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot'];
+const osJambes = (pl) => { if (pl._osJ !== undefined) return pl._osJ; const B = {}; for (const [nm, b] of pl.gestureLayer.bones) { const k = nm.replace(/^mixamorig\d*:?/, '').replace(/^\d+/, ''); if (OS_J.includes(k)) B[k] = b; } return (pl._osJ = OS_J.every((k) => B[k]) ? B : null); };
+const RJ = { UpLeg: 0.08, Leg: 0.06 }, AMAXJ = 30 * Math.PI / 180;
+export function jambesContact(scene) {
+  if (scene._jambesLibres) return;
+  const P = (scene.players ?? []).filter((pl) => (pl.sim.down ?? 0) <= 0 && !pl.sim.expulse && !pl.sim._sub && pl.model.visible !== false);
+  // la liberté de chaque jambe (avant toute correction de cette image)
+  for (const pl of P) { const J = osJambes(pl); if (!J) continue; pl._jLibre = {}; for (const c of ['Left', 'Right']) {
+    const gf = pl.ctrl?._gaitFeet?.[c]?.phase, f = J[c + 'Foot'].getWorldPosition(new THREE.Vector3()), pv = (pl._jPos ??= {})[c];
+    const bouge = pv && Math.hypot(f.x - pv[0], f.z - pv[1]) > 0.005; pl._jPos[c] = [f.x, f.z];
+    pl._jLibre[c] = gf === 'swing' || (pl.gestureLayer.active && !pl.gestureLayer.spec?.upperOnly && bouge); } }
+  for (let i = 0; i < P.length; i++) for (let j = 0; j < P.length; j++) {
+    const x = P[i], y = P[j]; if (x.sim.team === y.sim.team) continue;
+    if (Math.hypot(x.model.position.x - y.model.position.x, x.model.position.z - y.model.position.z) > 1.0) continue;
+    const X = osJambes(x), Y = osJambes(y); if (!X || !Y) continue;
+    X.LeftUpLeg.parent.getWorldPosition(_p1); const soi = _p1.clone();
+    for (const c of ['Left', 'Right']) {
+      if (!x._jLibre?.[c]) continue;
+      for (const o of ['Left', 'Right']) {
+        const a0 = Y[o + 'UpLeg'].getWorldPosition(new THREE.Vector3()), a1 = Y[o + 'Leg'].getWorldPosition(new THREE.Vector3()), a2 = Y[o + 'Foot'].getWorldPosition(new THREE.Vector3());
+        for (const [m, n, ro] of [[a0, a1, RJ.UpLeg], [a1, a2, RJ.Leg]]) {
+          const h = X[c + 'UpLeg'].getWorldPosition(new THREE.Vector3()), k = X[c + 'Leg'].getWorldPosition(new THREE.Vector3()), f = X[c + 'Foot'].getWorldPosition(new THREE.Vector3());
+          if (poseJ(X[c + 'UpLeg'], h, k, m, n, soi, RJ.UpLeg + ro - 0.02)) X[c + 'Leg'].getWorldPosition(k);
+          poseJ(X[c + 'Leg'], k, f, m, n, soi, RJ.Leg + ro - 0.02);
+        }
+      }
+    }
+  }
+}
+function poseJ(os, p, q, a, b, soi, R) {   // pose(), bornée à 30° (une jambe tourne moins qu'un bras)
+  proches(p, q, a, b); const d = _c1.distanceTo(_c2); if (d >= R) return false;
+  _n.subVectors(_c1, _c2); if (_n.lengthSq() < 1e-8) _n.subVectors(soi, _c2).setY(0); _n.normalize();
+  const tgt = _c2.clone().addScaledVector(_n, R), v0 = _c1.clone().sub(p), v1 = tgt.sub(p); if (v0.lengthSq() < 1e-6) return false;
+  _qd.setFromUnitVectors(v0.normalize(), v1.normalize()); const ang = 2 * Math.acos(Math.min(1, Math.abs(_qd.w))); if (ang > AMAXJ) _qd.slerp(new THREE.Quaternion(), 1 - AMAXJ / ang);
+  os.getWorldQuaternion(_qw); os.parent.getWorldQuaternion(_qp); _qw.premultiply(_qd); os.quaternion.copy(_qp.invert().multiply(_qw)); os.updateMatrixWorld(true);
+  return true;
+}

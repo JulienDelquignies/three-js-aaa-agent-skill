@@ -14435,6 +14435,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   sprint reste debout). Après : jockey au contact 28 → 96 % ; bassin du défenseur p50 10,7 → 13,6 cm (hors geste 12,5 → 15,9),
   appuis qui bougent inchangés (10,8 / 12,6 %). Filmé à la même image (t 75,3, le presseur à 1,7 m, 4,5 m/s) : hier droit, le poing au
   menton ; aujourd'hui bas, buste en avant, bras ouverts. `?jockey-hier` : hier.
+- **Lot 356 — les jambes ne se traversent plus ; le petit pont un peu plus bas (rendu + générateur sous S.bas ; la sim au bit).**
+  Sonde des capsules (389 paires d'adversaires à < 0,9 m, 4 min) : 15 paires jambe dans jambe, TOUTES avec un geste d'un côté, surtout deux
+  jambes EN VOL (tibia/tibia, cuisse/cuisse). `jambesContact` (`scenes/rondo-corps.js`), le patron des bras : la cuisse pivote à la hanche
+  puis le tibia au genou, du plus petit angle (≤ 30°) qui la pose sur la jambe de l'autre (cuisse 0,08, tibia 0,06, 2 cm de contact) —
+  seule une jambe LIBRE (en vol, ou menée par un geste : son pied a bougé de > 5 mm) ; jamais un appui planté. 15 → 5 (les 5 : un appui
+  d'un côté, laissés). Pied dans le ballon 27 → 28 (bruit). `?jambes-libres` : hier. Remarque : bustes < 30 cm 1 → 4 et bras 2 → 6 depuis
+  le 355 (le défenseur en garde, penché, s'approche) — 1 % des paires, à surveiller.
+  Petit pont (`motion-skill`, sous S.bas) : la poussée tendue depuis un bassin plus bas s'aplatissait (la pointe sous la pelouse au
+  contact) → le point de poussée remonte de 0,4 × l'affaissement (`S.basPousse`). 40 styles : ×1,5 11 → 22 / 40 (−8,4 cm, hier −6,2) ;
+  la pointe passe aussi sous la pelouse à l'armé et au retour (le geste est en angles exprès : une cheville en ligne à l'extension fait
+  claquer le genou) — pas refait, geste de 0,3 s et rare. verify-motion 401 ✓ / 10 ✗ inchangé.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

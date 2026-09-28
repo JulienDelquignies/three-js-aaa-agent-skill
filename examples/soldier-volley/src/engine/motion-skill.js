@@ -330,7 +330,8 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
   } else if (K.flick) {
     // LA PICHENETTE : armé (genou plié, pied sous la hanche) puis extension sèche devant à travers le ballon
     const tA = K.arm, tOut = tc + 0.08;
-    const armP = [restR[0] + 0.02, restR[1] + 0.04, restR[2] - 0.10], pushP = [b[0] + 0.03, restR[1] + 0.04, b[2] - 0.10], outP = [restR[0] + 0.02, restR[1] + 0.03, restR[2] - 0.16];
+    const lb = S.bas ? (S.basPousse ?? 0.4) * dip : 0;   // (356) la variante basse : la poussée tendue depuis un bassin plus bas s'aplatit — la pointe (pied à −10°) passait sous la pelouse au contact ; le point de poussée remonte d'une part de l'affaissement
+    const armP = [restR[0] + 0.02, restR[1] + 0.04, restR[2] - 0.10], pushP = [b[0] + 0.03, restR[1] + 0.04 + lb, b[2] - 0.10], outP = [restR[0] + 0.02, restR[1] + 0.03, restR[2] - 0.16];
     // tout en joint space : la jambe passe par l'EXTENSION COMPLÈTE au contact, où un chemin de
     // cheville en ligne droite fait claquer le genou (la dérivée de l'IK y est infinie)
     const onOf = (t) => ramp(t, 0, 0.5 * tA, tA) * (1 - ramp(t, tOut, (tOut + T) / 2, T));
