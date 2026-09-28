@@ -1,5 +1,5 @@
 import { tirage } from './rng.js'; import { modeTeteDefensive } from './petits-gestes.js'; import { vitesseGeste } from './repertoire.js';
-import { xgDe } from './xg.js';
+import { xgDe } from './xg.js'; import { repriseSubie, porteeBut, butDansCorps } from './reprise-physique.js';
 import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
 import { MOVES } from './animkit.js'; import { poserAmorti, amortiTetePossible } from './amorti-oriente.js';   // (347) l'amorti aérien orienté, l'amorti de la tête   // (C1) la retournée : le clip authored porte son contact (0,52 s)
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
@@ -51,6 +51,7 @@ export function teteStep(st, cfg, force = null) {
     if (!cands.length) return;
     joueur = cands[0];
     saute = bp[1] > (T.max ?? 2.2);
+    if (repriseSubie(st, joueur, cfg)) return;   // (359) le ballon qui arrive fort le PREND (reprise-physique.js)
   }
   const arme = force ? { arme: true } : {};
   let gene = 0, geneV = 1;
@@ -91,7 +92,7 @@ export function teteStep(st, cfg, force = null) {
   const own = st.pitch.ownGoal(joueur.team);
   const sgn = Math.sign(goal.x || 1);
   const dGoal = hyp(goal.x - joueur.p[0], joueur.p[2]);
-  if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
+  if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn) && porteeBut(st, joueur, bp, cfg) && butDansCorps(st, joueur, goal.x, 0, cfg, 'tete')) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
     const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.5);
     const vT = st.full && cfg.repertoire ? vitesseGeste('tête', cfg.repertoire, joueur, { dGoal }) : 12.5;   /* (279) la tête du book : 13 m/s × powF (null : 12,5 d'hier) */
@@ -245,11 +246,12 @@ export function voleeStep(st, cfg) {
   const joueur = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act && d2(q.p, bp) < (V.reach ?? 1.1))
     .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))[0];
   if (!joueur) return;
+  if (repriseSubie(st, joueur, cfg)) return;   // (359) reprise-physique
   const goal = st.pitch.attackGoal(joueur.team);
   const own = st.pitch.ownGoal(joueur.team);
   const sgn = Math.sign(goal.x || 1);
   const dGoal = hyp(goal.x - joueur.p[0], joueur.p[2]);
-  if (dGoal < (V.but ?? 14) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
+  if (dGoal < (V.but ?? 14) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn) && porteeBut(st, joueur, bp, cfg, 'volee') && butDansCorps(st, joueur, goal.x, 0, cfg, 'volee')) {
     // LA REPRISE DE VOLÉE : première intention, le canal shot standard — le plongeon répond
     const demi = st.ball.v[1] > 0.3;
     const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.6);

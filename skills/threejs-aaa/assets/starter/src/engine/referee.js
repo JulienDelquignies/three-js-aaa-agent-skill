@@ -550,7 +550,7 @@ export function onOut(st, cfg) {
   if (st.ball.owner != null) st.ball.release('arrêt-de-jeu');
   if (r.type === 'but') {
     st.score[r.scorer] += 1;
-    st.events.push({ t: +st.t.toFixed(2), type: 'but', team: r.scorer, score: [...st.score] });
+    st.events.push({ t: +st.t.toFixed(2), type: 'but', team: r.scorer, score: [...st.score], ...(st.full && cfg.buteur && st.lastPasser != null && st.players[st.lastPasser] ? { by: st.lastPasser, ...(st.players[st.lastPasser].team !== r.scorer ? { csc: true } : {}) } : {}) });   // (359, cfg.buteur) le but NOMME son buteur : le dernier toucher (Loi 17), contre son camp s'il est adverse
     st.restart = { type: 'engagement', p: [0, 0], team: r.team, at: st.t + tempoWait(st, cfg, r.team) + 0.6 };
     if (carried) {
       // le filet mange la vitesse — EN CONTINU si cfg.filet (bordFiletStep : le ballon va au
@@ -569,7 +569,7 @@ export function onOut(st, cfg) {
         const C = cfg.celebration;
         st.restart.at += C.dur ?? 6;
         const shot = [...st.events].reverse().find((e) => e.type === 'shot' && st.t - e.t < 6 && st.players[e.by]?.team === r.scorer);
-        const by = shot?.by ?? nearTaker(r.scorer);
+        const by = (st.full && cfg.buteur && st.players[st.lastPasser]?.team === r.scorer ? st.lastPasser : null) ?? shot?.by ?? nearTaker(r.scorer);   // (359) la célébration du vrai buteur
         const bp2 = st.players[by].p;
         const avec = st.players.filter((q) => q.team === r.scorer && q.id !== by && !q.keeper && q.down <= 0)
           .sort((a2, b2) => d2(a2.p, bp2) - d2(b2.p, bp2)).slice(0, C.n ?? 3).map((q) => q.id);

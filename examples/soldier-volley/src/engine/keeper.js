@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { relanceLibre } from './reprise-physique.js'; import { tirage } from './rng.js';
 // keeper — LE GARDIEN : la position qui coupe l'angle, la décision d'arrêt, rien d'autre.
 //
 // Un gardien n'est pas un joueur de champ lent : c'est un MÉTIER à deux lois.
@@ -334,7 +334,7 @@ export function relancerGardien(st, gk, cfg, deps) {
     const kF = gk.skill?.kickF ?? 1;
     const cible = mates.filter((m) => {
       const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
-      return dm > 25 && dm < 48 * kF;
+      return dm > 25 && dm < 48 * kF && relanceLibre(st, gk, m.p[0], m.p[2], cfg);   // (359) relanceObstacle
     }).sort((a, b) => (b.p[0] - a.p[0]) * sgn)[0];
     if (cible) {
       const tI = cfg.leadTime ? cfg.leadTime(hyp(cible.p[0] - gk.p[0], cible.p[2] - gk.p[2]), cible) : 0.5;
@@ -359,11 +359,13 @@ export function relancerGardien(st, gk, cfg, deps) {
   for (const { m, dm } of (RS ? scored.filter(({ m, dm }) => !st.players.some((q) => q.team !== gk.team && !q.keeper && q.down <= 0 && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < rM) && !menaceDe(st, gk, m, dm / (dm > 11 ? (RS.vPied ?? 16) : (RS.vMain ?? 11)), RS, cfg)) : scored).slice(0, 3)) {
     const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
     const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
+    if (!relanceLibre(st, gk, lead[0], lead[2], cfg)) continue;   // (359) relanceObstacle
     if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true, mains: dm > 11 ? volee : undefined })) return true;
   }
   // le PUNT au flanc — la note kicking porte la longueur (×1 exact à 50)
-  const flank = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
-  deps.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8 * (gk.skill?.kickF ?? 1), 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true, mains: volee });
+  const pX = gk.p[0] + sgn * pitch.hx * 0.8 * (gk.skill?.kickF ?? 1), fl0 = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
+  const flank = [fl0, -fl0, 0].find((z) => relanceLibre(st, gk, pX, z, cfg)) ?? fl0;   // (359) relanceObstacle : l'autre flanc, l'axe — sinon le flanc d'hier
+  deps.beginPass(st, { to: { id: -2 }, lead: [pX, 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true, mains: volee });
   return true;
 }
 

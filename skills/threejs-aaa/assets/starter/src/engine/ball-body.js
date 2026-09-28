@@ -209,6 +209,7 @@ export class BallBody {
    */
   strike({ speed, dirYaw, elevation, spinAxis = [0, 1, 0], spinRev = 0 }) {
     this.release('frappe');                                     // une frappe LIBÈRE : le vol est physique
+    this.frappeAt = [this.#s.p[0], this.#s.p[1], this.#s.p[2]];   // (359) le point de la frappe (reprise-physique : le temps de réaction)
     const k = kick([...this.#s.p], { speed, dirYaw, elevation, spinAxis, spinRev });
     const s = this.#s;
     s.v[0] = k.v[0]; s.v[1] = k.v[1]; s.v[2] = k.v[2];
