@@ -14409,6 +14409,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   second palier), verify-motion 401 ✓ / 10 ✗ inchangé. En match (même tranche) : buste en geste de dribble au contact 4,0 → 7,5° p50
   (les gestes sans variante et les rampes comptent), bassin et pointes inchangés, C4 129 → 129. Filmé (t 123, le même passement) :
   la tête plus basse et plus avancée, au-dessus du ballon. `?buste-haut` : hier (352).
+- **Lot 354 — le pied dans le ballon, tolérance 3 cm (rendu seul, la sim au bit).** Question du 28/09 : « impossible d'arriver à 0 ? » —
+  réponse : 3 cm tolérés (le ballon s'écrase à la touche). Sonde (les jambes du porteur contre le ballon rendu, même tranche 263 s, 3 590
+  images de conduite) + les ÉPISODES (images consécutives) + les SAUTS (ballon rendu plus rapide que la sim de 6 cm / image) + les ARRÊTS.
+  Hier : 76 images au-delà de 3 cm, 0 saut. Trois causes, trois remèdes (`scenes/rondo-evite.js`, `Rondo.js`) :
+  1. `ballonDegage` ne sortait le ballon rendu que des pieds POSÉS → toute jambe proche, en vol aussi, tibia compris ; le pied qui joue
+     garde 1,5 cm de contact, les autres 1 cm d'air (76 → 55) ;
+  2. l'écart rendu rattrapait à 3 m/s quand le ballon roule à 4-5 m/s dans l'appui (l'écart juste, en retard de 5-8 cm) → il rattrape
+     d'abord CONTRE la course du ballon sim, au plus ce qu'elle parcourt dans l'image : le ballon rendu S'ARRÊTE contre le pied, jamais ne
+     recule (55 → 49, 1 saut). Essayé et écarté : l'écart à 4,8 m/s (45 images mais 81 sauts) ;
+  3. les épisodes ≥ 3 images étaient TOUS dans un geste (contrôle pivot, crochet, contrôle rebond, passement : le clip suppose le ballon à
+     sa place) — `eviteBallon` exemptait l'acte sim du dribble et tout pied marqué « appui » par la foulée (périmée pendant un geste) → en
+     geste de dribble ou de contrôle, les deux pieds à la surface ; l'appui VRAIMENT immobile (≤ 5 mm à l'image d'avant) reste planté (le
+     ballon s'en écarte), celui que le geste déplace ne se corrige qu'au-delà de 1,5 cm. Essayé : tous les appuis du geste à la surface —
+     15 images mais des appuis qui bougent (> 1 cm / image) en geste 12,0 → 17,4 %.
+  Après : 27 images au-delà de 3 cm (−64 %), 15 épisodes dont 8 d'une image (16 ms), 4 de deux, 3 de 3-4 ; 1 saut ; appuis qui bougent
+  10,5 → 10,8 % (en geste 12,0 → 12,5, le bruit) ; filmé : le ballon qui roule dans l'appui bute contre lui puis passe entre les pieds,
+  l'écart revenu à 0. Le 0 strict coûterait des sauts ou des appuis qui glissent (mesuré ci-dessus). `?degage-appui` : hier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
