@@ -8195,7 +8195,7 @@ if (__bloc()) {
           const a = Math.abs(Math.atan2(Math.sin(p.yaw - Math.atan2(p.v[1], p.v[0])), Math.cos(p.yaw - Math.atan2(p.v[1], p.v[0])))) * 180 / Math.PI;
           if (a > 60 && a < 120) cote++; } } }
     return cote / Math.max(1, fast); };
-  const mA = mesure({}), mN = mesure({ allureCorps: null });
+  const mA = mesure({ corpsSobre: null }), mN = mesure({ allureCorps: null, corpsSobre: null });   // (359) la loi se prouve seule : corpsSobre la prolonge
   ok(`lot 358 — LE CORPS SUIT LA COURSE : course de côté au-delà de 4 m/s ${(100 * mA).toFixed(2)} % (hier ${(100 * mN).toFixed(2)} %)`, mA <= 0.01 && mN >= 0.08);
 }
 
