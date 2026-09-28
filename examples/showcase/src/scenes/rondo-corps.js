@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { GENERATORS } from '../engine/motion-cast.js'; import { SKILL_KINDS } from '../engine/motion-skill.js';
 
 // rondo-corps.js — LE DUEL DE CORPS AU RENDU (lot 350 — demande du 28/09 : « les collisions » ; l'audit contre les vidéos).
 // Mesuré (sondes face / contact, filmé) : le porteur a un adversaire à < 1 m 12 % du temps de conduite, deux adversaires à < 0,75 m
@@ -122,11 +123,43 @@ export function duelPose(scene, pl, dt) {
   C.g += ((gl?.active && !haut ? 0 : 1) - C.g) * kg; C.gb = (C.gb ?? 1) + ((buste ? 1 : 0) - (C.gb ?? 1)) * kg;
   const a = C.w * C.gb; if (a < 1e-3) return;
   const B = osBas(pl); if (!B) return;
-  if (pl.hipsNudge && C.w * C.g > 1e-3) pl.hipsNudge([0, -C.drop * C.w * C.g, 0]);
+  if (pl.hipsNudge && C.w * C.g > 1e-3) pl.hipsNudge([0, -C.drop * C.w * C.g, 0]);   // (352) essayé : le bassin descendu PAR-DESSUS le geste de dribble (+2 cm, le pied qui joue enfoncé de 1 cm) — c'est le générateur qui l'abaisse (specBas)
   pl.model.getWorldDirection(_fw); _fw.y = 0; _fw.normalize(); _fw.negate(); _lat.crossVectors(_up, _fw).normalize();
   tourne(B.Spine, _lat, C.lean * a * 0.6 * D2R); tourne(B.Spine1, _lat, C.lean * a * 0.4 * D2R);
   if (!haut) {                                                                      // (en geste de dribble : par-dessus le geste) les bras : l'équilibre des deux côtés, celui de l'adversaire vers lui
     const eq = 14 + 10 * agil, tient = (role === 3 ? 6 : 14) + 16 * frc, gauche = C.cote > 0 ? 1 : 0, droite = 1 - gauche, m = Math.min(1, Math.abs(C.cote));
     tourne(B.LeftArm, _fw, (eq + tient * gauche * m) * a * D2R); tourne(B.RightArm, _fw, -(eq + tient * droite * m) * a * D2R);
   }
+}
+
+// LE GESTE DE DRIBBLE BAS SOUS PRESSION (352). Le porteur au contact est dans un geste de dribble 131 images sur 143 : sa garde est celle
+// du CLIP. Abaisser le bassin au rendu par-dessus le clip gagnait 2 cm et enfonçait le pied qui joue (il suit le bassin, hors verrou).
+// Ici le GÉNÉRATEUR : sous pression (adversaire debout à ≤ 2,5 m au départ du geste), le geste de la famille skill se joue dans sa variante BASSE — la même
+// espèce, le style du joueur, l'affaissement du bassin × (1,8 + 0,6 × agilité) ou le plus profond que son contrat accepte, borné à 14 cm ; les jambes sont RE-RÉSOLUES par l'IK
+// du générateur autour de ce bassin (les pieds restent sur leurs cibles), le contrat de l'espèce la juge (checkSkillGen). Mise en cache
+// par joueur (`pl.moves['<geste>@bas']`). ?geste-haut : hier.
+const ECHECS = {};
+export function specBas(scene, pl, move, spec) {
+  if (scene._gesteHaut || !spec || GENERATORS[move]?.family !== 'skill' || !pl.profile) return spec;
+  const st = scene.state, s = pl.sim; let presse = false;
+  for (const q of st.players) { if (q.team === s.team || q.keeper || (q.down ?? 0) > 0) continue; if (Math.hypot(q.p[0] - s.p[0], q.p[2] - s.p[2]) <= 2.5) { presse = true; break; } }   // 2,5 m : le geste de dribble PART avant le contact (à 1,5 m : 3 variantes jouées en 5 min)
+  if (!presse) return spec;
+  const k = move + '@bas';
+  if (pl.moves[k] === undefined) {
+    const K = SKILL_KINDS[move], d0 = (K?.dip ?? 0) * (pl.style.dip ?? 1), agil = clamp01((1.15 - (s.skill?.appuiF ?? 1)) / 0.3);
+    // la plus profonde que le contrat accepte : la cible, puis 1,8 · 1,5 · 1,3 · 1,15 (mesuré sur 40 styles : le crochet court passe à ×2,2,
+    // −7 → −14 cm ; le passement et le crochet n'acceptent que ×1,3 — la sortie ramène la jambe en angles pendant que le bassin remonte,
+    // la pointe passe sous la pelouse au-delà ; le Cruyff ×1,3 une fois sur trois)
+    let v = null;
+    // (une génération + son contrat : 4-14 ms) la mémoire des échecs PARTAGÉE entre joueurs : un palier refusé 3 fois sans jamais passer
+    // pour cette espèce est sauté — une à deux tentatives après les premiers joueurs, pas quatre (54 ms au passement)
+    const M = (ECHECS[move] ??= {});
+    for (const [i, F0] of [1.8 + 0.6 * agil, 1.8, 1.5, 1.3, 1.15].entries()) {
+      const F = d0 > 1e-3 ? Math.min(F0, 0.14 / d0) : 1; if (F <= 1.05) break;
+      const m = (M[i] ??= { ko: 0, ok: 0 }); if (m.ko >= 3 && !m.ok) continue;
+      try { const c = GENERATORS[move].generate(pl.profile, { style: { ...pl.style, dip: (pl.style.dip ?? 1) * F, bas: true } }); if (GENERATORS[move].check?.(c, pl.profile)?.ok !== false) { v = c; v.bas = F; m.ok++; break; } m.ko++; } catch { m.ko++; }
+    }
+    pl.moves[k] = v;                                                                 // null : pas de variante (l'espèce sans affaissement, ou refusée par son contrat)
+  }
+  return pl.moves[k] ?? spec;
 }

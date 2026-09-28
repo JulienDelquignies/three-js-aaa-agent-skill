@@ -103,6 +103,14 @@ export function applyLeg(J, side, sol, a) {
 }
 
 /** GÉNÉRER un geste technique (pied DROIT — le miroir d'animkit fait le gauche). */
+/** (352, le geste BAS sous pression — scenes/rondo-corps specBas) LE RETOUR DU PIED EN IK : la variante basse (S.bas, bassin plus bas) ramène
+ *  la jambe de sa pose plantée à la pose de repos en ANGLES pendant que le bassin remonte — la pointe passait sous la pelouse (−3 cm) au-delà
+ *  de ×1,3. Ici le pied va en ligne du point planté au repos, levé de 4 cm au milieu. Absent (S.bas faux) : le retour en angles d'hier, au bit. */
+function retourIK(t, t0, T, from, to) {
+  const r = ramp(t, t0 + 0.02, (t0 + T) / 2, T), p = lerp3(from, to, r); p[1] += 0.04 * Math.sin(Math.PI * r);
+  return { p, foot: [0, 0, 0, 1] };
+}
+
 export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } = {}) {
   const K = SKILL_KINDS[kindName];
   if (!K) throw new Error(`motion-skill : espèce inconnue « ${kindName} »`);
@@ -209,7 +217,7 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
       return { J, hips: hipsOf(t) };
     };
-    ik = (t) => { const ph = phase(t); return { Left: K.armsWide ? { p: [restL[0], restL[1], restL[2]], foot: [0, 0, 0, 1] } : [restL[0], restL[1], restL[2]], Right: ph.kind === 'entry' || (ph.kind === 'exit' && t > tPlant) ? null : { p: footPath(t), foot: footPitch(t), pole: [0.35, 0, -1] } }; };
+    ik = (t) => { const ph = phase(t); return { Left: K.armsWide ? { p: [restL[0], restL[1], restL[2]], foot: [0, 0, 0, 1] } : [restL[0], restL[1], restL[2]], Right: ph.kind === 'entry' ? null : ph.kind === 'exit' && t > tPlant ? (S.bas ? retourIK(t, tPlant, T, plantP, restR) : null) : { p: footPath(t), foot: footPitch(t), pole: [0.35, 0, -1] } }; };
   } else if (K.cut) {
     // LA COUPE : (chaloupe : le buste MENT à droite d'abord) — le pied va au côté droit du ballon, balaie vers la gauche À TRAVERS lui (contact), se plante croisé, revient
     const tSway = K.sway ?? 0, tReach = tSway + 0.55 * (tc - tSway);
@@ -254,7 +262,7 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       return { J, hips: hipsOf(t) };
     };
     // l'intérieur tourné vers la coupe : la pointe part à droite pendant le balayage
-    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tReach || t > K.tPlant ? null : { p: footPath(t), foot: footR(t) } });
+    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < tReach ? null : t > K.tPlant ? (S.bas ? retourIK(t, K.tPlant, T, plantP, restR) : null) : { p: footPath(t), foot: footR(t) } });
   } else if (K.cruyff) {
     // (339) LE CRUYFF : rest → armé derrière (joint) ; IK : armé → fausse frappe à droite du ballon → devant le ballon → le balayage qui le
     // TIRE en arrière à travers lui (contact à frac du balayage, le pic de vitesse sur le ballon) → derrière la jambe d'appui → planté ; retour (joint)
@@ -285,7 +293,7 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
       return { J, hips: hipsOf(t) };
     };
-    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < K.tArm || t > K.tPlant ? null : { p: footPath(t), foot: footR(t) } });
+    ik = (t) => ({ Left: [restL[0], restL[1], restL[2]], Right: t < K.tArm ? null : t > K.tPlant ? (S.bas ? retourIK(t, K.tPlant, T, plantP, restR) : null) : { p: footPath(t), foot: footR(t) } });
   } else if (K.croqueta) {
     // LA CROQUETA : jambe droite balaie le ballon vers la gauche (touche 1 à push1), se plante croisée ;
     // le poids transfère ; jambe gauche va au ballon déplacé et le POUSSE devant (touche 2 = contact)

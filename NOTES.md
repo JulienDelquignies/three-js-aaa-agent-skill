@@ -14387,6 +14387,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   C4 tenu : pied dans le ballon 131 → 133 images / 3 590 de conduite (même tranche de match, 263 s). Filmé à la même image (t 101) avec et
   sans (`?duel-droit` : hier) : le défenseur plus bas et penché, le ballon entre eux, têtes à 0,36 m. Dettes : les clips de dribble
   eux-mêmes restent hauts (la garde basse du geste se fait dans le générateur) ; le jockey sur 28 % des images de pression seulement.
+- **Lot 352 — le geste de dribble BAS sous pression (générateur ; la sim au bit).** Suite du 351 : le porteur au contact vit dans ses
+  gestes de dribble — leur bassin est celui du clip. Essayé et écarté : abaisser le bassin au RENDU par-dessus le geste (+2,3 cm, la
+  pointe du pied qui joue 1 cm plus bas — elle suit le bassin hors du verrou). Retenu : `specBas` (`scenes/rondo-corps.js`) — au départ
+  d'un geste de la famille skill avec un adversaire debout à ≤ 2,5 m (à 1,5 m : 3 variantes jouées en 5 min, le geste part avant le
+  contact), la VARIANTE BASSE du même geste au style du joueur : l'affaissement × (1,8 + 0,6 × agilité), borné à 14 cm, les jambes
+  re-résolues par l'IK du générateur ; la plus profonde que le contrat de l'espèce accepte (paliers 1,8 · 1,5 · 1,3 · 1,15), en cache
+  par joueur, la mémoire des paliers refusés partagée (une génération + contrat : 2-14 ms). `motion-skill` : sous `S.bas` seulement,
+  le RETOUR du pied après la pose se fait en IK (du point planté au repos, levé de 4 cm) — en angles, pendant que le bassin remonte,
+  la pointe passait à −3 cm sous la pelouse au-delà de ×1,3 (passement 9/40 à ×1,8, crochet 8/40, Cruyff 0/40) ; avec : 40/40 à ×2,2
+  pour les trois — passement −9,2 → −16 cm, crochet −8,3 → −14, Cruyff −9,3 → −14, crochet court −7,3 → −13,7 (40 styles). Le petit
+  pont (échec au contact, pas au retour) reste aux paliers bas. Sans `S.bas` les gestes sont au bit (verify-motion 401 ✓ / 10 ✗, les
+  10 d'hier). En match (même tranche) : bassin du porteur en geste de dribble au contact p50 7,6 → 10,4 cm, p90 12,5 → 17,2 ; pointe
+  p01 −2,8 → −2,8 cm ; C4 pied dans le ballon 133 → 129 / 3 590. Filmé à la même image (t 123, passement ×2,0, défenseur à 1,1 m) :
+  le porteur assis sur le ballon, genoux pliés, bras ouverts ; hier plus haut et droit. `?geste-haut` : hier (351).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
