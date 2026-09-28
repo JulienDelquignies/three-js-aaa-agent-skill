@@ -347,3 +347,9 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   déjà, 24 vraies courbes (écart < 30°). → le DEMI-TOUR ARRÊTÉ (voulue ≥ 0,3 m/s, sortie à son allure) et la course TENUE pendant l'attente du
   pied (≤ 0,4 s). Essayée et retirée : la coupe du CORPS SEUL quand le ballon roule déjà vers la voulue (ballon gardé 68 → 46 %, duel battu
   64 → 59 %). Après : ≈ 61 % des virages du porteur par une coupe (206 coupes contre 154), duel inchangé (48 × 120 s : battu 64 %, perdu 30 %).
+- (2026-09-28, « faire pivoter sec le corps dans les passes et le râteau ») `pivot-rendu.mjs <url>` : pendant les gestes qui tournent le corps, le
+  lacet du bassin rendu contre celui de la sim — l'angle, la durée 10→90 %, le taux au plus fort. Mesuré : le râteau 148° en 0,23 s (519°/s au
+  plus fort ; sim 150° en 0,25 s), la passe rapide 72° en 0,17 s — déjà secs ; la passe ordinaire 113° en 0,75 s (rare). Limite : le bassin
+  oscille de ±7° par foulée (pYaw) — pour une coupe en course (58°), la durée 10→90 % s'allonge (0,43 s rendu contre 0,23 s sim) alors que la
+  racine rendue EST le lacet sim (Rondo : model.rotation.y = lacet sim). `passe-chrono` (scratch) : sur une passe rapide à ≥ 45° de la course,
+  le lacet tourne de 46° pendant l'armé (0,23 s) mais le corps file tout droit à 3,9 → 5,7 m/s — le corps DE BIAIS, sans appui planté.
