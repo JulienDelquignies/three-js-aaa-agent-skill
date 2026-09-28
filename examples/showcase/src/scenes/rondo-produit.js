@@ -101,7 +101,7 @@ export function produitEvent(scene, P, e) {
     case 'carton': dire(P, now, `Carton ${e.couleur} pour ${n(e.by)}`, 4); moment(P, scene, `${e.couleur === 'rouge' ? '🟥' : '🟨'} ${n(e.by)} (${eq(st.players[e.by]?.team)})`, e.couleur === 'rouge'); break;
     case 'hors-jeu': dire(P, now, `Hors-jeu de ${n(e.by)}`, 2); break;
     case 'tacle-pique': dire(P, now, `${n(e.by)} chipe le ballon à ${n(e.sur)}`, 1); break;
-    case 'skill': if (/vendu|petitPont/.test(e.kind ?? '') && (e.bitten?.length || e.reussi)) dire(P, now, `${n(e.by)} élimine son adversaire`, 2); break;
+    case 'skill': if (/vendu|petitPont|^grandPont$/.test(e.kind ?? '') && (e.bitten?.length || e.reussi)) dire(P, now, `${n(e.by)} élimine son adversaire`, 2); break;
     case 'temps-additionnel': dire(P, now, `${Math.max(1, Math.round((e.sec ?? 60) * (st._chrono?.ratio ?? 1) / 60))} minute(s) de temps additionnel`, 3); break;
   }
   if (e.type === 'shot') { const c = st.players[e.by]; if (c) { const g = st.pitch.attackGoal(c.team); if (h(g.x - c.p[0], c.p[2]) < 20 && !action(P, scene)) moment(P, scene, `Occasion : ${n(e.by)} (${eq(c.team)})`).occ = true; } }

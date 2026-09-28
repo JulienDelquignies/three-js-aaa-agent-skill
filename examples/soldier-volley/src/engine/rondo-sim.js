@@ -1,3 +1,4 @@
+import { gpSansTouche } from './grand-pont.js';
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; import { respireDe } from './porte-respire.js'; import { corpsArret } from './corps-arret.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
@@ -9,7 +10,7 @@ import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js'; import { pasDecision } from './cadence.js';   // (263) le pas de décision
-import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
+import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeGrandPontSk, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
@@ -662,7 +663,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (st.full && cfg.ramasse && !intentFresh) st._settling = { ev: st.events.length, id: c.id, at: st.t + (cfg.ramasse.pose ?? 0.3) };
       st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
     } else {
-      const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg);
+      const rD = st.full && cfg.grandPont && gpSansTouche(st, c) ? (st.ball.integrate(dt), {}) : dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg);   // (357) après le grand pont : pas de touche avant d'avoir passé le défenseur
     }
     // LE PIQUE (cfg.pokeReach, match) : un ballon de conduite LIBRE est libre AUSSI pour
     // l'adversaire — le pied qui l'atteint AVANT le porteur le dévie (poke tackle, sans duel de
@@ -823,7 +824,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
     // LES NICHES DU 1c1, du plus spécifique au plus général (114-117) : le jeté franc se perfore (croqueta), le glisseur se traverse (pont), le poursuivant s'enroule (roulette) — sortie fermée : le râteau reprend
     if (decide && !settleGate && maybeDoubleContact(st, c, cfg)) return st;   // (263) les niches du 1c1 sont des décisions : au tick
-    if (decide && !settleGate && maybePetitPont(st, c, cfg)) return st;
+    if (decide && !settleGate && maybePetitPont(st, c, cfg)) return st; if (decide && !settleGate && maybeGrandPontSk(st, c, cfg)) return st;   /* (357) le grand pont : le porteur LANCÉ, le défenseur de face qui s'engage */
     if (decide && !settleGate && maybeRoulette(st, c, cfg)) return st;
     // LE RÂTEAU AVANT QUE LE DUEL S'INSTALLE : presseur qui ferme la face, sortie arrière libre — on se retourne avec le pas d'avance (refus nommés sinon)
     if (decide && !settleGate && maybeRateau(st, c, cfg)) return st;

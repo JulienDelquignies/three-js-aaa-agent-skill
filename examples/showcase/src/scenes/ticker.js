@@ -42,16 +42,17 @@ export function makeTicker(TEAMS) {
    *  gameplay — windup, control, touche… — restent le métier de la scène). */
   const event = (e, state) => {
     _ratioFM = state?._chrono?.ratio ?? 1; _decFM = state?._ceremonie?.fin ?? 0;
-    if (e.type === 'skill' && hud && !e.kind.endsWith('-vendu')) {
+    if (e.type === 'skill' && hud && !e.kind.endsWith('-vendu') && !e.kind.endsWith('-tente')) {   // (357) '-tente' : l'intention du grand pont, le contact le nomme
       // le ticker des gestes : l'événement du CONTACT (skillContactNow), pas l'intention —
       // les '*-vendu' sont le mordu du même geste. Les ESPÈCES se nomment (crochet court ≠
       // chaloupé, passement ×2, sortie) : la variété doit se lire.
-      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe', doubleContact: 'double contact', petitPont: 'petit pont', roulette: 'roulette' };
+      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe', doubleContact: 'double contact', petitPont: 'petit pont', roulette: 'roulette', grandPont: 'grand pont' };
       let label = names[e.kind] ?? e.kind;
       if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
       else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
       else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${(e.tours ?? 1) >= 2 ? ` ×${e.tours}` : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
       else if (e.kind === 'petitPont' && e.reussi === false) label = 'petit pont (fermé)';
+      else if (e.kind === 'grandPont' && e.reussi === false) label = 'grand pont (mal dosé)';
       pousse(`<b style="color:#e8ebf2">${label}</b> <span>— ${team(state, e.by)} nº${e.by} · ${tFM(e.t)}</span>`);
     } else if (e.type === 'tête' || e.type === 'volée') {
       // LE CIEL AU JOURNAL (lot 112) : le contact aérien est un geste comme un autre — la

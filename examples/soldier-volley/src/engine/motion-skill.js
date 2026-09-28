@@ -51,6 +51,7 @@ export const SKILL_KINDS = {
   // LA PICHENETTE : armé puis extension SÈCHE entre les jambes du fermeur — le corps est déjà bas et penché, les bras restent à la locomotion
   feinteAppel: { duration: 0.55, contact: 0.3, feint: true, upperOnly: true, sell: 0.15, sellSide: 16, yawSell: 24, lean: 6, dip: 0, headDown: 6 },   // (§ 10) LA FEINTE D'APPEL — sans ballon : le buste VEND un départ d'un côté (l'épaule qui plonge, le lacet) puis repart de l'autre au contact ; haut du corps seul (la foulée garde les jambes : le démarrage est celui de la sim)
   petitPont: { duration: 0.3, contact: 0.12, ball: [0.08, BALL_R, -0.30], flick: true, arm: 0.07, lean: 8, dip: 0.06, noArms: true, headDown: 12, marks: [0.07] },
+  grandPont: { duration: 0.36, contact: 0.14, ball: [0.06, BALL_R, -0.34], flick: true, arm: 0.08, lean: 10, dip: 0.07, noArms: true, headDown: 10, marks: [0.08] },   // (357) LE GRAND PONT : la poussée sèche devant (le moteur de la pichenette, plus longue ; les bras restent à la locomotion — la course)
 };
 // les passements à N tours (2..6) : le même cercle, répété — durée et contact avancent d'un tour
 for (let n = 2; n <= 6; n++) {

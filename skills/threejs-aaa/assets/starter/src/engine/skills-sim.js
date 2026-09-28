@@ -15,6 +15,7 @@ import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
+import { maybeGrandPont, grandPontContact, grandPontFollow } from './grand-pont.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
@@ -511,6 +512,9 @@ export function maybePetitPont(st, c, cfg) {
  *  tirage est le plus sobre du répertoire, et l'AGILITÉ filtre (× (2 − getupF) : le souple
  *  roule, le raide s'abstient — l'attribut est un facteur, jamais une branche). Clés au
  *  match seulement (rouletteFoe absent : le rondo d'hier). */
+/** (357) le grand pont — la niche dans grand-pont.js ; les facteurs du répertoire évalués seulement si elle s'ouvre. */
+export function maybeGrandPontSk(st, c, cfg) { return maybeGrandPont(st, c, cfg, () => dribM(st, c, cfg), () => poidsGeste(st, cfg, 'grandPont')); }
+
 export function maybeRoulette(st, c, cfg) {
   const K = cfg.skill; if (!K || !K.rouletteFoe) return false;
   if (c.keeper) return false;
@@ -668,6 +672,8 @@ export function skillContactNow(st, p, cfg) {
       p._dribAt = st.t;   // (219) la cadence du dribble
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'petitPont', by: p.id, reussi: false, foot: A.pick.foot });
     }
+  } else if (A.skill === 'grandPont') {
+    grandPontContact(st, p, A, cfg);   // (357) le grand pont (grand-pont.js) — hors du noyau : son issue est physique
   } else if (A.skill === 'roulette') {
     // le poursuivant PREND L'ÉPAULE : le corps s'interpose tout le tour — sa course se casse
     const K = cfg.skill;
@@ -866,6 +872,8 @@ export function skillFollowStep(st, p, dt, cfg) {
     p.speed = vG;
     st.ball.carry([p.p[0] + Math.cos(p.yaw) * 0.18, p.p[2] + Math.sin(p.yaw) * 0.18], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'grandPont') {
+    grandPontFollow(st, p, A, dt);   // (357)
   } else if (A.skill === 'petitPont') {
     // avant le contact : le corps se cale (le ballon est à lui) ; APRÈS : le ballon est
     // PARTI (strike au contact — pas d'abort-souffle : c'est le geste qui l'a lâché), le

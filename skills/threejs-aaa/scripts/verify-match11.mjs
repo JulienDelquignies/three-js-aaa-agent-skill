@@ -8163,5 +8163,25 @@ if (__bloc()) {
     mA.dos <= 0.03 && mN.dos >= 0.12 && mA.p50 >= 5 && mA.p50 <= 35);
 }
 
+if (__bloc()) {
+  // LE GRAND PONT, « pousser-courir » (357, cfg.grandPont — le clip d'Olmo du 26/09 : il fixe, et sur l'ENGAGEMENT du défenseur une touche
+  // pousse le ballon d'un côté pendant qu'il contourne de l'autre). La niche : le porteur sur son ballon, un défenseur de face qui FERME,
+  // de l'espace derrière lui. Le contrat : il se tente (la clé nulle : jamais), le défenseur battu MORD à chaque réussite, et le porteur ne
+  // retouche pas son ballon avant d'avoir passé le défenseur (mesuré avant : 6 fois sur 15 à 0,22 s — la conduite le renvoyait vers lui).
+  const mesure = (over) => { const R = { tente: 0, reussi: 0, mord: 0, retouche: 0 };
+    for (const seed of [23, 31]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0, cur = null;
+      for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if (e.type === 'windup' && e.skill === 'grandPont') R.tente++;
+          if (e.type === 'skill' && e.kind === 'grandPont' && e.reussi) { R.reussi++; if ((e.bitten ?? []).length) R.mord++; cur = { t: st.t, by: e.by, foe: e.bitten?.[0], u: null }; }
+          if (cur && e.type === 'touche' && e.by === cur.by && st.t - cur.t < 1.2) { const f = st.players[cur.foe], c = st.players[cur.by]; if (f && cur.u && (c.p[0] - f.p[0]) * cur.u[0] + (c.p[2] - f.p[2]) * cur.u[1] < -0.3) R.retouche++; } }
+        if (cur && !cur.u) { const f = st.players[cur.foe], c = st.players[cur.by]; if (f) { const d = Math.hypot(f.p[0] - c.p[0], f.p[2] - c.p[2]) || 1; cur.u = [(f.p[0] - c.p[0]) / d, (f.p[2] - c.p[2]) / d]; } }
+        if (cur && st.t - cur.t > 1.5) cur = null; } }
+    return R; };
+  const mA = mesure({}), mN = mesure({ grandPont: null });
+  ok(`lot 357 — LE GRAND PONT : ${mA.tente} tentés, ${mA.reussi} réussis (tous mordus : ${mA.mord}), ${mA.retouche} retouche avant d'avoir passé le défenseur ; clé nulle : ${mN.tente} tenté`,
+    mA.tente >= 3 && mA.reussi >= 1 && mA.mord === mA.reussi && mA.retouche === 0 && mN.tente === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

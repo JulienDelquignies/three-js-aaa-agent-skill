@@ -14446,6 +14446,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   contact) → le point de poussée remonte de 0,4 × l'affaissement (`S.basPousse`). 40 styles : ×1,5 11 → 22 / 40 (−8,4 cm, hier −6,2) ;
   la pointe passe aussi sous la pelouse à l'armé et au retour (le geste est en angles exprès : une cheville en ligne à l'extension fait
   claquer le genou) — pas refait, geste de 0,3 s et rare. verify-motion 401 ✓ / 10 ✗ inchangé.
+- **Lot 357 — le GRAND PONT, « pousser-courir » (`cfg.grandPont`, `engine/grand-pont.js`).** Référence : le clip d'Olmo (Angleterre–Espagne,
+  partagé le 28/09) — il FIXE le défenseur qui vient sur lui, et à l'instant où celui-ci s'ENGAGE une seule touche pousse le ballon d'un
+  côté pendant qu'il le contourne de l'autre, épaule contre épaule, et repart. Le répertoire n'avait que des gestes d'équilibriste.
+  La niche (au tick de décision, après le petit pont) : porteur sur son ballon à ≥ vMin 1 m/s, défenseur de face (cône 40°) à 1,3-4 m qui
+  FERME à ≥ 0,6 m/s, un point B à 4 m derrière lui et 1,4 m de côté libre (clear 2,5 m, B et le milieu du couloir) — le côté le plus
+  libre, à égalité contre son élan. Qui : note de dribble × flair × gesteF² × accelF² (un pari de vitesse). Au contact, HORS du noyau
+  commun (mesuré avec lui : 15 dépossessions sur 22 — il lit un défenseur qui ferme comme un défenseur qui atteint le ballon ; ici son
+  engagement le perd) : réussite = 0,55 + technique − réflexes (reaction) + 0,1 × engagement ; réussi, le ballon part à 5,5 m/s vers B, le
+  défenseur MORD (0,55 s × gesteF × engagement : le MOMENT paie), le porteur contourne (W, à 1 m du défenseur) et accélère (~6 m/s) ;
+  raté, la touche part trop près du défenseur (¼ de l'écart), sans morsure — il l'intercepte s'il est là. Trois défauts trouvés en route :
+  (1) le ballon GELÉ pendant l'accompagnement d'un geste ownsBody (rondo-sim ne l'intègre plus : le pont d'hier a la même dette — pas
+  touchée, le jumeau) → le grand pont l'intègre lui-même ; (2) la conduite le RATTRAPAIT 0,22 s après la poussée (6 fois / 15) et le
+  renvoyait vers la course du porteur → pas de touche avant d'avoir passé la ligne du défenseur (≤ 1,2 s, `gpSansTouche`) ; (3) le raté
+  « ballon dans la jambe » du pont n'a pas de sens à 3-4 m (filmé : il revenait derrière le porteur) → la touche mal dosée.
+  Essayé et écarté : le porteur qui FIXE (ralentir face au défenseur qui vient) — mesuré, les porteurs y sont déjà à 1,2-1,5 m/s p50 à
+  toutes les distances : le moteur n'a presque pas de porteur LANCÉ en transition (dette de l'intelligence, #39).
+  Mesuré (8 × 15 min) : ~12 grands ponts / 90 min, 71 % réussis ; après la réussite, l'équipe garde le ballon 8 fois sur 11 à 4 s.
+  Banc 16 matchs (2 jeux de graines, 357 / clé nulle) : pertes 141,25 → 138,5 et 140,75 → 137,25, complétion 89,4 → 89,5 et 89,8 → 90,25,
+  tirs 21,0 → 20,75 et 18,25 → 18,25, tirs de la surface 16,2 → 17,25 et 16,9 → 17,95, buts 3,27 → 2,92 et 2,83 → 2,90 (bruit, sens
+  opposés). Geste `grandPont` généré (motion-skill, le moteur de la pichenette, 0,36 s, bras à la locomotion) : 40/40 styles ; verify-motion
+  403 ✓ / 10 ✗ (les 10 d'hier). Jumeau `grandPont: null` = 349 au bit (empreinte `a09da66359b49321 / 17aee553815c7dbe`, le grand pont ne
+  sort pas dans les 90 s de l'empreinte). Bloc 226. Filmé : le porteur arrive, épaule contre épaule, le ballon passe d'un côté, le
+  défenseur reste. Ticker « grand pont » / « grand pont (mal dosé) », commentaire « élimine son adversaire ».
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
