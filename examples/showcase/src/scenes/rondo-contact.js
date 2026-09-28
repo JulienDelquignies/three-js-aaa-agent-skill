@@ -36,6 +36,7 @@ export function contactEvent(scene, e) {
 
 /** L'horloge d'un geste de contact : la chute tient au sol et se relève à l'heure de la sim ; le bouclier tient son plateau.
  *  Renvoie l'heure d'échantillonnage, ou null si le geste n'est pas du contact. */
+let corpsHier = false;   // (350) ?corps-hier, relu par contactShield à chaque image (contactClock ne reçoit pas la scène)
 export function contactClock(pl, meta, t, dtP, now) {
   const spec = pl.gestureLayer.spec;
   if (!spec || (spec.family !== 'contact' && !(spec.family === 'emotion' && spec.lying != null))) { pl._fallOwns = false; return null; }   // (A11) la glissade sur les genoux tient et se relève comme une chute
@@ -53,7 +54,8 @@ export function contactClock(pl, meta, t, dtP, now) {
     if (down <= 0) pl._sol = null;
     return t;
   }
-  if (spec.name === 'protection' && spec.hold != null && pl._shield) {
+  const nom = corpsHier ? spec.name : spec.name?.replace(/-gauche$/, '');   // (350) le miroir s'appelle « …-gauche » : le bouclier à gauche ne tenait jamais son plateau
+  if (((nom === 'protection' && pl._shield) || (nom === 'duelCorps' && pl._duel)) && spec.hold != null) {   // (350) le duel de corps tient son plateau comme le bouclier
     if (t >= spec.hold) { meta.t0 += dtP; return spec.hold; }
     return t;
   }
@@ -62,8 +64,9 @@ export function contactClock(pl, meta, t, dtP, now) {
 
 /** Le bouclier : le porteur pressé sur le flanc ou dans le dos tend le bras vers l'adversaire, tant que ça dure. */
 export function contactShield(scene, pl) {
+  corpsHier = !!scene._corpsHier;
   const st = scene.state, s = pl.sim;
-  const carrying = st.ball.owner === s.id && !s.act && (s.down ?? 0) <= 0 && !s.keeper;
+  const carrying = (st.ball.owner === s.id || (!scene._corpsHier && st.possession?.carrier === s.id && st.phase === 'carry')) && !s.act && (s.down ?? 0) <= 0 && !s.keeper;   // (350) le porteur qui conduit à touches (ballon libre entre deux touches) protège aussi
   let want = 0;
   if (carrying) {
     const fx = Math.cos(s.yaw), fz = Math.sin(s.yaw);
@@ -77,7 +80,7 @@ export function contactShield(scene, pl) {
     }
     if (best) want = best.right >= 0 ? 1 : -1;
   }
-  const playing = pl.gestureLayer.spec?.name === 'protection';
+  const playing = scene._corpsHier ? pl.gestureLayer.spec?.name === 'protection' : /^protection(-gauche)?$/.test(pl.gestureLayer.spec?.name ?? '');   // (350) le miroir aussi
   if (want && !pl._shield && !pl.gestureLayer.active) {
     scene._playTech(pl, { type: 'protection', move: 'protection', foot: want < 0 ? 'left' : 'right' });
     pl._shield = { side: want, since: scene._t }; pl._teched = scene._t;

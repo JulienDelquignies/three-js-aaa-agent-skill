@@ -59,6 +59,10 @@ export const CONTACT_KINDS = {
   trebuche:     { duration: 0.85, contact: 0.30, pitch: 56, dip: 0.09, step: 0.42, arms: 46 },
   epaule:       { duration: 0.60, contact: 0.25, roll: 16, shift: 0.10, drop: 14, wide: 0.20, lean: 10 },
   protection:   { duration: 0.70, contact: 0.25, hold: 0.45, elev: 62, back: 42, turn: 20, lean: 8 },
+  // (350) LE DUEL DE CORPS — adversaire à DROITE, devant ou à côté, à portée de bras : l'épaule droite ENGAGÉE (tronc tourné vers la
+  // gauche, turn °), penché vers lui (side °), le bras droit sur lui (elev/fwd : la main à hauteur de sa hanche-épaule), le gauche en
+  // balancier ; le haut du corps seul (les jambes restent à la foulée) ; un plateau tenu tant que le contact dure.
+  duelCorps:    { duration: 0.60, contact: 0.22, hold: 0.40, upperOnly: true, turn: 18, side: 8, lean: 6, elev: 38, fwd: 26, elbow: 34 },
 };
 export const CONTACT_NAMES = Object.keys(CONTACT_KINDS);
 export const TRACE = (typeof process !== 'undefined' && process.env?.CONTACT_TRACE) ? [] : null;
@@ -253,6 +257,20 @@ function generateShoulder(P, S) {
   return { name: 'epaule', duration: T, contact: tc, foot: 'right', generated: true, family: 'contact', keys };
 }
 
+/** (350) LE DUEL DE CORPS — adversaire à DROITE devant ou à côté : l'épaule droite engagée, le bras droit sur lui, un plateau tenu ; haut du corps seul. */
+function generateDuelCorps(P, S) {
+  const K = CONTACT_KINDS.duelCorps, T = K.duration, tc = K.contact, tH = K.hold;
+  const on = (t) => ramp(t, 0, 0.6 * tc, tc), off = (t) => ramp(t, tH, (tH + T) / 2, T);
+  const poseAt = (t) => {
+    const a = on(t) * (1 - off(t)), J = {};
+    trunk(J, { lean: K.lean * S.lean * a, yaw: -K.turn * a, side: K.side * a });
+    Object.assign(J, armJoints('Right', { elev: (14 + (K.elev - 14) * a) * S.armElev, fwd: 6 + (K.fwd - 6) * a, elbow: 14 + (K.elbow - 14) * a }), armJoints('Left', { elev: 14 + 16 * a, fwd: 6 - 16 * a, elbow: 14 + 20 * a }));
+    return { J, hips: [0, -0.02 * a, 0] };
+  };
+  const keys = emitSpec(P, { duration: T, contact: tc, fps: 60, poseAt, marks: [tH] });
+  return { name: 'duelCorps', duration: T, contact: tc, hold: tH, upperOnly: true, foot: 'right', generated: true, family: 'contact', keys };
+}
+
 /** LE BOUCLIER — adversaire à DROITE-derrière : bras droit tendu vers lui, tronc tourné à l'opposé, léger appui ; un plateau tenu. */
 function generateShield(P, S) {
   const K = CONTACT_KINDS.protection, T = K.duration, tc = K.contact, tH = K.hold;
@@ -283,6 +301,7 @@ export function generateContact(kindName, P, { style = NEUTRAL_STYLE } = {}) {
   if (kindName.startsWith('chute')) return generateFall(kindName, P, { ...NEUTRAL_STYLE, lean: Math.max(0.95, Math.min(1.05, S.lean)) });   // le sol est où il est : la chute n'a pas de style de corps
   if (kindName === 'trebuche') return generateStumble(P, S);
   if (kindName === 'epaule') return generateShoulder(P, S);
+  if (kindName === 'duelCorps') return generateDuelCorps(P, S);
   return generateShield(P, S);
 }
 

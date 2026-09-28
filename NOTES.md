@@ -14356,6 +14356,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   tirs 20,25 → 21,0 et 20,5 → 18,25, buts 3,35 → 3,28 et 3,27 → 2,83 — un effet RÉEL : les pertes montent partout (récupérations
   89 → 105, interceptions 67 → 80, tacles 41 → 55 / 60 min) — la défense qui regarde le jeu lit mieux ; la complétion va vers le réel
   (~82). Bloc 225 ; défaut `a09da66359b49321 / 17aee553815c7dbe` ; bloc 1 : `regardJeu: null` DATÉ (dette du 334).
+- **Lot 350 — les collisions au rendu (la sim au bit : `a09da66359b49321 / 17aee553815c7dbe`).** Demande du 28/09 (« les collisions »,
+  audit contre les vidéos). Essayé d'abord dans la sim (un écart minimal directionnel) : duels d'épaule 41 → 27, fautes 12 → 4, chutes
+  13 → 4 / 60 min — le contact est le jeu, écarté. Ici, au rendu seul. Sonde (capsules sur les os, paires d'adversaires debout à
+  < 0,9 m, même match, 4 min, 389 paires) : hier bras DANS l'autre 55 (14 %), jambes 24, bustes < 30 cm 4 ; après 2, 13, 1.
+  1. `scenes/rondo-separe.js` : le corps est une ELLIPSE (0,33 m dans son axe, 0,25 de côté) — épaule contre épaule 0,5 m comme hier,
+     poitrine contre dos ~0,66 m (filmé : le défenseur dans le dos du porteur à 0,5 m, le buste DANS le dos) ; le porteur ne cède que
+     30 % de l'écart (son ballon au pied). `?separe-rond` : hier.
+  2. `scenes/rondo-corps.js` duelCorps : le joueur de champ debout, sans acte ni geste, adversaire à ≤ 0,95 m devant ou de côté, joue
+     `duelCorps` (motion-contact, haut du corps : l'épaule engagée, le bras sur lui, penché) du côté de l'adversaire, TENU (contactClock)
+     tant qu'il reste à ≤ 1,15 m — 26 duels / 4 min. Le bouclier vit aussi au porteur qui conduit à touches (ballon libre entre deux).
+  3. brasContact, une passe après toutes les poses : un bras qui entre dans le buste adverse (hanches → cou, 0,2 m) ou dans un bras
+     adverse (0,1 m) pivote à l'épaule puis au coude du plus petit angle (≤ 45°) qui le POSE sur la surface ; le buste a le dernier mot.
+     Sans elle, le bras engagé du duel entrait dans la hanche (53 traversées, 60 % bras contre bras).
+  4. Bogue d'hier : le miroir s'appelle « protection-gauche » — le bouclier à gauche ne tenait jamais son plateau (contactClock et
+     contactShield comparaient le nom exact). Réparé.
+  `?corps-hier` : ni duel de corps, ni bouclier élargi, ni bras posés, ni miroir réparé. Filmé (3 images, le défenseur dans le dos du
+  porteur à 0,63-0,80 m) : deux corps distincts, les mains sur le dos. Dettes : jambes 13 / 389 (3 % — le verrou des pieds les
+  tient, pas touchées) ; le duel reste droit — le centre de gravité bas et les bras d'équilibre sont le chantier suivant (#41).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
