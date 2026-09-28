@@ -8183,5 +8183,21 @@ if (__bloc()) {
     mA.tente >= 3 && mA.reussi >= 1 && mA.mord === mA.reussi && mA.retouche === 0 && mN.tente === 0);
 }
 
+if (__bloc()) {
+  // LE CORPS SUIT LA COURSE QUAND ELLE VA VITE (358, cfg.allureCorps — 28/09 : « il y a un joueur sous le terrain sur ta capture ? »).
+  // Le rendu d'une course de CÔTÉ à 5 m/s descend le bassin de 76 cm (le pas chassé) ; la loi 349 permettait 100° corps↔course jusqu'à
+  // 5 m/s, le jockey davantage. Après : au-delà de 2,8 m/s l'écart permis décroît (90° → 40° à 6 m/s), la course arrière reste permise
+  // jusqu'à 3,2 m/s. Le contrat : au-delà de 4 m/s, la course de côté (60-120°) quasi disparaît ; la clé nulle : celle d'hier.
+  const mesure = (over) => { let fast = 0, cote = 0;
+    for (const seed of [3, 7]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (const p of st.players) { if (p.keeper || p.speed <= 4) continue; fast++;
+          const a = Math.abs(Math.atan2(Math.sin(p.yaw - Math.atan2(p.v[1], p.v[0])), Math.cos(p.yaw - Math.atan2(p.v[1], p.v[0])))) * 180 / Math.PI;
+          if (a > 60 && a < 120) cote++; } } }
+    return cote / Math.max(1, fast); };
+  const mA = mesure({}), mN = mesure({ allureCorps: null });
+  ok(`lot 358 — LE CORPS SUIT LA COURSE : course de côté au-delà de 4 m/s ${(100 * mA).toFixed(2)} % (hier ${(100 * mN).toFixed(2)} %)`, mA <= 0.01 && mN >= 0.08);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

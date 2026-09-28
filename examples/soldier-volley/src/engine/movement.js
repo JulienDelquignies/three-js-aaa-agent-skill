@@ -1,4 +1,5 @@
 import { regardJeu, regardJeuArret } from './regard-jeu.js';
+import { capAllure } from './allure-corps.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
@@ -498,7 +499,7 @@ export function movePlayers(st, dt, cfg) {
       // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
       // 200-400°/s). Le cap de dérive passe par un SLEW borné — rate × accelF (l'explosivité
       // du joueur pivote son corps). false (et rondo/réduit) : le claquement d'hier au bit.
-      const wantY = regardJeu(st, p, cfg) ?? Math.atan2(p.v[1], p.v[0]);   // (349) le joueur sans ballon regarde le jeu (regard-jeu.js)
+      const wantY = capAllure(st, p, cfg, regardJeu(st, p, cfg) ?? Math.atan2(p.v[1], p.v[0]));   // (349) le joueur sans ballon regarde le jeu (regard-jeu.js) ; (358) capé contre la course (allure-corps.js)
       if (st.full && cfg.yawSlew !== false) {
         let dY = wantY - p.yaw;
         while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
@@ -564,7 +565,8 @@ export function movePlayers(st, dt, cfg) {
     // rescue that, because there is no interval to animate. Now the touch asks for a facing and he
     // turns ONTO it — which is also why he arrives at it a beat after the ball, like a real player.
     if (p.yawWant != null) {
-      let d = p.yawWant - p.yaw;
+      const cibleY = capAllure(st, p, cfg, p.yawWant);   // (358) le corps ne court pas de côté au-delà de 3 m/s — la cible capée ne s'efface pas (le vrai voulu reste)
+      let d = cibleY - p.yaw;
       while (d > Math.PI) d -= 2 * Math.PI;
       while (d < -Math.PI) d += 2 * Math.PI;
       // LE CORPS SE RETOURNE AVEC LE BALLON (240b, cfg.retournement && st.full — retour utilisateur : « le retournement pour la
@@ -575,7 +577,7 @@ export function movePlayers(st, dt, cfg) {
       const rate = porteur ? Math.min(rate0, (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1)) : rate0;
       // …UN SEUL BUDGET PAR IMAGE pour le porteur (240b) : les deux slews s'additionnaient (229 + 229 = 458 °/s mesurés)
       const pas = porteur ? Math.max(0, rate * dt - (p._yawUsed ?? 0)) : rate * dt; p._yawUsed = 0;
-      if (Math.abs(d) <= pas) { p.yaw = p.yawWant; p.yawWant = null; }
+      if (Math.abs(d) <= pas) { p.yaw = cibleY; if (cibleY === p.yawWant) p.yawWant = null; }
       else p.yaw += Math.sign(d) * pas;
     }
   }
