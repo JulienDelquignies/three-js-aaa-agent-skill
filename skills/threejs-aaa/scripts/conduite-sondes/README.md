@@ -326,3 +326,18 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   le sprint balle au pied jusqu'à 6,2 m/s. Accélérations 3,9 → 5,3/min. Le gardien : 84 → 75 % d'arrêts (futsal d'élite 76,5 %) ; dès 1 m
   d'avance, 41 % de conversion et 72 % d'arrêts : trop. Essayée et retirée : la feinte d'arrêt (freiner, relancer) — le noyau juge la relance
   sur la vitesse du contact (le porteur repart de 1,3 m/s) : 38 % de ballons perdus ; il faudrait au noyau le temps de réaction du défenseur.
+
+## La coupe balle au pied (2026-09-28)
+- Mesuré avant (virages-appui, 16 × 120 s) : le porteur virait en COURBE — 45°+ en 0,62 s, ≈ 18 % de ses virages par une coupe, sortie à
+  2,0 m/s — quand les joueurs sans ballon coupaient en 0,22-0,35 s (88-94 %). coupe.js les excluait : les touches du porteur sont calées sur
+  sa foulée.
+- coupe.coupePorteur (cfg.coupe.porteur) : la course voulue s'écarte de ≥ 30° de la vitesse, lancé (≥ 1,5 m/s), le ballon au pied devant ;
+  le pied du côté du virage joue le ballon dans la nouvelle direction sur SON prochain vol (un temps de geste dans la foulée, tenu devant lui),
+  l'autre pied se plante et le corps tourne sur lui (la coupe des joueurs de champ : l'avant-dernier appui freine au-delà de 60°). La touche
+  va au rendez-vous du pied de sortie (v₀ = d/t + a·t/2 — à vS + 0,8 m/s, 21 % des ballons s'échappaient). Joué sur le vol déjà en l'air,
+  30 % des touches se faisaient au rattrapage : le prochain vol seulement.
+- `touche-rendu.mjs <url>` : chaque touche de geste dans la foulée, le pied rendu contre le ballon (au plus près dans ±0,08 s). La coupe :
+  0,17 m du centre (p50, ≈ 6 cm de la surface ; p90 0,27), les autres gestes 0,13-0,16.
+- Après : ≈ 47 % des virages du porteur par une coupe (4,8 coupes/min, 49° p50, ballon gardé 68 %, perdu 6 %) ; duel 48 × 120 s : battu
+  62 → 64 %, perdu 34 → 29 % ; buts 0,81 → 0,64/min (conversion 35 → 32 %). verify-pas : le sabotage « conduite d'hier » retire aussi la coupe
+  du porteur (laissée, elle faisait tomber le sabotage à 9 % — la clause ne prouvait plus rien ; sans elle : 14 %).

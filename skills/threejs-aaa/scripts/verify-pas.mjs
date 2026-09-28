@@ -49,7 +49,9 @@ console.log(`— la conduite au pied qui l'atteint, le passement dans la foulée
 const A = jouer(true), H = jouer(false);
 const part = A.contact / Math.max(1, A.enCourse);
 ok(part >= 0.55, `en course (≥ 1,2 m/s), ${(100 * part).toFixed(0)} % des touches se jouent AU COU-DE-PIED d'un pied qui vole (${A.contact}/${A.enCourse} ; plancher 55 % — le porté exclu : hier compté, ce n'était pas une touche ; 60 % sans lui avant la conduite libre, les autres touches sont des fins de vol à portée du rendu)`);
-const W = jouer(true, GRAINES, 120, { conduite: false, recup: false }), tenu = (R) => R.tenu / Math.max(1, R.conduite), derr = (R) => R.derriere / Math.max(1, R.libre);
+// (2026-09-27) le sabotage rejoue la conduite d'HIER au servo — sans la coupe balle au pied, touche calée sur la foulée de la conduite d'aujourd'hui
+// (laissée, elle relâchait le ballon et ouvrait un geste : le sabotage tombait à 9 %, la clause ne prouvait plus rien)
+const W = jouer(true, GRAINES, 120, { conduite: false, recup: false, coupe: { ...duelCfg({}).coupe, porteur: null } }), tenu = (R) => R.tenu / Math.max(1, R.conduite), derr = (R) => R.derriere / Math.max(1, R.libre);
 ok(tenu(A) <= 0.08 && tenu(W) > 0.12, `en course le ballon n'est plus TENU au servo (une force sans pied) : ${(100 * tenu(A)).toFixed(0)} % du temps de conduite (plafond 8 % — la tenue dos au presseur, le ballon quasi mort) ; sabotage conduite + récupération d'hier (le servo) : ${(100 * tenu(W)).toFixed(0)} %, la clause mord (> 12 %, 1,5 × le plafond — posée à 15 % sur un sabotage mesuré à 16 % : sans marge, les coupes des joueurs sans ballon, 2026-09-27, l'ont passé à 14 %)`);
 ok(derr(A) <= 0.18 && derr(W) > derr(A), `le porteur ne dépasse pas son ballon : ballon libre DERRIÈRE lui ${(100 * derr(A)).toFixed(0)} % du temps (plafond 18 %) ; sabotage conduite + récupération d'hier : ${(100 * derr(W)).toFixed(0)} %, la clause mord`);
 ok(A.parVol <= 0.01 * A.synchro, `une touche par vol au plus : ${A.parVol} doublons sur ${A.synchro} touches synchronisées au pas (plafond 1 %)`);
