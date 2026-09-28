@@ -70,9 +70,9 @@ if (String(T0).startsWith('arret')) {
 // T0 = 'coupe[:angle][:k]' : la k-ième COUPE (coupe.js, l'appui de coupe) d'au moins `angle`° (60 par défaut) — filmée de 1,2 s avant ; `I = porteur` suit le coupeur
 if (String(T0).startsWith('coupe')) {
   const parts = String(T0).split(':'), amin = Number(parts[1] ?? 60), k = Number(parts[2] ?? 0);
-  const L = await pg.evaluate((amin) => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
-    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'coupe' && e.phase === 'appui' && e.ang >= amin) out.push({ t: st.t, by: e.by, ang: e.ang, v: e.v }); } }
-    return out; }, amin);
+  const L = await pg.evaluate(([amin, porteur]) => { const sc = window.__scene, st = sc.state, out = []; let ne = 0;
+    while (st.t < 90) { sc.update(1 / 60); while (ne < st.events.length) { const e = st.events[ne++]; if (e.type === 'coupe' && (porteur ? e.phase === 'decide' && e.porteur : e.phase === 'appui') && e.ang >= amin) out.push({ t: st.t, by: e.by, ang: e.ang, v: e.v }); } }
+    return out; }, [amin, !!process.env.PORTEUR]);   // (PORTEUR=1 : la coupe balle au pied — son événement de décision)
   console.log('coupes trouvées :', L.length, JSON.stringify(L.slice(0, 12)));
   if (!L[k]) { console.log('pas de coupe n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();

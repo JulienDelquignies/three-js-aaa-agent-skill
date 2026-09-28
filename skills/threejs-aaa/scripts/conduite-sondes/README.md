@@ -341,3 +341,9 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
 - Après : ≈ 47 % des virages du porteur par une coupe (4,8 coupes/min, 49° p50, ballon gardé 68 %, perdu 6 %) ; duel 48 × 120 s : battu
   62 → 64 %, perdu 34 → 29 % ; buts 0,81 → 0,64/min (conversion 35 → 32 %). verify-pas : le sabotage « conduite d'hier » retire aussi la coupe
   du porteur (laissée, elle faisait tomber le sabotage à 9 % — la clause ne prouvait plus rien ; sans elle : 14 %).
+- (2026-09-28, « rendre secs aussi les virages progressifs du porteur ») Des 188 virages du porteur restés en courbe (sonde temporaire sur la
+  course voulue) : la voulue SAUTAIT (écart p50 124°) mais la coupe ne partait pas — 97 sous un autre geste (passes, râteau, feintes : leur
+  propre rotation), 38 voulaient presque s'arrêter en tournant (voulue < 1 m/s), 19 attendaient le bon pied pendant que la locomotion tournait
+  déjà, 24 vraies courbes (écart < 30°). → le DEMI-TOUR ARRÊTÉ (voulue ≥ 0,3 m/s, sortie à son allure) et la course TENUE pendant l'attente du
+  pied (≤ 0,4 s). Essayée et retirée : la coupe du CORPS SEUL quand le ballon roule déjà vers la voulue (ballon gardé 68 → 46 %, duel battu
+  64 → 59 %). Après : ≈ 61 % des virages du porteur par une coupe (206 coupes contre 154), duel inchangé (48 × 120 s : battu 64 %, perdu 30 %).
