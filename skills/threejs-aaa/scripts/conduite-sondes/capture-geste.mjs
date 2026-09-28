@@ -27,6 +27,7 @@ let pg = await b.newPage({ viewport: { width: 960, height: 540 } });
 const ouvre = async () => { await pg.goto(`${URL}${URL.includes('?') ? '&' : '?'}seed=${SEED}&webgl&capture`, { waitUntil: 'load', timeout: 240000 });
   await pg.waitForFunction(() => !!window.__scene && !!window.__seekFrame, null, { timeout: 240000 });
   // SERIE=n (la démonstration de la série de passements, face.js) : toutes les feintes de la tenue sont des séries de n, le défenseur patient
+  if (process.env.ARMEHIER) await pg.evaluate(() => { window.__scene._mcfg.armePlante = null; });   // ARMEHIER=1 : l'armé d'hier (sans appui planté), pour l'avant / après sur la même partie
   if (process.env.SERIE) await pg.evaluate((n) => { const K = window.__scene._mcfg?.face; if (K?.feintes?.serie) { K.feintes.passement = { ...K.feintes.passement, p: 5 }; K.feintes.serie = { ...K.feintes.serie, part: 5, n }; K.patience = [30, 40]; } }, +process.env.SERIE); };
 await ouvre();
 // T0 = 'conduite' : la partie de CETTE page (la même config que le film) est d'abord parcourue sans rendu jusqu'à 90 s ; la plus longue conduite en
@@ -76,6 +77,17 @@ if (String(T0).startsWith('coupe')) {
   console.log('coupes trouvées :', L.length, JSON.stringify(L.slice(0, 12)));
   if (!L[k]) { console.log('pas de coupe n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
+}
+// T0 = 'plante[:angle][:k]' : le k-ième ARMÉ PLANTÉ (rondo-sim.armePlante — la frappe en course à ≥ angle° de la course, 45 par défaut), filmé de
+// AVANT s avant le début de l'armé (1,2 par défaut ; AVANT=0 pour un ralenti) ; `I = porteur` suit le frappeur
+if (String(T0).startsWith('plante')) {
+  const parts = String(T0).split(':'), amin = Number(parts[1] ?? 45), k = Number(parts[2] ?? 0);
+  const L = await pg.evaluate((amin) => { const sc = window.__scene, st = sc.state, out = [], vus = new Set();
+    while (st.t < 120) { sc.update(1 / 60); for (const p of st.players) { const A = p.act, P = A?.payload?._plante; if (P && !vus.has(A) && P.ang >= amin) { vus.add(A); out.push({ t: +(st.t - A.t).toFixed(3), by: p.id, geste: A.id, ang: Math.round(P.ang), tir: !!A.payload.choice?.shot }); } } }
+    return out; }, amin);
+  console.log('armés plantés trouvés :', L.length, JSON.stringify(L.slice(0, 12)));
+  if (!L[k]) { console.log("pas d'armé planté n°", k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - Number(process.env.AVANT ?? 1.2)); suitId = L[k].by; await ouvre();
 }
 // T0 = 'geste[:k]' : le k-ième GESTE de dribble dans la foulée (feinte de corps, passement, crochet, croqueta — l'événement 'windup' d'un
 // geste) — filmé de 1,5 s avant ; `I = porteur` suit alors le dribbleur

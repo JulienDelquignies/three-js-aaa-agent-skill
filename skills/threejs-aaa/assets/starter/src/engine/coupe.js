@@ -138,3 +138,24 @@ function partAppui(v) {
   for (let i = 0; i < 48; i++) { fake._pas.phi = i / 48; const e = pasEtat(fake); if (e) { n++; if (e.appui.left || e.appui.right) a++; } }
   s = n ? Math.max(0.3, a / n) : 1; PART.set(k, s); return s;
 }
+
+/** L'ARMÉ PLANTÉ (cfg.armePlante && cfg.armePied, le duel — 2026-09-28, « ajoute l'appui planté sur les passes à angle ») : une frappe armée en
+ *  course (≥ vMin) à ≥ angle° de sa course. Mesuré avant (passe-depart, 32 graines) : 63 armés dont 50 tirs, le corps 3,6 → 5,2 m/s au contact — l'ancre
+ *  suivait le regard qui tourne, le corps ORBITAIT son ballon à dist × taux de lacet (0,58 m × 4 rad/s) jusqu'au contact. Ici le regard de CONTACT est
+ *  choisi une fois : le moins de tour qui laisse la sortie dans la fenêtre du geste (tech.turn — l'intérieur du pied dirige le ballon hors du
+ *  regard, le corps s'ouvre à demi) et que le taux borné atteint, au plus près du regard où le ballon est DÉJÀ à la stance ; l'ancre se fige
+ *  dessus (plus d'orbite) et le corps y arrive FREINÉ sur l'appui, comme la pose d'une coupe (pas.freinCoupe, Dos'Santos 2021). null : l'armé d'hier. */
+export function armePlante(st, p, A, cfg) {
+  const K = cfg.armePlante, tech = A.pick?.tech, v0 = A.v0 ?? 0;
+  if (v0 < (K.vMin ?? 1.5) || !A.stance || A.dos || !tech || tech.surface === 'heel' || (tech.turn ?? 35) > (K.turnMax ?? 60)) return null;
+  if (A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted') return null;
+  const vYaw = A.vYaw ?? p.yaw, ang = Math.abs(wrap(A.outYaw - vYaw)) * 180 / Math.PI;
+  if (ang < (K.angle ?? 45)) return null;
+  const rT = (cfg.retournement?.rate ?? 4) * (p.skill?.accelF ?? 1) * p.act.anticipation, w = (tech.turn ?? 35) * Math.PI / 180 * (K.ouvre ?? 1);
+  const bs = A.stance.bearing * (A.pick.foot === 'left' ? 1 : -1) * Math.PI / 180, dOut = wrap(A.outYaw - p.yaw);
+  const dStar = wrap(Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]) - bs - p.yaw);   // le regard où le ballon est déjà à la stance
+  const lo = Math.max(-rT, dOut - w), hi = Math.min(rT, dOut + w);
+  const d = lo <= hi ? Math.max(lo, Math.min(hi, dStar)) : Math.max(-rT, Math.min(rT, dOut));   // fenêtre hors de portée du taux : le tour d'hier
+  const vP = v0 * freinCoupe(ang);
+  return { yaw: p.yaw + d, w1: [vP * Math.cos(vYaw) - st.ball.v[0], vP * Math.sin(vYaw) - st.ball.v[2]], ang, vP };
+}

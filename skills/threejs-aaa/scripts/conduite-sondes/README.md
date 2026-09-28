@@ -353,3 +353,15 @@ Page servie en local : `npx vite build` puis `python3 -m http.server PORT` dans 
   oscille de ±7° par foulée (pYaw) — pour une coupe en course (58°), la durée 10→90 % s'allonge (0,43 s rendu contre 0,23 s sim) alors que la
   racine rendue EST le lacet sim (Rondo : model.rotation.y = lacet sim). `passe-chrono` (scratch) : sur une passe rapide à ≥ 45° de la course,
   le lacet tourne de 46° pendant l'armé (0,23 s) mais le corps file tout droit à 3,9 → 5,7 m/s — le corps DE BIAIS, sans appui planté.
+- (2026-09-28, « ajoute l'appui planté sur les passes à angle ») `arme-plante.mjs [graines] [cle=JSON]` (sim, sans navigateur) et
+  `appui-rendu.mjs <url> [s] [graines]` (rendu, BASE=1 : l'armé d'hier dans la page) : les armés de frappe en course (≥ 1,5 m/s) à ≥ 45° de la
+  course. Mesuré avant : 63 armés sur 32 graines, dont 50 TIRS (34 dessinés en passe rapide) — l'ancre de l'armé suivait le regard qui tourne,
+  le corps ORBITAIT son ballon (0,58 m × 4 rad/s) : 3,8 → 5,3 m/s au contact (46 sur 54 accéléraient), et au rendu le pied d'appui GLISSAIT de
+  0,41 m sur les 0,1 s d'avant le contact (0 sur 6 plantés). → coupe.armePlante (cfg.armePlante, le duel) : le regard de contact choisi une fois —
+  le moins de tour qui laisse la sortie dans la fenêtre du geste (tech.turn) et que le taux borné atteint —, l'ancre figée dessus, l'arrivée
+  FREINÉE (approach.glideRelatif, w1 : pas.freinCoupe de l'angle, Dos'Santos 2021). Après : contact 3,1 m/s (0,90 du départ ; 6 sur 66
+  accélèrent), tour du corps 46 → 28°, le regard au contact à 35° de la sortie (le bord de la fenêtre : l'intérieur du pied dirige le ballon) ;
+  au rendu le pied d'appui glisse de 0,01 m à la cheville (0,08 aux orteils — il pivote dessus). Tirs (192 graines × 120 s) : 240 → 244 buts,
+  conversion 34 → 32 % (dans le bruit) ; duel (192 graines) : battu 62,7 → 61,8 %, perdu 31,8 → 32,5 %. Limite : l'armé (0,22 s) reste trop
+  court pour le pas de côté vers l'appui — l'accélération au plus fort 37 m/s² p50 (hier 45), au-delà des 15-20 m/s² d'une coupe réelle.
+  `capture-geste` : T0 = 'plante[:angle][:k]' filme le k-ième armé planté ; ARMEHIER=1 rejoue l'armé d'hier (l'avant / après sur la même partie).
