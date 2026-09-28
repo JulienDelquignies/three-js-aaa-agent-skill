@@ -8158,7 +8158,7 @@ if (__bloc()) {
           const g = Math.abs(Math.atan2(Math.sin(Math.atan2(b[2] - p.p[2], b[0] - p.p[0]) - p.yaw), Math.cos(Math.atan2(b[2] - p.p[2], b[0] - p.p[0]) - p.yaw))) * 180 / Math.PI;
           a.push(g); n++; if (g > 120) dos++; } } }
     a.sort((x, y) => x - y); return { p50: a[Math.floor(a.length / 2)], dos: dos / Math.max(1, n) }; };
-  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 } }, mA = mesure(matchCfg(C)), mN = mesure(matchCfg({ ...C, regardJeu: null }));
+  const C = { chrono: { periodes: 2, duree: 2700, pause: 10 }, corpsSobre: null }, mA = mesure(matchCfg(C)), mN = mesure(matchCfg({ ...C, regardJeu: null }));   // (359) la loi se prouve seule : corpsSobre (la tête regarde loin, le corps seulement près) la tempère exprès
   ok(`lot 349 — LE JOUEUR SANS BALLON REGARDE LE JEU : dos au ballon ${(100 * mA.dos).toFixed(1)} % (hier ${(100 * mN.dos).toFixed(1)} %), regard→ballon p50 ${mA.p50.toFixed(0)}° (hier ${mN.p50.toFixed(0)}°)`,
     mA.dos <= 0.03 && mN.dos >= 0.12 && mA.p50 >= 5 && mA.p50 <= 35);
 }
@@ -8197,6 +8197,30 @@ if (__bloc()) {
     return cote / Math.max(1, fast); };
   const mA = mesure({}), mN = mesure({ allureCorps: null });
   ok(`lot 358 — LE CORPS SUIT LA COURSE : course de côté au-delà de 4 m/s ${(100 * mA).toFixed(2)} % (hier ${(100 * mN).toFixed(2)} %)`, mA <= 0.01 && mN >= 0.08);
+}
+
+if (__bloc()) {
+  // LA TECHNIQUE RÉALISTE (359 — 28/09, après un match regardé : « contrôle, conduite de balle, passe, ça va pas », « des joueurs courir dans
+  // une direction avec le corps orienté vers une autre », « des passes dans des angles pas possibles », « le gardien dégage dans la tête des
+  // attaquants et ça fait but sans toucher le ballon »). Registre complet : docs/Regles_Irrealistes.md. Le contrat : le corps suit sa course
+  // (corpsSobre), la passe part dans le corps (passeFaisable), aucune reprise au but sur un ballon frappé il y a < 0,3 s (reprisePhysique) —
+  // les clés nulles : le 358 d'hier.
+  const NUL = { passeFaisable: null, corpsSobre: null, priseSuivie: null, reprisePhysique: null, relanceObstacle: null, buteur: null };
+  const mesure = (over) => { let n23 = 0, t23 = 0, np = 0, dos = 0, inst = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0, lastK = -9;
+      for (let i = 0; i < 600 * 60; i++) { const yaw0 = st.players.map((q) => q.yaw); matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if ((e.type === 'tête' || e.type === 'volée') && e.mode === 'but' && e.t - lastK < 0.3) inst++;
+          if (['pass', 'shot', 'clearance'].includes(e.type)) lastK = e.t;
+          if (e.type === 'pass' && e.by != null && e.by >= 0 && !st.players[e.by].keeper && e.move !== 'talonnade' && e.tech !== 'talonnade') { const bv = st.ball.v, sp = Math.hypot(bv[0], bv[2]); if (sp < 0.5) continue; np++;
+            const a = Math.atan2(bv[2], bv[0]) - yaw0[e.by]; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) > 110 * Math.PI / 180) dos++; } }
+        if (st.restart || i % 3) continue;
+        for (const p of st.players) { if (p.keeper || (p.down ?? 0) > 0) continue; const v = Math.hypot(p.v[0], p.v[1]); if (v < 2 || v >= 3) continue; n23++;
+          const a = p.yaw - Math.atan2(p.v[1], p.v[0]); if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) > Math.PI / 3) t23++; } } }
+    return { trav: t23 / Math.max(1, n23), dos: dos / Math.max(1, np), inst }; };
+  const mA = mesure({}), mN = mesure(NUL);
+  ok(`lot 359 — LA TECHNIQUE RÉALISTE : corps à > 60° de sa course à 2-3 m/s ${(100 * mA.trav).toFixed(1)} % (hier ${(100 * mN.trav).toFixed(1)} %), passes à > 110° du corps ${(100 * mA.dos).toFixed(1)} % (hier ${(100 * mN.dos).toFixed(1)} %), reprises au but < 0,3 s après une frappe ${mA.inst} (hier ${mN.inst})`,
+    mA.trav <= 0.10 && mN.trav >= 0.2 && mA.dos <= 0.03 && mA.dos < mN.dos && mA.inst === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

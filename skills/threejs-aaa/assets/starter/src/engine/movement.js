@@ -1,5 +1,5 @@
 import { regardJeu, regardJeuArret } from './regard-jeu.js';
-import { capAllure } from './allure-corps.js';
+import { capAllure, vitesseCorps } from './allure-corps.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
@@ -441,6 +441,7 @@ export function movePlayers(st, dt, cfg) {
       p.v[0] += clamp(dvx, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       p.v[1] += clamp(dvz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
     }
+    vitesseCorps(st, p, cfg);   // (359) corpsSobre.vCorps : pas de course rapide de côté ni de dos (allure-corps.js)
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     // LE TABLIER (cfg.apron, 0 par défaut — le rondo garde ses murs au bit près) : en match, un
     // corps peut ENJAMBER la ligne — le preneur d'une remise va chercher un ballon sorti, le

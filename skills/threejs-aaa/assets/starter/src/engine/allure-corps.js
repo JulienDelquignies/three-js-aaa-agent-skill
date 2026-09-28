@@ -39,3 +39,17 @@ export function capAllure(st, p, cfg, want) {
   if (Math.abs(d) >= (K.recul ?? 135) * D && p.speed <= (K.vRecul ?? 3.2) && !(CS && p._travT0 != null && st.t - p._travT0 > (CS.tRecul ?? Infinity))) return want;   // il recule face au jeu
   return h + Math.sign(d) * lim;
 }
+
+/** (359, corpsSobre.vCorps) ON NE COURT PAS VITE DE CÔTÉ NI DE DOS : la vitesse permise selon l'écart corps↔course (table [[°, m/s], …],
+ *  interpolée ; libre sous le premier point). Filmé (contrôle en course, 28/09) : le ballon parti derrière lui, le porteur courait à
+ *  2,4 m/s DE DOS (152° → 90° en 0,6 s) le temps que son corps se retourne — le vrai joueur pivote d'abord, puis accélère. Mutation de
+ *  p.v bornée ; rien sans la sous-clé, le gardien exempté. */
+export function vitesseCorps(st, p, cfg) {
+  const CS = st.full && cfg.corpsSobre, porteur = !!CS && (p.job === 'carry' || st.possession?.carrier === p.id);   // le porteur qui va chercher son ballon se RETOURNE, il ne recule pas
+  const T = CS && (porteur ? CS.vCorpsPorteur ?? CS.vCorps : CS.vCorps); if (!T || p.keeper) return;
+  const sp = Math.hypot(p.v[0], p.v[1]); if (sp < 0.5) return;
+  const a = Math.abs(wrap(Math.atan2(p.v[1], p.v[0]) - p.yaw)) / D; if (a <= T[0][0]) return;
+  let vm = T[T.length - 1][1];
+  for (let i = 1; i < T.length; i++) if (a <= T[i][0]) { vm = T[i - 1][1] + (T[i][1] - T[i - 1][1]) * (a - T[i - 1][0]) / (T[i][0] - T[i - 1][0]); break; }
+  if (sp > vm) { p.v[0] *= vm / sp; p.v[1] *= vm / sp; }
+}
