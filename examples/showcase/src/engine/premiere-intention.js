@@ -1,5 +1,5 @@
 import { rendezVousDe } from './rendezvous.js'; import { gesteUneTouche } from './une-touche-geste.js';   // (348) le geste de la une-touche selon l'orientation
-import { tirage } from './rng.js'; import { sigmaLayoffF, scoreLayoffDe, impossibleDe } from './layoff.js';
+import { tirage } from './rng.js'; import { sigmaLayoffF, scoreLayoffDe, impossibleDe } from './layoff.js'; import { uneToucheDansCorps } from './passe-faisable.js';
 // premiere-intention.js — JOUER LE BALLON SANS LE POSSÉDER : la famille de la première
 // intention. La remise de tête et la volée vivent dans tete.js (le répertoire aérien) ; ICI
 // vit la passe en UNE TOUCHE au sol (lot 44) — extraite de rondo-sim au bit près quand la
@@ -89,6 +89,7 @@ export function uneTouche(st, p, cfg) {
     const candsL = cands0
       .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], blockers).margin ?? 0, ...(LO ? { dev: Math.acos(Math.max(-1, Math.min(1, ((x.c[0] - p.p[0]) * st.ball.v[0] + (x.c[1] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0)))), foe: Math.min(...blockers.map((b) => hyp(b[0] - x.c[0], b[2] - x.c[1])), 99), face: (x.c[0] - p.p[0]) * Math.cos(p.yaw) + (x.c[1] - p.p[2]) * Math.sin(p.yaw) > 0 } : {}) }))
       .filter((x) => !LO || !impossibleDe(x.dev, pressOk || force, LO))
+      .filter((x) => uneToucheDansCorps(st, p, x.c[0], x.c[1], cfg))   // (359) la une-touche ne sort pas dans le dos (passe-faisable.js)
       .filter((x) => x.marge >= (V ? (V.couloir ?? 0.9) : (UT.couloir ?? 0.5)) * ((x.m._troisT ?? -1) > st.t ? (V ? (V.chas ?? 0.22) : (UT.chas ?? 1)) : 1))   // …ET LA UNE-TOUCHE ORDINAIRE VEUT UN COULOIR (216 : à 0,5 m la remise rapide se faisait intercepter — 73 % ; à 0,9 : 77 %, les passes de jeu retrouvent 78 %) ; le relais chaud garde ses 0,2 m absolus (0,9 × 0,22)   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.;
     if (force && cands0.length && !candsL.length) refus('ar-couloir');
     const cands = candsL

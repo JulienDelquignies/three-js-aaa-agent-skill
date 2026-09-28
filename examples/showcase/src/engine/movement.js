@@ -576,7 +576,7 @@ export function movePlayers(st, dt, cfg) {
       const porteur = st.full && cfg.retournement && enPorte(st, p, cfg);
       const rate = porteur ? Math.min(rate0, (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1)) : rate0;
       // …UN SEUL BUDGET PAR IMAGE pour le porteur (240b) : les deux slews s'additionnaient (229 + 229 = 458 °/s mesurés)
-      const pas = porteur ? Math.max(0, rate * dt - (p._yawUsed ?? 0)) : rate * dt; p._yawUsed = 0;
+      const pas = porteur || (st.full && cfg.corpsSobre?.budget) ? Math.max(0, rate * dt - (p._yawUsed ?? 0)) : rate * dt; p._yawUsed = 0;   // (359) corpsSobre.budget : un seul budget de rotation par image pour tous
       if (Math.abs(d) <= pas) { p.yaw = cibleY; if (cibleY === p.yawWant) p.yawWant = null; }
       else p.yaw += Math.sign(d) * pas;
     }

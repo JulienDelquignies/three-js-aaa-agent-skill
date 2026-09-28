@@ -13,7 +13,7 @@ import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js'; import { corpsOuvert } from './passe-ouverte.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
-import { axe, tac } from './tactics.js';
+import { axe, tac } from './tactics.js'; import { horsCorps } from './passe-faisable.js';
 import { role } from './roles.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -202,6 +202,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
       } else {   // PRESSÉ et rien ne tient : le geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse : la passe posée, 0,38 s, 87° de tour) — le plan d'hier élisait la rapide (0,22 s, 48°) et frappait à 70-140° du regard (12 sur 73 mesurés) ; le pivot (0,52 s) coûtait −20 % de passes sur 8 graines (l'ancre et l'urgence) ; « le talon si la sortie est derrière » claquait le corps vers la cible (vu en page)
         const cap = (cd) => Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic;
         const prompts = cands.filter((cd) => cd.data?.surface !== 'heel' && cd.antic <= (KO.anticPresse ?? 0.4)); if (prompts.length) cands = [prompts.reduce((b, cd) => (cap(cd) > cap(b) ? cd : b), prompts[0])];
+        if (horsCorps(st, cfg, dY, cap(cands[0]))) return deny(st, 'hors-corps');   // (359) le geste le plus tournant ne couvre pas l'écart : cette passe n'existe pas (passe-faisable.js)
       }
     }
     // (314, cfg.porteeGeste) LE GESTE A SA PORTÉE : la table choisissait la surface sur la géométrie seule — 42 des 88 passes au gardien

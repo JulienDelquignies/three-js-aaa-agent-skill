@@ -7,7 +7,7 @@ import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
 import { xtDe, termeXt } from './xt.js'; import { engageDe, ecartDe, malusDe } from './engage.js';
-import { pSuccDe, termeDe } from './selection.js';
+import { pSuccDe, termeDe } from './selection.js'; import { coutAngle } from './passe-faisable.js';
 import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
 import { dansCone } from './dribble.js';
@@ -494,6 +494,7 @@ export function choosePass(st, cfg = RONDO) {
       // …ET LE BON DÉCIDEUR REFUSE LA LIGNE FERMÉE (243) : sous seuil m de marge, malus × (1 − marge/seuil) × decF (la note décisions : 1 à 50, le bon refuse plus, le mauvais tente)
       - (st.full && cfg.ligneFermee && !bascule && lane.margin < (cfg.ligneFermee.seuil ?? 1) ? (cfg.ligneFermee.malus ?? 5) * (1 - lane.margin / (cfg.ligneFermee.seuil ?? 1)) * (c.skill?.decF ?? 1) : 0)
       - malusMarque                                         // LE MARQUÉ NE SE JOUE QU'EN REMISE (240a)
+      - coutAngle(st, c, lead, cfg)                          // (359) LA PASSE QUE LE CORPS PEUT DONNER : l'écart au regard et à la course coûte (passe-faisable.js)
       - (_eng?.actif ? malusDe(cfg.toucheEngage, true, ecartDe(lead[0] - origin[0], lead[2] - origin[2], c.yaw)) : 0)   /* (286) pendant l'engagement, une passe à plus de angle° du regard coûte malus */
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       // L'HOMME LIBRE (233, cfg.hommeLibre && st.full — Xavi/Lillo : trouver l'homme libre, pas le marqué. Mesuré avant :

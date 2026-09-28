@@ -21,13 +21,21 @@ export function ecartPermis(v, K) {
 
 /** Le cap voulu, capé contre la course du joueur. Renvoie `want` inchangé si rien à caper. Pure. */
 export function capAllure(st, p, cfg, want) {
-  const K = cfg.allureCorps;
-  if (!K || !st.full || p.keeper || want == null || !(p.speed > 0.25)) return want;
-  const lim = ecartPermis(p.speed, K);
-  if (lim == null) return want;
+  const K0 = cfg.allureCorps;
+  if (!K0 || !st.full || p.keeper || want == null || !(p.speed > 0.25)) return want;
+  // (359, cfg.corpsSobre) la table descend à 1,5 m/s, la course arrière s'arrête à vRecul, et le travers ne DURE pas : après tRecul s
+  // de corps à > 60° de la course, le cap se referme à 30° (mesuré diag-D : épisodes de 5-13 s au trot de repli). Absente : l'hier au bit.
+  const CS = cfg.corpsSobre, K = CS ? { ...K0, pts: CS.pts ?? K0.pts, vRecul: CS.vRecul ?? K0.vRecul } : K0;
+  let lim = ecartPermis(p.speed, K);
   const h = Math.atan2(p.v[1], p.v[0]);
   const d = wrap(want - h);
+  if (CS && CS.tRecul != null) {
+    const trav = p.speed > 1.5 && Math.abs(wrap(p.yaw - h)) > 60 * D;
+    if (!trav) p._travT0 = null; else if (p._travT0 == null) p._travT0 = st.t;
+    if (p._travT0 != null && st.t - p._travT0 > CS.tRecul) lim = Math.min(lim ?? Math.PI, 30 * D);
+  }
+  if (lim == null) return want;
   if (Math.abs(d) <= lim) return want;
-  if (Math.abs(d) >= (K.recul ?? 135) * D && p.speed <= (K.vRecul ?? 3.2)) return want;   // il recule face au jeu
+  if (Math.abs(d) >= (K.recul ?? 135) * D && p.speed <= (K.vRecul ?? 3.2) && !(CS && p._travT0 != null && st.t - p._travT0 > (CS.tRecul ?? Infinity))) return want;   // il recule face au jeu
   return h + Math.sign(d) * lim;
 }
