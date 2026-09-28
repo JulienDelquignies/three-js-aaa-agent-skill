@@ -14497,6 +14497,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   foulée ne descend jamais de plus de 15 cm, 0-110°, ≤ 5,5 m/s » et son sabotage), verify-gait 24/0, verify-locomotion 6/0,
   verify-motion 403/10 (les 10 d'hier). Rendu seul : l'empreinte ne bouge pas (`31431569f7d6ae47 / f7e6ff713dff206e`). Filmé : un chassé
   à 3,2 m/s latéraux pendant l'appui, debout.
+- **Lot 359 — la technique réaliste (`passeFaisable`, `corpsSobre`, `priseSuivie`, `reprisePhysique`, `relanceObstacle`, `buteur`).**
+  Retour utilisateur du 28/09 après un match regardé : « contrôle, conduite de balle, passe, ça va pas » ; des corps de travers ; des
+  contrôles où le joueur part sans son ballon ; des passes dans des angles impossibles ; des buts du gardien « dans la tête » d'un
+  attaquant qui ne touche pas le ballon. Quatre enquêtes (sondes sim, 4 × 900 s à 8 × 2 700 s) ont trouvé les RÈGLES fautives — le
+  registre complet, corrigé et restant : `docs/Regles_Irrealistes.md`. Six lois, chacune derrière sa clé :
+  - `passeFaisable` (passe-faisable.js) : coût d'angle au choix (regard > 45°, course lancée > 90°, ÷ technique) ; la porte pressée
+    refuse la passe que le geste le plus tournant ne couvre pas à 35° près ; la une-touche ne sort pas à > 110° du regard ; le pivot
+    des passes en l'air borné à 6 rad/s. Frappes physiquement impossibles 9 % → 3 % (diag-C, 4 × 900 s).
+  - `corpsSobre` (regard-jeu, allure-corps, movement) : la tête regarde loin, le corps seulement près (part éteinte de 12 à 25 m) ;
+    course arrière ≤ 2 m/s et jamais pour l'équipe qui a le ballon ; cap corps↔course dès 1,5 m/s ; le travers ne dure pas (1,2 s) ;
+    un budget de rotation par image ; on ne court pas vite de côté ni de dos (vCorps), le porteur se retourne avant d'accélérer
+    (vCorpsPorteur). Corps à > 60° de la course à 2-3 m/s 31,7 % → 5,6 %, 3-4 m/s 17,3 % → 0,2 %, épisodes > 2 s 425 → 4.
+  - `priseSuivie` (prise-suivie.js, match-sim, dribble, rondo-sim, touche-orientee) : le porteur contourne son ballon libre hors de sa
+    poussée (même sous 0,85 m) ; le ballon mort au pied se rejoue (ni foulée minimale, ni fuite relative) ; la touche orientée n'est
+    plus reprise par le ramassage (0,6 s). Départs sans le ballon après contrôle 19 / 13 → 1 / 1 (2 × 900 s) ; touches orientées
+    reprises 39/61 → 0 ; ballon derrière le porteur en conduite 25-29 % → 11-14 %.
+  - `reprisePhysique` (reprise-physique.js, tete.js, ball-body `frappeAt`) : un ballon frappé il y a < 0,3 s qui arrive à > 12 m/s
+    sur un joueur est un contact SUBI (rebond à 30 %, ±60°), pas un tir ; volée au but < 100° du corps, tête < 120°. Essayés et
+    écartés : le seuil de vitesse seul (0 tête ni volée au but — un centre de 18 m/s attaqué est une vraie tête) et la portée de
+    tête (la sim déclenche à l'entrée des 1,0 m : toutes les têtes, bonnes ou absurdes, sont à 0,9-1,0 m ; c'est le TEMPS qui les
+    sépare — 0,02-0,21 s pour les absurdes, ≥ 1,3 s pour les autres). Reprises instantanées au but 4 (4 buts) → 0 (8 × 30 min).
+  - `relanceObstacle` (keeper.js) : aucun adversaire à < 1,2 m des 8 premiers mètres de la relance — sinon une autre cible, l'autre
+    flanc, l'axe. `buteur` (referee.js) : le but nomme le dernier toucher (Loi 17), contre son camp compris.
+  Banc 16 matchs (359 / toutes clés nulles = le 358 au chiffre près) : pertes 129,25 / 138,25 et 124,25 / 141,25, passes 537,5 /
+  566,5 et 536,5 / 595,75, complétion 88,9 / 89,75 et 89,3 / 89,9, une-touche 44,75 / 67 et 42,5 / 67, tirs 26,75 / 20,5 et 26 / 19,75,
+  centres 15,9 / 7,2 et 15,1 / 8,6, buts 3,45 / 3,55 et 2,60 / 2,83 (bruit). Jumeau (six clés nulles) = le 358 au bit
+  (`31431569f7d6ae47 / f7e6ff713dff206e`) ; défaut `4e503b6c2eaaeaae / 0604f0ac7a87e497`. Bloc 228 ; les contrats des 349 et 358 se
+  prouvent seuls (corpsSobre coupé). Filmé : contrôle en course, conduite, pressing — corps dans l'axe de la course.
+  Dettes nommées (registre) : déviations d'urgence à 145° (dégagements exemptés), le gardien figé pendant sa relance, la touche orientée
+  en 12 directions, les touches trop fréquentes au pas, la dispersion de passe sans terme d'angle.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
