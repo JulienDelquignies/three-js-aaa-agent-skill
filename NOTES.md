@@ -14374,6 +14374,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   `?corps-hier` : ni duel de corps, ni bouclier élargi, ni bras posés, ni miroir réparé. Filmé (3 images, le défenseur dans le dos du
   porteur à 0,63-0,80 m) : deux corps distincts, les mains sur le dos. Dettes : jambes 13 / 389 (3 % — le verrou des pieds les
   tient, pas touchées) ; le duel reste droit — le centre de gravité bas et les bras d'équilibre sont le chantier suivant (#41).
+- **Lot 351 — le corps bas du duel (rendu seul, la sim au bit ; réf. Taarabt).** Sonde (porteur ↔ adversaire le plus proche à < 1,8 m,
+  143 images, même match) : porteur bassin −5 cm p50, buste 4°, bras 27-37° ; défenseur −9 cm, 7°, 24-39°. Deux constats : (1) le porteur
+  au contact est DANS un geste de dribble 131 images sur 143 — sa posture est celle des clips ; (2) le duel de corps du 350 se jouait aussi
+  sur le PORTEUR et coupait sa posture (rondo-porteur s'efface sous tout geste : poids 0,12) — réparé, le porteur garde sa posture et le
+  bouclier. `duelPose` (`scenes/rondo-corps.js`), couche continue τ 0,2 s, pleine à 1 m : bassin porteur −4…−8 cm (agilité), défenseur du
+  porteur −5…−9 cm (tacle, agilité), autres au contact −3 ; buste +8…+14° / +12…+18° / +6 ; les bras s'ouvrent pour l'équilibre (14-24°,
+  agilité), celui du côté de l'adversaire vers lui (+14…+30°, force). Sous un geste de dribble ou de contrôle (familles skill, control) :
+  buste et bras seulement — le bassin et les pieds du clip ne bougent pas (ils visent le ballon) ; rien sous une frappe, une passe.
+  Après (même match) : porteur hors geste −10,8 cm, 15,5°, bras 55-62° (hier −5, 11°, 33-45°) ; défenseur à 1,0-1,3 m 16-24° de buste
+  (lu image par image) ; sur toutes les images (gestes compris) porteur 5,5°, défenseur 10,5° — la frappe et la passe gardent leur clip.
+  C4 tenu : pied dans le ballon 131 → 133 images / 3 590 de conduite (même tranche de match, 263 s). Filmé à la même image (t 101) avec et
+  sans (`?duel-droit` : hier) : le défenseur plus bas et penché, le ballon entre eux, têtes à 0,36 m. Dettes : les clips de dribble
+  eux-mêmes restent hauts (la garde basse du geste se fait dans le générateur) ; le jockey sur 28 % des images de pression seulement.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

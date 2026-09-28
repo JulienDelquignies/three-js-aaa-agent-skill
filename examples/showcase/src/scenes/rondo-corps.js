@@ -13,7 +13,8 @@ export function duelCorps(scene, pl) {
   if (scene._corpsHier) return false;
   const st = scene.state, s = pl.sim, spec = pl.gestureLayer.spec, joue = /^duelCorps/.test(spec?.name ?? '') && pl.gestureLayer.active;   // le miroir s'appelle « duelCorps-gauche » (animkit.mirrorMove)
   let want = 0, dMin = 99;
-  if (!s.keeper && !s.act && (s.down ?? 0) <= 0 && !s.expulse && !s._sub && !st.restart) {
+  const porteur = !scene._duelDroit && st.possession?.carrier === s.id && st.phase === 'carry';   // (351) le porteur a sa posture (rondo-porteur) et le bouclier : le duel de corps la COUPAIT (un geste possède le corps) — buste 4° au lieu de 16
+  if (!porteur && !s.keeper && !s.act && (s.down ?? 0) <= 0 && !s.expulse && !s._sub && !st.restart) {
     const fx = Math.cos(s.yaw), fz = Math.sin(s.yaw);
     for (const q of st.players) {
       if (q.team === s.team || q.keeper || (q.down ?? 0) > 0 || q.expulse || q._sub) continue;
@@ -76,5 +77,56 @@ export function brasContact(scene) {
       }
       if (pose(X[c + 'ForeArm'], el, ha, _p2, _q2, soi)) X[c + 'Hand'].getWorldPosition(ha);   // le buste a le dernier mot (écarté d'un bras, l'avant-bras y retombait)
     }
+  }
+}
+
+// LE CORPS BAS DU DUEL (351, réf. Taarabt — « l'animation de près »). Mesuré (143 images porteur ↔ adversaire le plus proche à < 1,8 m) :
+// le porteur à −5 cm de bassin p50, buste 4°, bras 27-37° ; le défenseur −9 cm, 7°, 24-39° ; le jockey sur 28 % des images seulement.
+// Le 1 contre 1 réel : 10-15 cm plus bas, 15-20° de buste, bras d'équilibre à 45-60°. Couche CONTINUE (τ 0,2 s, jamais d'arête), sur tout
+// joueur de champ debout à < 1,8 m d'un adversaire debout (pleine à 1 m), après la couche de geste et la posture du porteur, avant le
+// verrou des pieds (les genoux plient d'eux-mêmes sous le bassin descendu) ; effacée sous un geste du corps entier (un geste du haut —
+// duelCorps, protection — la garde). Les attributs la règlent :
+//   agilité (appuiF)  → la profondeur : l'agile s'assoit (bassin), le raide reste haut ;
+//   le rôle           → le porteur −4…−8 cm, +8…+14° ; le défenseur du porteur −5…−9 cm (tacle), +12…+18° ; les autres au contact −3 cm, +6° ;
+//   la force (chargeF) → le bras du côté de l'adversaire s'ouvre vers lui (il le tient) ; l'autre s'ouvre pour l'équilibre.
+// ?duel-droit : hier.
+const _up = new THREE.Vector3(0, 1, 0), _fw = new THREE.Vector3(), _lat = new THREE.Vector3(), _loc = new THREE.Vector3(), _qa = new THREE.Quaternion();
+const D2R = Math.PI / 180, clamp01 = (x) => Math.max(0, Math.min(1, x));
+const OS_BAS = ['Spine', 'Spine1', 'LeftArm', 'RightArm'];
+const osBas = (pl) => { if (pl._osBas !== undefined) return pl._osBas; const B = {}; for (const [nm, b] of pl.gestureLayer.bones) { const k = nm.replace(/^mixamorig\d*:?/, '').replace(/^\d+/, ''); if (OS_BAS.includes(k)) B[k] = b; } return (pl._osBas = OS_BAS.every((k) => B[k]) ? B : null); };
+function tourne(o, axe, ang) {
+  if (Math.abs(ang) < 1e-4) return;
+  _qa.setFromAxisAngle(axe, ang); o.getWorldQuaternion(_qw); o.parent.getWorldQuaternion(_qp); _qw.premultiply(_qa); o.quaternion.copy(_qp.invert().multiply(_qw)); o.updateMatrixWorld(true);
+}
+export function duelPose(scene, pl, dt) {
+  if (scene._duelDroit) return;
+  const st = scene.state, s = pl.sim, car = st.possession?.carrier ?? -1;
+  let best = null;
+  if (!s.keeper && (s.down ?? 0) <= 0 && !s.expulse && !s._sub && !st.restart) for (const q of st.players) {
+    if (q.team === s.team || q.keeper || (q.down ?? 0) > 0 || q.expulse || q._sub) continue;
+    const d = Math.hypot(q.p[0] - s.p[0], q.p[2] - s.p[2]); if (d < 1.8 && (!best || d < best.d)) best = { d, q };
+  }
+  const role = !best ? 0 : s.id === car ? 1 : best.q.id === car ? 2 : 3;
+  const sk = s.skill ?? {}, agil = clamp01((1.15 - (sk.appuiF ?? 1)) / 0.3), tac = clamp01(((sk.tacleGardeF ?? 1) - 0.85) / 0.3), frc = clamp01(((sk.chargeF ?? 1) - 0.85) / 0.3);
+  const drop = role === 1 ? 0.04 + 0.04 * agil : role === 2 ? 0.05 + 0.02 * tac + 0.02 * agil : role === 3 ? 0.03 : 0;
+  const lean = role === 1 ? 8 + 6 * agil : role === 2 ? 12 + 3 * tac + 3 * agil : role === 3 ? 6 : 0;
+  let cote = 0;
+  if (best) { pl.model.updateMatrixWorld(true); _loc.set(best.q.p[0] + pl.model.position.x - s.p[0], pl.model.position.y, best.q.p[2] + pl.model.position.z - s.p[2]); pl.model.worldToLocal(_loc); cote = -_loc.x > 0 ? 1 : -1; }
+  const w = best ? clamp01((1.8 - best.d) / 0.8) : 0, k = 1 - Math.exp(-Math.max(0, dt) / 0.2);
+  const C = (pl._duelBas ??= { w: 0, drop: 0, lean: 0, cote: 0, g: 1 });
+  C.w += (w - C.w) * k; C.drop += (drop - C.drop) * k; C.lean += (lean - C.lean) * k; C.cote += (cote - C.cote) * k;
+  // le porteur au contact est presque toujours DANS un geste de dribble (131 images sur 143, mesuré) : un geste du dribble ou du contrôle
+  // (familles skill, control) garde ses jambes et son bassin (ses pieds visent le ballon), le buste et les bras prennent la garde basse
+  const gl = pl.gestureLayer, haut = gl?.active && /^(duelCorps|protection)/.test(gl.spec?.name ?? ''), fam = gl?.active && !haut ? gl.spec?.family : null;
+  const kg = 1 - Math.exp(-Math.max(0, dt) / 0.12), buste = !gl?.active || haut || fam === 'skill' || fam === 'control';
+  C.g += ((gl?.active && !haut ? 0 : 1) - C.g) * kg; C.gb = (C.gb ?? 1) + ((buste ? 1 : 0) - (C.gb ?? 1)) * kg;
+  const a = C.w * C.gb; if (a < 1e-3) return;
+  const B = osBas(pl); if (!B) return;
+  if (pl.hipsNudge && C.w * C.g > 1e-3) pl.hipsNudge([0, -C.drop * C.w * C.g, 0]);
+  pl.model.getWorldDirection(_fw); _fw.y = 0; _fw.normalize(); _fw.negate(); _lat.crossVectors(_up, _fw).normalize();
+  tourne(B.Spine, _lat, C.lean * a * 0.6 * D2R); tourne(B.Spine1, _lat, C.lean * a * 0.4 * D2R);
+  if (!haut) {                                                                      // (en geste de dribble : par-dessus le geste) les bras : l'équilibre des deux côtés, celui de l'adversaire vers lui
+    const eq = 14 + 10 * agil, tient = (role === 3 ? 6 : 14) + 16 * frc, gauche = C.cote > 0 ? 1 : 0, droite = 1 - gauche, m = Math.min(1, Math.abs(C.cote));
+    tourne(B.LeftArm, _fw, (eq + tient * gauche * m) * a * D2R); tourne(B.RightArm, _fw, -(eq + tient * droite * m) * a * D2R);
   }
 }
