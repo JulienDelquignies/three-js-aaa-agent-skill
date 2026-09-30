@@ -90,15 +90,17 @@ Traités au lot 361 : la tête sautée plafonne à 2,8 m, la détente vaut 0,45 
 MOYEN) ; tête la plus haute 2,80 → 2,41-2,56 m. Le roulé du gardien lit son couloir ENTIER (`relanceObstacle.main` 2 m) : roulés
 coupés avant le coéquipier 2 / 16 → 0 / 9.
 
-## 5. Autres règles irréalistes relevées en route (non traitées dans ce lot)
+## 5. Autres règles irréalistes relevées en route — traitées au lot 363
 
-- La séparation sociale pousse les corps jusqu'à 2,4 m/s sans toucher `p.v` : le rendu la lit comme un pas de côté.
-- Le cap de l'arbitre claque sur sa vitesse (`referee.js`).
-- `retournement.max 0.5` autorise explicitement « frapper à moitié tourné » pour réduire les pertes.
-- `tirImmediat` (`elan.js`) saute la porte de la stance.
-- La talonnade n'est bornée que par sa probabilité, pas par la distance ni la vitesse (hors `porteeGeste`).
-- La une-touche plafonne à 12 m/s à tout angle quand le dosage est coupé.
-- Peu de porteurs LANCÉS en transition (chantier #39, l'intelligence).
+| Règle | Verdict | État |
+|---|---|---|
+| La séparation sociale pousse les corps jusqu'à 2,4 m/s sans toucher `p.v` (le rendu lit un pas de côté) | Irréaliste | `socialPas` 0,01 m/image (on s'écarte en marchant) : glissades de corps 0,49 → 0,22 %, paires de coéquipiers < 1,2 m 0,91 → 0,75 % (aucun regroupement de plus) |
+| Le cap de l'arbitre claque sur sa vitesse, et à l'arrêt l'écart non enroulé peut le faire tourner du mauvais côté | Irréaliste (et un bogue) | `arbitreCap` 6 rad/s, enroulé : sauts de cap > 11° par image 911 → 5 |
+| La talonnade n'est bornée que par sa probabilité | Irréaliste — mesuré : 1,25 % des passes (réel 0,2-0,5), au sol à 9-12 m/s, et la moitié en DÉGAGEMENT lobé jusqu'à 27 m/s | `talonReel` : au sol, ≤ 10 m, jamais en dégagement, ≤ 8 m/s — 5 talonnades / 686 passes, la plus vive à 8 m/s |
+| `tirImmediat` saute la porte de la stance | Non-problème : ce coup de pied d'élan est borné à un cône de 40° le long de la course (60° court) — le corps est au ballon | Documenté |
+| La une-touche plafonne à 12 m/s à tout angle « quand le dosage est coupé » | Non-problème : le dosage est ACTIF par défaut en match (`uneTouche.dose`) | Documenté |
+| `retournement.max 0.5` autorise « frapper à moitié tourné » | Couvert : la porte au contact du lot 360 transforme la frappe à plus de 100° du corps en touche de fortune | Documenté |
+| Peu de porteurs LANCÉS en transition | Chantier #39 (l'intelligence), mis de côté à la demande | Ouvert |
 
 ## 6. Signaux du banc lus au lot 360
 
