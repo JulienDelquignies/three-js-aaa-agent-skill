@@ -1,4 +1,4 @@
-import { gpSansTouche } from './grand-pont.js'; import { lacetBorne } from './passe-faisable.js'; import { gardeTouche, mortDe } from './prise-suivie.js';
+import { gpSansTouche } from './grand-pont.js'; import { lacetBorne } from './passe-faisable.js'; import { gardeTouche, mortDe, orientePoursuite } from './prise-suivie.js';
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; import { respireDe } from './porte-respire.js'; import { corpsArret } from './corps-arret.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js'; import { attendDe } from './ouverture.js';
@@ -357,11 +357,11 @@ function receive(st, id, cfg = RONDO) {
       const AP = st.full ? cfg.amortiPoursuite : null;
       const foeAP = AP ? Math.min(...st.players.filter((q) => q.team !== p.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99) : 99;
       if (AP && foeAP > cfg.contestRadius) {
-        st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP], dW(st, cfg, AP));
-        st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: 'any',
+        const vIn = hyp(st.ball.v[0], st.ball.v[2]); st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP], dW(st, cfg, AP));
+        st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: orientePoursuite(st, p, cfg, false, vIn) ?? 'any',
           surface: 'sole', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
       } else { st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25], dW(st, cfg, 0.25)); if (st.full) st.events.push({ // la touche muette se nomme (lot 54)
-        t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
+        t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: orientePoursuite(st, p, cfg, true) ?? 'any', surface: 'sole', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
     // LE CÔNE VAUT AUSSI POUR L'ADVERSAIRE (lot 71, contrat zéro-contact-fantôme) : une interception/récupération est une touche de PIED — dos = le ballon file, le vol continue

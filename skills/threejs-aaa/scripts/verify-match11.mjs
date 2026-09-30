@@ -8268,5 +8268,23 @@ if (__bloc()) {
     mA.sans <= 0.1 * mN.sans && mA.emmene > 0 && mA.hMax <= 2.85 && mA.coupe === 0 && mA.revise > 0 && mN.revise === 0);
 }
 
+if (__bloc()) {
+  // L'AMORTI DE POURSUITE ET LE QUART DE TOUCHE ONT UNE DIRECTION (362 — le dernier point du registre, docs/Regles_Irrealistes.md) : les
+  // contrôles de secours nomment leur pied et donnent le ballon dans la course du joueur (≤ 35°, ≤ 20° contesté). Le contrat, contre le
+  // 361 : aucun pied « any », et le ballon non rejoué reste au pied (médiane à 1 s ≤ 0,8 m).
+  const NUL = { priseSuivie: { cone: 60, over: 0.3, vMort: 0.3, garde: 0.6, orientee: { dirs: 72, leadMin: 0.6, vMin: 2.0 } } };
+  const mesure = (over) => { let n = 0, any = 0; const dd = [];
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0; const open = [];
+      for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if (e.type === 'control' && (e.tech === 'amorti-poursuite' || e.tech === 'quart-de-touche')) { n++; if (e.foot === 'any') any++; open.push({ by: e.by, t: e.t }); }
+          if (['pass', 'shot', 'clearance', 'turnover'].includes(e.type)) for (const o of open) if (!o.m && (o.by === e.by || e.type === 'turnover')) o.m = true; }
+        for (const o of open) if (!o.m && st.t - o.t >= 1) { o.m = true; const p = st.players[o.by]; dd.push(Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2])); } } }
+    dd.sort((a, b) => a - b); return { n, any, med: dd.length ? dd[Math.floor(dd.length / 2)] : 0 }; };
+  const mA = mesure({}), mN = mesure(NUL);
+  ok(`lot 362 — L'AMORTI DE POURSUITE A UNE DIRECTION : ${mA.n} contrôles de secours, pied « any » ${mA.any} (361 : ${mN.any}/${mN.n}), ballon à 1 s ${mA.med.toFixed(2)} m (361 : ${mN.med.toFixed(2)})`,
+    mA.n > 0 && mA.any === 0 && mN.any > 0 && mA.med <= 0.8);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

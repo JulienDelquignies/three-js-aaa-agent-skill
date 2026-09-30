@@ -26,3 +26,22 @@ export function gardeTouche(st, c, cfg) { const K = st.full && cfg.priseSuivie; 
 
 /** Le seuil de ballon mort pour dribbleStep (player.mortOk), ou undefined. Pure. */
 export function mortDe(st, cfg) { const K = st.full && cfg.priseSuivie; return K ? (K.vMort ?? 0.3) : undefined; }
+
+/** (362, cfg.priseSuivie.poursuite) L'AMORTI DE POURSUITE ET LE QUART DE TOUCHE ONT UNE DIRECTION : les deux contrôles de secours (aucune
+ *  technique de la table ne s'applique) laissaient le ballon filer dans sa direction d'arrivée, amorti à 18 % ou 75 %, pied « any » —
+ *  mesuré (4 × 900 s) : 49 par heure, 22 % perdus dans les 2 s, ballon à 1,4 m du joueur 1 s après (p50), 7,4 m au p90. Le réel : la touche
+ *  de poursuite se donne DANS SA COURSE, juste devant lui (à sa vitesse + avance m/s — ni plus, ni plus vite que le ballon n'arrivait), le cap
+ *  du ballon tourné vers le regard d'au plus max ° ; le quart de touche contesté garde sa vitesse, tourné d'au plus maxQuart °.
+ *  Appelée APRÈS l'impulsion d'amorti ; renvoie le pied nommé, ou null sans la sous-clé (le « any » d'hier). */
+export function orientePoursuite(st, p, cfg, quart = false, vIn = Infinity) {
+  const K = st.full && cfg.priseSuivie?.poursuite; if (!K) return null;
+  const v = st.ball.v, sp = hyp(v[0], v[2]), bx = st.ball.p[0] - p.p[0], bz = st.ball.p[2] - p.p[2];
+  const pied = Math.cos(p.yaw) * bz - Math.sin(p.yaw) * bx > 0 ? 'left' : 'right';
+  if (sp < 0.05) return pied;
+  const vp0 = hyp(p.v[0], p.v[1]), cap = vp0 > 1.5 ? Math.atan2(p.v[1], p.v[0]) : p.yaw;   // sa COURSE s'il court, son regard sinon
+  const a0 = Math.atan2(v[2], v[0]); let d = cap - a0; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const m = (quart ? (K.maxQuart ?? 20) : (K.max ?? 35)) * Math.PI / 180, a = a0 + Math.max(-m, Math.min(m, d));
+  const vp = hyp(p.v[0], p.v[1]), s = quart ? sp : Math.max(0.5, Math.min(vIn, vp + (K.avance ?? 0.6)));   // À SA vitesse : l'amorti amortit (un résiduel plus rapide que lui filait devant — bloc 231)
+  st.ball.impulse([Math.cos(a) * s - v[0], 0, Math.sin(a) * s - v[2]]);
+  return pied;
+}
