@@ -24,7 +24,7 @@ import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { role
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed, setGaitChasse } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js'; import { predictTouch, contactRoot, touchWarpApply, touchLunge } from './rondo-touche.js';
-import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, produitClip, modeDe, dureeDe } from './rondo-produit.js'; import { ralentiInit, ralentiRecord, ralentiBut, ralentiJouer, ralentiUpdate } from './rondo-ralenti.js';
+import { buildRondoGrid, ballMesh } from './rondo-props.js'; import { fouleeSteer } from './rondo-foulee.js'; import { eviteBallon, ballonDegage } from './rondo-evite.js'; import { produitInit, produitEvent, produitUpdate, produitClip, produitPas, modeDe, dureeDe } from './rondo-produit.js'; import { ralentiInit, ralentiRecord, ralentiBut, ralentiJouer, ralentiUpdate } from './rondo-ralenti.js';
 import { planDe, planSuivant, camerasUpdate, toitsUpdate } from './rondo-cameras.js'; import { tactiquesDe } from './rondo-tactiques.js'; import { separerPrepare, separerApplique } from './rondo-separe.js';
 import { makeTicker } from './ticker.js'; import { atelierInit, atelierDt, atelierEvent, atelierUpdate } from './rondo-atelier.js';   // (437) l'atelier passes & contrôles : ?atelier
 
@@ -818,7 +818,7 @@ export class Rondo {
     const before = this.state.events.length; this._bvAvant = [...this.state.ball.v];   // (26/09) la vitesse du ballon AVANT le pas : la situation d'un contrôle la lit (rondo-pied)
     const toBefore = this.state.turnovers;
     for (let sv = 0; sv < (this.vitesse ?? 1); sv++) {
-      if (this.matchMode) matchStep(this.state, step, this._mcfg);
+      if (this.matchMode) { matchStep(this.state, step, this._mcfg); if (this._produit) produitPas(this._produit, this.state, step); }
       else rondoStep(this.state, step);
     }
     this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + stepV;

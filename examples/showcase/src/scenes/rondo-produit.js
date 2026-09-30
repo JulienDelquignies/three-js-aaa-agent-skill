@@ -9,6 +9,7 @@
 
 import { tableauInit, tableauEvent, tableauBut, tableauUpdate, tableauInfo } from './rondo-tableau.js';
 import { panneauTactiques, libelle } from './rondo-tactiques.js';
+import { statsInit, statsPas, statsUpdate } from './rondo-stats.js';
 
 const MODES = { complet: 'Match complet', long: 'Résumé long', court: 'Résumé court', demo: 'Démo (6 min)' };
 const h = Math.hypot;
@@ -47,6 +48,8 @@ export function produitInit(scene, { teams, nomDe, sauter, tactiques = null }) {
   for (const [k, v] of Object.entries({ nuit: 'Nuit', soir: 'Fin de journée', jour: 'Jour' })) { const o = document.createElement('option'); o.value = k; o.textContent = v; if (k === (scene._heure ?? 'nuit')) o.selected = true; P.selH.appendChild(o); }
   P.selH.addEventListener('change', () => { const u = new URL(location.href); u.searchParams.set('heure', P.selH.value); location.href = u.toString(); });
   P.ctl.appendChild(P.selH); document.body.appendChild(P.ctl);
+  // LES STATS DU MATCH ET LA VUE 2D (rondo-stats.js) : boutons « Stats » (S) et « 2D » (D)
+  P.stats = statsInit(scene, { teams, nomDe, ctl: P.ctl });
   // LES TACTIQUES (rondo-tactiques.js) : le panneau de choix, et les compositions sous le tableau au coup d'envoi
   if (tactiques) { P.tac = panneauTactiques(P.ctl, teams, tactiques, scene._tac?.squads, scene._tac?.roles); tableauInfo(P.tab, 'COMPOSITIONS', [[libelle(tactiques[0]), '', libelle(tactiques[1])]], 9000); }
   P.bCam.textContent = `Caméra : ${{ rapprochee: 'Rapprochée', tv: 'Télé', tactique: 'Tactique', joueur: 'Joueur' }[scene._plan] ?? 'Télé'}`;
@@ -122,8 +125,12 @@ function interessant(scene, P) {
   return false;
 }
 
+/** Un pas de sim (appelé après matchStep) : le moteur de stats lit ce qui vient de se passer. */
+export function produitPas(P, st, dt) { if (P.stats) statsPas(P.stats, st, dt); }
+
 /** Chaque image : la vitesse de lecture (scene.vitesse), le bandeau, le commentaire, la liste. */
 export function produitUpdate(scene, P) {
+  if (P.stats) statsUpdate(scene, P.stats);
   const st = scene.state, resume = P.mode === 'long' || P.mode === 'court';
   let v = P.vUser;
   if (st._ceremonie?.actif) { if (P.mode === 'court') { if (!P.saute) P.saute = P.sauter?.() ?? true; v = 8; } else v = Math.max(v, 1); }   // le résumé court entre au coup d'envoi (la cérémonie sautée, le retour en place à ×8)
