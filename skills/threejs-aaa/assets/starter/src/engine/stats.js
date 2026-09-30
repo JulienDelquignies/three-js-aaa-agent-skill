@@ -16,6 +16,17 @@
 // Puis statsReport(S, { per }) agrège : match entier (per null) ou une mi-temps (1 ou 2).
 
 const hyp = Math.hypot;
+/** L'xG DE RÉFÉRENCE (indépendant du moteur) : une logistique distance + angle d'ouverture du but, ajustée sur les repères publics du
+ *  tir au pied en jeu (6 m axe ≈ 0,36-0,45 ; point de penalty ≈ 0,17-0,24 ; 16,5 m ≈ 0,08 ; 25 m ≈ 0,03 ; angle fermé ≈ 0,05-0,10) ;
+ *  la tête × ~0,45 (logit − 0,8), la volée × ~0,8, le coup franc direct 0,06, le penalty 0,76. Le moteur a son propre xG (celui qui
+ *  guide le tireur, `xgMoteur`) : le comparer à cette référence dit si le moteur voit juste. dx : distance à la ligne de but, z : décalage. */
+export function xgRef(dx, z, partie = 'pied', genre = null) {
+  if (genre === 'penalty') return 0.76;
+  if (genre === 'coup-franc-direct') return 0.06;
+  dx = Math.max(0.3, dx); const th = Math.abs(Math.atan2(z + 3.66, dx) - Math.atan2(z - 3.66, dx));
+  const L = -0.967 + 0.988 * th - 0.112 * hyp(dx, z) + (partie === 'tete' ? -0.8 : partie === 'volee' ? -0.25 : 0);
+  return 1 / (1 + Math.exp(-L));
+}
 const GX = 21, GZ = 14;   // la grille des heatmaps (5 m × ~4,9 m sur 105 × 68)
 
 /** Le tableau de stats vierge d'un match. st : l'état du match (makeMatch). */
@@ -125,7 +136,7 @@ function lire(S, st, e, per) {
       const g = st.pitch.attackGoal(team), pp = st.players[by].p, dG = hyp(g.x - pp[0], pp[2]);
       const surface = st.pitch.inBox(pp[0], pp[2], Math.sign(g.x || 1)), six = Math.abs(g.x - pp[0]) <= 5.5 && Math.abs(pp[2]) <= 9.16;
       const partie = e.kind === 'tête' || e.geste === 'tête' ? 'tete' : /vol/.test(e.kind ?? '') || e.geste === 'volée' ? 'volee' : 'pied';
-      S.tir = fait(S, { ...base, k: 'tir', genre: e.kind ?? e.type, partie, pied: e.foot ?? null, dist: +dG.toFixed(1), surface, six, xg: e.xg ?? null, cf: e.kind === 'coup-franc-direct', vitesse: e.speed ?? null });
+      S.tir = fait(S, { ...base, k: 'tir', genre: e.kind ?? e.type, partie, pied: e.foot ?? null, dist: +dG.toFixed(1), surface, six, xg: +xgRef(Math.abs(g.x - pp[0]), pp[2], partie, e.kind === 'coup-franc-direct' || e.kind === 'penalty' ? e.kind : null).toFixed(3), xgMoteur: e.xg ?? null, cf: e.kind === 'coup-franc-direct', vitesse: e.speed ?? null });
       break;
     }
     case 'but': {
@@ -186,7 +197,7 @@ export function statsReport(S, st, { per = null } = {}) {
     const rec = E('recuperation');
     return {
       buts: buts.filter((b) => b.team === team).length,
-      xg: r2(somme(ti, (t) => t.xg)),
+      xg: r2(somme(ti, (t) => t.xg)), xgMoteur: r2(somme(ti, (t) => t.xgMoteur)),
       possession: pct(possT, possT + possA),
       tirs: n(ti), cadres: ti.filter((t) => t.cadre).length, horsCadre: ti.filter((t) => t.issue === 'hors-cadre' || t.issue === 'frole').length, frole: ti.filter((t) => t.issue === 'frole').length,
       contres: ti.filter((t) => t.issue === 'contre').length, arretes: ti.filter((t) => t.issue === 'arrete').length,
@@ -246,7 +257,7 @@ export function statsReport(S, st, { per = null } = {}) {
     per, duree: r1(F.length ? F[F.length - 1].t - (F[0]?.t ?? 0) : 0), score: [buts.filter((b) => b.team === 0).length, buts.filter((b) => b.team === 1).length],
     equipes: [equipe(0), equipe(1)],
     joueurs: S.J.map(joueur),
-    tirs: tirs.map((t) => ({ t: t.t, per: t.per, team: t.team, by: t.by, x: t.x, z: t.z, xg: t.xg, partie: t.partie, genre: t.genre, surface: t.surface, issue: t.issue, but: !!t.but, dist: t.dist })),
+    tirs: tirs.map((t) => ({ t: t.t, per: t.per, team: t.team, by: t.by, x: t.x, z: t.z, xg: t.xg, xgMoteur: t.xgMoteur, partie: t.partie, genre: t.genre, surface: t.surface, issue: t.issue, but: !!t.but, dist: t.dist })),
     buts: buts.map((b) => ({ t: b.t, per: b.per, team: b.team, by: b.by, passeur: b.passeur, csc: b.csc })),
     xgCourbe: tirs.map((t) => ({ t: t.t, team: t.team, xg: t.xg ?? 0, but: !!t.but })),
   };

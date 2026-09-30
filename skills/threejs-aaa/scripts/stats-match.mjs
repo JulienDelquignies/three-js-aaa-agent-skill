@@ -20,7 +20,7 @@ for (const seed of seeds) {
 }
 const N = rapports.length, moy = (f) => rapports.reduce((s, R) => s + (f(R) ?? 0), 0) / N;
 const LIGNES = [
-  ['Buts', 'buts'], ['xG', 'xg'], ['Possession %', 'possession'],
+  ['Buts', 'buts'], ['xG (référence)', 'xg'], ['xG (modèle du moteur)', 'xgMoteur'], ['Possession %', 'possession'],
   ['— TIRS', null], ['Tirs', 'tirs'], ['Cadrés', 'cadres'], ['Arrêtés', 'arretes'], ['Contrés', 'contres'], ['Hors cadre', 'horsCadre'], ['dont frôlent le cadre', 'frole'],
   ['Dans la surface', 'tirsSurface'], ['Hors surface', 'tirsHorsSurface'], ['Dans les 6 m', 'tirsSixMetres'], ['Du pied', 'tirsPied'], ['De la tête', 'tirsTete'], ['De volée', 'tirsVolee'], ['Distance moyenne (m)', 'distTir'], ['xG par tir', 'xgParTir'],
   ['— PASSES', null], ['Passes', 'passes'], ['Réussies', 'passesReussies'], ['Réussite %', 'reussite'], ['Courtes (< 15 m)', 'courtes'], ['Moyennes (15-30 m)', 'moyennes'], ['Longues (> 30 m)', 'longues'], ['Réussite des longues %', 'reussiteLongues'],
