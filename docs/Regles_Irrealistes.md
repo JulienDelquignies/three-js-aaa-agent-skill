@@ -41,8 +41,11 @@ Traités au lot 360 : la touche orientée choisit parmi 72 directions (5°) avec
 trot p50 0,30 → 0,78 s. Mesuré au passage : les touches rapides au pas restantes sont des touches de VIRAGE (conduite
 intérieur/extérieur à 20-140°) — le contrôle serré en tournant, réaliste.
 
-Reste (dettes nommées) : l'interception et la récupération tuent 80 % de la vitesse du ballon sans geste (`rondo.js`) ;
-l'amorti-poursuite et le quart de touche n'ont pas de direction.
+Traité au lot 361 : l'interception est un CONTRÔLE nommé (`interceptionGeste`, interception-geste.js) — amorti du pied, de la
+cuisse ou de la poitrine selon la hauteur ; libre et ballon bas, la première touche l'EMMÈNE côté ouvert (la touche orientée).
+Contrôles sans technique 193 → 3-5 (4 × 1 200 s) ; 40 interceptions emmenées. Filmé : le défenseur coupe, emmène, joue.
+
+Reste (dette nommée) : l'amorti-poursuite et le quart de touche n'ont pas de direction.
 
 ## 3. Les passes dans des angles impossibles — CORRIGÉ en grande partie (`passeFaisable`)
 
@@ -61,7 +64,8 @@ tournait moins (les passes pressées en « déviation » partaient à 104-123°)
 en TOUCHE DE FORTUNE (≤ 7 m/s, bruitée) ; la dispersion paie l'angle (`passeFaisable.sigmaAngle` : ×1,2 à 45°, ×1,8 à 90°).
 Passes à plus de 100° du corps 2,7 % → 1,5 % (4 × 900 s), les fermes (> 8 m/s) 3 → 1.
 
-Reste : la re-visée au contact qui peut décaler la passe de 30° après l'engagement du corps.
+Traité au lot 361 : la re-visée au contact est bornée à 20° de la sortie planifiée (`passeFaisable.revise`) — mesuré, elle allait
+jusqu'à 62° (117° au plus) ; 12° dégradait la complétion (contrôles manqués 4,1 → 6,9 %), 20° non.
 
 ## 4. Les buts « de la tête » sans toucher le ballon — CORRIGÉ (`reprisePhysique`, `relanceObstacle`, `buteur`)
 
@@ -79,7 +83,9 @@ Traités au lot 360 : le gardien sort de l'accompagnement de sa relance quand le
 `gardien-reprend.js`) ; une tête par corps en 0,5 s (`reprisePhysique.teteCd`) ; le contre d'un ballon frappé il y a moins de
 0,3 s ne s'étend qu'à 0,6 m — le corps, pas la jambe tendue (`reprisePhysique.rayonReflexe`).
 
-Reste (dettes nommées) : le plafond de tête sautée (jusqu'à 3,14 m) est généreux ; la main du gardien à 9 m peut être interceptée.
+Traités au lot 361 : la tête sautée plafonne à 2,8 m, la détente vaut 0,45 m × la note (`teteHauteur` — hier 2,95 m pour le joueur
+MOYEN) ; tête la plus haute 2,80 → 2,41-2,56 m. Le roulé du gardien lit son couloir ENTIER (`relanceObstacle.main` 2 m) : roulés
+coupés avant le coéquipier 2 / 16 → 0 / 9.
 
 ## 5. Autres règles irréalistes relevées en route (non traitées dans ce lot)
 
