@@ -14642,6 +14642,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   8 × 90 min : neutres, lobs 11 dont 5 buts (365 : 9 sur 9), buts 1,50 par équipe (364 : 1,44 ; 365 : 2,06) ; 80 c. 50 : 6/2/0, buts
   2,13 – 1,00 (364 : 3/2/3 ; 365 : 6/0/2). Jumeau (les deux clés à null) = le 365 au bit ; défaut `0c7a082b04f8a6a1 / 1e09572def74931d` ;
   bloc 235 (cloche de 28 m sur le gardien sorti de 8 m : but hier, arrêt aujourd'hui).
+- **Lot 367 — les contrôles ratés : l'avantage du premier toucher** (30/09, « corrige les contrôles ratés »). Sonde (4 × 90 min) : 70
+  « contrôles ratés » par match se décomposaient en 15 MANQUÉS (Weibull, 2,6 % — le livre, réaliste), 11 PRIX DU PREMIER TOUCHER (ballon
+  rapide pris en récupération) et 43,5 réceptions CONTESTÉES PERDUES (reception.issueDe : le presseur arrive sur le ballon pendant le
+  contrôle — un 50/50 pesé par la seule force, sans avantage au receveur, et étiqueté contrôle raté). Réel par équipe : mauvais contrôles
+  10-15, dépossédés ~8-10.
+  - `receptionDuel` { avantage 0,15 } : 0,5 + avantage + l'écart de force. Contestées perdues 43,5 → 30 par match (50 → 37 %), manqués
+    16,5, prix du premier toucher 9 : par équipe ~13 contrôles ratés et ~15 dépossédés à la réception.
+  - Stats : la réception contestée perdue est une DÉPOSSESSION (`depossedeReception`, `depossedesReception`), plus un contrôle raté ;
+    la note la pèse −0,06 ; le panneau et la feuille CLI l'affichent. La passe encore en vol au rapport se classe sur sa longueur visée.
+  8 × 90 min : neutres 3/2/3, passes 609, réussite 87 % (inchangés) ; 80 c. 50 : buts 2,5 – 1,3, tirs 14,5 – 5,1 (366 : 11,4 – 8,3), 4/1/3
+  (le bruit de 8 matchs). Jumeau (`receptionDuel: null`) = le 366 au bit, défaut inchangé (aucune réception contestée dans l'empreinte) ;
+  bloc 236 (contestées perdues 28 % ; hier 56 %).
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match

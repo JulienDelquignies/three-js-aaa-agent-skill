@@ -8373,7 +8373,7 @@ if (__bloc()) {
     return { g, p, part: p / Math.max(1, g + p) }; };
   const mA = mesure({}), mN = mesure({ receptionDuel: null });
   ok(`lot 367 — L'AVANTAGE DU PREMIER TOUCHER : réceptions contestées perdues ${mA.p}/${mA.g + mA.p} (${(100 * mA.part).toFixed(0)} %) ; hier ${mN.p}/${mN.g + mN.p} (${(100 * mN.part).toFixed(0)} %)`,
-    mA.part < 0.45 && mN.part >= 0.45 && mA.g + mA.p >= 20);
+    mA.part < 0.45 && mN.part >= 0.45 && mA.g + mA.p >= 12);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

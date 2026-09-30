@@ -119,3 +119,11 @@ coupés avant le coéquipier 2 / 16 → 0 / 9.
 | Un jeu à pertes | récupérations 166 par équipe, tacles 53, interceptions 64, PPDA 5,5 | Requalifié (sondes du 366) : surtout des définitions (nos « interceptions » comptent toute passe ratée ramassée). Le vrai écart est la ligne suivante |
 | Le ballon ne sort pas | touches 20 par match (réel 40-45), sorties de but 4,5 (15-18), corners 1,3 (~10), jeu effectif 68 min (55-60) : dégagements, contres, tacles et déviations restent en jeu | Ouvert — le chantier suivant |
 | Peu de jeu aérien et de coups de pied arrêtés | duels aériens 5,6 par équipe (réel 15-20), corners 1,7 (~5), centres 8,5 (15-20) | Ouvert |
+
+## 8. Les contrôles ratés — lot 367
+
+| Règle | Mesure (4 × 90 min) | État |
+|---|---|---|
+| La réception contestée (le presseur arrive sur le ballon pendant le contrôle) est un 50/50 sans avantage au receveur | 43,5 perdues par match, étiquetées « contrôles ratés » | `receptionDuel` : 0,65 + l'écart de force — 30 par match ; les stats la nomment dépossession |
+| Le contrôle manqué (Weibull) | 15 par match, 2,6 % : le livre | Réaliste, inchangé |
+| Le prix du premier toucher sur un ballon rapide récupéré | 11 par match | Réaliste, inchangé |
