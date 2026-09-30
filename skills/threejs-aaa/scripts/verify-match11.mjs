@@ -8362,5 +8362,19 @@ if (__bloc()) {
     A.every((x) => !x.but && x.lu) && N.every((x) => x.but));
 }
 
+if (__bloc()) {
+  // L'AVANTAGE DU PREMIER TOUCHER (367 — 30/09, « corrige les contrôles ratés » : 70 « contrôles ratés » par match, dont 43,5 réceptions
+  // CONTESTÉES perdues — le presseur arrivé sur le ballon pendant le contrôle, un 50/50 sans avantage au receveur). La loi : 0,5 +
+  // avantage (0,15) + l'écart de force. Le contrat : la part des contestées perdues baisse sous 0,45 (hier ≥ 0,45, le 50/50).
+  const mesure = (over) => { let g = 0, p = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0;
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type !== 'control') continue; if (e.issue === 'conteste-gagne') g++; else if (e.issue === 'conteste-perdu') p++; } } }
+    return { g, p, part: p / Math.max(1, g + p) }; };
+  const mA = mesure({}), mN = mesure({ receptionDuel: null });
+  ok(`lot 367 — L'AVANTAGE DU PREMIER TOUCHER : réceptions contestées perdues ${mA.p}/${mA.g + mA.p} (${(100 * mA.part).toFixed(0)} %) ; hier ${mN.p}/${mN.g + mN.p} (${(100 * mN.part).toFixed(0)} %)`,
+    mA.part < 0.45 && mN.part >= 0.45 && mA.g + mA.p >= 20);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
