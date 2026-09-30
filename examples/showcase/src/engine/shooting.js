@@ -36,7 +36,7 @@ export function tryShot(st, c, cfg) {
   const decolle = !gkL || !st.players.some((q) => q.team !== c.team && q.down <= 0
     && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
     && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capL + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6);
-  const porteLob = gkL && decolle && Math.abs(gkL.p[0] - goal.x) >= (cfg.lob.out ?? 4)
+  const porteLob = gkL && decolle && Math.abs(gkL.p[0] - goal.x) >= lobOut(cfg, dGoal)
     && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38) && Math.abs(c.p[2]) <= 14;
   if (dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) && !porteLob) return false;
   if (st.hold < cfg.shotHold) return false;
@@ -103,7 +103,7 @@ export function tryShot(st, c, cfg) {
     // LOB sans tirage — le tirage raté retombait sur les familles ordinaires : « enroulée » de
     // 37,6 m mesurée (le contrat de portée violé par l'espèce, pas par la décision).
     const lobSeul = dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1);
-    if (st.full && cfg.lob && decolle && gkOff >= (cfg.lob.out ?? 4) && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38)
+    if (st.full && cfg.lob && decolle && gkOff >= lobOut(cfg, dGoal) && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38)
       && (u < (cfg.lob.p ?? 0.25) * (c.skill?.longF ?? 1) || lobSeul)) {
       // LE LOB DU GARDIEN AVANCÉ (lot 120 — le dernier de la liste utilisateur) : le LIBÉRO
       // monté (≥ out m de sa ligne) se pique de LOIN — la cloche haute vise la ligne, le
@@ -194,6 +194,8 @@ export function tryShot(st, c, cfg) {
 
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; }
+/** (365) L'écart minimal du gardien à sa ligne pour qu'un lob existe : lob.out (hier), ou ratio × la distance du tir (lobReel). */
+function lobOut(cfg, dGoal) { const o = cfg.lob?.out ?? 4; return cfg.lobReel ? Math.max(o, (cfg.lobReel.ratio ?? 0.4) * dGoal) : o; }
 
 // ---------------------------------------------------------------- le centre
 /**
