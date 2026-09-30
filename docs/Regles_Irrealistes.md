@@ -45,7 +45,10 @@ Traité au lot 361 : l'interception est un CONTRÔLE nommé (`interceptionGeste`
 cuisse ou de la poitrine selon la hauteur ; libre et ballon bas, la première touche l'EMMÈNE côté ouvert (la touche orientée).
 Contrôles sans technique 193 → 3-5 (4 × 1 200 s) ; 40 interceptions emmenées. Filmé : le défenseur coupe, emmène, joue.
 
-Reste (dette nommée) : l'amorti-poursuite et le quart de touche n'ont pas de direction.
+Traité au lot 362 : l'amorti de poursuite et le quart de touche (les contrôles de secours, ~50 par heure) nomment leur pied et
+donnent le ballon dans la COURSE du joueur (≤ 35°, ≤ 20° contesté), à sa vitesse + 0,6 m/s — `priseSuivie.poursuite`. Pertes
+dans les 2 s 22 % → 12 % ; ballon à 1 s du joueur 0,57 m (0,56 au 361) — un premier essai qui gardait le résiduel rapide le
+laissait filer (1,32 m) : refusé par le bloc 231.
 
 ## 3. Les passes dans des angles impossibles — CORRIGÉ en grande partie (`passeFaisable`)
 
