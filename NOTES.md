@@ -14567,6 +14567,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   542,8 / 545,8 et 549,6 / 528,0, buts 3,00 / 2,13 et 2,81 / 3,88 (bruit), centres 16,3 / 15,2 et 18,9 / 13,0. Budget : bloc 1 vert seul
   (1,42-1,57 ms), rouge sous contention du banc rapide (1,65) comme au 360 ; chrono direct 361 0,83-0,85 ms/pas c. 360 0,98-1,01.
   Défaut `4a5d8877944e57ed / e2e56ec8f3077466`. Bloc 230. Registre : il ne reste que l'amorti-poursuite et le quart de touche sans direction.
+- **Lot 362 — l'amorti de poursuite et le quart de touche ont une direction** (30/09 : « ok continue » — le dernier point du registre).
+  `priseSuivie.poursuite` { max 35, maxQuart 20, avance 0,6 } (prise-suivie.orientePoursuite, rondo-sim : les deux contrôles de secours,
+  aucune technique de la table ne s'applique). Mesuré avant (4 × 900 s) : ~50 par heure, pied « any », le ballon laissé dans sa direction
+  d'arrivée (18 % ou 75 % de sa vitesse), 22 % perdus dans les 2 s. Ici : le pied nommé (le côté du ballon dans le regard), le ballon tourné
+  vers la COURSE du joueur (son regard à l'arrêt) d'au plus 35° (20° contesté), l'amorti à SA vitesse + 0,6 m/s (≤ la vitesse d'arrivée).
+  Pertes dans les 2 s 22 % → 12 % ; ballon à 1 s 0,57 m (361 : 0,56). Essayé et refusé : garder le résiduel s'il dépassait le joueur — le
+  ballon filait (1,32 m au bloc 231) ; tourner vers le regard plutôt que la course — la queue s'allongeait (p90 3,55 m).
+  Banc 16 matchs (362 / 361) : pertes 128,3 / 124,6 et 127,6 / 128,5 (bruit), buts 3,00 / 3,00 et 2,81 / 2,81, complétion 89,4 / 89,5 et
+  89,8 / 89,6. Jumeau (`priseSuivie` sans `poursuite`) = le 361 au bit ; défaut `f1743b5d4d306a6e / 5f565f0c1c3c09d0` (aucun contrôle de
+  secours dans les 90 s de l'empreinte : le défaut ne bouge pas). Bloc 231. Le registre des règles irréalistes est vidé de ses dettes de
+  contrôle ; restent la section 5 (règles relevées en route).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
