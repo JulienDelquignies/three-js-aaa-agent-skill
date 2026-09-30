@@ -57,7 +57,8 @@ export function aAttaquant(c, cfg = null) {
   // comptait −1 (butée) pour le dribbleur MOYEN et +0,3 pour le 90 : tous les attaquants handicapés, l'écart des notes écrasé (le défenseur,
   // lui, est centré sur 0 à 50). Centré : (gesteF − 0,825) / 0,275 ∈ [−1 ; 1]. Absente : hier au bit.
   const gA = cfg?.noyauNotes ? Math.max(-1, Math.min(1, ((sA.gesteF ?? 0.825) - 0.825) / 0.275)) : n1(sA.gesteF, 0.15);
-  return 0.34 * gA + 0.22 * n1(sA.getupF, 0.28) * -1 + 0.18 * -n1(sA.dribbleLeadF, 0.07) + 0.14 * n1(sA.controlF, 0.15) + 0.12 * ((c.persona?.flair ?? 0.5) - 0.5) * 2;
+  const cA = cfg?.noyauNotes ? Math.max(-1, Math.min(1, ((sA.controlF ?? 1.15) - 1.15) / 0.45)) : n1(sA.controlF, 0.15);   // …et le contrôle : controlF = lerp(0,7 ; 1,6) vaut 1,15 au 50 (hier +1, la butée, pour le joueur moyen)
+  return 0.34 * gA + 0.22 * n1(sA.getupF, 0.28) * -1 + 0.18 * -n1(sA.dribbleLeadF, 0.07) + 0.14 * cA + 0.12 * ((c.persona?.flair ?? 0.5) - 0.5) * 2;
 }
 
 /** Les features du take-on c contre q : { mu, dv, dpsi, dside, press, x, nc, aA, aD, near }. Pure. */

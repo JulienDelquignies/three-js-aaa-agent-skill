@@ -8304,5 +8304,26 @@ if (__bloc()) {
     mA.tMax <= 8.5 && mA.gl < mN.gl && mA.saut <= 0.05 * Math.max(1, mN.saut));
 }
 
+if (__bloc()) {
+  // LE DRIBBLE LIT LA NOTE ET LA SITUATION (364 — 30/09 : « les attributs différencient-ils les joueurs ? » ; mesuré avec des effectifs notés :
+  // la note de dribble corrélait NÉGATIVEMENT à la réussite, −0,2 à −0,36). Deux causes : le geste du dribbleur, dans le noyau, n'était pas
+  // centré sur le joueur moyen (gesteF 0,825 au 50 comptait −1 : tous les attaquants handicapés, l'écart écrasé — noyauNotes) ; et le porteur
+  // tentait ses dribbles sans lire le duel (dribbleLucide : il estime avec le même noyau et ne tente pas le duel perdu d'avance). Le contrat :
+  // le terme d'attaque est centré (|aA(50)| ≤ 0,05, monotone de 30 à 90 ; hier aA(50) ≤ −0,3), et les dribbles tentés perdus d'avance baissent.
+  const { aAttaquant } = await import('../assets/starter/src/engine/noyau.js');
+  const { makeProfile } = await import('../assets/starter/src/engine/attributes.js');
+  const note = (v) => ({ skill: makeProfile(Object.fromEntries(['dribbling', 'technique', 'agility', 'control'].map((k) => [k, v]))) });
+  const aA = (v, cfg) => aAttaquant(note(v), cfg);
+  const C = { noyauNotes: true }, echelle = [30, 50, 70, 90].map((v) => aA(v, C));
+  const mesure = (over) => { let n = 0, perdus = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0;
+      for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type === 'duel' && e.kind === 'take-on') { n++; if (e.mu < -1.5) perdus++; } } } }
+    return { n, perdus }; };
+  const mA = mesure({}), mN = mesure({ noyauNotes: null, dribbleLucide: null });
+  ok(`lot 364 — LE DRIBBLE LIT LA NOTE ET LA SITUATION : aA(30/50/70/90) = ${echelle.map((x) => x.toFixed(2)).join(' / ')} (hier aA(50) = ${aA(50, null).toFixed(2)}) ; dribbles ${mA.n} dont perdus d'avance (μ < −1,5) ${mA.perdus} (363 : ${mN.n}, ${mN.perdus})`,
+    Math.abs(echelle[1]) <= 0.05 && echelle[0] < echelle[1] && echelle[1] < echelle[2] && echelle[2] < echelle[3] && aA(50, null) <= -0.2 && mA.perdus < mN.perdus);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
