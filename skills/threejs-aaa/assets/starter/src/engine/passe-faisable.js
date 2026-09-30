@@ -69,3 +69,9 @@ export function reviseBornee(st, c, cfg, from, lead, outYaw, opt = {}) {
   st.events.push({ t: +st.t.toFixed(2), type: 'refus', kind: 'revise-bornee', by: c.id, deg: Math.round(Math.abs(d) / D) });
   return [from[0] + Math.cos(a) * L, lead[1], from[2] + Math.sin(a) * L];
 }
+
+/** (363, cfg.talonReel) LA TALONNADE EST COURTE, DOUCE, AU SOL : mesuré (4 × 900 s) 8 talonnades sur 639 passes (1,25 % — réel 0,2-0,5 %),
+ *  au sol à 9-12 m/s (réel 5-8), et 4 sur 8 étaient des DÉGAGEMENTS lobés jusqu'à 27 m/s — un talon ne lobe pas un ballon à 27 m/s. Le talon
+ *  n'est candidat que pour une passe au sol à ≤ dMax m, jamais en dégagement ; frappé, il part à ≤ v m/s. Absente : hier au bit. */
+export function talonPermis(st, cfg, dP, opt = {}) { const K = st.full && cfg.talonReel; return !K || (!opt.clear && opt.style !== 'lofted' && !opt.cross && dP <= (K.dMax ?? 10)); }
+export function vTalon(st, cfg, heel) { const K = st.full && cfg.talonReel; return K && heel ? (K.v ?? 8) : Infinity; }

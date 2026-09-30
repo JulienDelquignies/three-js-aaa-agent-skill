@@ -13,7 +13,7 @@ import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js'; import { corpsOuvert } from './passe-ouverte.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
-import { axe, tac } from './tactics.js'; import { horsCorps, porteContact, sigmaAngleF, reviseBornee } from './passe-faisable.js';
+import { axe, tac } from './tactics.js'; import { horsCorps, porteContact, sigmaAngleF, reviseBornee, talonPermis, vTalon } from './passe-faisable.js';
 import { role } from './roles.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -214,6 +214,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
       cands = cands.filter((cd) => !(dP > (cfg.porteeGeste[cd.data?.id] ?? Infinity))); if (!cands.length) return deny(st, 'portee-geste'); }
     if (st.full && cfg.orientationPasse?.talonP != null && !mains && cands.some((cd) => cd.data?.surface === 'heel') && cands.some((cd) => cd.data?.surface !== 'heel')
       && !talonOse(st, c, cfg.orientationPasse.talonP)) cands = cands.filter((cd) => cd.data?.surface !== 'heel');   // (315) …PAR TOUS LES CHEMINS : le plan d'approche aussi (le talon au score)
+    if (!talonPermis(st, cfg, hyp(choice.lead[0] - c.p[0], choice.lead[2] - c.p[2]), { clear: !!(opts.clear || choice.clear), style: choice.style, cross: !!choice.cross })) { cands = cands.filter((cd) => cd.data?.surface !== 'heel'); if (!cands.length) return deny(st, 'talon-irreel'); }   // (363) talonReel
     const talonDos = !!(st.full && cfg.orientationPasse?.talon && !mains);   // (401) LA TALONNADE HONNÊTE (cfg.orientationPasse.talon) : le corps dos à la cible
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
       { rushed: nearFoe < cfg.rushedRadius, talonDos, corps, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
@@ -244,6 +245,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     const topts0 = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing }), dP314 = hyp(tx, tz);
     const topts = st.full && cfg.porteeGeste && !mains && !opts.shot && !opts.clear ? topts0.filter((o) => !(dP314 > (cfg.porteeGeste[o.tech.id] ?? Infinity))) : topts0;   // (314) l'improvisation aussi : la talonnade ne sert pas 40 m
     if (!topts.length) return deny(st, topts0.length ? 'portee-geste' : 'technique');
+    if (!talonPermis(st, cfg, dP314, { clear: !!(opts.clear || choice.clear), style: choice.style, cross: !!choice.cross })) { const t2 = topts.filter((o) => o.tech?.surface !== 'heel'); if (!t2.length) return deny(st, 'talon-irreel'); topts.splice(0, topts.length, ...t2); }   // (363) talonReel — l'improvisation aussi
     // MÊME L'URGENCE NE FRAPPE PAS UN BALLON QUI FILE. L'improvisation choisit sa surface sur la
     // géométrie RÉELLE de l'engagement — mais le ballon libre d'un duel bouge encore pendant
     // l'armé, et la géométrie du contact n'est plus celle du choix : mesuré (verify-approach),
@@ -632,7 +634,7 @@ export function strikeNow(st, c, cfg) {
   // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
   // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
   // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
-  { const PC = porteContact(st, c, cfg, sol.dirYaw, tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5)), { heel: pick?.tech?.surface === 'heel', shot, mains, cross: !!choice.cross }); if (PC) { spd = Math.min(spd, PC.vMax); sol.dirYaw += PC.dPsi; } }   // (360) la touche de fortune au-delà du corps (passe-faisable.js)
+  { const PC = porteContact(st, c, cfg, sol.dirYaw, tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5)), { heel: pick?.tech?.surface === 'heel', shot, mains, cross: !!choice.cross }); if (PC) { spd = Math.min(spd, PC.vMax); sol.dirYaw += PC.dPsi; } spd = Math.min(spd, vTalon(st, cfg, pick?.tech?.surface === 'heel')); }   // (360) la touche de fortune au-delà du corps (passe-faisable.js)
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev,
     spinAxis: liftAtStrike ? liftAtStrike.spinAxis : [0, 1, 0], spinRev: liftAtStrike ? liftAtStrike.spinRev : (kind?.rev ?? 0) });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });

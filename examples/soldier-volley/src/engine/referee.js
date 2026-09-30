@@ -1091,7 +1091,10 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
   a.v[0] += (wx - a.v[0]) * k; a.v[1] += (wz - a.v[1]) * k;
   a.p[0] += a.v[0] * dt; a.p[2] += a.v[1] * dt;
   const sp = hyp(a.v[0], a.v[1]);
-  if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
+  if (st.full && cfg.arbitreCap) {   // (363, cfg.arbitreCap) LE CAP DE L'ARBITRE TOURNE, IL NE CLAQUE PAS : hier le cap sautait sur la vitesse dès 0,4 m/s, et à l'arrêt l'écart non enroulé pouvait le faire tourner du MAUVAIS côté (359° au lieu de 1°)
+    const want = sp > 0.4 ? Math.atan2(a.v[1], a.v[0]) : Math.atan2(b[2] - a.p[2], b[0] - a.p[0]); let dY = want - a.yaw; while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
+    const m = (cfg.arbitreCap.rate ?? 6) * dt; a.yaw += Math.abs(dY) <= m ? dY : Math.sign(dY) * m;
+  } else if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
   a.speed = sp; if (gS && gS.dir != null) { let da = gS.dir - a.yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; a.yaw += da * Math.min(1, dt * 6); }   // (A11 bis) le corps se tourne vers la direction du geste (le coup franc, le fautif)
   assistantsStep(st, dt, cfg); ramasseursStep(st, dt, cfg); petitsGestesStep(st, dt, cfg);   // (§ 5) les ramasseurs de balle ; (§ 10) le gardien replace son mur

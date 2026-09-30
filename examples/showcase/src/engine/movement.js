@@ -619,7 +619,7 @@ export function separatePlayers(st, cfg) {
       const gap = social && a.team === b.team && !st.restart && a.down <= 0 && b.down <= 0
         && !a.act && !b.act ? social : cfg.minGap;
       if (d >= gap || d < 1e-6) continue;
-      const push = gap > cfg.minGap ? Math.min((gap - d) / 2, 0.04) : (gap - d) / 2;
+      const push = gap > cfg.minGap ? Math.min((gap - d) / 2, st.full && cfg.socialPas != null ? cfg.socialPas : 0.04) : (gap - d) / 2;   // (363, cfg.socialPas m/image) on s'écarte en MARCHANT : 0,04 m/image = 2,4 m/s de glissade que le rendu lisait en pas chassé
       const ux = dx / d, uz = dz / d;
       a.p[0] -= ux * push; a.p[2] -= uz * push;
       b.p[0] += ux * push; b.p[2] += uz * push;

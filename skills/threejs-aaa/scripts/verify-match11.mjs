@@ -8286,5 +8286,23 @@ if (__bloc()) {
     mA.n > 0 && mA.any === 0 && mN.any > 0 && mA.med <= 0.8);
 }
 
+if (__bloc()) {
+  // LA SECTION 5 DU REGISTRE (363 — docs/Regles_Irrealistes.md) : la talonnade courte, douce, au sol (talonReel), la séparation sociale à
+  // l'allure de la marche (socialPas), le cap de l'arbitre qui tourne au lieu de claquer (arbitreCap). Le contrat, contre le 362 : aucune
+  // talonnade au-dessus de 8,5 m/s, les glissades de corps (déplacement ≠ vitesse de > 1,2 m/s) en baisse, l'arbitre sans saut de cap.
+  const NUL = { talonReel: null, socialPas: null, arbitreCap: null };
+  const mesure = (over) => { let tMax = 0, n = 0, gl = 0, saut = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0;
+      for (let i = 0; i < 600 * 60; i++) { const P0 = st.players.map((q) => [q.p[0], q.p[2]]), ay = st.arbitre?.yaw; matchStep(st, 1 / 60, cfg);
+        if (st.arbitre && ay != null) { const d = Math.atan2(Math.sin(st.arbitre.yaw - ay), Math.cos(st.arbitre.yaw - ay)); if (Math.abs(d) > 0.2) saut++; }
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type === 'pass' && (/talon/.test(e.tech ?? '') || /talon/.test(e.move ?? ''))) tMax = Math.max(tMax, Math.hypot(st.ball.v[0], st.ball.v[2])); }
+        if (st.restart || i % 6) continue;
+        for (let a = 0; a < 22; a++) { const p = st.players[a]; if (p.keeper) continue; n++; const ex = (p.p[0] - P0[a][0]) * 60 - p.v[0], ez = (p.p[2] - P0[a][1]) * 60 - p.v[1]; if (Math.hypot(ex, ez) > 1.2) gl++; } } }
+    return { tMax, gl: gl / Math.max(1, n), saut }; };
+  const mA = mesure({}), mN = mesure(NUL);
+  ok(`lot 363 — LA SECTION 5 : talonnade la plus vive ${mA.tMax.toFixed(1)} m/s (362 : ${mN.tMax.toFixed(1)}), glissades de corps ${(100 * mA.gl).toFixed(2)} % (362 : ${(100 * mN.gl).toFixed(2)} %), sauts de cap de l'arbitre ${mA.saut} (362 : ${mN.saut})`,
+    mA.tMax <= 8.5 && mA.gl < mN.gl && mA.saut <= 0.05 * Math.max(1, mN.saut));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
