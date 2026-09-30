@@ -40,7 +40,7 @@ export function lacetBorne(st, cfg, yaw, want, dt) { const K = st.full && cfg.pa
  *  Au contact, au-delà de contact ° entre la frappe et le regard (hors talon, hors tir, hors mains), la passe n'est pas une passe :
  *  une TOUCHE DE FORTUNE — molle (≤ vPoke m/s) et bruitée (σ rad × dépassement / 60°). Renvoie { vMax, dPsi } ou null. */
 export function porteContact(st, c, cfg, dirYaw, rnd, opt = {}) {
-  const K = st.full && cfg.passeFaisable; if (!K || K.contact == null || opt.heel || opt.shot || opt.mains) return null;
+  const K = st.full && cfg.passeFaisable; if (!K || K.contact == null || opt.heel || opt.shot || opt.mains || opt.cross) return null;   // le centre se frappe en travers par nature : sa loi est sa stance
   const th = ecartCorps(Math.cos(dirYaw), Math.sin(dirYaw), c.yaw) / D; if (th <= K.contact) return null;
   const u = rnd(), g = (u + rnd() - 1) * 2;   // triangulaire [-2, 2] — deux tirages seedés
   st.events.push({ t: +st.t.toFixed(2), type: 'refus', kind: 'touche-fortune', by: c.id, deg: Math.round(th) });

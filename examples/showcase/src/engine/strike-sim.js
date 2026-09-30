@@ -631,7 +631,7 @@ export function strikeNow(st, c, cfg) {
   // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
   // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
   // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
-  { const PC = porteContact(st, c, cfg, sol.dirYaw, tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5)), { heel: pick?.tech?.surface === 'heel', shot, mains }); if (PC) { spd = Math.min(spd, PC.vMax); sol.dirYaw += PC.dPsi; } }   // (360) la touche de fortune au-delà du corps (passe-faisable.js)
+  { const PC = porteContact(st, c, cfg, sol.dirYaw, tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5)), { heel: pick?.tech?.surface === 'heel', shot, mains, cross: !!choice.cross }); if (PC) { spd = Math.min(spd, PC.vMax); sol.dirYaw += PC.dPsi; } }   // (360) la touche de fortune au-delà du corps (passe-faisable.js)
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev,
     spinAxis: liftAtStrike ? liftAtStrike.spinAxis : [0, 1, 0], spinRev: liftAtStrike ? liftAtStrike.spinRev : (kind?.rev ?? 0) });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });

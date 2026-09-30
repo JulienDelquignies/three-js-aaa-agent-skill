@@ -14527,6 +14527,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   prouvent seuls (corpsSobre coupé). Filmé : contrôle en course, conduite, pressing — corps dans l'axe de la course.
   Dettes nommées (registre) : déviations d'urgence à 145° (dégagements exemptés), le gardien figé pendant sa relance, la touche orientée
   en 12 directions, les touches trop fréquentes au pas, la dispersion de passe sans terme d'angle.
+- **Lot 360 — les restes du registre** (30/09 : « ok traite tes points » ; `docs/Regles_Irrealistes.md` mis à jour). Six lois, sous-clés
+  ou clés neuves (jumeau : les objets du 359 et `gkReprise: null` = le 359 au bit, `4e503b6c2eaaeaae / 0604f0ac7a87e497`) :
+  - `gkReprise` (gardien-reprend.js) : après le contact de sa relance, hors plongeon, le gardien sort de l'accompagnement quand le ballon
+    revient vers son but (≥ 3 m/s, ≤ 35 m, cos ≥ 0,6) — la cause « reprise » nommée au journal des gestes. Rare (0 en 80 min mesurées) :
+    une sécurité, le cas du diag-A (seed 11 t=684,93).
+  - `passeFaisable.contact` : au contact, la frappe à plus de 100° du regard (hors talon, tir, mains, centre) part en TOUCHE DE FORTUNE
+    (≤ 7 m/s, bruit triangulaire × 0,25 rad × dépassement / 60°) — les passes pressées en « déviation » partaient à 104-123° parce que le
+    corps avait moins tourné que le choix ne le supposait. `passeFaisable.sigmaAngle` 0,8 : la dispersion × (1 + k(1 − cos θ)) / gesteF.
+    Passes à > 100° du corps 2,7 % → 1,5 % (4 × 900 s), fermes (> 8 m/s) 3 → 1 (bloc 229 : 1,7 % → 0,4 %).
+  - `priseSuivie.orientee` : la touche orientée à 72 directions (5°), avance ≥ 0,6 m, vitesse ≥ 2 m/s. Filmé : le receveur près de la
+    craie ressort vers l'intérieur, le ballon 0,45-0,57 m devant lui, le corps dans l'axe (2-4°), de 1 à 3,9 m/s en 0,6 s.
+  - `rythmeTouche.lent` { t0 0,9, v 4 } : l'intervalle minimal entre deux touches part de 0,9 s à l'arrêt et rejoint tMin à 4 m/s. Touches
+    DROITES au trot (1,5-2,5 m/s) p50 0,33 → 0,60 s (4 × 600 s), 0,30 → 0,78 s au bloc 229. Les touches rapides au pas qui restent sont des
+    touches de VIRAGE (intérieur/extérieur à 20-140°) — le contrôle serré en tournant, laissé.
+  - `reprisePhysique.teteCd` 0,5 s : une tête par corps (la tête armée contournait le délai — le même joueur deux fois en 0,02 s) ;
+    `reprisePhysique.rayonReflexe` 0,6 m : le contre d'un ballon frappé il y a < 0,3 s ne s'étend qu'au corps (contreTir allait à 1,48 m).
+  Banc 16 matchs (360 / 359 ; les jumeaux = le 359 au chiffre près) : pertes 130,2 / 129,3 et 125,7 / 124,0, passes 545,8 / 537,6 et
+  528,0 / 536,3, tirs 25,0 / 26,9 et 27,5 / 26,0, buts 2,13 / 3,44 et 3,88 / 2,56 (sens opposés : bruit), centres 15,2 / 15,9 et 13,0 /
+  15,1. Les centres, qui baissaient sur les deux jeux, sont exemptés de la porte au contact (leur loi est leur stance ; mesuré ensuite :
+  aucun centre touché sur 4 × 900 s — sûreté). Lus au passage : la une-touche (67 → 43-45 au 359) revenait vers la cible réelle 15-25 —
+  un excès résorbé ; les centres doublés (7 → 15) restent sous le réel. Budget : ~+10 % par pas (0,84 → 0,91-1,0 ms), bloc 1 vert seul.
+  Défaut `1a6fa750b070ba63 / fe07b2c08ec4f325`. Bloc 229. Restent au registre : la re-visée au contact (30°), le plafond de tête sautée
+  (3,14 m), la main du gardien à 9 m interceptable, l'interception qui tue 80 % de la vitesse sans geste.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
