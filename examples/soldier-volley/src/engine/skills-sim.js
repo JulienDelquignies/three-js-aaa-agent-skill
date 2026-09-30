@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { luciditeDribble } from './dribble-lucide.js'; import { tirage } from './rng.js';
 // skills-sim — LES GESTES TECHNIQUES DU PORTEUR, sortis de rondo-sim (lot 21 : la volumétrie
 // du CŒUR — 1 885 lignes — se découpe avec le même soin bit-près que match-sim au lot 16a).
 // La FAMILLE est cohésive : les déclencheurs (maybeRateau / feinte / semelle / passement /
@@ -74,6 +74,7 @@ export function dribM(st, c, cfg) {
   if (D.devantBut) { const og = st.pitch?.ownGoal?.(c.team); if (og && Math.hypot(og.x - c.p[0], c.p[2]) < (D.devantBut.d ?? 25)) m *= (D.devantBut.f ?? 0.1) * (2 - (c.skill?.composureF ?? 1)); }
   if (D.cadence && (c._dribAt ?? -99) > st.t - D.cadence * axe(rd, 1.5, 0.5)) m = 0;
   if (cfg.nature?.specialiste) m *= specialisteF(c, cfg.nature.specialiste);   // LE SPÉCIALISTE (269, doc nature.js) : la FRÉQUENCE de tentative, pas le taux
+  if (m > 0) m *= luciditeDribble(st, c, cfg);   // (364) le grand dribbleur choisit ses moments (dribble-lucide.js)
   return m;
 }
 
