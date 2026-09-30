@@ -14592,6 +14592,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   Banc 16 matchs (363 / 362) : pertes 131,6 / 128,3 et 124,8 / 127,6 (bruit), buts 3,19 / 3,00 et 3,13 / 2,81, complétion 89,4 / 89,4 et
   89,8 / 89,8. Jumeau (`talonReel`, `socialPas`, `arbitreCap` à null) = le 362 au bit ; défaut `760f87327231ceb7 / 0841b5aee8628cf1`.
   Bloc 232. Le registre n'a plus qu'un point ouvert : les porteurs lancés en transition (#39, l'intelligence, mise de côté).
+- **Lot 364 — les attributs : le dribble lit la note et la situation** (30/09 : « les attributs sont-ils suffisamment présents pour différencier
+  les matchs et les joueurs ? », puis « ok pour 1 »). Mesures avec des EFFECTIFS NOTÉS (genererEffectif, 433, 8 × 45 min par cas — les bancs
+  d'avant tournaient avec 22 joueurs identiques) : la courbe de niveau 60/65/70/75/80/90 c. 50 n'a PAS d'effondrement (80 c. 50 : 3/3/2 puis
+  5/3/0 sur d'autres graines — le hasard de 1-2 buts par mi-temps) ; les occasions (xG ≥ 0,08) sont prises 10/10 par l'équipe à 80 (choix.js
+  n'est pas en cause). Mais l'effet de niveau PLAFONNE (au-delà de 65 l'équipe forte ne tire pas plus : 7-10 tirs par mi-temps). Et la note
+  de dribble corrélait NÉGATIVEMENT à la réussite (−0,2 à −0,36) : les ≥ 72 tentaient 94 dribbles (les < 50 : 20) à marge μ −0,97, 33 %.
+  - `noyauNotes` (noyau.aAttaquant) : le terme d'attaque n'était pas centré sur le joueur moyen — gesteF = lerp(0,55 ; 1,10) vaut 0,825 au 50
+    (n1 comptait −1, la butée, pour le dribbleur MOYEN, +0,3 pour le 90) et controlF = lerp(0,7 ; 1,6) vaut 1,15 au 50 (+1, la butée) ;
+    le défenseur, lui, est centré sur 0 au 50. Centrés : aA(30/50/70/90) = −0,38 / −0,03 / 0,33 / 0,68 (hier aA(50) = −0,23). nature.js
+    (la fréquence du spécialiste) garde l'hier — une chose à la fois.
+  - `dribbleLucide` { seuil −0,1, flair 0,15, lucide 0,3 } (dribble-lucide.js, dans skills-sim.dribM) : au tick de décision, le porteur
+    ESTIME le duel contre l'homme devant lui (≤ 5 m, cône 75°) avec le noyau (features → logits → probas) et ne tente pas si
+    P(franchi) − P(dépossédé) < seuil (le flair l'abaisse, la lucidité le relève). Seuils −0,3 / −0,1 / +0,1 essayés : −0,1 retenu.
+  Après (65/80/90 c. 50, 8 × 45 min) : dribbling → réussite +0,09 / +0,12 (hier −0,2 à −0,36) ; ≥ 70 réussis 48 % hors dernier tiers (35),
+  44 % dans le dernier tiers (18) ; 80 c. 50 : 4/3/1, tirs 8,3 – 3,9 ; 90 c. 50 : 6/1/1, tirs 8,0 – 2,8. Le plafond de niveau reste : le point 2.
+  Banc 16 matchs (joueurs neutres, 364 / 363) : pertes 125,1 / 131,6 et 130,3 / 124,8 (bruit), tirs 26,9 / 25,5 et 29,9 / 26,8, buts 2,94 /
+  3,19 et 4,75 / 3,13 (à surveiller), complétion 89,1 / 89,4 et 89,1 / 89,8. Jumeau (les deux clés à null) = le 363 au bit ; défaut inchangé
+  (`760f87327231ceb7 / 0841b5aee8628cf1` : aucun dribble dans les 90 s de l'empreinte, joueurs neutres) — la loi se prouve au bloc 233.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
