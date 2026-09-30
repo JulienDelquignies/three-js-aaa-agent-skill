@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, engageurTient, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -363,7 +363,7 @@ function assignMatchJobs(st, cfg) {
       gk.target = [txG, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
       continue;
     }
-    if (sortieAerienne(st, gk, cfg, pitch)) continue;   // (B10, cfg.sortieAerienne) LA SORTIE AÉRIENNE : le centre qui retombe dans sa zone se va chercher — la course puis le saut à deux mains (sortie-aerienne.js) ; absente : hier
+    if (sortieAerienne(st, gk, cfg, pitch)) continue; if (gardienCloche(st, gk, cfg, pitch, shotAge)) continue;   /* (366) la cloche lue : retour sprint vers la ligne (gardien-cloche.js) */   // (B10, cfg.sortieAerienne) LA SORTIE AÉRIENNE : le centre qui retombe dans sa zone se va chercher — la course puis le saut à deux mains (sortie-aerienne.js) ; absente : hier
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? hyp(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);

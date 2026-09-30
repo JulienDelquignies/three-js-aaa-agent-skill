@@ -552,6 +552,13 @@ export function strikeNow(st, c, cfg) {
     elev = Math.max(0.005, elev + gauss(tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5))) * (D145.sigmaEl ?? 0.04) * sigF);
     spd = Math.max(10, spd * (1 + gauss(tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5))) * (D145.sigmaV ?? 0.05) * Math.min(1.6, sigF)));
   }
+  // …LE LOB N'EST PAS UN GESTE PARFAIT (366, cfg.lobDispersion — lu dans les stats : les lobs entraient TOUS, 9 sur 9, dont 3 de 37 m) :
+  // kind.exact (lob, piqué) échappait à toute dispersion — une balistique au centimètre à 37 m. Le toucher a son écart : cap, vitesse
+  // (la portée ∝ v²) et hauteur, × la distance / 20 m, ÷ la note de frappe lointaine (longF). Absente : le geste exact d'hier, au bit.
+  if (st.full && cfg.lobDispersion && shot && kind?.exact) {
+    const LD = cfg.lobDispersion, rnd = tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5)), kD = Math.max(0.5, hyp(lead[0] - from[0], lead[2] - from[2]) / 20) / Math.max(0.6, c.skill?.longF ?? 1);
+    sol.dirYaw += gauss(rnd) * (LD.sigPsi ?? 0.03) * kD; spd *= Math.exp(gauss(rnd) * (LD.sigV ?? 0.035) * kD); elev = Math.max(0.2, elev + gauss(rnd) * (LD.sigEl ?? 0.03) * kD);
+  }
   // …LA FRAPPE DÉVIE EN ANGLE (258) : σψ à la frappe, σθ = aniso × σψ, la vitesse log-normale et sous-dosée.
   // Trois tirages seedés (cap, élévation, vitesse) — le monde à clé nulle n'en tire aucun.
   let shotYawNoise = 0;

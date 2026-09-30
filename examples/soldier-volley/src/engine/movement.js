@@ -154,7 +154,7 @@ export function movePlayers(st, dt, cfg) {
     if (st.full && cfg.libero && p.keeper && st.pitch && p.target && !st.restart) {
       const gL = st.pitch.ownGoal(p.team);
       const offNow = Math.abs(p.p[0] - gL.x), offTgt = Math.abs(p.target[0] - gL.x);
-      if (offNow > 3 && offTgt < offNow - 0.5) top = Math.min(top, cfg.libero.retour ?? 3.5);
+      if (offNow > 3 && offTgt < offNow - 0.5 && !(cfg.gkCloche && p._cloche != null && st.t - p._cloche < 0.2)) top = Math.min(top, cfg.libero.retour ?? 3.5);   // (366) la cloche lue : le sprint, pas le trot
     }
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
