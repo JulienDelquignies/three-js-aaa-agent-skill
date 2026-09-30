@@ -62,7 +62,10 @@ export function issueDe(st, p, K, cfg, rnd) {
   if (ttp < tCtrl) {
     let foe = null, dm = 99; for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) { const d = hyp(q.p[0] - p.p[0], q.p[2] - p.p[2]); if (d < dm) { dm = d; foe = q; } }
     const edge = Math.max(-0.35, Math.min(0.35, ((p.skill?.chargeF ?? 1) - (foe?.skill?.chargeF ?? 1)) * 0.5 * (K.edgeF ?? 1)));
-    return rnd() < 0.5 + edge ? { issue: 'conteste-gagne', dTouch, P, ttp, pFail, protege: K.tClean ?? 0.25 } : { issue: 'conteste-perdu', dTouch, P, ttp, pFail, protege: 0 };
+    // (367, cfg.receptionDuel) L'AVANTAGE DU PREMIER TOUCHER : le receveur touche le ballon le premier, le corps entre le presseur et lui —
+    // le 50/50 d'hier faisait 43,5 « contrôles ratés » contestés par match (22 par équipe ; réel : ~8-10 dépossédés en tout). null : hier
+    const avRD = st.full && cfg.receptionDuel ? (cfg.receptionDuel.avantage ?? 0.15) : 0;
+    return rnd() < 0.5 + avRD + edge ? { issue: 'conteste-gagne', dTouch, P, ttp, pFail, protege: K.tClean ?? 0.25 } : { issue: 'conteste-perdu', dTouch, P, ttp, pFail, protege: 0 };
   }
   return dTouch < (K.dHeavy ?? 0.9) ? { issue: 'propre', dTouch, P, ttp, pFail, protege: K.tClean ?? 0.25 } : { issue: 'lourde', dTouch, P, ttp, pFail, protege: 0 };
 }

@@ -126,7 +126,7 @@ function lire(S, st, e, per) {
     case 'receive': case 'control': case 'loose-kept': {
       tirCoupe(S, st, P);
       if (S.pass && P) { if (P.team === S.pass.team) finirPasse(S, true, e.type, st, by); else finirPasse(S, false, 'intercepte', st); }
-      if (e.type === 'control') fait(S, { ...base, k: 'controle', tech: e.tech ?? null, rate: !!e.miss, issue: e.issue ?? null, interception: !!e.interception });
+      if (e.type === 'control') fait(S, { ...base, k: 'controle', tech: e.tech ?? null, rate: !!e.miss && e.issue !== 'conteste-perdu', conteste: e.issue === 'conteste-perdu', issue: e.issue ?? null, interception: !!e.interception });   // la réception contestée perdue est une DÉPOSSESSION, pas un contrôle raté
       break;
     }
     case 'turnover': {
@@ -187,6 +187,8 @@ const n = (a) => a.length, somme = (a, f) => a.reduce((s, x) => s + (f(x) ?? 0),
 
 /** Le rapport complet (per : null = match entier, 1 ou 2 = une mi-temps). */
 export function statsReport(S, st, { per = null } = {}) {
+  // la passe encore en vol au rapport (non résolue) se classe sur sa longueur VISÉE
+  for (const f of S.faits) if (f.k === 'passe' && f.court == null && f.len0 != null) f.court = f.len0 < 15 ? 'courte' : f.len0 < 30 ? 'moyenne' : 'longue';
   const F = S.faits.filter((f) => per == null || f.per === per);
   const hx = st.pitch.hx, pers = per == null ? [1, 2] : [per];
   // les passes clés : la passe réussie dont le receveur tire dans les 5 s
@@ -225,6 +227,7 @@ export function statsReport(S, st, { per = null } = {}) {
       recupContrePress: rec.filter((r) => r.contrePress).length, pressions: E('pression').length + E('contre-press').length, ppda: pAdv && actions ? r1(pAdv / actions) : null,
       degagements: E('degagement').length, contresDefensifs: E('contre').length,
       fautes: E('faute').length, fautesSubies: A('faute').filter((f) => f.sur != null).length, jaunes: E('carton').filter((c) => c.couleur === 'jaune').length, rouges: E('carton').filter((c) => c.couleur === 'rouge').length,
+      controlesRates: E('controle').filter((c) => c.rate).length, depossedesReception: E('controle').filter((c) => c.conteste).length,
       horsJeu: E('hors-jeu').length, corners: F.filter((f) => f.k === 'sortie' && f.out === 'corner' && f.team === team).length,
       arrets: A('tir').filter((t) => t.issue === 'arrete').length, prisesGardien: E('arret').length, sortiesGardien: E('sortie-gk').length,   // l'arrêt = sur un TIR ; la prise = toute intervention (centre, ballon au pied…)
     };
@@ -252,7 +255,7 @@ export function statsReport(S, st, { per = null } = {}) {
       aeriens: n(aer), aeriensGagnes: aer.filter((d) => (d.by === J.id) === d.gagne).length,
       degagements: mine('degagement').length, contres: mine('contre').length,
       fautes: mine('faute').length, fautesSubies: F.filter((f) => f.k === 'faute' && f.sur === J.id).length, jaunes: mine('carton').filter((c) => c.couleur === 'jaune').length, rouges: mine('carton').filter((c) => c.couleur === 'rouge').length,
-      horsJeu: mine('hors-jeu').length, controlesRates: mine('controle').filter((c) => c.rate).length,
+      horsJeu: mine('hors-jeu').length, controlesRates: mine('controle').filter((c) => c.rate).length, depossedeReception: mine('controle').filter((c) => c.conteste).length,
       ...(J.keeper ? { arrets: arr, prises: mine('arret').length, butsEncaisses: conc, xgCadreFace: xgFace, sorties: mine('sortie-gk').length, relances: mine('relance').length, relancesMain: mine('relance').filter((r) => r.mains).length } : {}),
       heat: Array.from(heat), heatGrille: [GX, GZ],
     };
@@ -274,7 +277,7 @@ export function statsReport(S, st, { per = null } = {}) {
 export function noteDe(o) {
   if (!o.minutes || o.minutes < 5) return null;
   let s = 6 + o.buts * 1.0 + o.passesDecisives * 0.6 + o.passesCles * 0.15 + (o.xg ?? 0) * 0.4
-    + (o.passes >= 10 ? ((o.reussite ?? 80) - 80) * 0.02 : 0) + o.dribblesReussis * 0.1 - o.depossede * 0.08 - o.controlesRates * 0.08
+    + (o.passes >= 10 ? ((o.reussite ?? 80) - 80) * 0.02 : 0) + o.dribblesReussis * 0.1 - o.depossede * 0.08 - o.controlesRates * 0.08 - (o.depossedeReception ?? 0) * 0.06
     + o.taclesGagnes * 0.12 + o.interceptions * 0.1 + o.dribblesStoppes * 0.1 + o.contres * 0.12 + o.degagements * 0.03 + o.aeriensGagnes * 0.05
     - o.fautes * 0.05 - o.jaunes * 0.3 - o.rouges * 1.5;
   if (o.keeper) s += (o.arrets ?? 0) * 0.25 - (o.butsEncaisses ?? 0) * 0.35 + ((o.xgCadreFace ?? 0) - (o.butsEncaisses ?? 0)) * 0.5;

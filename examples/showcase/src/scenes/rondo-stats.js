@@ -180,7 +180,7 @@ function rendre(scene, Q) {
       break;
     case 'Duels':
       html += eq('duelsSol', 'Duels au sol') + eq('duelsSolGagnes', 'Gagnés') + eq('duelsAeriens', 'Duels aériens') + eq('duelsAeriensGagnes', 'Gagnés')
-        + eq('dribbles', 'Dribbles tentés') + eq('dribblesReussis', 'Dribbles réussis') + eq('tacles', 'Tacles') + eq('taclesGagnes', 'Tacles gagnés');
+        + eq('dribbles', 'Dribbles tentés') + eq('dribblesReussis', 'Dribbles réussis') + eq('controlesRates', 'Contrôles ratés') + eq('depossedesReception', 'Dépossédés à la réception') + eq('tacles', 'Tacles') + eq('taclesGagnes', 'Tacles gagnés');
       break;
     case 'Gardiens': {
       const G = R.joueurs.filter((j) => j.keeper && j.minutes);
@@ -232,7 +232,7 @@ function ficheJoueur(scene, Q, R, J) {
   html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 14px">'
     + '<div>' + L('Minutes', Math.round(J.minutes ?? 0)) + L('Distance', `${f1(J.distance / 1000)} km`) + L('Sprints', J.sprints) + L('Vitesse max', `${f1(J.vMax)} km/h`) + L('Touches de balle (conduite comprise)', J.touches)
     + L('Buts / passes décisives', `${J.buts} / ${J.passesDecisives}`) + L('Tirs (cadrés)', `${J.tirs} (${J.cadres})`) + L('xG', f2(J.xg)) + L('Dribbles réussis', `${J.dribblesReussis}/${J.dribbles}`)
-    + L('Dépossédé', J.depossede) + L('Contrôles ratés', J.controlesRates) + L('Hors-jeu', J.horsJeu) + '</div>'
+    + L('Dépossédé', J.depossede) + L('Contrôles ratés / dépossédé à la réception', `${J.controlesRates} / ${J.depossedeReception ?? 0}`) + L('Hors-jeu', J.horsJeu) + '</div>'
     + '<div>' + L('Passes réussies', `${J.passesReussies}/${J.passes} (${pc(J.reussite)})`) + L('Courtes / moyennes / longues', `${J.courtes} / ${J.moyennes} / ${J.longues}`)
     + L('Au sol / en hauteur', `${J.passes - J.enHauteur} / ${J.enHauteur}`) + L('Vers l\'avant', J.versAvant) + L('Passes clés', J.passesCles) + L('Centres', J.centres)
     + L('Tacles gagnés', `${J.taclesGagnes}/${J.tacles}`) + L('Interceptions / récupérations', `${J.interceptions} / ${J.recuperations}`) + L('Duels aériens gagnés', `${J.aeriensGagnes}/${J.aeriens}`)
