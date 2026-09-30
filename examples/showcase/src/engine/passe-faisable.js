@@ -55,3 +55,17 @@ export function sigmaAngleF(st, c, cfg, from, lead) {
   const th = ecartCorps(lead[0] - from[0], lead[2] - from[2], c.yaw);
   return 1 + K.sigmaAngle * (1 - Math.cos(th)) / Math.max(0.6, c.skill?.gesteF ?? 1);
 }
+
+/** (361, passeFaisable.revise °) LA RE-VISÉE AU CONTACT EST BORNÉE : au contact, la passe se ré-aimait sur la position (ou la croyance, le
+ *  rendez-vous) du receveur À CET INSTANT — mesuré (diag-C) jusqu'à 30° de la sortie planifiée, alors que le corps s'était engagé vers
+ *  elle pendant l'armé (le pied ne corrige pas 30° dans le dernier dixième). L'écart à outYaw est borné à revise ° : la mène tourne autour
+ *  du point de frappe, sa longueur garde la loi du receveur. La mène d'hier sans la sous-clé, pour le tir, le dégagement, le centre. Pure. */
+export function reviseBornee(st, c, cfg, from, lead, outYaw, opt = {}) {
+  const K = st.full && cfg.passeFaisable; if (!K || K.revise == null || outYaw == null || opt.shot || opt.clear || opt.cross) return lead;
+  const dx = lead[0] - from[0], dz = lead[2] - from[2], L = Math.hypot(dx, dz); if (L < 0.5) return lead;
+  let d = Math.atan2(dz, dx) - outYaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const m = K.revise * D; if (Math.abs(d) <= m) return lead;
+  const a = outYaw + Math.sign(d) * m;
+  st.events.push({ t: +st.t.toFixed(2), type: 'refus', kind: 'revise-bornee', by: c.id, deg: Math.round(Math.abs(d) / D) });
+  return [from[0] + Math.cos(a) * L, lead[1], from[2] + Math.sin(a) * L];
+}

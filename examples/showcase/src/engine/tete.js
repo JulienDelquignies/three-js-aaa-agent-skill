@@ -30,7 +30,7 @@ export function teteStep(st, cfg, force = null) {
   // de la tête debout (max) s'atteint EN SAUTANT — la fenêtre devient PAR JOUEUR
   // [min ; max + saut × sautF] (l'attribut jumping : un facteur, jamais une branche ; mesuré
   // avant : 1,7 vol/match traversait 2,2-3,0 m sur un corps, muet). Clé absente : hier au bit.
-  const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
+  const TH = st.full && cfg.teteHauteur, porte = (q) => TH ? Math.min(TH.plafond ?? 2.8, (T.max ?? 2.2) + (TH.saut ?? 0.45) * (q.skill?.sautF ?? 1)) : (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);   // (361, cfg.teteHauteur) le front debout ~1,7-1,8 m, la détente 0,5-0,7 m : 2,3-2,5 m, l'élite 2,7-2,9 (hier 2,95 pour le joueur MOYEN) — absente : hier au bit
   let joueur, saute, cands;
   if (force) {
     // (B3) LA TÊTE ARMÉE se résout AU CONTACT DE L'ACTE (teteContact) : le ballon doit y être — la prédiction a sa marge (armee.marge) —,
@@ -44,7 +44,7 @@ export function teteStep(st, cfg, force = null) {
     cands = [force, ...st.players.filter((q) => q.id !== force.id && q.down <= 0 && !q.keeper && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
       .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))];
   } else {
-    if (bp[1] < (T.min ?? 1.5) || bp[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) return;
+    if (bp[1] < (T.min ?? 1.5) || bp[1] > (TH ? (TH.plafond ?? 2.8) : (T.max ?? 2.2) + (T.saut ?? 0) * 1.25)) return;
     if ((st._teteCd ?? 0) > st.t) return;                            // un contact par fenêtre de vol
     cands = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act
       && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
@@ -158,7 +158,7 @@ export function teteStep(st, cfg, force = null) {
 export function teteArmerStep(st, cfg) {
   const T = cfg.tete, A = T?.armee;
   if (!A || (st._teteCd ?? 0) > st.t || st.players.some((q) => q.act?.payload?.kind === 'tete') || (st._enchaine && st.t < st._enchaine.until)) return;   // (note 386) le ballon remonté par la poitrine appartient à la reprise enchaînée, pas à la tête
-  const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
+  const TH = st.full && cfg.teteHauteur, porte = (q) => TH ? Math.min(TH.plafond ?? 2.8, (T.max ?? 2.2) + (TH.saut ?? 0.45) * (q.skill?.sautF ?? 1)) : (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);   // (361, cfg.teteHauteur) le front debout ~1,7-1,8 m, la détente 0,5-0,7 m : 2,3-2,5 m, l'élite 2,7-2,9 (hier 2,95 pour le joueur MOYEN) — absente : hier au bit
   const mvS = MOVE_TIMING.tete || { duration: 0.9, contact: 0.42 }, mvD = MOVE_TIMING.teteDebout || { duration: 0.55, contact: 0.22 };
   const path = predictPath(st.ball, { maxT: Math.max(mvS.contact, mvD.contact) + 1 / 30 });
   let why = 'fenêtre';                                             // le dernier motif de non-armé du vol (lu par les sondes : st._teteArmWhy)

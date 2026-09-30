@@ -7,7 +7,7 @@ import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
 import { xtDe, termeXt } from './xt.js'; import { engageDe, ecartDe, malusDe } from './engage.js';
-import { pSuccDe, termeDe } from './selection.js'; import { coutAngle } from './passe-faisable.js';
+import { pSuccDe, termeDe } from './selection.js'; import { coutAngle } from './passe-faisable.js'; import { priseInterception } from './interception-geste.js';
 import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
 import { dansCone } from './dribble.js';
@@ -1096,11 +1096,13 @@ function turnover(st, carrier, why, cfg = null) {
         return;
       }
     }
+    const IG = priseInterception(st, w, cfg);   // (361) l'interception est un contrôle nommé ; libre, elle emmène le ballon (interception-geste.js)
+    if (IG?.oriente) { st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), tech: IG.tech, pousse: st._pousse, interception: true }); ev.v1 = +hyp(st.ball.v[0], st.ball.v[2]).toFixed(2); return; }
     st.ball.impulse([-st.ball.v[0] * 0.8, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.8], [-st.ball.w[0] * 0.8, -st.ball.w[1], -st.ball.w[2] * 0.8]);
     st.ball.possess(carrier);
     if (sp0 > 0.5) {
       st._settling = { ev: st.events.length, id: carrier, at: st.t + 0.3 };
-      st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), settle: null });
+      st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), settle: null, ...(IG ? { tech: IG.tech, interception: true } : {}) });
     }
   }
   ev.v1 = +hyp(st.ball.v[0], st.ball.v[2]).toFixed(2);

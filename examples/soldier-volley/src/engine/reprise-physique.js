@@ -33,12 +33,14 @@ export function porteeBut(st, j, bp, cfg, geste = 'tete') { const K = st.full &&
 /** (359, cfg.relanceObstacle) LE GARDIEN NE DÉGAGE PAS DANS UN ADVERSAIRE : mesuré (diag-A), la volée du gardien partait droit sur
  *  l'attaquant planté à 2 m devant lui (keeper.js ne lisait que ses coéquipiers ; la marge de couloir n'était qu'écrite). Le couloir
  *  vers (tx, tz) est-il libre sur ses distance premiers mètres (aucun adversaire à < couloir m) ? true sans la clé. Pure. */
-export function relanceLibre(st, gk, tx, tz, cfg) {
-  const K = st.full && cfg.relanceObstacle; if (!K) return true;
-  const dx = tx - gk.p[0], dz = tz - gk.p[2], L = hyp(dx, dz) || 1, ux = dx / L, uz = dz / L, D = Math.min(L, K.distance ?? 8);
+export function relanceLibre(st, gk, tx, tz, cfg, main = false) {
+  const K = st.full && cfg.relanceObstacle; if (!K || (main && K.main == null)) return true;
+  // (361, relanceObstacle.main m) LE ROULÉ À LA MAIN LIT SON COULOIR ENTIER : la main ne regardait que le receveur (aucun adversaire à
+  // < 4 m de lui) — mesuré (diag-A, seed 7 t=110) : un roulé à 9 m coupé en route, puis le lob au but. Sur toute sa longueur, main m.
+  const dx = tx - gk.p[0], dz = tz - gk.p[2], L = hyp(dx, dz) || 1, ux = dx / L, uz = dz / L, D = main ? L : Math.min(L, K.distance ?? 8), CO = main ? K.main : (K.couloir ?? 1.2);
   return !st.players.some((q) => q.team !== gk.team && (q.down ?? 0) <= 0 && !q.expulse && !q._sub && (() => {
     const qx = q.p[0] - gk.p[0], qz = q.p[2] - gk.p[2], a = qx * ux + qz * uz; if (a < 0 || a > D) return false;
-    return Math.abs(qx * uz - qz * ux) < (K.couloir ?? 1.2); })());
+    return Math.abs(qx * uz - qz * ux) < CO; })());
 }
 
 /** (359, reprisePhysique.corpsVolee / corpsTete °) LA VOLÉE AU BUT PART DEVANT LE CORPS : mesuré (diag-C), 4 « tirs » à 155-177° du regard

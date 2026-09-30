@@ -8245,5 +8245,28 @@ if (__bloc()) {
     mA.dos < mN.dos && mA.ferme <= 1 && mA.iv >= 0.45 && mN.iv < 0.4);
 }
 
+if (__bloc()) {
+  // LES QUATRE DERNIERS DU REGISTRE (361 — 30/09 : « oui vas-y » ; docs/Regles_Irrealistes.md) : l'interception est un contrôle nommé
+  // (libre, elle emmène le ballon) ; la tête sautée plafonne à 2,8 m ; le roulé du gardien lit son couloir entier ; la re-visée au contact
+  // est bornée à 20° de la sortie planifiée. Le contrat, contre le 360 : les contrôles sans technique disparaissent, aucune tête au-dessus
+  // du plafond, aucun roulé coupé avant le coéquipier, et la re-visée se borne (événements nommés).
+  const NUL = { passeFaisable: { cout: 2.5, libre: 45, coutCourse: 2.5, vCourse: 3, tol: 35, uneTouche: 110, lacet: 6, contact: 100, vPoke: 7, sigma: 0.25, sigmaAngle: 0.8 },
+    relanceObstacle: { couloir: 1.2, distance: 8 }, teteHauteur: null, interceptionGeste: null };
+  const mesure = (over) => { const R = { sans: 0, emmene: 0, hMax: 0, coupe: 0, revise: 0 };
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0, main = null;
+      for (let i = 0; i < 600 * 60; i++) { const h0 = st.ball.p[1]; matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if (e.type === 'control') { if (e.interception && e.tech === 'touche-orientee') R.emmene++; else if (!e.tech && !e.interception && !st.players[e.by]?.keeper) R.sans++; }
+          if (e.type === 'tête') R.hMax = Math.max(R.hMax, h0);
+          if (e.type === 'relance-main') main = { t: e.t, team: st.players[e.by].team };
+          if (main && (e.type === 'receive' || e.type === 'control') && st.players[e.by]?.team === main.team && !st.players[e.by].keeper) main = null;
+          if (main && e.type === 'turnover' && e.t - main.t < 3 && e.equipe !== main.team) { R.coupe++; main = null; }
+          if (e.type === 'refus' && e.kind === 'revise-bornee') R.revise++; } } }
+    return R; };
+  const mA = mesure({}), mN = mesure(NUL);
+  ok(`lot 361 — LES QUATRE DERNIERS : contrôles sans technique ${mA.sans} (360 : ${mN.sans}), interceptions emmenées ${mA.emmene}, tête la plus haute ${mA.hMax.toFixed(2)} m (360 : ${mN.hMax.toFixed(2)}), roulés coupés ${mA.coupe} (360 : ${mN.coupe}), re-visées bornées ${mA.revise}`,
+    mA.sans <= 0.1 * mN.sans && mA.emmene > 0 && mA.hMax <= 2.85 && mA.coupe === 0 && mA.revise > 0 && mN.revise === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

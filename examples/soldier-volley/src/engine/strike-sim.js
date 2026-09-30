@@ -13,7 +13,7 @@ import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js'; import { corpsOuvert } from './passe-ouverte.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
-import { axe, tac } from './tactics.js'; import { horsCorps, porteContact, sigmaAngleF } from './passe-faisable.js';
+import { axe, tac } from './tactics.js'; import { horsCorps, porteContact, sigmaAngleF, reviseBornee } from './passe-faisable.js';
 import { role } from './roles.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -486,6 +486,7 @@ export function strikeNow(st, c, cfg) {
   // mesuré : la diagonale n'arrivait plus (4 bancs rouges en cascade), puis SANS effet la
   // retombée redevenait la glissade à spin orphelin (chasse 13 % → 61 %). Chaque cloche liftée
   // re-résout vitesse ET temps de vol par solvePass sur la vraie physique, effet compris.
+  lead = reviseBornee(st, c, cfg, from, lead, c.act.payload.outYaw, { shot: !!choice.shot, clear: !!choice.clear, cross: !!choice.cross });   // (361) la re-visée au contact bornée (passe-faisable.js)
   const liftYaw = Math.atan2(lead[2] - from[2], lead[0] - from[0]);
   const liftSpin = st.full && cfg.passeSpin !== false && !choice.shot && !choice.clear
     ? { spinRev: cfg.passeSpin ?? 4.5, spinAxis: [-Math.sin(liftYaw), 0, Math.cos(liftYaw)] } : null;

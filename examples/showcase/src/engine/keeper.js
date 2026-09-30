@@ -318,7 +318,7 @@ export function relancerGardien(st, gk, cfg, deps) {
     const libre = mates.filter((m) => {
       const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
       return dm > 4 && dm < porteeM && !st.players.some((q) => q.team !== gk.team && q.down <= 0
-        && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4) && !(RS0 && menaceDe(st, gk, m, dm / (RS0.vMain ?? 11), RS0, cfg));
+        && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4) && !(RS0 && menaceDe(st, gk, m, dm / (RS0.vMain ?? 11), RS0, cfg)) && relanceLibre(st, gk, m.p[0], m.p[2], cfg, true);   // (361) le couloir entier du roulé
     }).sort((a, b) => hyp(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - hyp(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[0];
     if (libre) {
       const dm = hyp(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
