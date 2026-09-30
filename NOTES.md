@@ -14610,6 +14610,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   Banc 16 matchs (joueurs neutres, 364 / 363) : pertes 125,1 / 131,6 et 130,3 / 124,8 (bruit), tirs 26,9 / 25,5 et 29,9 / 26,8, buts 2,94 /
   3,19 et 4,75 / 3,13 (à surveiller), complétion 89,1 / 89,4 et 89,1 / 89,8. Jumeau (les deux clés à null) = le 363 au bit ; défaut inchangé
   (`760f87327231ceb7 / 0841b5aee8628cf1` : aucun dribble dans les 90 s de l'empreinte, joueurs neutres) — la loi se prouve au bloc 233.
+- **Stats complètes du match** (30/09 : « des stats complètes du foot : heatmap, xG, pressing, tirs détaillés, gardiens, joueurs jusqu'au
+  schéma de passe, par mi-temps, défense, duels, discipline, notes » ; « tu peux aussi prévoir la 2d »). `engine/stats.js` (LECTURE SEULE,
+  l'empreinte inchangée au bit — verify-stats 7/7) : le journal de faits résolus (passes, tirs, duels, récupérations…), les échantillons
+  (possession, distances, sprints, heatmaps 21 × 14), le rapport (équipes, joueurs avec schéma de passes et note, tirs, buts, courbe d'xG),
+  par match ou par mi-temps. L'xG DE RÉFÉRENCE (`xgRef`, distance + angle d'ouverture, tête, volée, coup franc) est indépendant du moteur ;
+  l'xG du moteur (celui qui guide le tireur) reste publié (`xgMoteur`) — il sous-estime de moitié (buts / xG moteur 2,9 ; / xG réf 1,32).
+  `scripts/stats-match.mjs` : la feuille de match CLI. La page du match (`rondo-stats.js`) : le panneau à onglets (bouton Stats, S,
+  ?stats=1), carte des tirs, courbe d'xG, réseau de passes, heatmaps, fiches joueurs ; la vue 2D en direct (bouton 2D, D, ?vue2d=1).
+  Lu sur 8 matchs neutres de 90 min : pas de biais de côté (A 1,50 – B 1,38 ; xG 0,46 – 0,45) ; mais un jeu à pertes (récupérations 166 par
+  équipe, tacles 53, interceptions 64 — le réel 50 / 17 / 10), peu d'aérien (5,6 duels), peu de corners (1,7) et de centres (8,5).
+- **Lot 365 — le lob réel** (`lobReel` { ratio 0,4 }, shooting.js `lobOut`). Lu dans les stats : 23 % des tirs étaient des lobs (29 m de
+  moyenne, 7 buts sur 21), et en 80 c. 50 14 buts sur 27 étaient des lobs — 6 des 11 buts de l'équipe faible, de 25-38 m (xG réf 0,01) :
+  l'ÉGALISEUR qui tuait la domination. Hier le gardien à 4 m de sa ligne ouvrait le lob à toute distance ; désormais l'écart doit valoir
+  ≥ 0,4 × la distance du tir (20 m : 8 m, 30 m : 12 m). Après (8 × 90 min) : neutres, lobs 33 → 9 ; 80 c. 50 : 3/2/3 → 6/0/2, buts
+  2,00 – 1,75 → 2,25 – 1,13. Reste : les 9 lobs qui restent entrent TOUS (dont 3 de 37 m) ; les buts neutres montent (1,44 → 2,06 par
+  équipe — les tirs se rapprochent) : l'arrêt du gardien est le chantier suivant (63 % d'arrêts, le réel ~70 %). Jumeau (`lobReel: null`)
+  = le 364 au bit ; défaut inchangé (aucun lob dans l'empreinte) — la loi se prouve au bloc 234.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -8325,5 +8325,21 @@ if (__bloc()) {
     Math.abs(echelle[1]) <= 0.05 && echelle[0] < echelle[1] && echelle[1] < echelle[2] && echelle[2] < echelle[3] && aA(50, null) <= -0.2 && mA.perdus < mN.perdus);
 }
 
+if (__bloc()) {
+  // LE LOB RÉEL (365 — 30/09, lu dans les stats complètes : 23 % des tirs étaient des lobs, à 29 m de moyenne, et en 80 contre 50 la
+  // moitié des buts de l'équipe faible venaient de lobs de 25-38 m — l'égaliseur qui tuait la domination). Hier le gardien à 4 m de sa
+  // ligne ouvrait le lob à toute distance ; lobReel exige l'écart ≥ 0,4 × la distance du tir. Le contrat : chaque lob respecte la
+  // porte, et il y a moins de lobs qu'hier.
+  const mesure = (over) => { let n = 0, viol = 0;
+    for (const seed of [3, 11, 23]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0;
+      for (let i = 0; i < 1500 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type !== 'shot' || e.kind !== 'lob') continue; n++;
+          const c = st.players[e.by], g = st.pitch.attackGoal(c.team), gk = st.players.find((p) => p.keeper && p.team !== c.team);
+          if (gk && Math.abs(gk.p[0] - g.x) < 0.4 * Math.hypot(g.x - c.p[0], c.p[2]) - 0.3) viol++; } } }
+    return { n, viol }; };
+  const mA = mesure({}), mN = mesure({ lobReel: null });
+  ok(`lot 365 — LE LOB RÉEL : ${mA.n} lobs, ${mA.viol} sous la porte (0,4 × distance) ; hier ${mN.n} lobs dont ${mN.viol} sous la porte`, mA.viol === 0 && mA.n < mN.n);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

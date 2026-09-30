@@ -107,3 +107,14 @@ coupés avant le coéquipier 2 / 16 → 0 / 9.
 - La une-touche est passée de 67 à 43-45 par équipe et par match au 359 : la cible réelle est 15-25 — c'était un EXCÈS qui
   se résorbe, pas une perte.
 - Les centres ont doublé (7 → 15 par match) : ils restent sous le réel ; le mouvement va dans le bon sens.
+
+## 7. Lu dans les stats complètes (30/09) — le lob traité au lot 365, le reste ouvert
+
+| Règle | Mesure (8 × 90 min) | État |
+|---|---|---|
+| Le lob s'ouvre dès que le gardien est à 4 m de sa ligne, à toute distance (18-38 m) | 23 % des tirs (réel : quelques %), 29 m de moyenne ; en 80 c. 50, 14 buts sur 27, dont 6 des 11 de l'équipe faible | `lobReel` : écart ≥ 0,4 × la distance — lobs 33 → 9 ; 80 c. 50 : 3/2/3 → 6/0/2 |
+| Le lob qui reste entre toujours (9 sur 9, dont 3 de 37 m) | le repli du gardien ne rattrape jamais la cloche | Ouvert |
+| L'xG du moteur sous-estime de moitié | buts / xG moteur 2,9 ; / xG de référence 1,32 | Ouvert (le tireur choisit sur un xG faux) |
+| Le gardien arrête peu | 63 % des tirs cadrés (réel ~70 %) | Ouvert |
+| Un jeu à pertes | récupérations 166 par équipe (réel ~50), tacles 53 (~17), interceptions 64 (~10), PPDA 5,5 (8-15) | Ouvert — la cause probable du plafond de domination restant |
+| Peu de jeu aérien et de coups de pied arrêtés | duels aériens 5,6 par équipe (réel 15-20), corners 1,7 (~5), centres 8,5 (15-20) | Ouvert |
