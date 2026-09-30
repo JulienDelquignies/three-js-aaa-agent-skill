@@ -36,9 +36,13 @@ Mesuré : corps à plus de 60° de sa course à 2-3 m/s, 31,7 % → 5,6 % ; 3-4 
 Mesuré (2 × 900 s) : départs sans le ballon 19 et 13 → 1 et 1 ; ballon lâché mort 61 et 90 → 12 et 16 ; ballon derrière le
 porteur en conduite 25-29 % → 14 %.
 
-Reste (dettes nommées) : la touche orientée est bornée à 12 directions et à son avance minimale (0,35 m, ~1 m/s) ; l'interception
-et la récupération tuent 80 % de la vitesse du ballon sans geste (`rondo.js`) ; les touches au pas restent trop fréquentes (0,3 s,
-réel 0,6-1 s) ; l'amorti-poursuite et le quart de touche n'ont pas de direction.
+Traités au lot 360 : la touche orientée choisit parmi 72 directions (5°) avec une vraie avance (≥ 0,6 m, ≥ 2 m/s) —
+`priseSuivie.orientee` ; au pas le ballon respire — `rythmeTouche.lent` (0,9 s à l'arrêt → 0,25 s à 4 m/s) : touches droites au
+trot p50 0,30 → 0,78 s. Mesuré au passage : les touches rapides au pas restantes sont des touches de VIRAGE (conduite
+intérieur/extérieur à 20-140°) — le contrôle serré en tournant, réaliste.
+
+Reste (dettes nommées) : l'interception et la récupération tuent 80 % de la vitesse du ballon sans geste (`rondo.js`) ;
+l'amorti-poursuite et le quart de touche n'ont pas de direction.
 
 ## 3. Les passes dans des angles impossibles — CORRIGÉ en grande partie (`passeFaisable`)
 
@@ -50,9 +54,14 @@ réel 0,6-1 s) ; l'amorti-poursuite et le quart de touche n'ont pas de direction
 | Les passes en l'air font pivoter le corps sans limite (685-1 234 °/s) | `rondo-sim.js` | Pivot borné à 6 rad/s |
 | Les fenêtres de surface couvrent presque 360° (intérieur [-65, 165], déviation [-80, 180]) | `technique.js` | Dette : le contrat les accepte encore ; la porte réelle vit désormais au choix |
 
-Mesuré (4 × 900 s) : frappes physiquement impossibles 9 % → 3 %. Reste : les DÉVIATIONS D'URGENCE (dégagements du pied
-en crochet à 145-149° du corps, `opts.clear` exempté de la porte), la dispersion qui ne grandit pas avec l'angle
-(`reception.js sigmaPasse`), la re-visée au contact qui peut décaler la passe de 30° après l'engagement du corps.
+Mesuré (4 × 900 s) : frappes physiquement impossibles 9 % → 3 %.
+
+Traités au lot 360 : la PORTE AU CONTACT (`passeFaisable.contact`) — le choix supposait que le corps tournerait pendant l'armé, il
+tournait moins (les passes pressées en « déviation » partaient à 104-123°) ; au contact, au-delà de 100° du regard, la passe part
+en TOUCHE DE FORTUNE (≤ 7 m/s, bruitée) ; la dispersion paie l'angle (`passeFaisable.sigmaAngle` : ×1,2 à 45°, ×1,8 à 90°).
+Passes à plus de 100° du corps 2,7 % → 1,5 % (4 × 900 s), les fermes (> 8 m/s) 3 → 1.
+
+Reste : la re-visée au contact qui peut décaler la passe de 30° après l'engagement du corps.
 
 ## 4. Les buts « de la tête » sans toucher le ballon — CORRIGÉ (`reprisePhysique`, `relanceObstacle`, `buteur`)
 
@@ -66,10 +75,11 @@ en crochet à 145-149° du corps, `opts.clear` exempté de la porte), la dispers
 
 Mesuré (8 × 30 min) : reprises instantanées au but 4 (dont 4 buts) → 0.
 
-Reste (dettes nommées) : le gardien ne peut pas réagir pendant l'accompagnement de sa relance (`match-sim.js`, `busy(gk)`) ; le
-plafond de tête sautée (jusqu'à 3,14 m) est généreux ; la tête armée contourne le délai entre deux têtes (le même joueur deux fois en
-0,02 s) ; le contre de tir se déclenche jusqu'à 1,48 m et s'applique aussi aux relances du gardien ; la main du gardien à 9 m peut
-être interceptée.
+Traités au lot 360 : le gardien sort de l'accompagnement de sa relance quand le ballon revient vers son but (`gkReprise`,
+`gardien-reprend.js`) ; une tête par corps en 0,5 s (`reprisePhysique.teteCd`) ; le contre d'un ballon frappé il y a moins de
+0,3 s ne s'étend qu'à 0,6 m — le corps, pas la jambe tendue (`reprisePhysique.rayonReflexe`).
+
+Reste (dettes nommées) : le plafond de tête sautée (jusqu'à 3,14 m) est généreux ; la main du gardien à 9 m peut être interceptée.
 
 ## 5. Autres règles irréalistes relevées en route (non traitées dans ce lot)
 
@@ -80,3 +90,9 @@ plafond de tête sautée (jusqu'à 3,14 m) est généreux ; la tête armée cont
 - La talonnade n'est bornée que par sa probabilité, pas par la distance ni la vitesse (hors `porteeGeste`).
 - La une-touche plafonne à 12 m/s à tout angle quand le dosage est coupé.
 - Peu de porteurs LANCÉS en transition (chantier #39, l'intelligence).
+
+## 6. Signaux du banc lus au lot 360
+
+- La une-touche est passée de 67 à 43-45 par équipe et par match au 359 : la cible réelle est 15-25 — c'était un EXCÈS qui
+  se résorbe, pas une perte.
+- Les centres ont doublé (7 → 15 par match) : ils restent sous le réel ; le mouvement va dans le bon sens.
