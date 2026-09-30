@@ -1,3 +1,4 @@
+import { rayonReflexe } from './reprise-physique.js';
 import { tirage } from './rng.js';
 // duel.js — LES DUELS DE CORPS SUR PORTEUR (lot 33 : la volumétrie est une dette comme une
 // autre — rondo-sim crevait le plafond de 1 250 à 1 263). La FAMILLE est cohésive : la CHARGE
@@ -428,7 +429,7 @@ export function contreTir(st, cfg) {
   for (const q of st.players) {
     if (q.team === dernier.team || q.keeper || q.down > 0 || (q._contreCd ?? -1) > st.t) continue;
     const d = hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
-    if (d > rayonContre(st, q, C, CT)) continue;
+    if (d > rayonReflexe(st, cfg, rayonContre(st, q, C, CT))) continue;   // (360) reprise-physique : le réflexe au corps seulement
     q._contreCd = st.t + 1.5;
     const rnd = tirage(st, 'duel', q.id, st.rnd ?? (() => 0.5));
     if (C) {

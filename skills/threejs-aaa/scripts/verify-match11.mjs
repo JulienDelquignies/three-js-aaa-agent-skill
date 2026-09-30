@@ -8223,5 +8223,27 @@ if (__bloc()) {
     mA.trav <= 0.10 && mN.trav >= 0.2 && mA.dos <= 0.03 && mA.dos < mN.dos && mA.inst === 0);
 }
 
+if (__bloc()) {
+  // LES RESTES DU REGISTRE (360 — 30/09 : « ok traite tes points » ; docs/Regles_Irrealistes.md) : la porte au contact (la passe à plus de
+  // contact ° du regard part en touche de fortune, molle), l'imprécision qui paie l'angle, la touche orientée à 72 directions, le rythme
+  // des touches au pas, le gardien qui se reprend, une tête par corps, le contre réflexe au corps. Le contrat : moins de frappes fermes
+  // à > 100° du corps que le 359, aucune au-delà de vPoke + 1 m/s ; au trot (1,5-2,5 m/s) les touches droites espacées de ≥ 0,45 s (p50).
+  const NUL = { passeFaisable: { cout: 2.5, libre: 45, coutCourse: 2.5, vCourse: 3, tol: 35, uneTouche: 110, lacet: 6 }, reprisePhysique: { tMin: 0.3, vMax: 12, vient: 0.3, garde: 0.3, cone: 60, corpsVolee: 100, corpsTete: 120 },
+    priseSuivie: { cone: 60, over: 0.3, vMort: 0.3, garde: 0.6 }, rythmeTouche: { tMin: 0.25, fuite: 0.2 }, gkReprise: null };
+  const mesure = (over) => { let n = 0, dos = 0, ferme = 0; const iv = [];
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0; const last = {};
+      for (let i = 0; i < 600 * 60; i++) { const y0 = st.players.map((q) => q.yaw); matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if (e.type === 'touche' && e.by != null && (e.virage == null || Math.abs(e.virage) <= 15)) { const p = st.players[e.by], v = Math.hypot(p.v[0], p.v[1]); if (last[e.by] != null && st.t - last[e.by] < 2.5 && v >= 1.5 && v < 2.5) iv.push(st.t - last[e.by]); last[e.by] = st.t; continue; }
+          if (e.type === 'pass' || e.type === 'control' || e.type === 'receive') delete last[e.by];
+          if (e.type !== 'pass' || e.by == null || e.by < 0 || st.players[e.by].keeper || /talon/.test(e.tech ?? '') || /talon/.test(e.move ?? '')) continue;
+          const bv = st.ball.v, sp = Math.hypot(bv[0], bv[2]); if (sp < 0.5) continue; n++;
+          const a = Math.atan2(bv[2], bv[0]) - y0[e.by]; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) > 100 * Math.PI / 180) { dos++; if (sp > 8) ferme++; } } } }
+    iv.sort((a, b) => a - b); return { dos: dos / Math.max(1, n), ferme, iv: iv.length ? iv[Math.floor(iv.length / 2)] : 0 }; };
+  const mA = mesure({}), mN = mesure(NUL);
+  ok(`lot 360 — LES RESTES DU REGISTRE : passes à > 100° du corps ${(100 * mA.dos).toFixed(1)} % (359 : ${(100 * mN.dos).toFixed(1)} %), dont fermes (> 8 m/s) ${mA.ferme} (359 : ${mN.ferme}) ; touches droites au trot p50 ${mA.iv.toFixed(2)} s (359 : ${mN.iv.toFixed(2)} s)`,
+    mA.dos < mN.dos && mA.ferme <= 1 && mA.iv >= 0.45 && mN.iv < 0.4);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

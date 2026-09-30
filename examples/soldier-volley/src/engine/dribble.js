@@ -170,7 +170,10 @@ export function dribbleStep(d, ball, player, dt) {
   // (359, player.mortOk — cfg.priseSuivie) LE BALLON MORT AU PIED SE REJOUE : sa fuite se lit à SA vitesse (le joueur qui s'éloigne d'un ballon
   // arrêté ne le voit pas « fuir »), et la foulée minimale ne l'interdit pas (le dribbleur neuf part de 0 m). Absent : hier au bit.
   const mort = player.mortOk != null && hyp(ball.v[0], ball.v[2]) < player.mortOk;
-  const rythmeOk = !R || (d.tSince >= (R.tMin ?? 0.25) && ((mort ? 0 : vRel) <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
+  // (360, R.lent — cfg.rythmeTouche.lent) AU PAS, LE BALLON RESPIRE : mesuré, une touche toutes les 0,30 s de 0,5 à 2,5 m/s (réel : 0,6-1 s —
+  // une touche toutes les deux ou trois foulées). L'intervalle minimal part de t0 s à l'arrêt et rejoint tMin à v m/s. Absent : hier au bit.
+  const tMinR = R ? (R.lent ? Math.max(R.tMin ?? 0.25, R.lent.t0 - (R.lent.t0 - (R.tMin ?? 0.25)) * Math.min(1, player.speed / R.lent.v)) : (R.tMin ?? 0.25)) : 0;
+  const rythmeOk = !R || (d.tSince >= tMinR && ((mort ? 0 : vRel) <= (R.fuite ?? 0.2) || dist >= c.reach * 0.95));
   // (343, player.rattrape — cfg.conduiteLibre.rattrape) LE BALLON QUI REVIENT À HAUTEUR SE JOUE DE CÔTÉ : mesuré, une touche faible (ou le
   // lâcher du porté) laissait le ballon à 1,5-2 m/s sous un coureur à 3-4 m/s — il le dépassait, le ballon finissait à côté puis derrière
   // (7-10 % des images lancées, 26-39 épisodes / 15 min), jamais retouché (ni dans le cône avant, ni la foulée écoulée). Le vrai joueur ne

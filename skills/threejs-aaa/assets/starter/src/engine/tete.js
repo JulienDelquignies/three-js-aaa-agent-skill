@@ -1,5 +1,5 @@
 import { tirage } from './rng.js'; import { modeTeteDefensive } from './petits-gestes.js'; import { vitesseGeste } from './repertoire.js';
-import { xgDe } from './xg.js'; import { repriseSubie, porteeBut, butDansCorps } from './reprise-physique.js';
+import { xgDe } from './xg.js'; import { repriseSubie, porteeBut, butDansCorps, teteRecente } from './reprise-physique.js';
 import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
 import { MOVES } from './animkit.js'; import { poserAmorti, amortiTetePossible } from './amorti-oriente.js';   // (347) l'amorti aérien orienté, l'amorti de la tête   // (C1) la retournée : le clip authored porte son contact (0,52 s)
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
@@ -39,6 +39,7 @@ export function teteStep(st, cfg, force = null) {
     if (bp[1] < (T.min ?? 1.5) - marge || bp[1] > porte(force) + marge || d > (T.reach ?? 1.0) + marge) {
       st.events.push({ t: +st.t.toFixed(2), type: 'tête-manquée', by: force.id, d: +d.toFixed(2), h: +bp[1].toFixed(2) }); return;
     }
+    if (teteRecente(st, cfg, force.id)) { st.events.push({ t: +st.t.toFixed(2), type: 'tête-manquée', by: force.id, cause: 'deja' }); return; }   // (360) une tête par corps
     joueur = force; saute = !!force.act?.payload?.saut;
     cands = [force, ...st.players.filter((q) => q.id !== force.id && q.down <= 0 && !q.keeper && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
       .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))];
@@ -86,7 +87,7 @@ export function teteStep(st, cfg, force = null) {
       st.events.push({ t: +st.t.toFixed(2), type: 'duel', kind: 'aérien', by: joueur.id, contre: venant.id, won: tenu, ...(tenu ? {} : { gene: true }), ...(saute ? { saut: true } : {}) });
     }
   }
-  st._teteCd = st.t + 0.8;
+  st._teteCd = st.t + 0.8; st._teteLast = { id: joueur.id, t: st.t };
   st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
   const goal = st.pitch.attackGoal(joueur.team);
   const own = st.pitch.ownGoal(joueur.team);

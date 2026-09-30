@@ -13,7 +13,7 @@ import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js'; import { corpsOuvert } from './passe-ouverte.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
-import { axe, tac } from './tactics.js'; import { horsCorps } from './passe-faisable.js';
+import { axe, tac } from './tactics.js'; import { horsCorps, porteContact, sigmaAngleF } from './passe-faisable.js';
 import { role } from './roles.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -516,7 +516,7 @@ export function strikeNow(st, c, cfg) {
     // choice.sigmaF (lot 100 — contrat générique) : le multiplicateur de dispersion DU GESTE,
     // posé par l'appelant (le centre du mauvais pied ×1,9, du pied de débordement ×0,85 —
     // shooting.tryCross). Absent : 1, le σ d'hier au bit — aucun tirage de plus.
-    if (c.skill && st.full && cfg.passe) { PG = pressionDe(st, c, cfg.passe, cfg).P; dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * sigmaPasse(c, choice, hyp(lead[0] - from[0], lead[2] - from[2]), PG, cfg.passe, 3.25 * Math.PI / 180) * (choice.sigmaF ?? 1); }   // (265) L'ERREUR DE GESTE PAR CLASSE ET DISTANCE (reception.js) : la base du book, la note en facteur, la classe, la pression, la distance
+    if (c.skill && st.full && cfg.passe) { PG = pressionDe(st, c, cfg.passe, cfg).P; dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * sigmaPasse(c, choice, hyp(lead[0] - from[0], lead[2] - from[2]), PG, cfg.passe, 3.25 * Math.PI / 180) * (choice.sigmaF ?? 1) * sigmaAngleF(st, c, cfg, from, lead); }   // (265) L'ERREUR DE GESTE PAR CLASSE ET DISTANCE (reception.js) : la base du book, la note en facteur, la classe, la pression, la distance
     else if (c.skill) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
     else if (cfg.execSigma) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
   } else if (!shot && choice.clear && st.full && cfg.clearSigma) {
@@ -631,6 +631,7 @@ export function strikeNow(st, c, cfg) {
   // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
   // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
   // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
+  { const PC = porteContact(st, c, cfg, sol.dirYaw, tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5)), { heel: pick?.tech?.surface === 'heel', shot, mains }); if (PC) { spd = Math.min(spd, PC.vMax); sol.dirYaw += PC.dPsi; } }   // (360) la touche de fortune au-delà du corps (passe-faisable.js)
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev,
     spinAxis: liftAtStrike ? liftAtStrike.spinAxis : [0, 1, 0], spinRev: liftAtStrike ? liftAtStrike.spinRev : (kind?.rev ?? 0) });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });

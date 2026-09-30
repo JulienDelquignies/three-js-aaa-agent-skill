@@ -49,3 +49,16 @@ export function butDansCorps(st, j, tx, tz, cfg, geste = 'volee') {
   let d = Math.atan2(tz - j.p[2], tx - j.p[0]) - j.yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
   return Math.abs(d) <= A * Math.PI / 180;
 }
+
+/** (360, reprisePhysique.rayonReflexe m) LE CONTRE NE S'ÉTEND QU'À CE QU'ON A VU VENIR : le contre de tir (duel.contreTir) prenait tout
+ *  ballon rapide et bas jusqu'à 1,48 m d'un corps — même frappé il y a un dixième (la relance du gardien renvoyée vers son but). Frappé
+ *  depuis < tMin s : le rayon se borne à rayonReflexe (le corps, pas la jambe tendue). Le rayon d'hier sans la sous-clé. Pure. */
+export function rayonReflexe(st, cfg, r) {
+  const K = st.full && cfg.reprisePhysique; if (!K || K.rayonReflexe == null) return r;
+  const F = st.ball.frappeAt, sp = hyp(st.ball.v[0], st.ball.v[2]); if (!F || sp < 1) return r;
+  return hyp(st.ball.p[0] - F[0], st.ball.p[2] - F[2]) / sp < (K.tMin ?? 0.3) ? Math.min(r, K.rayonReflexe) : r;
+}
+
+/** (360, reprisePhysique.teteCd s) UNE TÊTE PAR CORPS : la tête armée (tete.js, force) contournait le délai entre deux têtes — mesuré (diag-A,
+ *  graine 29 t=1219,85 puis 1219,87) : le même joueur deux fois de la tête en 0,02 s. true si ce corps vient de jouer de la tête. Pure. */
+export function teteRecente(st, cfg, id) { const K = st.full && cfg.reprisePhysique; return !!K && K.teteCd != null && st._teteLast?.id === id && st.t - st._teteLast.t < K.teteCd; }

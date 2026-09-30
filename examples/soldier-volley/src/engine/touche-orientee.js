@@ -29,9 +29,12 @@ export function toucheOrientee(st, p, cfg, RC) {
   // LE CÔTÉ OUVERT : douze directions ; le sens du jeu (× sens, un peu vers l'axe), l'élan (× elan), du champ devant (aucun corps à moins de
   // champ m dans le couloir de devant m), jamais vers la craie (le ballon roule lead m et un peu plus)
   const gz = -Math.sign(p.p[2]) * Math.min(0.4, Math.abs(p.p[2]) / (st.pitch.hz || 34));
+  // (360, cfg.priseSuivie.orientee) LA TOUCHE ORIENTÉE A UNE DIRECTION, PAS UN CADRAN : douze directions (30°) arrondissaient la touche
+  // (diag-B : toujours à l'avance minimale, 0,35 m, ~1 m/s, reprise l'image d'après) — dirs directions, avance ≥ leadMin, vitesse ≥ vMin.
+  const OR = st.full && cfg.priseSuivie?.orientee, ND = OR?.dirs ?? 12;
   let best = null;
-  for (let k = 0; k < 12; k++) {
-    const a = (k / 12) * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a);
+  for (let k = 0; k < ND; k++) {
+    const a = (k / ND) * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a);
     const tx = p.p[0] + dx * (lead + 1.5), tz = p.p[2] + dz * (lead + 1.5);
     if (Math.abs(tx) > st.area[0] / 2 - 1.2 || Math.abs(tz) > st.area[1] / 2 - 1.2) continue;
     let champ = 99;
@@ -44,9 +47,9 @@ export function toucheOrientee(st, p, cfg, RC) {
   // …ET LA TOUCHE EN TRAVERS RESTE COURTE (310, K.tournant — filmé à l'atelier : la touche partait à 46° p50 du regard, 116° p90, à
   // 3 m/s pour 1 m d'avance ; le corps tournait 0,3 s avant de pousser, le ballon à 1,2-2 m, la 2e touche à 1 s). Le vrai joueur qui
   // pivote sur sa touche la garde sous lui : l'avance × (1 − tournant × (1 − cos θ) / 2), θ l'angle touche / course (regard à l'arrêt).
-  if (K.tournant) { const c = best.dx * vx + best.dz * vz; lead *= 1 - K.tournant * (1 - Math.max(-1, Math.min(1, c))) / 2; lead = Math.max(K.leadCourt ?? 0.35, lead); }
+  if (K.tournant) { const c = best.dx * vx + best.dz * vz; lead *= 1 - K.tournant * (1 - Math.max(-1, Math.min(1, c))) / 2; lead = Math.max(OR?.leadMin ?? K.leadCourt ?? 0.35, lead); }
   // LA TOUCHE EST UNE VITESSE (dribble.js) : le ballon gagne lead m sur le corps projeté sur la touche, la grasse le rend ensuite
-  const v = Math.max(K.tournant ? (K.vMin ?? 1.5) : 1.5, pushSpeed(Math.max(0, sp * (best.dx * vx + best.dz * vz)), lead));
+  const v = Math.max(OR?.vMin ?? (K.tournant ? (K.vMin ?? 1.5) : 1.5), pushSpeed(Math.max(0, sp * (best.dx * vx + best.dz * vz)), lead));
   st.ball.impulse([best.dx * v - st.ball.v[0], -st.ball.v[1], best.dz * v - st.ball.v[2]],
     [(best.dz * v) / BALL.radius - st.ball.w[0], -st.ball.w[1], -(best.dx * v) / BALL.radius - st.ball.w[2]]);
   p.yawWant = Math.atan2(best.dz, best.dx);                                   // il tourne SUR sa touche — movePlayers slew, jamais un claquement

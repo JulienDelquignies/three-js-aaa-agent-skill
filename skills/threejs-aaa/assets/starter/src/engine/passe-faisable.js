@@ -34,3 +34,24 @@ export function uneToucheDansCorps(st, p, tx, tz, cfg) { const K = st.full && cf
 
 /** Le pivot des passes en l'air : le cap vers want, borné à lacet rad/s ; want sans la sous-clé. Pure. */
 export function lacetBorne(st, cfg, yaw, want, dt) { const K = st.full && cfg.passeFaisable; if (!K || K.lacet == null) return want; const d = wrap(want - yaw), m = K.lacet * dt; return Math.abs(d) <= m ? want : yaw + Math.sign(d) * m; }
+
+/** (360, passeFaisable.contact °) LA PORTE AU CONTACT : le choix suppose que le corps tournera pendant l'armé (turn + rate × antic) ;
+ *  mesuré (lot 359) : les passes PRESSÉES en « déviation » partaient à 104-123° du regard — le corps avait tourné moins que prévu.
+ *  Au contact, au-delà de contact ° entre la frappe et le regard (hors talon, hors tir, hors mains), la passe n'est pas une passe :
+ *  une TOUCHE DE FORTUNE — molle (≤ vPoke m/s) et bruitée (σ rad × dépassement / 60°). Renvoie { vMax, dPsi } ou null. */
+export function porteContact(st, c, cfg, dirYaw, rnd, opt = {}) {
+  const K = st.full && cfg.passeFaisable; if (!K || K.contact == null || opt.heel || opt.shot || opt.mains) return null;
+  const th = ecartCorps(Math.cos(dirYaw), Math.sin(dirYaw), c.yaw) / D; if (th <= K.contact) return null;
+  const u = rnd(), g = (u + rnd() - 1) * 2;   // triangulaire [-2, 2] — deux tirages seedés
+  st.events.push({ t: +st.t.toFixed(2), type: 'refus', kind: 'touche-fortune', by: c.id, deg: Math.round(th) });
+  return { vMax: K.vPoke ?? 7, dPsi: g * (K.sigma ?? 0.25) * (th - K.contact) / 60 };
+}
+
+/** (360, passeFaisable.sigmaAngle) L'IMPRÉCISION PAIE L'ANGLE : la dispersion de passe (reception.sigmaPasse) ne lisait ni le regard ni
+ *  la course — une passe à 90° de travers partait aussi juste qu'une passe face au jeu. Facteur 1 + k (1 − cos θ) / technique (gesteF),
+ *  θ l'écart frappe↔regard : ×1,2 à 45°, ×1,8 à 90° (k 0,8, technique moyenne). 1 sans la sous-clé. Pure. */
+export function sigmaAngleF(st, c, cfg, from, lead) {
+  const K = st.full && cfg.passeFaisable; if (!K || K.sigmaAngle == null) return 1;
+  const th = ecartCorps(lead[0] - from[0], lead[2] - from[2], c.yaw);
+  return 1 + K.sigmaAngle * (1 - Math.cos(th)) / Math.max(0.6, c.skill?.gesteF ?? 1);
+}
