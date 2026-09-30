@@ -36,7 +36,8 @@ export function makeStats(st, { sample = 10 } = {}) {
     faits: [],
     pass: null, tir: null,                                   // la passe et le tir en cours de résolution
     poss: [[0, 0], [0, 0], [0, 0]],                          // [per][team] images de possession (per 0 inutilisé)
-    lastLoss: [-99, -99],                                    // l'heure de la dernière perte de chaque équipe (le contre-pressing)
+    lastLoss: [-99, -99],
+    forme: [0, 1].map(() => [null, 0, 0].map(() => ({ nA: 0, larg: 0, profA: 0, nD: 0, ligne: 0, bloc: 0, long: 0, largD: 0 }))),   // [team][per] la FORME de l'équipe (échantillons)                                    // l'heure de la dernière perte de chaque équipe (le contre-pressing)
     J: st.players.map((p) => ({
       id: p.id, team: p.team, keeper: !!p.keeper, post: p.post ?? null, name: p.name ?? null,
       dist: [0, 0, 0], sprints: [0, 0, 0], vMax: 0, tJeu: [0, 0, 0], _sprint: false,
@@ -68,6 +69,17 @@ export function statsStep(S, st, dt = 1 / 60) {
       const [x, z] = sens(st, p.team, p.p[0], p.p[2]);
       const ix = Math.max(0, Math.min(GX - 1, Math.floor((x + hx) / (2 * hx) * GX))), iz = Math.max(0, Math.min(GZ - 1, Math.floor((z + hz) / (2 * hz) * GZ)));
       J.heat[per][iz * GX + ix]++;
+    }
+  }
+  // — LA FORME DE L'ÉQUIPE (la signature des consignes) : en possession, la LARGEUR (écart latéral des joueurs de champ) et la
+  //   PROFONDEUR (centre de gravité, m depuis son but) ; sans le ballon, la HAUTEUR DE LA LIGNE (les 4 plus bas), le BLOC (centre de
+  //   gravité), la LONGUEUR (du dernier au premier) et la largeur défensive. Mètres depuis son propre but.
+  if (jeu && S.frame % S.sample === 0 && st.possession?.team != null && st.possession.team >= 0) {
+    for (const t of [0, 1]) {
+      const xs = [], zs = []; for (const p of st.players) if (p.team === t && !p.keeper && !p.expulse && !p._sub) { const [x, z] = sens(st, t, p.p[0], p.p[2]); xs.push(x + hx); zs.push(z); }
+      if (xs.length < 6) continue; const Fm = S.forme[t][per], cx = xs.reduce((a, b) => a + b, 0) / xs.length, lz = Math.max(...zs) - Math.min(...zs);
+      if (st.possession.team === t) { Fm.nA++; Fm.larg += lz; Fm.profA += cx; }
+      else { const o = [...xs].sort((a, b) => a - b); Fm.nD++; Fm.ligne += (o[0] + o[1] + o[2] + o[3]) / 4; Fm.bloc += cx; Fm.long += o[o.length - 1] - o[0]; Fm.largD += lz; }
     }
   }
   // — le tir en vol : le passage de la ligne de but (cadré / hors cadre / frôle)
@@ -227,6 +239,9 @@ export function statsReport(S, st, { per = null } = {}) {
       recupContrePress: rec.filter((r) => r.contrePress).length, pressions: E('pression').length + E('contre-press').length, ppda: pAdv && actions ? r1(pAdv / actions) : null,
       degagements: E('degagement').length, contresDefensifs: E('contre').length,
       fautes: E('faute').length, fautesSubies: A('faute').filter((f) => f.sur != null).length, jaunes: E('carton').filter((c) => c.couleur === 'jaune').length, rouges: E('carton').filter((c) => c.couleur === 'rouge').length,
+      ...(() => { const fm = pers.map((p) => S.forme[team][p]), sm = (k) => fm.reduce((a, f) => a + f[k], 0), nA = sm('nA'), nD = sm('nD');
+        return { largeurPossession: nA ? r1(sm('larg') / nA) : null, profondeurPossession: nA ? r1(sm('profA') / nA) : null,
+          hauteurLigne: nD ? r1(sm('ligne') / nD) : null, hauteurBloc: nD ? r1(sm('bloc') / nD) : null, longueurBloc: nD ? r1(sm('long') / nD) : null, largeurDefensive: nD ? r1(sm('largD') / nD) : null }; })(),
       controlesRates: E('controle').filter((c) => c.rate).length, depossedesReception: E('controle').filter((c) => c.conteste).length,
       horsJeu: E('hors-jeu').length, corners: F.filter((f) => f.k === 'sortie' && f.out === 'corner' && f.team === team).length,
       arrets: A('tir').filter((t) => t.issue === 'arrete').length, prisesGardien: E('arret').length, sortiesGardien: E('sortie-gk').length,   // l'arrêt = sur un TIR ; la prise = toute intervention (centre, ballon au pied…)
