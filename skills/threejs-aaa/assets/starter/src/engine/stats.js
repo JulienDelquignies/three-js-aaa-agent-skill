@@ -105,6 +105,10 @@ function finirTir(S, st, issue) {
   T.cadre = T.issue === 'but' || T.issue === 'arrete' || (T.issue === 'cadre');
 }
 
+/** Le tir pris par un adversaire avant la ligne sans événement d'arrêt ou de contre (le gardien qui capte, le défenseur qui coupe) :
+ *  l'arrêt du gardien, le contre du joueur de champ (hier : issue « autre », ~15 % des tirs). */
+function tirCoupe(S, st, P) { if (S.tir && !S.tir.ligne && P && P.team !== S.tir.team) finirTir(S, st, P.keeper ? 'arrete' : 'contre'); }
+
 function lire(S, st, e, per) {
   const by = e.by != null && e.by >= 0 && st.players[e.by] ? e.by : null, P = by != null ? st.players[by] : null, team = P?.team ?? e.team ?? e.equipe ?? null;
   const [x, z] = by != null ? posDe(st, by) : [null, null];
@@ -120,11 +124,13 @@ function lire(S, st, e, per) {
     }
     case 'centre': { if (S.pass && S.pass.by === by) { S.pass.centre = true; S.pass.air = !e.bas; } else fait(S, { ...base, k: 'centre', bas: !!e.bas }); break; }
     case 'receive': case 'control': case 'loose-kept': {
+      tirCoupe(S, st, P);
       if (S.pass && P) { if (P.team === S.pass.team) finirPasse(S, true, e.type, st, by); else finirPasse(S, false, 'intercepte', st); }
       if (e.type === 'control') fait(S, { ...base, k: 'controle', tech: e.tech ?? null, rate: !!e.miss, issue: e.issue ?? null, interception: !!e.interception });
       break;
     }
     case 'turnover': {
+      tirCoupe(S, st, P);
       if (S.pass) finirPasse(S, S.pass.team === e.equipe, 'perte', st, S.pass.team === e.equipe ? by : null);
       const perdant = 1 - e.equipe; S.lastLoss[perdant] = e.t;
       fait(S, { ...base, team: e.equipe, k: 'recuperation', why: e.why, contrePress: e.t - S.lastLoss[e.equipe] < 5 });
