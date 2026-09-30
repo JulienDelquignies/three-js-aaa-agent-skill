@@ -14643,8 +14643,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   2,13 – 1,00 (364 : 3/2/3 ; 365 : 6/0/2). Jumeau (les deux clés à null) = le 365 au bit ; défaut `0c7a082b04f8a6a1 / 1e09572def74931d` ;
   bloc 235 (cloche de 28 m sur le gardien sorti de 8 m : but hier, arrêt aujourd'hui).
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
-  passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match)
-  sont surtout la conduite (le porteur les garde). L'écart réel : touches 20 par match (réel 40-45), sorties de but 4,5 (15-18), corners
+  passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
+  artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match
+  (contrôles ratés 92, tacles du bout du pied 37, épaules 35, contrôles longs 36, déviations 17…). L'écart réel : touches 20 par match (réel 40-45), sorties de but 4,5 (15-18), corners
   1,3 (~10), jeu effectif 68 min (55-60) — tout ce qui sortirait (dégagements, contres, tacles, déviations) reste en jeu et se dispute.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
