@@ -127,3 +127,18 @@ coupés avant le coéquipier 2 / 16 → 0 / 9.
 | La réception contestée (le presseur arrive sur le ballon pendant le contrôle) est un 50/50 sans avantage au receveur | 43,5 perdues par match, étiquetées « contrôles ratés » | `receptionDuel` : 0,65 + l'écart de force — 30 par match ; les stats la nomment dépossession |
 | Le contrôle manqué (Weibull) | 15 par match, 2,6 % : le livre | Réaliste, inchangé |
 | Le prix du premier toucher sur un ballon rapide récupéré | 11 par match | Réaliste, inchangé |
+
+## 9. L'audit tactique (30/09) — chaque consigne laisse-t-elle sa signature ?
+
+Chaque preset de `tactics.js` contre `equilibre`, 4 × 90 min (joueurs neutres), lu dans les stats (dont la FORME de l'équipe,
+ajoutée pour l'audit : ligne, bloc, longueur, largeur, profondeur). Référence `equilibre` c. `equilibre` en première colonne.
+
+| Consigne | Signature attendue | Mesuré (A ; référence) | Verdict |
+|---|---|---|---|
+| Hauteur du bloc | ligne et bloc haut ou bas | ligne : gegenpressing 39,6 m, ligne haute 39,1, possession 36,0, **bloc bas 23,8** ; référence 31,1 | ✓ mord |
+| Pressing | récupérations hautes, PPDA bas | récupérations dans le camp adverse : gegenpressing 82, ligne haute 85, bloc bas 40 ; référence 53. PPDA 4,5-7,7 partout (réel 8-15) | ✓ en hauteur ; le PPDA est trop bas pour tout le monde |
+| Pressing → occasions | l'adversaire étouffé | tirs gegenpressing 14,0 – 6,0 | ✓ |
+| Ligne haute → hors-jeu | hors-jeu provoqués | 3,8 ; référence 2,0 | ✓ (faible) |
+| **Style possession ↔ direct** | possession : +passes, courtes, possession > 55 % ; direct : 20-25 % de longues, moins de passes | possession : 50,9 %, 568 passes, 15,9 % de longues ; direct : 47,9 %, 544 passes, 15,8 % de longues ; référence 50,6 %, 570, 13,7 % | **✗ ne mord pas** |
+| **Largeur** | largeur en possession, centres, têtes | large et centres : largeur 52,4 m (référence 50,9), centres 10,3 (7,5), tirs de la tête 1,3 (2,0) | **✗ ne mord pas** |
+| **Le jeu aérien** | 15-20 duels aériens par équipe, 3-4 tirs de la tête | 4-7 duels aériens par MATCH, 0,5-2,5 tirs de la tête, corners 1-3 | **✗ absent, quel que soit le style** |
