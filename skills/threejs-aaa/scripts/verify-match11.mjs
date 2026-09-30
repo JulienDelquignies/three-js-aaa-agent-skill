@@ -8341,5 +8341,24 @@ if (__bloc()) {
   ok(`lot 365 — LE LOB RÉEL : ${mA.n} lobs, ${mA.viol} sous la porte (0,4 × distance) ; hier ${mN.n} lobs dont ${mN.viol} sous la porte`, mA.viol === 0 && mA.n < mN.n);
 }
 
+if (__bloc()) {
+  // LE GARDIEN LIT LA CLOCHE (366 — lu dans les stats : les lobs restants entraient TOUS, 9 sur 9). Le banc d'essai : 40 s de jeu, puis
+  // une cloche de 28 m (élévation 0,55, la balistique du lob) sur le gardien sorti de 8 m, deux positions. Hier (gkCloche null) le poste
+  // du ballon loin le laissait haut : but. La loi : il lit la cloche (événement gk-cloche), se retourne, rentre en sprint et l'arrête (banc d'essai 4 × 3 × 2 : 16/24 buts → 6/24,
+  // les restants des lobs courts sur un gardien sorti de 10-12 m).
+  const essai = (over, z) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over });
+    for (let i = 0; i < 40 * 60; i++) matchStep(st, 1 / 60, cfg);
+    for (let k = 0; st.restart && k < 3000; k++) matchStep(st, 1 / 60, cfg);
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x), gk = st.players.find((p) => p.keeper && p.team === 1); gk.p[0] = g.x - sg * 8; gk.p[2] = 0;
+    const d = 28, bx = g.x - sg * d, el = 0.55, sp = Math.sqrt(Math.max(10, d * 1.18) * 9.81 / Math.sin(2 * el));
+    st.ball.restart([bx, 0.11, z], { cause: 'coup-franc' }); st.ball.strike({ speed: sp, dirYaw: Math.atan2(-z, g.x - bx), elevation: el });
+    st.lastTouch = 0; st.possession.carrier = -1; st.phase = 'loose'; st.pass = null; const e0 = st.events.length;
+    for (let i = 0; i < 6 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.events.slice(e0).some((e) => e.type === 'but' || e.type === 'sortie')) break; }
+    const E = st.events.slice(e0); return { but: E.some((e) => e.type === 'but'), lu: E.some((e) => e.type === 'gk-cloche') }; };
+  const A = [-4, 3].map((z) => essai({}, z)), N = [-4, 3].map((z) => essai({ gkCloche: null, lobDispersion: null }, z));
+  ok(`lot 366 — LE GARDIEN LIT LA CLOCHE : cloche de 28 m sur le gardien sorti de 8 m — buts ${A.filter((x) => x.but).length}/2, cloche lue ${A.filter((x) => x.lu).length}/2 (hier : buts ${N.filter((x) => x.but).length}/2)`,
+    A.every((x) => !x.but && x.lu) && N.every((x) => x.but));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
