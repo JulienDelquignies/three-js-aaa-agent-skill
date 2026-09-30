@@ -14578,6 +14578,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   89,8 / 89,6. Jumeau (`priseSuivie` sans `poursuite`) = le 361 au bit ; défaut `f1743b5d4d306a6e / 5f565f0c1c3c09d0` (aucun contrôle de
   secours dans les 90 s de l'empreinte : le défaut ne bouge pas). Bloc 231. Le registre des règles irréalistes est vidé de ses dettes de
   contrôle ; restent la section 5 (règles relevées en route).
+- **Lot 363 — la section 5 du registre** (« ok continue »). Trois lois, trois non-problèmes documentés (docs/Regles_Irrealistes.md § 5).
+  - `talonReel` { dMax 10, v 8 } (passe-faisable.talonPermis / vTalon, strike-sim : le plan ET l'improvisation) : mesuré 8 talonnades /
+    639 passes (1,25 %, réel 0,2-0,5), au sol à 9-12 m/s, et 4 sur 8 des DÉGAGEMENTS lobés jusqu'à 27 m/s. Le talon ne sert qu'une passe
+    au sol à ≤ 10 m, jamais un dégagement, un lobé ni un centre ; il part à ≤ 8 m/s. 5 / 686, la plus vive 8 m/s.
+  - `socialPas` 0,01 m/image (movement.separatePlayers) : la poussée sociale entre coéquipiers glissait les corps à 2,4 m/s sans toucher
+    p.v (le rendu lisait un pas chassé) ; à l'allure de la marche. Glissades (déplacement ≠ vitesse de > 1,2 m/s) 0,49 → 0,22 %, paires
+    < 1,2 m 0,91 → 0,75 % — la poussée plus lente ne regroupe pas.
+  - `arbitreCap` { rate 6 } (referee.arbitreStep) : le cap du central claquait sur sa vitesse dès 0,4 m/s et, à l'arrêt, l'écart non
+    enroulé pouvait le faire tourner du mauvais côté ; slew enroulé à 6 rad/s. Sauts > 0,2 rad/image 911 → 5 (4 × 900 s).
+  - Non-problèmes : tirImmediat (borné à 40° de la course d'élan), la une-touche à 12 m/s (dosage actif par défaut), retournement.max
+    (couvert par la porte au contact du 360).
+  Banc 16 matchs (363 / 362) : pertes 131,6 / 128,3 et 124,8 / 127,6 (bruit), buts 3,19 / 3,00 et 3,13 / 2,81, complétion 89,4 / 89,4 et
+  89,8 / 89,8. Jumeau (`talonReel`, `socialPas`, `arbitreCap` à null) = le 362 au bit ; défaut `760f87327231ceb7 / 0841b5aee8628cf1`.
+  Bloc 232. Le registre n'a plus qu'un point ouvert : les porteurs lancés en transition (#39, l'intelligence, mise de côté).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
