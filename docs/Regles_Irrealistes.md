@@ -113,8 +113,9 @@ coupés avant le coéquipier 2 / 16 → 0 / 9.
 | Règle | Mesure (8 × 90 min) | État |
 |---|---|---|
 | Le lob s'ouvre dès que le gardien est à 4 m de sa ligne, à toute distance (18-38 m) | 23 % des tirs (réel : quelques %), 29 m de moyenne ; en 80 c. 50, 14 buts sur 27, dont 6 des 11 de l'équipe faible | `lobReel` : écart ≥ 0,4 × la distance — lobs 33 → 9 ; 80 c. 50 : 3/2/3 → 6/0/2 |
-| Le lob qui reste entre toujours (9 sur 9, dont 3 de 37 m) | le repli du gardien ne rattrape jamais la cloche | Ouvert |
+| Le lob qui reste entre toujours (9 sur 9, dont 3 de 37 m) | le gardien ne voyait pas le vol long, restait haut, rentrait au trot ; le lob était un geste EXACT | Lot 366 : `gkCloche` + `lobDispersion` — banc d'essai 16/24 → 6/24 ; 80 c. 50 : 6/2/0 |
 | L'xG du moteur sous-estime de moitié | buts / xG moteur 2,9 ; / xG de référence 1,32 | Ouvert (le tireur choisit sur un xG faux) |
 | Le gardien arrête peu | 63 % des tirs cadrés (réel ~70 %) | Ouvert |
-| Un jeu à pertes | récupérations 166 par équipe (réel ~50), tacles 53 (~17), interceptions 64 (~10), PPDA 5,5 (8-15) | Ouvert — la cause probable du plafond de domination restant |
+| Un jeu à pertes | récupérations 166 par équipe, tacles 53, interceptions 64, PPDA 5,5 | Requalifié (sondes du 366) : surtout des définitions (nos « interceptions » comptent toute passe ratée ramassée). Le vrai écart est la ligne suivante |
+| Le ballon ne sort pas | touches 20 par match (réel 40-45), sorties de but 4,5 (15-18), corners 1,3 (~10), jeu effectif 68 min (55-60) : dégagements, contres, tacles et déviations restent en jeu | Ouvert — le chantier suivant |
 | Peu de jeu aérien et de coups de pied arrêtés | duels aériens 5,6 par équipe (réel 15-20), corners 1,7 (~5), centres 8,5 (15-20) | Ouvert |

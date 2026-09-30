@@ -14627,6 +14627,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   2,00 – 1,75 → 2,25 – 1,13. Reste : les 9 lobs qui restent entrent TOUS (dont 3 de 37 m) ; les buts neutres montent (1,44 → 2,06 par
   équipe — les tirs se rapprochent) : l'arrêt du gardien est le chantier suivant (63 % d'arrêts, le réel ~70 %). Jumeau (`lobReel: null`)
   = le 364 au bit ; défaut inchangé (aucun lob dans l'empreinte) — la loi se prouve au bloc 234.
+- **Lot 366 — le gardien lit la cloche ; le lob n'est plus exact** (30/09, « oui vas-y »). Après le 365, les lobs restants entraient TOUS
+  (9 sur 9, dont 3 de 37 m). Quatre causes, prouvées au banc d'essai (une cloche lancée de 22-34 m sur un gardien sorti de 6-12 m) :
+  shotCross ne voit pas un vol de plus de 2,5 s ; même vu, le « se replacer » d'un vol long vise le poste calculé sur le ballon LOIN (le
+  libéro reste haut : 1,3 m reculés en 2 s) ; le retour du libéro est plafonné au trot (libero.retour 3,5 m/s) ; et le lob / le piqué
+  (kind.exact) échappaient à TOUTE dispersion — une balistique au centimètre à 37 m.
+  - `gkCloche` { sorti 3, vMin 4, reaction 0,35, ligne 0,6, face 3,5, portee 2,6, rebond 8, danger 45 } (gardien-cloche.js, avant
+    keeperDecide) : un ballon adverse en l'air vers mon but, qui PASSE AU-DESSUS du gardien et retombe dans le cadre (ou rebondit dans les
+    8 derniers mètres), se lit après le réflexe ; le gardien sorti se RETOURNE (le regard sur sa course, sur le ballon à 3,5 m de la
+    ligne), SPRINTE (le repli est une rupture : ε plein) et SUIT la cloche jusqu'à sa ligne ; puis la décision d'hier (prise, plongeon).
+    Et le libéro surpris par la perte rentre en sprint quand l'adversaire a le ballon à moins de 45 m de son but (movement.js).
+  - `lobDispersion` { sigPsi 0,03, sigV 0,035, sigEl 0,03 } (strike-sim) : cap, vitesse et hauteur tirés × distance / 20 m ÷ longF.
+  Banc d'essai : 16 buts sur 24 → 6 (les restants : lobs courts sur un gardien sorti de 10-12 m — le vrai gardien y est battu aussi).
+  8 × 90 min : neutres, lobs 11 dont 5 buts (365 : 9 sur 9), buts 1,50 par équipe (364 : 1,44 ; 365 : 2,06) ; 80 c. 50 : 6/2/0, buts
+  2,13 – 1,00 (364 : 3/2/3 ; 365 : 6/0/2). Jumeau (les deux clés à null) = le 365 au bit ; défaut `0c7a082b04f8a6a1 / 1e09572def74931d` ;
+  bloc 235 (cloche de 28 m sur le gardien sorti de 8 m : but hier, arrêt aujourd'hui).
+- **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
+  passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match)
+  sont surtout la conduite (le porteur les garde). L'écart réel : touches 20 par match (réel 40-45), sorties de but 4,5 (15-18), corners
+  1,3 (~10), jeu effectif 68 min (55-60) — tout ce qui sortirait (dégagements, contres, tacles, déviations) reste en jeu et se dispute.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
