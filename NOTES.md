@@ -14550,6 +14550,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   un excès résorbé ; les centres doublés (7 → 15) restent sous le réel. Budget : ~+10 % par pas (0,84 → 0,91-1,0 ms), bloc 1 vert seul.
   Défaut `1a6fa750b070ba63 / fe07b2c08ec4f325`. Bloc 229. Restent au registre : la re-visée au contact (30°), le plafond de tête sautée
   (3,14 m), la main du gardien à 9 m interceptable, l'interception qui tue 80 % de la vitesse sans geste.
+- **Lot 361 — les quatre derniers du registre** (30/09 : « oui vas-y »). Jumeau : `passeFaisable` sans `revise`, `relanceObstacle` sans
+  `main`, `teteHauteur: null`, `interceptionGeste: null` = le 360 au bit (`1a6fa750b070ba63 / fe07b2c08ec4f325`).
+  - `interceptionGeste` (interception-geste.js, branché dans rondo.turnover) : la prise de turnover était un aimant (−80 % de vitesse,
+    possédé, aucun geste, aucune direction). Elle est un contrôle NOMMÉ selon la hauteur (intérieur / cuisse / poitrine) ; libre et ballon
+    bas, la première touche l'EMMÈNE (touche-orientee). Contrôles sans technique 193 → 3-5 (4 × 1 200 s), 40 interceptions emmenées, 137-173
+    amorties nommées. Filmé : le défenseur coupe à 4,3 m/s, pousse le ballon à 5,4 m/s devant lui, le rejoint, joue.
+  - `teteHauteur` { saut 0,45, plafond 2,8 } : le contact de tête = min(plafond, 2,2 + 0,45 × sautF) aux deux portes (teteStep,
+    teteArmerStep) — hier 2,2 + 0,75 × sautF (2,95 m pour le joueur MOYEN, 3,14 au plus). Tête la plus haute 2,80 → 2,41-2,56 m.
+  - `relanceObstacle.main` 2 m : le roulé du gardien lit son couloir ENTIER (la main ne regardait que le receveur). Roulés coupés avant
+    le coéquipier 2 / 16 → 0 / 9 (le gardien roule moins : il choisit autre chose).
+  - `passeFaisable.revise` 20° : au contact, la mène re-visée (croyance, rendez-vous, course servie) tourne au plus de 20° autour du point
+    de frappe depuis la sortie planifiée — mesuré, jusqu'à 62° (117 au plus). Essayé 12° : contrôles manqués 4,1 → 6,9 %, contestés perdus
+    6,6 → 13,5 (4 × 900 s) — refusé ; 20° : 4,5 % et 7,75, pertes 42,75 (360 : 43,25).
+  Banc 16 matchs (361 / 360) : pertes 124,6 / 130,2 et 128,5 / 125,7 (bruit, sens opposés), complétion 89,5 / 88,9 et 89,6 / 89,0, passes
+  542,8 / 545,8 et 549,6 / 528,0, buts 3,00 / 2,13 et 2,81 / 3,88 (bruit), centres 16,3 / 15,2 et 18,9 / 13,0. Budget : bloc 1 vert seul
+  (1,42-1,57 ms), rouge sous contention du banc rapide (1,65) comme au 360 ; chrono direct 361 0,83-0,85 ms/pas c. 360 0,98-1,01.
+  Défaut `4a5d8877944e57ed / e2e56ec8f3077466`. Bloc 230. Registre : il ne reste que l'amorti-poursuite et le quart de touche sans direction.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
