@@ -9,7 +9,7 @@
 // HAUTEUR DE SON RÔLE, entre trois repères : f = 0 → `arriere` m derrière le ballon (la garde : centraux, sentinelle), f = 0,5 → à hauteur
 // du ballon (le box-to-box, la mezzala), f = 1 → sur la ligne adverse (la pointe, l'attaquant intérieur) — f suit la profondeur du rôle
 // (p0 → 0, p1 → 1), décalée par la MENTALITÉ (± mental). Le joueur sans rôle prend le rôle NATUREL de son poste (central 0,1, latéral
-// 0,3, sentinelle 0,2, milieu 0,45, ailier 0,6, pointe 0,8). La cible glisse de `w` vers cette hauteur (jamais au-delà de la ligne).
+// 0,42, sentinelle 0,2, milieu 0,45, ailier 0,6, pointe 0,8). La cible glisse de `w` vers cette hauteur (jamais au-delà de la ligne).
 // Et la pointe devant le ballon ne siège plus au comité de soutien selon son rôle (match-sim, l'élection : × decroche … fixe) — le faux 9
 // décroche, le renard fixe. Absente : la formation et le comité d'hier, au bit.
 import { LIGNES, pivotDe } from './formation.js';
@@ -39,4 +39,15 @@ export function occupationCorps(st, p, K) {
   const x = f < 0.5 ? bx - (K.arriere ?? 26) * (1 - 2 * f) : bx + (haut - bx) * (2 * f - 1);
   const tx = p.target[0] * sg, w = K.w ?? 0.8, nx = Math.min(tx + (x - tx) * w, Math.max(tx, ligne));
   p.target = [nx * sg, p.target[1] ?? 0, p.target[2]];
+}
+
+/** (377) L'ALLURE DE L'OCCUPATION : le posté dont la cible de rôle est DEVANT lui de plus de `rejoint` m y monte à l'allure de son rôle
+ *  (la garde au trot vGarde, la pointe en course vPointe) × workRate — hier, sous 8 m d'écart (montee-offensive), la marche : le latéral
+ *  offensif visait le ballon − 1 m et vivait à − 12 m. Renvoie { v, eps } ou null. */
+export function occupationAllure(st, p, K) {
+  if (p.job !== 'support' || !p._poste || !p.target || p.keeper || st.restart || st.possession?.team !== p.team) return null;
+  if (st.t - (st._possChangeAt ?? st.t) < (K.tenue ?? 3)) return null;
+  const sg = -st.pitch.ownGoal(p.team).sign; if ((p.target[0] - p.p[0]) * sg < (K.rejoint ?? 4)) return null;
+  const r = Math.max(0, Math.min(1, profondeurRole(st, p, K) / (K.p1 ?? 0.8)));
+  return { v: ax(r, K.vGarde ?? 3.6, K.vPointe ?? 5.5) * (p.skill?.workF ?? 1), eps: ax(r, K.epsGarde ?? 0.6, K.epsPointe ?? 0.85) };
 }
