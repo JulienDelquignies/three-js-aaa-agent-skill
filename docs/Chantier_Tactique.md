@@ -63,6 +63,32 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | Ballon en jeu | 68 % | 59-66 % | 54-58 % |
 | Touches / corners par match | 19 / 3 | 13-22 / 2,5-5,8 | 35-44 / 10 |
 
+## Tableau de bord — audit tac5 après les lots 377-384 (7 presets × 4 graines × 90 min, équipe A ; entre parenthèses : tac4)
+
+| Indicateur | équilibre | gegenpr. | possession | bloc bas | direct | large/centres | ligne haute | Livre |
+|---|---|---|---|---|---|---|---|---|
+| Marquage DC (match) | 8,3 (10,7) | 6,8 (9,1) | 7,2 (9,6) | 9,7 (13,4) | 8,0 (10,3) | 7,7 (10,4) | 6,8 (8,7) | 5,5 |
+| Marquage DC, défense installée | 5,1 | 4,6 | 5,2 | 5,9 | 5,0 | 4,9 | 4,8 | 5,5 |
+| Marquage LAT, défense installée | 5,8 | 4,8 | 5,8 | 6,7 | 5,9 | 5,6 | 5,2 | 6,4 |
+| N_def(10) | 2,0 (2,6) | 2,2 (2,7) | 2,1 (2,7) | 2,0 (2,4) | 2,0 (2,6) | 2,0 (2,5) | 2,2 (2,7) | 4,9 (bloc bas 6,3) |
+| Interligne | 15,4 (12,0) | 12,3 (10,6) | 12,3 (11,7) | 17,5 (14,7) | 15,1 (11,6) | 14,9 (11,7) | 11,6 (10,1) | 10-15 (bloc bas 5-8) |
+| Interligne, défense installée | 8,0 | 6,4 | 7,8 | 10,0 | 8,1 | 7,6 | 6,7 | — |
+| Séquences de 10+ passes | 9,5 (7,3) | 10,0 (6,8) | 11,3 (6,5) | 6,8 (6,5) | 4,0 (4,8) | 5,3 (5,5) | 7,3 (10,5) | 7 ± 3 |
+| Passes par séquence : p90 / max | 7 / 16 | 7 / 18 | 8 / 22 | 6 / 16 | 5,5 / 14 | 7 / 17 | 7 / 17 | — |
+| Direct speed (m/s) | 1,8 | 2,1 | 1,5 | 2,0 | 2,1 | 1,8 | 1,8 | 1,4 poss. · 2,1 direct |
+| Contre-pressings | 22 (58) | 99 (100) | 55 (64) | 6 (12) | 27 (62) | 27 (56) | 71 (95) | 20-30 |
+| Repli en 3 s (m) | 2,0 (1,1) | 1,2 (0,6) | 1,3 (0,4) | 3,4 (1,9) | 2,6 (1,3) | 2,2 (1,4) | 1,5 (0,2) | — |
+| Bloc reformé (s) | 2,3 (3,5) | 1,7 | 3,4 | 3,3 (6,5) | 1,8 | 2,5 | 2,0 | 8-12 |
+| Renversements | 5,5 (8,5) | 2,8 | 1,0 (6,0) | 3,0 | 4,0 (11,0) | 2,3 | 4,8 (12,0) | 1 / 8-14 possessions |
+| Touches / corners / sorties de but | 13/7,5/8 | 20/7/15 | 15/5/12 | 18/8/9,5 | 19/5/15 | 17,5/8/12 | 13/10/14,5 | 35-44 / 10 / 15-18 |
+
+Lecture : le marquage par phase est au livre (installé 4,6-5,9 m) ; la possession se distingue (11,3 séquences de 10+, direct speed 1,5)
+et le direct aussi (4,0 ; 2,1 m/s) ; contre-press et repli suivent la consigne. **Régressions** : la densité au ballon N_def(10) tombe
+2,6 → 2,0 (livre 4,9) — chaque défenseur suit son homme, plus personne ne serre le porteur ; l'interligne s'ouvre (bloc bas 14,7 → 17,5,
+livre 5-8) ; les renversements baissent (possession 6 → 1). Le rôle du passeur change le VOLUME (centraux relanceurs 133 passes c.
+stoppeurs 96 ; regista 76 c. destroyer 61) mais pas le profil (36-39 % vers l'avant pour tous) ; le destroyer tente plus risqué (P̂ 0,67
+c. 0,80) — à reprendre.
+
 ## Les chantiers
 
 ### T1 — Le bloc qui se resserre vers le ballon *(en cours)*
