@@ -14695,6 +14695,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 378 — T3, la possession cherche l'homme libre, selon le style et le rôle** : `liberteStyle` (style-passe.malusLiberteStyle,
+  terme de rondo.choosePass). Sondé : les possessions sont au livre (19,7 / équipe / 10 min, 15 s) ; l'équipe de possession servait PLUS
+  de marqués à < 3 m que la directe (18 % c. 10 %, gardés à 63 %) — ses séquences mouraient à 3 passes. Plus le style penche vers la
+  possession, plus le passeur exige d'espace (seuil 2,5 → 6 m, malus jusqu'à 5) × vision × décisions × le rôle (axe tenue). Bloc 246 :
+  marqués 18,0 → 9,2 % ; milieu regista / meneur reculé / mezzala 3,25 passes par séquence c. destroyers / box-to-box 2,65. Nul au
+  neutre : défaut inchangé `971cf1c088898128 / 044f6bfe1e804603` ; banc vert. Reste : 3,1-3,3 passes par séquence (livre 5-6), trop de
+  séquences, 61 % des passes d'un porteur pressé.
 - **Lot 377 — T1/T2, tout dépend des rôles des joueurs** (01/10 : « c'est des choix tactiques et des qualités de joueur ça aussi », puis
   « tout dépend des rôles des joueurs »). Sonde de sensibilité : consigne marquage, compacité, défense notée 30 c. 80 laissaient TOUS le
   central à 10,3-10,7 m. Vu par l'image : personne à marquer — l'attaque n'a que 4 joueurs à < 15 m de la ligne ; sans rôle posé les vingt

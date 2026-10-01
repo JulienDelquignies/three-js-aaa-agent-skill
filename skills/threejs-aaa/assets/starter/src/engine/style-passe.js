@@ -31,3 +31,16 @@ export function termeStyle(K, tq, { d, gain, lofted, pointe, bascule = false, se
   if (s > 0 && pointe && d > (K.dLong ?? 22) && g > 10) t += s * 2 * (K.bonusLong ?? 1.5);
   return t;
 }
+
+// (378, cfg.liberteStyle — T3 du chantier ; 01/10 : « oui vas-y », le style qui change le rythme) LA POSSESSION CHERCHE L'HOMME LIBRE.
+// Mesuré (possession c. direct, 2 × 30 min) : l'équipe de POSSESSION servait PLUS souvent un receveur marqué à < 3 m (18 % de ses passes,
+// gardées à 63 %) que l'équipe directe (10 %) — la longueur courte et le soutien rapproché l'envoyaient dans la foule, le malus de l'homme
+// libre (233) ne pesait que sous 2,5 m. Ses séquences mouraient à 3 passes (livre 5-6). La loi : plus le style penche vers la possession,
+// plus le passeur EXIGE d'espace au receveur — le seuil de liberté monte de `seuil` m (neutre) à `seuilPoss` m, le malus jusqu'à `malus`,
+// × la vision et les décisions du passeur (le meneur voit l'homme libre, le médiocre joue le plus proche) et × son RÔLE (l'axe tenue :
+// le regista, le meneur reculé gardent le ballon, le destroyer joue simple ; polyvalent × 1). Nul au style neutre et en direct. Absente : hier, au bit.
+export function malusLiberteStyle(K, tq, liberte, { visionF = 1, decF = 1, tenue = 0.5 } = {}) {
+  const s = -pente(tq?.style); if (s <= 0) return 0;   // 0 … 0,5 (possession pure)
+  const seuil = (K.seuil ?? 2.5) + s * 2 * ((K.seuilPoss ?? 6) - (K.seuil ?? 2.5));
+  return s * 2 * (K.malus ?? 5) * Math.max(0, 1 - liberte / seuil) * visionF * decF * (0.6 + 1.6 * Math.max(0, Math.min(1, tenue)) * (K.role ?? 0.5));   // × le RÔLE (tenue : le regista garde ×1,2, le destroyer joue simple ×0,76)
+}

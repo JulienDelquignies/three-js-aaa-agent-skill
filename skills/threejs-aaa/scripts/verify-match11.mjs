@@ -8520,5 +8520,25 @@ if (__bloc()) {
     O.lat >= P.lat + 3 && A.b <= N.b - 0.5 && A.c <= N.c + 0.3);
 }
 
+if (__bloc()) {
+  // LA POSSESSION CHERCHE L'HOMME LIBRE, SELON LE STYLE ET LE RÔLE DU PASSEUR (378 — T3, R01 C13-C19). Sondé : l'équipe de possession servait
+  // plus de receveurs marqués à < 3 m (18 %) que l'équipe directe (10 %) — ses séquences mouraient à 3 passes. Le contrat : (1) le preset
+  // possession sert au moins 30 % de marqués de moins qu'hier ; (2) à tactique égale, un milieu de meneurs (regista, meneur reculé, mezzala)
+  // fait des séquences plus longues qu'un milieu de destroyers (destroyer, destroyer, box-to-box).
+  const { makeTactique, tactiqueStep, tactiqueReport } = await import('../assets/starter/src/engine/tactique.js');
+  const POSS = { style: 0.1, hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, transition: 0.15, tempo: 0.35, mentalite: 0.4, compacite: 0.45, relation: 0.7 };
+  const mesure = (tA, over) => { let n = 0, marq = 0, pps = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed, tactics: [tA, 'direct'] }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }), T = makeTactique(st); let e0 = 0;
+      for (let i = 0; i < 1800 * 60; i++) { matchStep(st, 1 / 60, cfg); tactiqueStep(T, st);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type !== 'pass') continue; const p = st.players[e.by], q = st.players[e.to]; if (!p || !q || p.team !== 0) continue;
+          let dF = 99; for (const f of st.players) if (f.team !== p.team && !f.keeper) dF = Math.min(dF, Math.hypot(f.p[0] - q.p[0], f.p[2] - q.p[2])); n++; if (dF < 3) marq++; } }
+      pps += tactiqueReport(T, st).equipes[0].passesParSequence / 2; }
+    return { marq: marq / Math.max(1, n), pps }; };
+  const A = mesure('possession', {}), N = mesure('possession', { liberteStyle: null });
+  const R = mesure({ ...POSS, roles: { 4: 'regista', 5: 'deep_lying_playmaker', 6: 'mezzala' } }, {}), D = mesure({ ...POSS, roles: { 4: 'destroyer', 5: 'destroyer', 6: 'box_to_box' } }, {});
+  ok(`lot 378 — LA POSSESSION CHERCHE L'HOMME LIBRE : receveurs marqués à < 3 m ${(100 * A.marq).toFixed(1)} % (hier ${(100 * N.marq).toFixed(1)} %) ; passes par séquence, milieu de meneurs ${R.pps.toFixed(2)} c. milieu de destroyers ${D.pps.toFixed(2)}`,
+    A.marq <= N.marq * 0.7 && R.pps > D.pps + 0.2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

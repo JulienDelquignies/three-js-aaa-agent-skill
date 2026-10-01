@@ -135,6 +135,18 @@ joueurs avec leur poste et leur rôle dans les formations ».
   de 10+ passes possession 8 c. direct 3,8 ; renversements 0-3 → 5-11 par équipe.
 - **Reste** : la possession du preset possession 53 % (cible 55-65) avec autant de passes que les autres ; les passes vers l'arrière
   (40-42 % c. 24-28) à mesurer ; le soutien qui suit l'action en direct (vitesse, nombre d'arrivées).
+- **Mesuré avant le 378** (possession c. direct, 2 × 30 min) : les possessions sont au livre (19,7 par équipe et par 10 min, 15 s ;
+  ~535 passes par 90 min en possession, ~400 en direct) ; les styles se distinguent (possession 56 %, 3,0 c. 2,15 passes par séquence,
+  direct speed 1,75 c. 2,35) mais trop peu. Premières causes de perte de l'équipe de possession : la passe CONTESTÉE (24 sur 116, le
+  receveur qui attaque une passe disputée) et la passe courte perdue (18). Elle servait plus de receveurs marqués à < 3 m que l'équipe
+  directe (18 % c. 10 %, gardées à 63 %).
+- **Lot 378 (scellé)** : `liberteStyle` (style-passe.malusLiberteStyle, terme de rondo.choosePass) — plus le style penche vers la
+  possession, plus le passeur exige d'espace au receveur (seuil 2,5 → 6 m), × vision × décisions × le RÔLE (axe tenue : regista ×1,2,
+  destroyer ×0,76) ; nul au neutre et en direct (l'empreinte par défaut ne bouge pas). Bloc 246 : receveurs marqués 18,0 → 9,2 % ; à
+  tactique égale, milieu regista / meneur reculé / mezzala 3,25 passes par séquence c. destroyers / box-to-box 2,65. Aussi : possession
+  56 → 59 %, durée 15,5 → 17,7 s, passes vers l'arrière 38 → 44 % (livre 40-42).
+- **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
+  61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
   tenue, une-touche) et la mentalité (risque) ; le soutien sans ballon SUIT l'action en jeu direct ; les presets règlent tempo et
   mentalité de façon cohérente.
@@ -213,6 +225,7 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T3 | 378 | La possession cherche l'homme libre (style × vision × décisions × rôle) : marqués servis 18 → 9 % ; meneurs c. destroyers 3,25 c. 2,65 passes par séquence |
 | 01/10 | T1/T2 | 377 | Occupation et retour selon les rôles ; marquage par consigne : DC en défense installée 6,5 → 5,3 m (livre 5,5), à l'entrée 12,4 → 9,6 ; latéraux pistons c. prudents − 3,9 c. − 10,3 m |
 | 01/10 | T1 | 377 (essai) | Consigne et notes branchées sur le marquage : sans effet mesurable — l'attaque adverse n'occupe pas la zone des centraux (4 joueurs à < 15 m de la ligne, 6 derrière le ballon) ; retour à T2 |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |
