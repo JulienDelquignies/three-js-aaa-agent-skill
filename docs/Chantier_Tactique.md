@@ -89,6 +89,22 @@ livre 5-8) ; les renversements baissent (possession 6 → 1). Le rôle du passeu
 stoppeurs 96 ; regista 76 c. destroyer 61) mais pas le profil (36-39 % vers l'avant pour tous) ; le destroyer tente plus risqué (P̂ 0,67
 c. 0,80) — à reprendre.
 
+### La densité au ballon — sondes du 01/10 (essais 385, non scellés)
+- **Les cibles sont près du ballon, les corps n'y sont pas** : équilibre, 2 × 45 min — cibles 3,3 défenseurs à < 10 m du ballon, corps
+  2,1 ; avec la compression maximale (c 1, R 30) cibles 6,0, corps 3,0. Distances au ballon du 1er au 6e défenseur : 6,4 / 10,1 / 13,8 /
+  17,2 / 20,6 / 24,1 m. `zoneHomme` n'explique qu'une petite part de la baisse (2,28 → 2,11 sur la même mesure).
+- **Essai `serreBallon`** (la cible à < 10 m du ballon se rejoint à l'allure de la consigne et du rôle, poussée pleine) : vitesse 3,8 →
+  4,7 m/s, effort 0,45 → 0,85, mais N_def(10) 2,11 → 2,07 — la cible bouge avec chaque passe, le corps arrive après. Retiré.
+- **Essai compression × consigne** (la compacité pilote part et rayon, identité au neutre) : bloc bas 2,03 → 2,13, gegenpressing 2,17 →
+  2,40, compacité 0,1 : 1,94 ; l'interligne du bloc bas s'ouvre (17,5 → 18,5). Trop peu pour sceller. Compression uniforme forte
+  (c 0,7, R 30) : 2,1 → 3,0 mais l'ailier côté faible se libère et les séquences de 10+ de l'équilibre tombent 8 → 2,5.
+- **Le repère du livre est DÉRIVÉ** (B10 : « N_def(10) dérivée 4,9 médian / 6,3 bas / 4,2 haut / 3,1 passif ») — un nombre de modèle,
+  pas de suivi ; le bloc PASSIF du modèle donne 3,1. Le moteur (2,0-2,4) est sous le bloc passif.
+- **Lecture** : la densité ne se gagne pas en courant plus vite vers une cible qui suit le ballon : le ballon voyage à 9-15 m/s, les corps à
+  5-7. Le bloc réel est dense parce qu'il ANTICIPE (il se place par rapport au ballon PROBABLE — le receveur suivant — et coulisse PENDANT
+  la passe, B10 « décalage temporel entre lignes 0,6-1,2 s »). Chantier à ouvrir : la cible défensive sur le ballon prédit (le point de
+  chute de la passe en vol, les options du porteur) plutôt que sur le ballon présent.
+
 ## Les chantiers
 
 ### T1 — Le bloc qui se resserre vers le ballon *(en cours)*
