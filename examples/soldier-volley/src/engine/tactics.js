@@ -54,18 +54,20 @@ export const TACTIQUES = {
   equilibre:     { hauteurBloc: 0.5, largeur: 0.5, pressing: 0.5, style: 0.5, transition: 0.5 },
   // …chaque preset PORTE SES RÔLES par défaut (lot 20 — un système est des axes ET des hommes) ;
   // les rôles explicites du projet aval GAGNENT toujours, poste par poste
-  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7, relation: 0.55, marquage: 0.65,
+  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, tempo: 0.8, mentalite: 0.65, compacite: 0.7, relation: 0.55, marquage: 0.65,
     roles: { 5: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' } },
-  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, compacite: 0.45, relation: 0.7,
+  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, tempo: 0.35, mentalite: 0.4, compacite: 0.45, relation: 0.7,
     roles: { 5: 'meneur', 8: 'neufDeSurface' } },
-  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8, relation: 0.35, marquage: 0.35,
+  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, tempo: 0.6, mentalite: 0.4, compacite: 0.8, relation: 0.35, marquage: 0.35,
     roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
-  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7, relation: 0.3,
+  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7, tempo: 0.75, mentalite: 0.7, relation: 0.3,
     roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' }, cpa: { touche: 'longue' } },   // (B6 § 8) le jeu direct lance ses touches du tiers offensif LONGUES (165 : le trébuchet ; A9 ter : la course d'élan du lanceur) — aucun preset ne la vivait
-  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5, relation: 0.25,
+  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5, tempo: 0.55, mentalite: 0.6, relation: 0.25,
     roles: { 0: 'piston', 3: 'piston', 7: 'ailierDePercussion', 9: 'ailierDePercussion' } },
+  // (371) LES PRESETS RÈGLENT LE TEMPO ET LA MENTALITÉ (audit du 01/10 : aucun ne les réglait, le direct circulait au tempo du neutre) — le
+  // gegenpressing et le direct vifs et risqués, la possession posée et patiente, le bloc bas vif au contre mais prudent. equilibre reste l'identité.
   // LA LIGNE HAUTE (255 — le Barça de Flick 2024-25 : la ligne à 33,8 m et SYNCHRONE, 4,8 hors-jeu provoqués par match ; le prix : l'espace derrière, cfg.piege) — un point nommé, deux faces
-  ligneHaute:    { hauteurBloc: 0.9, largeur: 0.55, pressing: 0.8, style: 0.4, transition: 0.55, compacite: 0.7, relation: 0.6, marquage: 0.45, piege: 1.0,
+  ligneHaute:    { hauteurBloc: 0.9, largeur: 0.55, pressing: 0.8, style: 0.4, transition: 0.55, tempo: 0.6, mentalite: 0.55, compacite: 0.7, relation: 0.6, marquage: 0.45, piege: 1.0,
     roles: { 1: 'stopper', 5: 'recuperateur', 8: 'neufDeSurface' } },
 };
 
