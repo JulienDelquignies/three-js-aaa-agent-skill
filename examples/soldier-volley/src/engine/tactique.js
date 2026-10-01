@@ -27,7 +27,7 @@ export function makeTactique(st, { sample = 10 } = {}) {
     rec: 0, recPresse: 0, recOuvert: 0, recDos: 0, recTtp: 0, garde: 0, gardePresse: 0, recPresseN: 0,
     courses: {}, servies: 0, combis: {}, aeriens: 0, aeriensGagnes: 0, secondsDuels: 0, secondsGardes: 0,
     regains: 0, tirs10: 0, delaiTir: [], restDef: [], reforme: [], contrePress: 0, pressD: [],
-    pointe: [], seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
+    pointe: [], repli3: [], meute15: [], seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
   });
   return { e0: 0, frame: 0, sample, E: [E(), E()], enJeu: 0, total: 0, rec: [], courses: [], aer: null, regain: [null, null], perte: [null, null], seqC: null };
 }
@@ -49,6 +49,10 @@ export function tactiqueStep(T, st, dt = 1 / 60) {
     const bx = sens(st, t, st.ball.p[0], st.ball.p[2])[0], xs = champ(st, t).map((p) => sens(st, t, p.p[0], p.p[2])[0]);
     if (xs.filter((x) => x < bx).length >= 7 && Math.max(...xs) - Math.min(...xs) <= 35) { T.E[t].reforme.push(st.t - P.t); T.perte[t] = null; } }
   for (; T.e0 < st.events.length; T.e0++) lire(T, st, st.events[T.e0]);
+  if (T.suivis) T.suivis = T.suivis.filter((S) => {
+    if (!S.fait15 && st.t - S.t >= 1.5) { S.fait15 = true; T.E[S.l].meute15.push(champ(st, S.l).filter((p) => hyp(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]) < 10).length); }
+    if (!S.fait3 && st.t - S.t >= 3) { S.fait3 = true; T.E[S.l].repli3.push(S.c0 - S.cx(S.l)); return false; }
+    return true; });
   // les réceptions en attente : gardée 3 s plus tard ? (R02 #11 : conservation sous pression 66,8 %, sans 76,5 %)
   T.rec = T.rec.filter((r) => { if (st.t - r.t < 3) return true; const E = T.E[r.team]; if (r.garde) { E.garde++; if (r.presse) E.gardePresse++; } return false; });
   T.courses = T.courses.filter((c) => st.t - c.t < 3);
@@ -115,6 +119,10 @@ function lire(T, st, e) {
       T.E[w].regains++; T.regain[w] = { t: st.t };
       const bx = sens(st, l, st.ball.p[0], st.ball.p[2])[0]; T.E[l].restDef.push(champ(st, l).filter((p) => sens(st, l, p.p[0], p.p[2])[0] < bx).length);
       T.perte[l] = { t: st.t };
+      // LE REPLI (B11 X15-17) et LA MEUTE (B11 X13 : 3-5 joueurs à < 10 m à t0 + 1,5 s pour qui contre-presse) : le centre de gravité du
+      // perdant à la perte, relu à +3 s ; les siens près du ballon à +1,5 s
+      { const cx = (t2) => { const P = champ(st, t2); return P.reduce((a, p) => a + sens(st, t2, p.p[0], p.p[2])[0], 0) / Math.max(1, P.length); };
+        (T.suivis ??= []).push({ t: st.t, l, c0: cx(l), fait15: false, fait3: false, cx }); }
       if (T.aer && !T.aer.second) T.aer.second = w;
       break;
     }
@@ -146,7 +154,7 @@ export function tactiqueReport(T, st) {
       conservation: pc(E.garde, E.rec), conservationSousPression: pc(E.gardePresse, E.recPresse),
       courses: E.courses, coursesServies: pc(E.servies, Object.values(E.courses).reduce((a, b) => a + b, 0)), combinaisons: E.combis,
       duelsAeriens: E.aeriens, aeriensGagnes: pc(E.aeriensGagnes, E.aeriens), secondBallonVainqueur: pc(E.secondsGardes, E.secondsDuels),
-      regains: E.regains, tirsDans10s: E.tirs10, delaiRegainTir: r1(med(E.delaiTir)), restDefense: r1(moy(E.restDef)), blocReforme: r1(med(E.reforme)), contrePressing: E.contrePress,
+      regains: E.regains, tirsDans10s: E.tirs10, delaiRegainTir: r1(med(E.delaiTir)), restDefense: r1(moy(E.restDef)), blocReforme: r1(med(E.reforme)), repli3s: r1(moy(E.repli3)), meute15: r1(moy(E.meute15)), contrePressing: E.contrePress,
       sequences: E.seq, passesParSequence: r1(E.seqPasses / Math.max(1, E.seq)), sequences10Passes: E.seq10, directSpeed: r1(moy(E.seqVit)),
       decisions: E.decisions, optionLibreIgnoree: pc(E.optionIgnoree, E.decisions), tempsLibreReceveur: r1(E.choixTtp / Math.max(1, E.decisions)),
     }; };
@@ -157,7 +165,7 @@ export function tactiqueReport(T, st) {
       distanceSoutien: 'B06 #20 : 6-18 m', ecartPointeLigne: 'B09 : le 9 sur la ligne (0-3 m), pinCount 1,5-2,4', distanceIntervention: 'B01/B12 : 10-15 m bloc médian · ≈ 6 m bloc bas', recSousPression: 'M07/B07 : dos sous forte pression 35-55 %',
       recOuvert: 'B07 T7 : 20-35 %', recDos: 'B07 T7 : 15-30 %', conservationSousPression: 'R02 #11 : 66,8 % (sans pression 76,5)', coursesServies: 'B09 T1 : 15-40 %',
       aeriensGagnes: 'R04 : 38-50 duels aériens par match', secondBallonVainqueur: 'B15 D7 : 45 % au milieu', tirsDans10s: 'B11 X3 : 62 % des tirs à ≤ 10 s du regain',
-      restDefense: 'B11 X19 : 3,7 joueurs derrière le ballon', blocReforme: 'B11 X15 : 8-12 s', contrePressing: 'B11 X13 : 20-30 par équipe',
+      restDefense: 'B11 X19 : 3,7 joueurs derrière le ballon', blocReforme: 'B11 X15 : 8-12 s', repli3s: 'recul du centre de gravité en 3 s après la perte (m)', meute15: 'B11 X13 : 3-5 à < 10 m à t0 + 1,5 s pour qui contre-presse', contrePressing: 'B11 X13 : 20-30 par équipe',
       passesParSequence: 'R01 C13 : 3,5 (3,5-5,1)', sequences: 'R01 : 105 ± 25 par équipe', sequences10Passes: 'R01 : 7 ± 3', directSpeed: 'R01 C19 : 1,7 ± 0,3 m/s (1,4 possession · 2,1 direct)',
       ballonEnJeu: 'R01 C30 : 54-58 %', sorties: 'R06 : touches 35-44, corners 10, sorties de but 16 par match',
     },

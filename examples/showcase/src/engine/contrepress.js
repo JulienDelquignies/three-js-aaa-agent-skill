@@ -48,7 +48,13 @@ export function contrePressStep(st, cfg, { busy, tac, axe, role, d2, pitch }) {
       const mine = st.players.filter((p) => p.team === loser && !p.keeper && p.down <= 0);
       const near = mine.filter((p) => d2(p.p, st.ball.p) < (CP.rayon ?? 20)).length;
       // la zone permise : à 0,5 le tiers propre est exclu ; bloc bas (0) : la moitié adverse seulement ; gegenpressing (1) : presque partout
-      if (near >= (CP.compact ?? 4) && x > axe(T.hauteurBloc, 0, -hx * 2 / 3)) {
+      // (376, cfg.contrePressChoix — T4 du chantier tactique, B11 X13 : 20-30 contre-pressings par équipe) LE CONTRE-PRESS EST UNE DÉCISION : hier
+      // l'horloge partait à CHAQUE perte en bloc compact (≥ 4 à < 20 m) — ~80 par équipe. La consigne PRESSING règle la porte : le nombre de
+      // siens près du ballon (6 → 3) et la portée du premier contact du plus proche (4 → 9 m). Absente : la porte d'hier, au bit.
+      const CC = cfg.contrePressChoix;
+      const dPlus = CC ? Math.min(...mine.map((p) => d2(p.p, st.ball.p))) : 0;
+      const choixOk = !CC || (near >= Math.round(axe(T.pressing, CC.nMax ?? 6, CC.nMin ?? 3)) && dPlus <= axe(T.pressing, CC.dMin ?? 4, CC.dMax ?? 9));
+      if (near >= (CP.compact ?? 4) && choixOk && x > axe(T.hauteurBloc, 0, -hx * 2 / 3)) {
         const dur = (CP.dur ?? 5.5) * axe(T.pressing, 0.6, 1.4);
         const f = T.formation, arriere = new Set(CP.chaise === false ? [] : mapPostes(f).slice(0, (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0]));
         const hunters = mine.filter((p) => role(p).press >= 0.25 && !arriere.has(p.post))
