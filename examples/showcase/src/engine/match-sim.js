@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, engageurTient, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique, marquageDe } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js'; import { retraitAuPied } from './loi12.js'; import { profondeurRole } from './occupation-role.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique, marquageDe } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js'; import { retraitAuPied, murTaille, loi13Cibles } from './loi12.js'; import { profondeurRole } from './occupation-role.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -203,7 +203,7 @@ function assignMatchJobs(st, cfg) {
       }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
       // LE PLACEMENT DU CORNER (102) et de la TOUCHE LONGUE (165) : les grands montent en boîte pendant la pose
-      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : (st.full && r.type === 'touche' ? toucheSpots(st, r, p, cfg) : null) ?? (st.full && cfg.cpaMontee && r.type === 'coup-franc' ? cfSpots(st, r, p, cfg) : null);   // (224) LA MONTÉE SUR COUP FRANC — doc cpa.js
+      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : (st.full && r.type === 'touche' ? toucheSpots(st, r, p, cfg) : null) ?? (st.full && cfg.cpaMontee && r.type === 'coup-franc' && !(cfg.murNombre && r._mur?.includes(p.id)) ? cfSpots(st, r, p, cfg) : null);   /* (387) l'homme du mur va au mur, pas au marquage de surface */   // (224) LA MONTÉE SUR COUP FRANC — doc cpa.js
       if (cSpot) { p.job = 'walk'; p.target = [cSpot[0], 0, cSpot[1]]; continue; }
       if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
       if (r.type === 'engagement') {
@@ -227,10 +227,10 @@ function assignMatchJobs(st, cfg) {
             const MT = cfg.loi12.murTrot, gx = og.x - rp[0], gz = 0 - rp[1], gl = hyp(gx, gz) || 1, mx = rp[0] + (gx / gl) * mur, mz = rp[1] + (gz / gl) * mur;   // (B4, loi12.murTrot) LES DEUX QUI Y SERONT LES PREMIERS : les deux plus près du POINT du mur, au trot — hier les deux plus PROFONDS, au pas (partis de 56 m, à 8-13 m du ballon à la prise, mesuré)
             r._mur ??= st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0)
               .sort(MT ? (a, b) => hyp(mx - a.p[0], mz - a.p[2]) - hyp(mx - b.p[0], mz - b.p[2]) : (a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2]))
-              .slice(0, 2).map((q) => q.id);
+              .slice(0, cfg.murNombre ? murTaille(hyp(og.x - rp[0], rp[1]), Math.abs(Math.atan2(rp[1], Math.abs(og.x - rp[0]))), cfg.murNombre) : 2).map((q) => q.id);   /* (387) la taille du mur selon la distance et l'angle */
             const im = r._mur.indexOf(p.id);
             if (im >= 0) {
-              const lat = im === 0 ? 0.35 : -0.35;
+              const lat = cfg.murNombre ? (im - (r._mur.length - 1) / 2) * (cfg.murNombre.ecart ?? 0.7) : im === 0 ? 0.35 : -0.35;
               p.job = 'walk'; p.target = [mx - (gz / gl) * lat, 0, mz + (gx / gl) * lat]; if (MT) p._walkF = MT;   // au trot : la même convention collante que les monteurs de cpa.js
               continue;
             }
@@ -249,7 +249,7 @@ function assignMatchJobs(st, cfg) {
       // il vise le BALLON (la prise au rayon du ballon réel) ; le point de remise seulement pendant qu'il PORTE
       taker.target = r.carried && r.placed === false ? [r.p[0], 0, r.p[1]] : [st.ball.p[0], 0, st.ball.p[2]]; if (st.full && cfg.coupEnvoi && r.type === 'engagement' && r.placed !== false) { const sg = pitch.ownGoal(taker.team).sign; taker.target = [st.ball.p[0] + sg * 0.45, 0, st.ball.p[2]]; if (hyp(taker.p[0] - taker.target[0], taker.p[2] - taker.target[2]) < 0.6) taker.yawWant = Math.atan2(st.ball.p[2] - taker.p[2], st.ball.p[0] - taker.p[0]); }   // (338) L'ENGAGEUR SE POSTE DERRIÈRE SON BALLON (cfg.coupEnvoi) : il visait le centre du ballon et s'arrêtait DESSUS — à 5 cm le ballon tombait « dans le dos » (controle-dos refusé en boucle, 2,7 s, et l'adversaire venait le prendre). 0,45 m dans son camp, face au jeu
     }
-    if (st.full && cfg.attenteVivante) attenteVivanteStep(st, r, cfg, taker); /* (285) l'attente vivante : les corps bougent autour de leur poste, le camp qui remet décroche aux dernières secondes */ return;
+    if (st.full && cfg.attenteVivante) attenteVivanteStep(st, r, cfg, taker); /* (285) l'attente vivante : les corps bougent autour de leur poste, le camp qui remet décroche aux dernières secondes */ if (st.full && cfg.loi13 && r.type === 'coup-franc') loi13Cibles(st, r, cfg.loi13); return;   /* (387) Loi 13 : aucun adversaire à moins de 9,15 m */
   }
 
   // ---- l'EXPULSÉ (Loi 12) : hors du monde, il marche vers sa sortie (filtres down<=0 partout) ; le REMPLACÉ (Loi 3) marche le même chemin — sortie, échange d'identité, entrée.

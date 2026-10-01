@@ -6,6 +6,7 @@
 //   levee     la passe levée (style lofted) ;
 //   protegee  l'adversaire à < 1,5 m ;
 //   ouverte   la cible à 50-135° du regard, du côté où l'intérieur du pied l'envoie (pied droit : à gauche) ;
+//   exterieur la cible à 40-120° du côté NON naturel : l'extérieur du pied (A-387 ; la passe pressée garde son geste : pas de variante sous contrat) ;
 //   course    le passeur lancé (≥ 3 m/s) ;
 //   tendue    la passe tendue (driven) de ≥ 18 m ;
 // sinon le parent. ?passes-hier : le parent toujours.
@@ -35,6 +36,7 @@ export function varianteDe(parent, sit) {
   if (sit.style === 'lofted') { const v = ok('levee'); if (v) return v; }
   if (sit.adv != null && sit.adv < 1.5) { const v = ok('protegee'); if (v) return v; }
   if (naturel && ang >= 50 && ang <= 135) { const v = ok('ouverte'); if (v) return v; }
+  if (!naturel && sit.dir != null && ang >= 40 && ang <= 120) { const v = ok('exterieur'); if (v) return v; }   // (A-387) le côté NON naturel : l'extérieur du pied (hier la passe de face, 50 % des passes latérales)
   if (sit.vr >= 3) { const v = ok('course'); if (v) return v; }
   if (sit.style === 'driven' && (sit.dist ?? 0) >= 18) { const v = ok('tendue'); if (v) return v; }
   return parent;

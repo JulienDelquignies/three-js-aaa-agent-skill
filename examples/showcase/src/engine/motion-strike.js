@@ -87,7 +87,7 @@ export const KINDS = {
 // Le choix est à passe-situation.js (situation → variante). Noms : `${parent}_${variante}`.
 // l'amplitude RÉSOLUE de chaque variante (solveStrike contre sa vFoot — verify-motion : « amp bakée ≈ résolue ») : la posture change
 // la vitesse du pied (la levée à l'amplitude du parent passait à 137 % de vFoot)
-const AMP_VARIANTES = { passe_course: 1.075, passe_ouverte: 1.075, passe_levee: 0.85, passe_tendue: 1.075, passe_protegee: 1.075,
+const AMP_VARIANTES = { passe_exterieur: 0.775, passe_course: 1.075, passe_ouverte: 1.075, passe_levee: 0.85, passe_tendue: 1.075, passe_protegee: 1.075,
   passeRapide_course: 0.9, passeRapide_ouverte: 0.925, passeRapide_levee: 0.701, passeRapide_tendue: 0.963, passeRapide_protegee: 0.925,
   deviation_course: 0.7, deviation_ouverte: 0.7, deviation_protegee: 0.7 };
 export const VARIANTES_PASSE = {
@@ -96,9 +96,14 @@ export const VARIANTES_PASSE = {
   levee: { lean: 12, hipEnd: 62, toeDown: -14, sitBack: 0.08, headDown: 18 },
   tendue: { lean: 2, hipEnd: 32, toeDown: -16, headDown: 30, open: 6 },
   protegee: { armElev: 68, armFwd: 6, dip: 0.055, hipTop: -11, lean: 3 },
+  // (A-387, 01/10 : « on manque encore trop d'animations pour chaque geste en fonction des angles ») mesuré : 45 % des passes partent à 30-90° du
+  // regard, la variante ouverte ne couvrait que le côté naturel 50-135° ; le côté non naturel et l'arrière retombaient sur la passe de face. (Essayés : « large » pivot 48°, « dos » pivot 72° — le pied ne
+  // traverse plus vers l'avant du corps, les contrats les refusent : il faut une DIRECTION de visée au générateur — dette nommée.)
+  exterieur: { surface: 'outside', turnOut: -16, abdTop: 6, abdContact: -8, invert: -14, toeDown: 12, open: 4 },   // l'extérieur du pied vers le côté non naturel
 };
 for (const parent of ['passe', 'passeRapide', 'deviation']) for (const [v, mods] of Object.entries(VARIANTES_PASSE)) {
-  if (parent === 'deviation' && (v === 'levee' || v === 'tendue')) continue;   // la une-touche redirige : ni levée ni tendue
+  if (parent === 'deviation' && (v === 'levee' || v === 'tendue' || v === 'exterieur')) continue;   // (A-387) la déviation extérieure est celle de la une-touche (348)
+  if (parent === 'passeRapide' && v === 'exterieur') continue;   // (A-387) à l'amplitude résolue 0,70 le genou ralentit sous 690 °/s (le même refus que la levée)   // la une-touche redirige : ni levée ni tendue
   if (parent === 'passeRapide' && v === 'levee') continue;   // la passe pressée ne se lève pas (et l'amplitude résolue, 0,70, ralentissait le genou sous 690 °/s : 40/40 refus)
   const m = parent === 'deviation' && v === 'protegee' ? { ...mods, hipTop: KINDS.deviation.hipTop, armElev: 54 } : mods;   // la une-touche garde son armé minuscule (−4°) : −11 déplaçait le pic de vitesse (40/40 refus)
   KINDS[`${parent}_${v}`] = { ...KINDS[parent], ...m, amp: AMP_VARIANTES[`${parent}_${v}`] ?? KINDS[parent].amp, variante: v, parent };

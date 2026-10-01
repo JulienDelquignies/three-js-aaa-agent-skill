@@ -12,7 +12,7 @@
 //                  latéraux hauts et larges — au renvoi ET quand le gardien a le ballon en jeu.
 //   placement    — l'événement demandé par l'aval : à la prise d'un coup de pied arrêté, combien
 //                  d'attaquants et de défenseurs dans la surface visée.
-import { hyp } from './hyp.js';
+import { hyp } from './hyp.js'; import { murTaille } from './loi12.js';
 import { formationSpots, formationPour, LIGNES, mapPostes } from './formation.js';
 
 const dd = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -33,7 +33,10 @@ export function cfSpots(st, r, p, cfg) {
     // le défendant : le MUR d'abord (le même choix que match-sim : les deux plus près de leur but), puis zone ou homme
     const og = st.pitch.ownGoal(1 - r.team);
     const defs = st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0 && !q.expulse && !q._sub);
-    if (hyp(og.x - r.p[0], r.p[1]) < 30) r._mur ??= [...defs].sort((a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2])).slice(0, 2).map((q) => q.id);
+    if (hyp(og.x - r.p[0], r.p[1]) < 30) r._mur ??= (() => { if (!cfg.murNombre) return [...defs].sort((a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2])).slice(0, 2).map((q) => q.id);
+      // (387) le mur à sa TAILLE (loi12.murTaille), les plus près du point du mur — le même choix que match-sim sous loi12.murTrot
+      const gx = og.x - r.p[0], gz = -r.p[1], gl = hyp(gx, gz) || 1, mur = cfg.loi12?.mur ?? 9.15, mx = r.p[0] + (gx / gl) * mur, mz = r.p[1] + (gz / gl) * mur;
+      return [...defs].sort((a, b) => hyp(mx - a.p[0], mz - a.p[2]) - hyp(mx - b.p[0], mz - b.p[2])).slice(0, murTaille(hyp(gx, gz), Math.abs(Math.atan2(r.p[1], Math.abs(gx))), cfg.murNombre)).map((q) => q.id); })();
     const pris = new Set(r._mur ?? []);
     if (st.tactics?.[1 - r.team]?.cpa?.marquage === 'zone') {
       posts.forEach((pt) => { const m = defs.filter((d) => !pris.has(d.id)).sort((a, b) => dd(a.p, pt) - dd(b.p, pt))[0]; if (m) { pris.add(m.id); map[m.id] = [pt[0] + sg * 0.3, pt[1]]; } });

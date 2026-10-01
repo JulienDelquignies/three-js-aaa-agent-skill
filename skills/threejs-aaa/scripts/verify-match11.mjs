@@ -8627,5 +8627,20 @@ if (__bloc()) {
   ok(`lot 386 — LE RETRAIT SE JOUE AU PIED : ${A.n} retraits, pris aux mains ${A.prise} (hier ${N.prise}/${N.n}), comptés arrêt ${A.arret} (hier ${N.arret}) — 2 × 45 min`, A.n >= 10 && A.prise === 0 && A.arret <= 2 && N.prise >= N.n * 0.5);
 }
 
+if (__bloc()) {
+  // LE COUP FRANC SELON LA LOI 13 (387 — « regarde aussi les coups de pied arrêtés… placement des joueurs »). Sondé (8 matchs) : le mur comptait
+  // toujours DEUX hommes ; à 19-24 m du but l'adversaire le plus proche était à 1,8-6 m du ballon. Le contrat (coups francs POSÉS — les fautes
+  // à portée sont rares, 2-3 par match : le hasard ne mesure rien) : après 25 s de mise en place, à 20 m face au but et à 24 m, aucun
+  // adversaire à moins de 8,8 m, et le mur (7-12 m dans l'axe ballon-but) compte au moins 4 et 3 hommes.
+  const pose = (d, z, over) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ ...over }); for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const g = st.pitch.attackGoal(0), x = g.x - Math.sign(g.x) * d; st.ball.restart([x, 0.11, z], { cause: 'coup-franc' }); st.restart = { type: 'coup-franc', p: [x, z], team: 0, at: st.t + 30 }; st.possession = { team: -1, carrier: -1 }; st.phase = 'loose'; st.pass = null;
+    for (let i = 0; i < 25 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const ux = g.x - x, uz = -z, ul = Math.hypot(ux, uz), adv = st.players.filter((q) => q.team !== 0 && !q.keeper);
+    return { mur: adv.filter((q) => { const px = q.p[0] - x, pz = q.p[2] - z, al = (px * ux + pz * uz) / ul, lat = Math.abs(px * uz - pz * ux) / ul; return al > 7 && al < 12 && lat < 3; }).length, proche: Math.min(...adv.map((q) => Math.hypot(q.p[0] - x, q.p[2] - z))) }; };
+  const A20 = pose(20, 0, {}), A24 = pose(24, -6, {}), N20 = pose(20, 0, { murNombre: null, loi13: null }), N24 = pose(24, -6, { murNombre: null, loi13: null });
+  ok(`lot 387 — LE COUP FRANC SELON LA LOI 13 : à 20 m mur ${A20.mur} (hier ${N20.mur}), le plus proche ${A20.proche.toFixed(1)} m (hier ${N20.proche.toFixed(1)}) ; à 24 m mur ${A24.mur} (hier ${N24.mur}), ${A24.proche.toFixed(1)} m (hier ${N24.proche.toFixed(1)})`,
+    A20.proche >= 8.8 && A24.proche >= 8.8 && A20.mur >= 4 && A24.mur >= 3);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

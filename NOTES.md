@@ -14695,6 +14695,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 387 — les coups de pied arrêtés (« vérifie tout ce qui se passe, placement des joueurs, geste du tireur, choix du tireur »)**.
+  Audit (sondes cpa / cfp, 2-8 matchs) : sorties de but prises par le gardien sauf exception (un ailier, un latéral), Loi 16 tenue
+  (aucun adversaire en surface), passe courte ; coups francs : direct jusqu'à 30 m (14/26 tirés, 1 but), lobé dans la surface au-delà
+  (toujours le même point, 10,5 m du but) ; attentes 25-48 s. Corrigé ici (`murNombre`, `loi13`, loi12.js / cpa.js / match-sim) : le
+  mur comptait TOUJOURS deux hommes (cpa.js le fixait avant match-sim) — il compte 5 à 18 m face au but, 4 à 24, 3 à 30, moins avec
+  l'angle ; et à 19-24 m l'adversaire le plus proche était à 1,8-6 m du ballon (les marqueurs de surface gardaient leur cible) — toute
+  cible adverse sort du cercle de 9,15 m, l'homme du mur va au mur avant le marquage. Bloc 252 (coups francs POSÉS — les fautes à portée
+  sont trop rares pour un contrat au hasard ; un premier contrat sur 2 matchs n'a vu que 2 coups francs) : à 20 m mur 3 → 6, le plus
+  proche 4,1 → 9,1 m ; à 24 m mur 2 → 4, 6,5 → 9,2 m. Défaut inchangé ; banc vert. Restent : le tireur sans spécialiste (joueurs aux
+  notes neutres), le lob lointain toujours au même point, l'attente longue, pas de mur au-delà de 30 m.
+- **A-387 — la passe de l'extérieur du pied** (« on manque encore trop d'animations pour chaque geste en fonction des angles ») :
+  mesuré, 45 % des passes partent à 30-90° du regard ; la variante « ouverte » ne couvrait que le côté NATUREL. `passe_exterieur`
+  (motion-strike, VARIANTES_PASSE) : le côté non naturel à 40-120° se joue de l'extérieur (rondo-passe.varianteDe). verify-motion : les
+  10 contrats de la variante verts (les 10 rouges du fichier existaient avant). Essayés et retirés : « large » (pivot 48°), « dos »
+  (pivot 72°) — le pied ne traverse plus vers l'avant du corps : le générateur demande une direction de visée (dette) ;
+  passeRapide_exterieur : le genou sous 690 °/s à l'amplitude résolue.
 - **Lot 386 — la passe en retrait se joue au pied** (01/10 : « vérifie aussi ce que fait le gardien sur les passes en retrait, pour moi il
   prend le ballon à la main »). Confirmé : 30 retraits sur 30 nommés 'control prise-gardien' (surface : les mains, la scène joue la prise
   à deux mains), 24 comptés 'arrêt' (le ramassage du ballon mort, match-sim, compté parade) ; le discriminant de tenue (gk._mains, 171)
