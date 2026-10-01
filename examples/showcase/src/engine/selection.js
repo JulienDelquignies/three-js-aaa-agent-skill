@@ -17,7 +17,7 @@
 import { hyp } from './hyp.js';
 import { etaCourse } from './ball-predict.js';
 import { toucheDe, pFailDe } from './reception.js';
-import { tac, axe } from './tactics.js';
+import { tac, axe } from './tactics.js'; import { profondeurRole } from './occupation-role.js';
 
 export const CLASSES = ['SHORT_GROUND', 'MID_GROUND', 'LONG_GROUND', 'CHANNEL', 'THROUGH', 'CHIP_THROUGH', 'SWITCH', 'CROSS', 'CUTBACK', 'LAY_OFF', 'ONE_TWO_RETURN', 'BACK_SAFE'];
 export const logit = (p) => Math.log(p / (1 - p)), sig = (x) => 1 / (1 + Math.exp(-x));
@@ -72,5 +72,12 @@ export function termeDe(sel, c, st, K) {
   // (320) LE RISQUE A UNE ADRESSE (K.zone — le chantier des échappées, note 447) : la passe perdue devant son but coûte un but, au milieu une
   // possession — l'aversion croît vers sa ligne : ρ × (1 + gain × max(0, 1 − d_but_propre / portee)). Absente : le ρ d'hier au bit.
   if (K.zone && st.pitch) { const og = st.pitch.ownGoal(c.team), dO = hyp(og.x - c.p[0], c.p[2]); rho *= 1 + (K.zone.gain ?? 2) * Math.max(0, 1 - dO / (K.zone.portee ?? 35)); }
+  // (384, K.risqueRole — T3 du chantier ; 01/10 : centraux et sentinelle trop peu servis) LE RISQUE A UN RÔLE ET UN STYLE. Mesuré (équilibre,
+  // 2 × 45 min) : centraux et sentinelle DISPONIBLES (≤ 25 m, libres ≥ 5 m, ligne ouverte) 34 % du temps, choisis alors 13-15 % ; l'avant-centre
+  // disponible 13 %, choisi 22,6 % (60 % de ses ballons partent quand il ne l'est pas) — P̂ le voyait (0,72 c. 0,83), mais le calage (pente
+  // 0,26-0,47) écrasait l'écart en 0,4 point de barème face à une prime de progression de 3. La loi (le ρ par rôle que l'en-tête nommait) :
+  // ρ × echelle × le STYLE (possession × poss … direct × direct) × le RÔLE du passeur (la garde prudente × garde … la pointe audacieuse
+  // × pointe, par la profondeur du rôle, le rôle naturel du poste à défaut). Absente : le ρ d'hier, au bit.
+  const RR = K.risqueRole; if (RR) rho *= (RR.echelle ?? 3) * axe(tac(st, c.team).style ?? 0.5, RR.poss ?? 1.3, RR.direct ?? 0.7) * axe(Math.min(1, profondeurRole(st, c, RR) / 0.8), RR.garde ?? 1.3, RR.pointe ?? 0.6);
   return (K.poids ?? 2.5) * rho * (logit(sel.pHat) - logit(K.p0 ?? 0.8));
 }

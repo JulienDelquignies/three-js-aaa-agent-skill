@@ -14695,6 +14695,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 384 — T3, le risque a un rôle et un style** (`selection.risqueRole`, selection.termeDe). Le calage de la sélection (267) écrasait
+  l'écart de risque ; ρ × 3 × style × rôle du passeur (la profondeur du rôle, le rôle naturel du poste à défaut). Piège rencontré :
+  match-config.js porte DEUX `selection: {…}` sur la ligne 801 (la seconde gagne) — la clé insérée dans la première ne faisait rien.
+  Bloc 250 : possession 6 → 13 séquences de 10+ passes, direct 2 → 0, centraux + sentinelle + 12 % (contrat 15 → 10 % après un premier
+  rouge). Bloc 1 : clause datée 384. Défaut `ca52f2952dc5000a / a8f474d564e54ed4` ; banc vert. L'essai 383 (l'appel marqué) : annulé.
 - **Lot 382 — T1 bis, étape 2 : la zone se reprend d'où l'on est, le couloir est à la zone extérieure** (sous-clés `reprise`,
   `versLigne` de `zoneHomme` ; sans elles : le 381 au bit). Sonde : 47 % des grands écarts défenseur → cible venaient d'une zone restée à
   14,5 m du corps. Bloc 249 (contrat reformulé après un premier rouge : « < 3 m » 33 → 36 % seulement sur deux graines, la mesure qui

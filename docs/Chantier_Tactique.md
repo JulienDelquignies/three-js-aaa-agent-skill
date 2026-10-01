@@ -174,6 +174,15 @@ joueurs avec leur poste et leur rôle dans les formations ».
   inchangée au neutre). Suspects sondés d'abord (équilibre, 2 × 45 min) : sans la garde du 377, sans passBias, sans les deux — les
   passes entre défenseurs restent à 9-12 % ; la longueur idéale de 10 m bloquait le recyclage. Bloc 247 : passes reçues par centraux et
   sentinelle 96 → 166, séquences de 10+ passes 4 → 12 (2 × 45 min). Défaut `0eaf73e09f28381c / 984f21325acece53`.
+- **Lot 384 (scellé) — le risque a un rôle et un style** : `selection.risqueRole` (selection.termeDe). Sondé (équilibre, 2 × 45 min) :
+  centraux et sentinelle DISPONIBLES (≤ 25 m, libres ≥ 5 m, ligne ouverte) 34 % du temps et choisis alors 13-15 % ; l'avant-centre
+  disponible 13 %, choisi 22,6 % (60 % de ses ballons partent quand il ne l'est pas). La sélection calibrée (267) voyait le risque
+  (P̂ 0,72 c. 0,83) mais son calage (pente 0,26-0,47) l'écrasait en 0,4 point de barème face à une prime de progression de 3. Le ρ par
+  rôle que l'en-tête du 267 nommait : ρ × 3 × le style (possession 1,3 … direct 0,7) × le rôle du passeur (garde 1,3 … pointe 0,6), en
+  plus de la mentalité, des décisions et de la zone. Bloc 250 (possession c. direct) : séquences de 10+ passes possession 6 → 13, direct
+  2 → 0 ; centraux et sentinelle servis + 12 % (contrat ramené de 15 à 10 %). Équilibre : passes entre défenseurs 12 → 18 %, séquences
+  10+ 2,5 → 8 par équipe et par match, max 11-17 → 19-20, l'avant-centre choisi 22,6 → 17 %. Bloc 1 : clause DATÉE 384 (la graine 7 sur
+  la dette du 334). Défaut `ca52f2952dc5000a / a8f474d564e54ed4`.
 - **Reste après 379** : l'avant-centre reste le plus servi (7-10 ballons par 10 min, réel ~3) même sans prime de progression — le trio
   offensif est LIBRE (à sonder : le marquage des attaquants par la ligne défensive, l'espace entre les lignes) ; passes entre défenseurs
   9-13 % (livre 38) ; gardien peu servi (0,4-1,2).
@@ -300,6 +309,7 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T3 | 384 | Le risque a un rôle et un style : possession 13 séquences de 10+ passes (6), direct 0 ; entre défenseurs 12 → 18 % |
 | 01/10 | T1 bis | 382 | La zone se reprend d'où l'on est, le couloir est à la zone extérieure : affectés loin de leur cible 35 → 26 %, ailier libre 57 → 52 % |
 | 01/10 | T1 bis | 381 | Une zone, un homme (zones qui coulissent, affectation géographique, la prise court) : ailier servi à 7,4 m (9,8), libre 57 % (73) |
 | 01/10 | T3 | 379 | La relance est une circulation (style × pression × rôle) ; sens de jeu selon le style : centraux + sentinelle servis 96 → 166, séquences 10+ 4 → 12 (2 × 45 min) |
