@@ -8469,5 +8469,17 @@ if (__bloc()) {
   ok(`lot 373 — L'ATTAQUE S'ENGAGE : latéraux à ${A.lat.toFixed(1)} m de leur but en attaque (hier ${N.lat.toFixed(1)}), centraux ${A.cDer.toFixed(1)} m derrière le ballon`, A.lat >= N.lat + 6 && A.cDer > 5);
 }
 
+if (__bloc()) {
+  // LE LONG BALLON SE DISPUTE (374 — T7, B15). Sondé : l'intercepteur ne lisait que les passes basses ; 35/56 ballons en l'air atterris sans
+  // adversaire à 3 m, 7 duels aériens par match. Le défenseur le plus proche attaque le receveur. Le contrat : au moins 40 % de duels aériens
+  // de plus qu'hier (les têtes seules ne comptent pas : sans adversaire, elles BAISSENT quand le ballon se dispute — 2 × 15 min, 21 → 15).
+  const mesure = (over) => { let n = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0;
+      for (let i = 0; i < 1800 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type === 'duel' && e.kind === 'aérien') n++; } } }
+    return n; };
+  const A = mesure({}), N = mesure({ disputeAerienne: null });
+  ok(`lot 374 — LE LONG BALLON SE DISPUTE : ${A} duels aériens (hier ${N}, 2 × 30 min)`, A >= N * 1.4);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

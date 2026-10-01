@@ -124,7 +124,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   66,8 % sous pression ; scan 0,44 /s.
 - **Entrées** : pressing, marquage ; attributs firstTouch, composure, anticipation, strength.
 
-### T7 — Les duels et les seconds ballons
+### T7 — Les duels et les seconds ballons *(en cours)*
+- **Lot 374 (scellé)** : `disputeAerienne` — l'intercepteur du match ne lisait que les passes basses (< 1,4 m) : 35 ballons en l'air sur
+  56 atterris sans adversaire à moins de 3 m, contrôlés tranquillement. Le défenseur le plus proche (≤ 20 m) attaque le RECEVEUR côté but,
+  même en retard (il dispute le second ballon) — viser le point de chute le laissait à 6 m : le receveur va au-devant. Duels aériens 7,5
+  → 13,8 par match (4 × 90 min, livre 38-50) ; bloc 243.
+- **Reste** : les autres sources de jeu aérien (sorties de but longues, dégagements de la tête) ; le marquage serré qui rend le duel
+  possible dès la passe (T1).
 - **But** : le jeu aérien existe (duels sur ballons longs, centres, dégagements) ; le second ballon se dispute selon le placement.
 - **Indicateurs** : duels aériens 38-50 par match, défenseurs 55,7 % de réussite ; le vainqueur récupère 45 % au milieu (67 % sur
   centre) ; tacles réussis 9,3 par équipe ; glissés 5-7.
@@ -157,4 +163,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T1 | 370 | Sauts de cible 117 → 31 par minute ; N_def(10) des corps 2,1 → 2,5. Sorties (non critère) : buts ~4 par équipe, tirs ~19, xG ~3 |
 | 01/10 | T2 | 372 | Centres ×2-4 ; sur centre, duels aériens gagnés par l'attaque 1 → 10 |
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
+| 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |

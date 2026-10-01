@@ -14686,6 +14686,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   de la médiane ; le dernier tiers seul essayé d'abord : séquences trop courtes, les corps n'arrivaient pas), centraux et sentinelle
   tiennent, latéraux à 5 m et milieux à 9 m du ballon × mentalité. Latéraux 44 → 70 m (bloc 242) ; centres 25 par équipe (trop : à
   recadrer). Jumeau = le 372 au bit ; défaut `467fb09294919a02 / 881acce90e2d4a0d`.
+- **Lot 374 — T7, le long ballon se dispute** : `disputeAerienne` (dispute-aerienne.js — B15). L'intercepteur du match ne lisait que
+  les passes basses ; le défenseur le plus proche attaque le receveur côté but, même en retard (marge 3 s ; à 0,6 s : 20 cas sur 67, le
+  défenseur à 6 m au toucher). Duels aériens 7,5 → 13,8 par match. Bloc 243 (duels aériens seuls — les têtes non disputées baissent
+  quand le ballon se dispute). Jumeau = le 373 au bit ; défaut `467fb09294919a02 / f7712962f22750fb`.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match
