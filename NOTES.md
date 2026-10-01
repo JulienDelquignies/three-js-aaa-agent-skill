@@ -14695,6 +14695,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 377 — T1/T2, tout dépend des rôles des joueurs** (01/10 : « c'est des choix tactiques et des qualités de joueur ça aussi », puis
+  « tout dépend des rôles des joueurs »). Sonde de sensibilité : consigne marquage, compacité, défense notée 30 c. 80 laissaient TOUS le
+  central à 10,3-10,7 m. Vu par l'image : personne à marquer — l'attaque n'a que 4 joueurs à < 15 m de la ligne ; sans rôle posé les vingt
+  joueurs de champ sont polyvalents, le rôle ne nuance le poste que de ± 2,5 m ; et le défenseur loin derrière sa cible rentrait au trot,
+  face au ballon (cercle vicieux : lent → corps vers le ballon → course de dos bridée 2,5-3,2 m/s → lent). Trois clés :
+  `occupationRole` (occupation-role.js : la hauteur du RÔLE en attaque installée — garde 26 m derrière le ballon, hauteur du ballon, ligne
+  adverse — × mentalité ; le poste sans rôle prend le rôle naturel de son poste ; la pointe devant le ballon ne siège plus au comité de
+  soutien selon son rôle ; l'allure de montée selon le rôle), `retourPoste` (repli-consigne.retourDe : la cible derrière soi de plus de
+  8 m se rejoint à l'allure du rôle × workRate ; regard-jeu décide le corps sur l'allure VOULUE), `marquageConsigne`
+  (marquage-elastique.marquageDe : distance, rayon, laisse, nombre de marqueurs selon l'axe marquage × hauteur × rôle × markF).
+  Mesuré (bloc 245, 2 × 20 min) : latéraux installés à − 3,9 m du ballon (pistons) c. − 10,3 (latéraux prudents) ; centraux du bloc bas
+  à 9,6 m de l'adversaire à l'entrée dans leur moitié (hier 12,4), **5,3 m en défense installée** (hier 6,5 ; livre 5,5). Appris : par
+  phase, le marquage installé est AU LIVRE (LAT 5,5, DC 5,3-5,6, MIL 5,0-5,2) ; la moyenne de match reste haute à cause de la phase
+  « ballon dans la moitié adverse » (DC 14-16 m) — B12 ne nomme pas sa phase ; la télémétrie rend désormais `marquageInstalle`,
+  `densiteInstalle`, `interligneInstalle`. Aussi : les possessions sont au livre (19,7 par équipe et par 10 min, 15 s), mais le STYLE ne
+  change pas la séquence (possession, direct, équilibre : 15 s, 20 m) — T3. Le latéral rejoint sa cible de rôle en 8-15 s d'attaque
+  installée (− 3 m après 15 s). Consigne zone ↔ homme et notes 30 ↔ 80 mordent encore à peine (dans le bruit). Jumeau = le 376 au bit ;
+  défaut `971cf1c088898128 / 044f6bfe1e804603` ; bloc 245, banc vert (bloc 1 5/5, sync 9/9).
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match

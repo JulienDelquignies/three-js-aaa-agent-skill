@@ -23,13 +23,14 @@ const champ = (st, t) => st.players.filter((p) => p.team === t && !p.keeper && !
 export function makeTactique(st, { sample = 10 } = {}) {
   const E = () => ({
     marq: {}, marqN: {},                      // distance au plus proche adversaire par famille (sans le ballon)
+    marqI: {}, marqIN: {}, nDef10I: 0, interI: 0, interIN: 0, instN: 0,   // (377) les mêmes en DÉFENSE INSTALLÉE : l'adversaire depuis ≥ 8 s dans ma moitié
     nDef10: 0, nDef10N: 0, inter: 0, interN: 0, soutien: 0, soutienN: 0,
     rec: 0, recPresse: 0, recOuvert: 0, recDos: 0, recTtp: 0, garde: 0, gardePresse: 0, recPresseN: 0,
     courses: {}, servies: 0, combis: {}, aeriens: 0, aeriensGagnes: 0, secondsDuels: 0, secondsGardes: 0,
     regains: 0, tirs10: 0, delaiTir: [], restDef: [], reforme: [], contrePress: 0, pressD: [],
     pointe: [], repli3: [], meute15: [], seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
   });
-  return { e0: 0, frame: 0, sample, E: [E(), E()], enJeu: 0, total: 0, rec: [], courses: [], aer: null, regain: [null, null], perte: [null, null], seqC: null };
+  return { e0: 0, frame: 0, sample, tOpp: 0, tOppTeam: -1, E: [E(), E()], enJeu: 0, total: 0, rec: [], courses: [], aer: null, regain: [null, null], perte: [null, null], seqC: null };
 }
 
 export function tactiqueStep(T, st, dt = 1 / 60) {
@@ -41,6 +42,8 @@ export function tactiqueStep(T, st, dt = 1 / 60) {
     if (!T.seqC || T.seqC.team !== tm) { finSeq(T, st); T.seqC = { team: tm, t0: st.t, x0: bx, xMax: bx, passes: 0 }; }
     else T.seqC.xMax = Math.max(T.seqC.xMax, bx);
   }
+  if (tm !== T.tOppTeam) { T.tOppTeam = tm; T.tOpp = 0; }   // (377) le temps de l'attaque installée dans la moitié adverse
+  if (jeu && tm != null && tm >= 0 && sens(st, tm, st.ball.p[0], st.ball.p[2])[0] > 0) T.tOpp += dt;
   if (jeu && T.frame % T.sample === 0 && tm != null && tm >= 0) echantillon(T, st, tm, car);
   // — le bloc REFORMÉ après la perte (B11 X15 : shapeScore > 0,75 en 8-12 s) : ≥ 7 joueurs de champ derrière le ballon ET longueur ≤ 35 m
   for (const t of [0, 1]) { const P = T.perte[t]; if (!P) continue;
@@ -60,14 +63,15 @@ export function tactiqueStep(T, st, dt = 1 / 60) {
 }
 
 function echantillon(T, st, tm, car) {
-  const adv = 1 - tm, b = st.ball.p;
+  const adv = 1 - tm, b = st.ball.p, inst = T.tOpp >= 8 && sens(st, tm, b[0], b[2])[0] > 0;   // (377) défense installée
   // le MARQUAGE (B12 T1-3 : 5,16 ± 0,6 m ; LAT 6,4 > MIL 5,6 > DC 5,5 > ATT 5,1) : la distance de chaque défenseur au plus proche adversaire
   for (const p of champ(st, adv)) { let d = 99; for (const q of champ(st, tm)) d = Math.min(d, hyp(q.p[0] - p.p[0], q.p[2] - p.p[2]));
-    const f = familleDe(p), E = T.E[adv]; E.marq[f] = (E.marq[f] ?? 0) + d; E.marqN[f] = (E.marqN[f] ?? 0) + 1; }
+    const f = familleDe(p), E = T.E[adv]; E.marq[f] = (E.marq[f] ?? 0) + d; E.marqN[f] = (E.marqN[f] ?? 0) + 1;
+    if (inst) { E.marqI[f] = (E.marqI[f] ?? 0) + d; E.marqIN[f] = (E.marqIN[f] ?? 0) + 1; } }
   // la DENSITÉ au ballon N_def(10) (B10 T7 : 4,9 médian, 6,3 bloc bas, 4,2 haut) et l'INTERLIGNE DEF↔MIL (B10 T2 : 10-15 m, bloc bas 5-8)
-  const E = T.E[adv]; E.nDef10 += champ(st, adv).filter((p) => hyp(p.p[0] - b[0], p.p[2] - b[2]) < 10).length; E.nDef10N++;
+  const E = T.E[adv]; const nd = champ(st, adv).filter((p) => hyp(p.p[0] - b[0], p.p[2] - b[2]) < 10).length; E.nDef10 += nd; E.nDef10N++; if (inst) { E.nDef10I += nd; E.instN++; }
   const xs = champ(st, adv).map((p) => sens(st, adv, p.p[0], p.p[2])[0]).sort((a, c) => a - c);
-  if (xs.length >= 8) { E.inter += (xs[4] + xs[5] + xs[6]) / 3 - (xs[0] + xs[1] + xs[2] + xs[3]) / 4; E.interN++; }
+  if (xs.length >= 8) { const il = (xs[4] + xs[5] + xs[6]) / 3 - (xs[0] + xs[1] + xs[2] + xs[3]) / 4; E.inter += il; E.interN++; if (inst) { E.interI += il; E.interIN++; } }
   // L'ÉCART DE LA POINTE À LA LIGNE (B09 : le 9 fixe les centraux, pinCount 1,5-2,4) : la ligne de hors-jeu adverse (2e plus reculé) moins
   // l'attaquant le plus avancé, ballon encore devant la ligne (m, 0 = sur la ligne)
   { const sg = Math.sign(st.pitch.attackGoal(tm).x || 1), D = st.players.filter((q) => q.team === adv && !q.expulse).map((q) => q.p[0] * sg).sort((u, w) => w - u), lx = D[1];
@@ -148,6 +152,7 @@ export function tactiqueReport(T, st) {
   const eq = (t) => { const E = T.E[t];
     return {
       marquage: Object.fromEntries(Object.keys(E.marq).map((f) => [f, r1(E.marq[f] / E.marqN[f])])),
+      marquageInstalle: Object.fromEntries(Object.keys(E.marqI).map((f) => [f, r1(E.marqI[f] / E.marqIN[f])])), densiteInstalle: r1(E.nDef10I / Math.max(1, E.instN)), interligneInstalle: r1(E.interI / Math.max(1, E.interIN)), partInstalle: pc(E.instN, E.nDef10N),
       densiteBallon: r1(E.nDef10 / Math.max(1, E.nDef10N)), interligne: r1(E.inter / Math.max(1, E.interN)), distanceSoutien: r1(E.soutien / Math.max(1, E.soutienN)),
       distanceIntervention: r1(med(E.pressD)), ecartPointeLigne: r1(med(E.pointe)),
       receptions: E.rec, recSousPression: pc(E.recPresse, E.rec), recOuvert: pc(E.recOuvert, E.rec), recDos: pc(E.recDos, E.rec), tempsLibre: r1(E.recTtp / Math.max(1, E.rec)),
@@ -161,7 +166,7 @@ export function tactiqueReport(T, st) {
   return {
     ballonEnJeu: pc(T.enJeu, T.total), sorties: T.E[0].sorties, equipes: [eq(0), eq(1)],
     cibles: {
-      marquage: 'B12 : 5,16 ± 0,6 m ; LAT 6,4 > MIL 5,6 > DC 5,5 > ATT 5,1', densiteBallon: 'B10 T7 : 4,9 médian · 6,3 bloc bas · 4,2 bloc haut', interligne: 'B10 T2 : 10-15 m · bloc bas 5-8',
+      marquage: 'B12 : 5,16 ± 0,6 m ; LAT 6,4 > MIL 5,6 > DC 5,5 > ATT 5,1', marquageInstalle: 'B12 (la phase n’est pas nommée par le livre) — défense installée : l’adversaire depuis ≥ 8 s dans ma moitié', densiteBallon: 'B10 T7 : 4,9 médian · 6,3 bloc bas · 4,2 bloc haut', interligne: 'B10 T2 : 10-15 m · bloc bas 5-8',
       distanceSoutien: 'B06 #20 : 6-18 m', ecartPointeLigne: 'B09 : le 9 sur la ligne (0-3 m), pinCount 1,5-2,4', distanceIntervention: 'B01/B12 : 10-15 m bloc médian · ≈ 6 m bloc bas', recSousPression: 'M07/B07 : dos sous forte pression 35-55 %',
       recOuvert: 'B07 T7 : 20-35 %', recDos: 'B07 T7 : 15-30 %', conservationSousPression: 'R02 #11 : 66,8 % (sans pression 76,5)', coursesServies: 'B09 T1 : 15-40 %',
       aeriensGagnes: 'R04 : 38-50 duels aériens par match', secondBallonVainqueur: 'B15 D7 : 45 % au milieu', tirsDans10s: 'B11 X3 : 62 % des tirs à ≤ 10 s du regain',

@@ -98,6 +98,11 @@ joueurs avec leur poste et leur rôle dans les formations ».
   10 m devant la ligne (il siège au comité de soutien). **Le marquage serré n'a personne à serrer.** La consigne de marquage ne pourra
   mordre qu'une fois l'OCCUPATION offensive réaliste (T2 : latéraux hauts, intérieurs dans les demi-espaces, pointe sur la ligne,
   rest defense 2 + 1). Le correctif est gardé hors du dépôt, à rejouer après T2.
+- **Lot 377 (scellé) — tout dépend des rôles** : `occupationRole`, `retourPoste`, `marquageConsigne` (le correctif ci-dessus, rejoué).
+  Bloc 245 : latéraux installés − 3,9 m du ballon (pistons) c. − 10,3 (prudents) ; centraux du bloc bas 12,4 → 9,6 m à l'entrée dans
+  leur moitié, **6,5 → 5,3 m en défense installée (livre 5,5)**. Par phase, le marquage installé est au livre ; la moyenne de match
+  mélange les phases (le ballon dans la moitié adverse : DC 14-16 m). Télémétrie : `marquageInstalle`, `densiteInstalle`,
+  `interligneInstalle`. Reste : la consigne zone ↔ homme et les notes défensives mordent à peine ; N_def(10) 2,5.
 
 ### T2 — L'attaque qui s'engage *(en cours)*
 - **Lot 369 (scellé)** : `fixeLigne` (hors appel, la pointe tient la hauteur de la ligne adverse, × rôle et mentalité) et
@@ -208,5 +213,6 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T1/T2 | 377 | Occupation et retour selon les rôles ; marquage par consigne : DC en défense installée 6,5 → 5,3 m (livre 5,5), à l'entrée 12,4 → 9,6 ; latéraux pistons c. prudents − 3,9 c. − 10,3 m |
 | 01/10 | T1 | 377 (essai) | Consigne et notes branchées sur le marquage : sans effet mesurable — l'attaque adverse n'occupe pas la zone des centraux (4 joueurs à < 15 m de la ligne, 6 derrière le ballon) ; retour à T2 |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |

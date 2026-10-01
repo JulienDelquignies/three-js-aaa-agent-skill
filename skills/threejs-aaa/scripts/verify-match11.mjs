@@ -8497,5 +8497,28 @@ if (__bloc()) {
     eA.cp <= eN.cp * 0.75 && bA.rp > bN.rp);
 }
 
+if (__bloc()) {
+  // L'ATTAQUE OCCUPE SELON LES RÔLES, LA GARDE RENTRE SELON SON RÔLE (377 — T1/T2, B11 X15-19, B12 ; 01/10 : « tout dépend des rôles des
+  // joueurs »). Sondé : sans rôle posé, vingt polyvalents — le rôle ne nuançait le poste que de ± 2,5 m ; le défenseur loin derrière sa
+  // cible rentrait au trot, face au ballon (la course de dos bridée). Le contrat : (1) en attaque installée (≥ 8 s dans la moitié adverse),
+  // des latéraux OFFENSIFS (piston) vivent au moins 3 m plus haut que des latéraux PRUDENTS (full_back) ; (2) le bloc bas défendant
+  // marque plus serré qu'hier quand l'adversaire entre dans sa moitié (< 8 s), et pas plus lâche en défense installée (≥ 8 s, livre 5,5).
+  const PRU = { roles: { 0: 'full_back', 1: 'cover', 2: 'cover', 3: 'full_back', 4: 'anchor', 5: 'deep_lying_playmaker', 6: 'carrilero', 7: 'tracking_winger', 8: 'false_9', 9: 'tracking_winger' } };
+  const OFF = { roles: { 0: 'wing_back', 1: 'playmaker_defender', 2: 'centre_back', 3: 'wing_back', 4: 'regista', 5: 'mezzala', 6: 'box_to_box', 7: 'inside_forward', 8: 'poacher', 9: 'inside_forward' } };
+  const mesure = (tB, over) => { const R = { lat: [0, 0], b: [0, 0], c: [0, 0] };
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed, tactics: ['blocBas', tB] }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let tOpp = 0, tm0 = -1;
+      for (let i = 0; i < 1200 * 60; i++) { matchStep(st, 1 / 60, cfg); const tm = st.possession?.team; if (tm !== tm0) { tm0 = tm; tOpp = 0; }
+        if (tm !== 1 || st.restart) continue; const sg = -st.pitch.ownGoal(1).sign, bx = st.ball.p[0] * sg; if (bx > 0) tOpp += 1 / 60; if (i % 15 || bx <= 0) continue;
+        const ph = tOpp < 8 ? R.b : R.c, att = st.players.filter((q) => q.team === 1 && !q.keeper);
+        for (const p of st.players) { if (p.keeper) continue;
+          if (p.team === 1 && tOpp >= 8 && (p.post === 0 || p.post === 3)) { R.lat[0] += p.p[0] * sg - bx; R.lat[1]++; }
+          if (p.team === 0 && (p.post === 1 || p.post === 2)) { let d = 99; for (const q of att) d = Math.min(d, Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2])); ph[0] += d; ph[1]++; } } } }
+    const m = (a) => a[0] / Math.max(1, a[1]); return { lat: m(R.lat), b: m(R.b), c: m(R.c) }; };
+  const N0 = { occupationRole: null, marquageConsigne: null, retourPoste: null };
+  const P = mesure(PRU, {}), O = mesure(OFF, {}), A = mesure('equilibre', {}), N = mesure('equilibre', N0);
+  ok(`lot 377 — L'ATTAQUE OCCUPE SELON LES RÔLES : latéraux installés à ${O.lat.toFixed(1)} m du ballon (pistons) c. ${P.lat.toFixed(1)} (latéraux prudents) ; centraux du bloc bas à ${A.b.toFixed(1)} m de l'adversaire à l'entrée dans leur moitié (hier ${N.b.toFixed(1)}), ${A.c.toFixed(1)} en défense installée (hier ${N.c.toFixed(1)}, livre 5,5)`,
+    O.lat >= P.lat + 3 && A.b <= N.b - 0.5 && A.c <= N.c + 0.3);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
