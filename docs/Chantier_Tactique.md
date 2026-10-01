@@ -177,6 +177,21 @@ joueurs avec leur poste et leur rôle dans les formations ».
 - **Reste après 379** : l'avant-centre reste le plus servi (7-10 ballons par 10 min, réel ~3) même sans prime de progression — le trio
   offensif est LIBRE (à sonder : le marquage des attaquants par la ligne défensive, l'espace entre les lignes) ; passes entre défenseurs
   9-13 % (livre 38) ; gardien peu servi (0,4-1,2).
+- **Pourquoi le trio offensif est libre (01/10, équilibre, 2 × 45 min ; essai 380 non scellé)** : à la réception, les AILIERS
+  (les plus servis, 180-222 réceptions c. 71-85 pour les centraux) sont à 9,1-9,8 m du plus proche adversaire, libres à 5 m dans
+  67-73 % des cas, 52-58 % ENTRE LES LIGNES ; l'avant-centre est marqué (4,5-5,2 m, libre 34-48 %) mais servi quand même (85-117).
+  Au départ de la passe vers l'ailier, le latéral adverse de ce côté est à 16-17 m de lui, en « mark » dans 80 % des cas — sur un
+  autre homme ou posté : l'ailier n'est MARQUABLE que 33 % du temps (hors du rayon de marquage autour du ballon, ou zone loin), et
+  l'affectation donne les hommes par danger (le plus près du but d'abord). Trois essais : (1) une loi de mouvement tirant le latéral
+  vers l'ailier côté ballon — se battait contre l'affectation (16,3 → 17,3 m), retirée ; (2) le latéral éligible marqueur et l'ailier
+  de son couloir à coût réduit dans l'affectation — sans effet (l'ailier n'est pas marquable) ; (3) le coulissement LATÉRAL à l'allure
+  du rôle (les joueurs à > 5 m de leur cible en étaient à 14 m sur le côté, au trot 3,6 m/s) — effort 0,47 → 0,72 mais vitesse 3,6 →
+  4,1 m/s, écart 14 → 12 m, ailiers libres 9,8 → 9,1 m : dans le bruit. Correctif gardé hors du dépôt. En moyenne la cible d'un
+  défenseur bouge à 3,2 m/s et le corps à 3,3 ; 16 % du temps la cible saute à plus de 6 m/s (changement de côté, de métier).
+  Lecture : le défaut n'est pas une loi isolée mais l'ARCHITECTURE du marquage — qui est marquable (rayon autour du ballon, zone loin),
+  l'ordre de l'affectation (danger), et le bloc chaîné au ballon dont les slots sautent avec lui. À reprendre comme un chantier
+  dédié (T1 bis : « une zone, un homme » — chaque défenseur responsable de l'attaquant qui entre dans sa zone, l'affectation par
+  couloirs et par lignes avant le danger, la passation entre zones), plutôt que par retouches.
 - **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
   61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
