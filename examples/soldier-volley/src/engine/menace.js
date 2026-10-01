@@ -207,10 +207,14 @@ export function menaceCentre(st, c, cfg) {
     return { score: 0, pourquoi: 'pas-en-position' };
   }
   const boxX = pitch.hx - pitch.dims.box.depth;
+  const CD = st.full && cfg.centreDosage ? cfg.centreDosage : null;
   const cibles = st.players.filter((q) => q.team === c.team && !q.keeper && q.id !== c.id && q.down <= 0
-    && q.p[0] * sgn > boxX - (CA ? CA.arr ?? 8 : 1.5) && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + (CA ? CA.large ?? 4 : 1.5)).length;
+    && q.p[0] * sgn > boxX - (CA ? CA.arr ?? 8 : 1.5) && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + (CA ? CA.large ?? 4 : 1.5))
+    // (375, cfg.centreDosage) le coureur qui ARRIVE vaut moins que celui qui est déjà dans la surface (poids) — le 372 les comptait pareil :
+    // centres 25 par équipe (livre 9-14) ; null : la cible entière
+    .reduce((n, q) => n + (CD && q.p[0] * sgn <= boxX - 1.5 ? CD.poids ?? 0.5 : 1), 0);
   if (!cibles) return { score: 0.05, pourquoi: 'boîte-vide' };
-  return { score: +(0.34 + 0.14 * Math.min(2, cibles)).toFixed(3), cibles, pourquoi: 'surface-servie' };
+  return { score: +((CD ? CD.base ?? 0.3 : 0.34) + 0.14 * Math.min(2, cibles)).toFixed(3), cibles, pourquoi: 'surface-servie' };
 }
 
 /** LA PASSE — le VRAI cerveau de passe choisit (choosePass, pas une copie) ; la menace note ce
