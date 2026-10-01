@@ -192,6 +192,20 @@ joueurs avec leur poste et leur rôle dans les formations ».
   l'ordre de l'affectation (danger), et le bloc chaîné au ballon dont les slots sautent avec lui. À reprendre comme un chantier
   dédié (T1 bis : « une zone, un homme » — chaque défenseur responsable de l'attaquant qui entre dans sa zone, l'affectation par
   couloirs et par lignes avant le danger, la passation entre zones), plutôt que par retouches.
+- **T1 bis — une zone, un homme. Lot 381 (scellé, étape 1)** : `zoneHomme` (zone-homme.js). Chaque défenseur en « mark » a une ZONE
+  (son slot du bloc, qui COULISSE : premier ordre 0,8 s, ≤ 5 m/s × workRate — mesuré, les slots du bloc chaîné au ballon sautaient à
+  8,7 m/s) ; l'attaquant revient au défenseur dont la zone est la plus proche (coût : distance à la zone, 40 % au corps, × markF × posF ;
+  la paire d'hier × 0,4 : la passation), personne au-delà du rayon (12 → 22 m selon la consigne) ; cible côté but de l'homme à la
+  distance élastique × rôle × note, part 0,75 → 1, laisse 8 → 18 m. Le défenseur affecté à plus de 4 m de sa cible y COURT à l'allure de
+  son rôle (6 → 4 m/s × workRate) et pousse plein (locomoteur : hier la poussée mourait en approchant de l'allure voulue — 3,3 m/s à
+  16 m de sa cible). Bloc 248 : l'ailier reçoit à 7,4 m du plus proche adversaire (hier 9,8), libre à 5 m 57 % (hier 73 %), entre les
+  lignes 58 → 41 % ; centraux du bloc à l'entrée dans leur moitié 8,5 → 7,5 m, ballon dans la moitié adverse 13,8 → 11,2 ; sentinelle et
+  centraux plus servis (5,5 et 4,2 ballons par 10 min). Bloc 1 : deux clauses DATÉES (la sortie de but au bout de sa bande, 33,3 s de
+  silence → borne 34 ; la graine 7 sur la dette nommée du 334). Défaut `220aa0b5c3838f09 / 8d2648867cbe9b87`.
+- **Reste de T1 bis** : l'ailier sans responsable 42-47 % du temps (hors de toute zone) ; quand pris, le défenseur reste à 10-16 m (la zone
+  suit des slots qui sautent) ; paires de 1,5 s p50. Étapes suivantes : (2) des zones qui ne dépendent plus d'un bloc chaîné au ballon
+  mais d'une forme qui glisse (hauteur et largeur par ligne, selon la consigne) ; (3) la couverture de l'homme sans zone (le latéral côté
+  ballon élargit sa zone, le milieu côté faible resserre) ; (4) la passation explicite entre lignes (le milieu suit, le central prend).
 - **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
   61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
@@ -272,6 +286,7 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T1 bis | 381 | Une zone, un homme (zones qui coulissent, affectation géographique, la prise court) : ailier servi à 7,4 m (9,8), libre 57 % (73) |
 | 01/10 | T3 | 379 | La relance est une circulation (style × pression × rôle) ; sens de jeu selon le style : centraux + sentinelle servis 96 → 166, séquences 10+ 4 → 12 (2 × 45 min) |
 | 01/10 | T3 | 378 | La possession cherche l'homme libre (style × vision × décisions × rôle) : marqués servis 18 → 9 % ; meneurs c. destroyers 3,25 c. 2,65 passes par séquence |
 | 01/10 | T1/T2 | 377 | Occupation et retour selon les rôles ; marquage par consigne : DC en défense installée 6,5 → 5,3 m (livre 5,5), à l'entrée 12,4 → 9,6 ; latéraux pistons c. prudents − 3,9 c. − 10,3 m |

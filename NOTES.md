@@ -14695,6 +14695,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 381 — T1 bis, une zone, un homme (étape 1)** (01/10 : « oui on y va je crois en toi »). Diagnostic des lots 377-380 : ailiers
+  servis libres entre les lignes, le latéral adverse à 16-17 m sur un autre homme, l'ailier marquable 33 % du temps ; trois retouches
+  (sortie du latéral, couloir dans l'affectation, coulissement à l'allure du rôle) sans effet — l'architecture (marquable autour du ballon,
+  affectation par danger, bloc chaîné au ballon). `zoneHomme` (zone-homme.js) : zones qui coulissent (les slots sautaient à 8,7 m/s),
+  affectation géographique gloutonne avec passation, cible côté but en laisse, la prise COURT et pousse plein (locomoteur.pasLoco :
+  `p._plein`, hier 3,3 m/s à 16 m de la cible). Bloc 248 : ailier servi à 7,4 m (hier 9,8), libre à 5 m 57 % (73). Bloc 1 : deux
+  clauses DATÉES 381 (silence de la sortie de but 33,3 s → borne 34 ; graine 7 sur la dette du 334). Défaut `220aa0b5c3838f09 /
+  8d2648867cbe9b87` ; banc vert.
 - **Lot 379 — T3, la relance est une circulation** (01/10 : « il faudrait aussi savoir entre quels joueurs sont ces séquences, quels
   postes touchent le plus de ballons et avec qui ils jouent »). Mesuré (2 × 90 min) : structure INVERSÉE — ailiers et avant-centre
   8-9 ballons par joueur et par 10 min, centraux 2,4-3,5, gardien 2-3 (livre B01 T7 : MC > DC > LAT > AIL > CF > GB) ; passes entre

@@ -51,7 +51,7 @@ export function pasLoco(p, st, K, vAlong, vWant, dt) {
     // poussée mourait en approchant de la demande (2,3 → 3,8 m/s en > 1 s, τ 1,17 s) : filmé à l'atelier, le porteur derrière sa
     // touche orientée plafonnait à 2,2-2,5 m/s pendant 0,9 s pour une demande à 3,6-3,9, le ballon à 1,1-1,9 m devant, la 2e touche
     // à 1,0 s p50. Le réel (Samozino-Morin) : on pousse du profil, on s'arrête à l'allure voulue. Les métiers listés seulement.
-    const plein = K.plein && K.plein.includes(p.job);
+    const plein = (K.plein && K.plein.includes(p.job)) || p._plein === 1;   // (381) la course décidée (retour, prise de l'homme, repli) pousse plein
     const eps = epsilonDe(p, st, K), vEff = plein ? v0 * F.kV : Math.min(v0 * F.kV, Math.max(vWant, 0));
     const a = eps * Math.max(0, vEff - Math.max(0, vAlong)) / (tau * F.kTau);
     return Math.min(dv, a * dt);
