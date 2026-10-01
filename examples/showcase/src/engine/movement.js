@@ -1,4 +1,4 @@
-import { regardJeu, regardJeuArret } from './regard-jeu.js'; import { monteeDe } from './montee-offensive.js'; import { lisserCible, compresserCible } from './cible-lissee.js';
+import { regardJeu, regardJeuArret } from './regard-jeu.js'; import { monteeDe } from './montee-offensive.js'; import { lisserCible, compresserCible } from './cible-lissee.js'; import { attaqueSurfaceStep, attaqueSurfaceCorps } from './attaque-surface.js';
 import { capAllure, vitesseCorps } from './allure-corps.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
@@ -19,8 +19,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /** Move every player toward their target with real acceleration limits. */
 export function movePlayers(st, dt, cfg) {
-  aideStep(st, dt, cfg);   // (A10 quater, cfg.sol.aide) le relevé aidé : après les métiers, avant le pas — l'aidant vient, tend la main
+  aideStep(st, dt, cfg);
+  if (st.full && cfg.attaqueSurface) attaqueSurfaceStep(st, cfg.attaqueSurface);   // (372) on attaque le centre (attaque-surface.js)   // (A10 quater, cfg.sol.aide) le relevé aidé : après les métiers, avant le pas — l'aidant vient, tend la main
   for (const p of st.players) {
+    if (st.full && cfg.attaqueSurface) attaqueSurfaceCorps(st, p);
     if (st.full && cfg.compressionBallon) compresserCible(st, p, cfg.compressionBallon, st.tactics?.[p.team]);   // (370) le bloc se referme autour du ballon
     if (st.full && cfg.cibleLissee) lisserCible(p, dt, cfg.cibleLissee);   // (370) la cible ne clignote pas (cible-lissee.js)
     scanStep(st, p, cfg);   // (250) l'horloge de scan — p.scan pour le rendu, le TEMPS du corps ouvert ; cfg.scan absent : rien

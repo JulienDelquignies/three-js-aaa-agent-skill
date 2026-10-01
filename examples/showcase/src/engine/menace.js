@@ -200,12 +200,15 @@ export function menaceCentre(st, c, cfg) {
   const sgn = Math.sign(goal.x || 1);
   if (c.keeper) return { score: 0, pourquoi: 'gardien' };
   if ((st._crossCd?.[c.team] ?? -1) > st.t) return { score: 0, pourquoi: 'cooldown' };
-  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - 9 || Math.abs(c.p[2]) < pitch.hz * 0.38) {
+  // (372, cfg.centreArrivee) la même porte que tryCross : la position du centre en plein format (−13 m, couloir 0,30 — l'arbitre gardait
+  // les portes du réduit, −9 / 0,38) et les coureurs qui ARRIVENT (à < arr m de la surface) comptent — hier « boîte vide » à 0,05.
+  const CA = st.full && cfg.centreArrivee ? cfg.centreArrivee : null;
+  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - (CA ? 13 : 9) || Math.abs(c.p[2]) < pitch.hz * (CA ? 0.30 : 0.38)) {
     return { score: 0, pourquoi: 'pas-en-position' };
   }
   const boxX = pitch.hx - pitch.dims.box.depth;
   const cibles = st.players.filter((q) => q.team === c.team && !q.keeper && q.id !== c.id && q.down <= 0
-    && q.p[0] * sgn > boxX - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5).length;
+    && q.p[0] * sgn > boxX - (CA ? CA.arr ?? 8 : 1.5) && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + (CA ? CA.large ?? 4 : 1.5)).length;
   if (!cibles) return { score: 0.05, pourquoi: 'boîte-vide' };
   return { score: +(0.34 + 0.14 * Math.min(2, cibles)).toFixed(3), cibles, pourquoi: 'surface-servie' };
 }

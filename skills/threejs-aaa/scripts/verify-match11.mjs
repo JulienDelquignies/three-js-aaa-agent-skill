@@ -8440,5 +8440,21 @@ if (__bloc()) {
     D.lg - P.lg >= 3 && D.ds - P.ds >= 0.2 && (D.lg - P.lg) > (D0.lg - P0.lg));
 }
 
+if (__bloc()) {
+  // LE CENTRE VA OÙ L'ON ARRIVE, ON ATTAQUE LE CENTRE (372 — T2, B09 R-07/R-08). Sondé : le centre exigeait un coéquipier DÉJÀ dans la
+  // surface (hors-jeu tant que la ligne adverse tient ~20 m) — 2 centres en 30 min — et, centre parti, seul le receveur visé courait.
+  // Le contrat : plus de centres qu'hier, et l'attaque gagne plus de duels aériens sur centre qu'hier.
+  const mesure = (over) => { const R = { n: 0, aerA: 0 };
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); let e0 = 0, C = null;
+      for (let i = 0; i < 1200 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0];
+          if (e.type === 'centre') { C = { team: st.players[e.by].team, t: st.t, by: e.by }; R.n++; continue; }
+          if (!C || st.t - C.t > 4) { C = null; continue; }
+          if ((e.type === 'tête' || (e.type === 'duel' && e.kind === 'aérien')) && st.players[e.by]?.team === C.team && e.by !== C.by) { R.aerA++; C = null; } } } }
+    return R; };
+  const A = mesure({}), N = mesure({ centreArrivee: null, attaqueSurface: null });
+  ok(`lot 372 — ON ATTAQUE LE CENTRE : ${A.n} centres (hier ${N.n}), duels aériens gagnés par l'attaque sur centre ${A.aerA} (hier ${N.aerA})`, A.n >= N.n + 3 && A.aerA > N.aerA);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

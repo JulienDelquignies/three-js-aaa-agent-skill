@@ -231,8 +231,13 @@ export function tryCross(st, c, cfg) {
   if (st.hold < 0.25) return false;
   if ((st._crossCd?.[c.team] ?? -1) > st.t) return false;
   const boxX = pitch.hx - pitch.dims.box.depth;
+  // (372, cfg.centreArrivee — T2 du chantier tactique) LE CENTRE VA OÙ L'ON ARRIVE : hier il exigeait un coéquipier DÉJÀ dans la surface —
+  // or la ligne adverse tient ~20 m de son but (sonde : 84,7 m sur 105, la surface commence à 88,5) : y entrer avant la passe, c'est être
+  // hors-jeu ; le centre n'existait que défense déjà repliée (2 centres en 30 min, livre ~11 par équipe et par match). Le coureur à moins de
+  // `arr` m de l'entrée de la surface ARRIVE pendant le vol (B09 R-07/R-08 : les poteaux 1,6-2,4 s) ; le centre vise le point utile. Absente : hier.
+  const CA = st.full && cfg.centreArrivee ? cfg.centreArrivee : null;
   const inBox = st.players.filter((q) => q.team === c.team && !q.keeper && q.id !== c.id && q.down <= 0
-    && q.p[0] * sgn > boxX - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
+    && q.p[0] * sgn > boxX - (CA ? CA.arr ?? 8 : 1.5) && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + (CA ? CA.large ?? 4 : 1.5));
   if (!inBox.length) return false;
   // la cible : le coureur le plus proche du POINT DE CHUTE utile (second poteau / penalty, côté
   // opposé au centreur — là où un centre fait mal)
@@ -242,7 +247,8 @@ export function tryCross(st, c, cfg) {
   const tI = cfg.leadTime ? cfg.leadTime(hyp(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.35;
   let lead = [rec.p[0] + rec.v[0] * tI, 0, rec.p[2] + rec.v[1] * tI];
   // …tirée vers le point utile (le centre arrive DEVANT le coureur, côté but)
-  lead = [lead[0] + (spot[0] - lead[0]) * 0.4, 0, lead[2] + (spot[1] - lead[2]) * 0.4];
+  const tire = CA && rec.p[0] * sgn < boxX ? CA.tire ?? 0.75 : 0.4;   // (372) le coureur hors de la surface : le centre va au point, il y arrive
+  lead = [lead[0] + (spot[0] - lead[0]) * tire, 0, lead[2] + (spot[1] - lead[2]) * tire];
   lead = [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, lead[0])), 0,
     Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, lead[2]))];
   // un centre PART quand la fenêtre s'ouvre (même régime d'urgence que le dégagement). L'ESSAI

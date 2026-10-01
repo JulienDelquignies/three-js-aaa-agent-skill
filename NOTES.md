@@ -14676,6 +14676,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   tempo et mentalité. Bloc 240 : longues direct 25,5 % c. possession 11,1 %, direct speed 2,25 c. 1,50 m/s (livre 2,1 / 1,4).
   Banc : jumeau (effortRattrape, cibleLissee, compressionBallon, stylePasse à null) = le 369 au bit ; défaut `890b1b2ca27ba177 /
   4444b258b63b285a` ; blocs 1, 239, 240.
+- **Lot 372 — T2, le centre va où l'on arrive, on attaque le centre** : `centreArrivee` (tryCross et menaceCentre exigeaient un coéquipier
+  déjà dans la surface, hors-jeu tant que la ligne adverse tient ~20 m : 2 centres en 30 min) et `attaqueSurface` (attaque-surface.js :
+  2 → 4 coureurs × mentalité vers des zones distinctes, anticipés dès la zone de centre en deçà de la ligne). Sur centre : premier toucher
+  attaque 17 → 23 / défense 14 → 9, duels aériens attaque 1 → 10 / défense 6 → 3. Jumeau = le 371 au bit ; défaut `890b1b2ca27ba177 /
+  196d0cceb579b672` ; bloc 241.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match

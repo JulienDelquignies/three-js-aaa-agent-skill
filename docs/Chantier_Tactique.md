@@ -70,7 +70,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   `monteeOffensive` (en possession, le soutien à plus de 8 m de son poste offensif court le rejoindre : 4,2 m/s en possession posée →
   6,6 m/s en contre direct, selon transition et style). Mesuré : l'attaquant le plus avancé 7,6 → 4,7 m de la ligne de hors-jeu
   adverse ; centres 8,4 → 18,3 par équipe ; buts 1,5 → 1,9.
-- **Reste** : rest defense 7,1 (livre 3,7) ; arrivées dans la surface ; duels aériens.
+- **Lot 372 (scellé)** : deux règles bloquantes trouvées par sonde. (1) Le centre (tryCross ET l'arbitre menaceCentre) exigeait un
+  coéquipier DÉJÀ dans la surface — hors-jeu tant que la ligne adverse tient ~20 m de son but : 2 centres en 30 min ; `centreArrivee` : le
+  coureur à moins de 8 m de la surface compte, le centre vise le point utile. (2) Centre parti, seul le receveur visé courait ;
+  `attaqueSurface` : dès que le porteur entre en zone de centre, 2 → 4 coureurs (× mentalité) sont désignés vers des zones distinctes
+  (second poteau, premier poteau, penalty, entrée de surface), tenus en deçà de la ligne, et attaquent la zone à la frappe. Mesuré (2 × 45
+  min) : premier toucher sur centre attaque 17 → 23 / défense 14 → 9 ; duels aériens gagnés attaque 1 → 10 / défense 6 → 3 (bloc 241).
+- **Reste** : rest defense 7,1 (livre 3,7) — latéraux et milieux qui montent en attaque installée ; les touches et corners.
 - **But** : à la possession installée, les latéraux et les milieux montent, la surface se remplit, les centres arrivent sur des
   attaquants lancés ; la rest defense tombe à ~4.
 - **Indicateurs** : rest defense 3,7 (4-5 en attaque placée) ; arrivées dans la surface au centre (≤ 3-4 dans 90 % des cas, lancées
@@ -144,4 +150,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T1 | 368 | Largeur défensive 40 → 34 m ; centraux 12,4 → 10,8 m de l'adversaire |
 | 01/10 | T2 | 369 | Pointe à 7,6 → 4,7 m de la ligne ; centres 8,4 → 18,3 |
 | 01/10 | T1 | 370 | Sauts de cible 117 → 31 par minute ; N_def(10) des corps 2,1 → 2,5. Sorties (non critère) : buts ~4 par équipe, tirs ~19, xG ~3 |
+| 01/10 | T2 | 372 | Centres ×2-4 ; sur centre, duels aériens gagnés par l'attaque 1 → 10 |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |
