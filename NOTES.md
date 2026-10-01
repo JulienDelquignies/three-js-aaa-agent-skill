@@ -14695,6 +14695,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 379 — T3, la relance est une circulation** (01/10 : « il faudrait aussi savoir entre quels joueurs sont ces séquences, quels
+  postes touchent le plus de ballons et avec qui ils jouent »). Mesuré (2 × 90 min) : structure INVERSÉE — ailiers et avant-centre
+  8-9 ballons par joueur et par 10 min, centraux 2,4-3,5, gardien 2-3 (livre B01 T7 : MC > DC > LAT > AIL > CF > GB) ; passes entre
+  défenseurs 5-13 % (R13 : 38 %) ; réseau trop concentré (10 premières dyades 33-39 %, livre 28,9) ; séquences : moyenne 3,0-3,35,
+  médiane 2-3, p90 6-7, max 12-17, 10+ passes 1,5-6 par équipe et par match (livre 17-24 en possession). `recyclage`
+  (style-passe.termeRecyclage) et `sensJeuStyle` (match-sim.passBias × style). Bloc 247 : centraux + sentinelle servis 96 → 166,
+  séquences 10+ 4 → 12. Télémétrie : passesParSequenceMediane / P90 / Max. Défaut `0eaf73e09f28381c / 984f21325acece53` ; banc vert.
+  Reste : l'avant-centre le plus servi même sans prime de progression (le trio offensif est libre) ; DEF→DEF 9-13 %.
 - **Lot 378 — T3, la possession cherche l'homme libre, selon le style et le rôle** : `liberteStyle` (style-passe.malusLiberteStyle,
   terme de rondo.choosePass). Sondé : les possessions sont au livre (19,7 / équipe / 10 min, 15 s) ; l'équipe de possession servait PLUS
   de marqués à < 3 m que la directe (18 % c. 10 %, gardés à 63 %) — ses séquences mouraient à 3 passes. Plus le style penche vers la

@@ -44,3 +44,21 @@ export function malusLiberteStyle(K, tq, liberte, { visionF = 1, decF = 1, tenue
   const seuil = (K.seuil ?? 2.5) + s * 2 * ((K.seuilPoss ?? 6) - (K.seuil ?? 2.5));
   return s * 2 * (K.malus ?? 5) * Math.max(0, 1 - liberte / seuil) * visionF * decF * (0.6 + 1.6 * Math.max(0, Math.min(1, tenue)) * (K.role ?? 0.5));   // × le RÔLE (tenue : le regista garde ×1,2, le destroyer joue simple ×0,76)
 }
+
+// (379, cfg.recyclage — T3 du chantier ; 01/10 : « il faudrait aussi savoir entre quels joueurs sont ces séquences ») LA RELANCE EST UNE
+// CIRCULATION. Mesuré (2 × 90 min) : la structure de passes était INVERSÉE — ailiers et avant-centre recevaient le plus (8-9 ballons par
+// joueur et par 10 min), centraux 2,4-3,5, gardien 2-3 (livre B01 T7 : MC > DC > LAT > AIL > CF > GB) ; passes entre défenseurs 5-13 %
+// (livre R13 : 38 %) ; les ailiers faisaient le plus de passes (59 % vers l'arrière, aux milieux), les centraux se passaient le ballon à
+// 8 %. Cause : la longueur idéale de 10 m du barème (|d − 10| × 0,32) — le recyclage de 25 m vers un central libre coûtait 5-6 points,
+// plus le sens de jeu ; la sécurité par l'arrière n'était jamais choisie. Séquences : 10+ passes 2 par équipe et par match (livre 17-24
+// en possession), maximum 12-17. La loi : la passe vers l'ARRIÈRE (plus de `arriere` m) à un coéquipier LIBRE (≥ `libre` m à l'arrivée)
+// dont le rôle est une GARDE (profondeur ≤ `garde` : central, sentinelle — le rôle naturel du poste à défaut) reçoit un bonus × le STYLE
+// (possession × poss … direct × direct), × la PRESSION sur le porteur (pressé à < 4 m : × presse), × le RÔLE du receveur (l'axe ressort :
+// le relanceur, le regista, le meneur reculé sont des plaques tournantes, le stoppeur et le destroyer moins) ; et la longueur au-delà de
+// 10 m lui est en partie remise. Le gardien a sa propre loi (136). Absente : le barème d'hier, au bit.
+export function termeRecyclage(K, tq, { d, gain, liberte, presse = false, garde = false, ressort = 0.5 }) {
+  if (!garde || gain > -(K.arriere ?? 3) || liberte < (K.libre ?? 5)) return 0;
+  const sty = Math.max(0, Math.min(1, tq?.style ?? 0.5)), f = (K.poss ?? 1.6) + sty * ((K.direct ?? 0.4) - (K.poss ?? 1.6));
+  const b = (K.bonus ?? 2.5) * f * (presse ? K.presse ?? 1.6 : 1) * (0.6 + 0.8 * Math.max(0, Math.min(1, ressort)));
+  return b + 0.32 * Math.max(0, d - 10) * Math.min(1, f * (K.longueur ?? 0.5));
+}

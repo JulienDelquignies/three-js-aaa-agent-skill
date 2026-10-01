@@ -8540,5 +8540,22 @@ if (__bloc()) {
     A.marq <= N.marq * 0.7 && R.pps > D.pps + 0.2);
 }
 
+if (__bloc()) {
+  // LA RELANCE EST UNE CIRCULATION, LE SENS DE JEU SUIT LE STYLE (379 — T3, B01 T7, R13). Sondé (2 × 90 min) : structure de passes inversée —
+  // ailiers et avant-centre 8-9 ballons par joueur et par 10 min, centraux 2,4-3,5, sentinelle 2-4 ; passes entre défenseurs 5-13 % (livre 38) ;
+  // le recyclage de 25 m vers un central libre coûtait 5-6 points (longueur idéale 10 m). Le contrat : les passes reçues par les centraux et la
+  // sentinelle montent d'au moins 40 % qu'hier, et les séquences de 10+ passes ne baissent pas.
+  const mesure = (over) => { let rec = 0, s10 = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...over }); let e0 = 0, cur = null; const fin = () => { if (cur && cur.n >= 10) s10++; cur = null; };
+      for (let i = 0; i < 2700 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0], p = st.players[e.by]; if (!p) continue; if (/^shot|tir/.test(e.type)) { fin(); continue; } if (e.type !== 'pass') continue;
+          const q = st.players[e.to]; if (!q || q.team !== p.team) continue; if (!cur || cur.team !== p.team) { fin(); cur = { team: p.team, n: 0 }; } cur.n++; if (!q.keeper && (q.post === 1 || q.post === 2 || q.post === 5)) rec++; }
+        if (st.restart) fin(); else { const tm = st.possession?.team; if (cur && tm >= 0 && tm !== cur.team) fin(); } } fin(); }
+    return { rec, s10 }; };
+  const A = mesure({}), N = mesure({ recyclage: null, sensJeuStyle: null });
+  ok(`lot 379 — LA RELANCE EST UNE CIRCULATION : passes reçues par les centraux et la sentinelle ${A.rec} (hier ${N.rec}), séquences de 10+ passes ${A.s10} (hier ${N.s10}) — 2 × 45 min`,
+    A.rec >= N.rec * 1.4 && A.s10 >= N.s10);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -168,6 +168,15 @@ joueurs avec leur poste et leur rôle dans les formations ».
   n'existe presque pas — d'où la queue de distribution coupée. Leviers à sonder : le sens de jeu (`passBias`), la garde de l'occupation
   (377 : centraux à 26 m derrière le ballon, hors de portée de la passe de recyclage), le rôle des centraux et de la sentinelle comme
   relais (playmaker_defender, regista), le style (la possession recycle par l'arrière).
+- **Lot 379 (scellé) — la relance est une circulation** : `recyclage` (style-passe.termeRecyclage : la passe vers l'arrière à un
+  coéquipier libre de rôle GARDE reçoit un bonus × style × pression sur le porteur × axe ressort du rôle receveur, la longueur au-delà de
+  10 m en partie remise) et `sensJeuStyle` (match-sim.passBias : la prime de progression × le style, possession × 0,5 … direct × 1,3,
+  inchangée au neutre). Suspects sondés d'abord (équilibre, 2 × 45 min) : sans la garde du 377, sans passBias, sans les deux — les
+  passes entre défenseurs restent à 9-12 % ; la longueur idéale de 10 m bloquait le recyclage. Bloc 247 : passes reçues par centraux et
+  sentinelle 96 → 166, séquences de 10+ passes 4 → 12 (2 × 45 min). Défaut `0eaf73e09f28381c / 984f21325acece53`.
+- **Reste après 379** : l'avant-centre reste le plus servi (7-10 ballons par 10 min, réel ~3) même sans prime de progression — le trio
+  offensif est LIBRE (à sonder : le marquage des attaquants par la ligne défensive, l'espace entre les lignes) ; passes entre défenseurs
+  9-13 % (livre 38) ; gardien peu servi (0,4-1,2).
 - **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
   61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
@@ -248,6 +257,7 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T3 | 379 | La relance est une circulation (style × pression × rôle) ; sens de jeu selon le style : centraux + sentinelle servis 96 → 166, séquences 10+ 4 → 12 (2 × 45 min) |
 | 01/10 | T3 | 378 | La possession cherche l'homme libre (style × vision × décisions × rôle) : marqués servis 18 → 9 % ; meneurs c. destroyers 3,25 c. 2,65 passes par séquence |
 | 01/10 | T1/T2 | 377 | Occupation et retour selon les rôles ; marquage par consigne : DC en défense installée 6,5 → 5,3 m (livre 5,5), à l'entrée 12,4 → 9,6 ; latéraux pistons c. prudents − 3,9 c. − 10,3 m |
 | 01/10 | T1 | 377 (essai) | Consigne et notes branchées sur le marquage : sans effet mesurable — l'attaque adverse n'occupe pas la zone des centraux (4 joueurs à < 15 m de la ligne, 6 derrière le ballon) ; retour à T2 |

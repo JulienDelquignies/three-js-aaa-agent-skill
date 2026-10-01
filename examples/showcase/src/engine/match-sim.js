@@ -1192,7 +1192,7 @@ function onDive(st, gk, cfg) { if (st.full && cfg.enveloppe && (gk._battuEnv ?? 
 function passBias(st, c, o) {
   const goal = st.pitch.attackGoal(c.team);
   const gain = Math.sign(goal.x) * (o.lead[0] - st.ball.p[0]);
-  return Math.max(-3, Math.min(3, gain * 0.22 * axe(tac(st, c.team).mentalite, 0.75, 1.25)));   // LA MENTALITÉ (149) : le risque global pèse la progression — 0,5 = ×1
+  const SJ = st.full ? st._cfgSJ ?? null : null;   /* (379) cfg.sensJeuStyle, posé par matchStep (passBias n'a pas cfg) */ return Math.max(-3, Math.min(3, gain * 0.22 * axe(tac(st, c.team).mentalite, 0.75, 1.25) * (SJ ? axe(tac(st, c.team).style, SJ.poss ?? 0.5, SJ.direct ?? 1.3) * (SJ.neutre ?? 1) / axe(0.5, SJ.poss ?? 0.5, SJ.direct ?? 1.3) : 1)));   // (379) le sens de jeu suit le STYLE : la possession patiente, le direct pressé   // LA MENTALITÉ (149) : le risque global pèse la progression — 0,5 = ×1
 }
 
 export function matchCfg(overrides = {}) {
@@ -1211,7 +1211,7 @@ export function matchCfg(overrides = {}) {
 }
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */
-export function matchStep(st, dt, cfg = matchCfg()) {
+export function matchStep(st, dt, cfg = matchCfg()) { st._cfgSJ = cfg.sensJeuStyle ?? null;
   if (st.full && cfg.coupEnvoi && !st._coupEnvoi) { st._coupEnvoi = true; if (st.t === 0 && st.restart?.type === 'engagement') placeKickoff(st, st.restart.team, cfg); } if (st.full && cfg.flux) { const F = st._flux ??= { seed: (st.seed ?? 1) >>> 0, tick: 0, k: new Map() }; F.tick = Math.round(st.t / dt); F.k.clear(); } else st._flux = null; if (st.full && (cfg.filet || cfg.bordure)) bordFiletStep(st, dt, cfg);   // (264) LES FLUX RNG NOMMÉS (rng.tirage) : la graine, le tick physique, le compteur par (flux, entité) remis à zéro chaque pas — clé absente : le flux séquentiel d'hier   // la cage et les panneaux sont un matériau (lot 116)   /* (338) les postes du coup d'envoi (referee.postesEngagement) : makeMatch n'a pas la cfg — la première image repose les corps, avant la cérémonie qui les lit */
   // le dernier contact d'équipe : le porteur en carry, le frappeur en vol (st.lastPasser)
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;

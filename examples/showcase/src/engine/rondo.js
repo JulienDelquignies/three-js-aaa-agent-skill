@@ -11,7 +11,7 @@ import { pSuccDe, termeDe } from './selection.js'; import { coutAngle } from './
 import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
 import { dansCone } from './dribble.js';
-import { RONDO } from './rondo-config.js'; import { termeStyle, malusLiberteStyle } from './style-passe.js'; import { pointeDe } from './formation.js';
+import { RONDO } from './rondo-config.js'; import { termeStyle, malusLiberteStyle, termeRecyclage } from './style-passe.js'; import { profondeurRole } from './occupation-role.js'; import { pointeDe } from './formation.js';
 export { RONDO };
 
 // rondo — the brain of a "passe à dix": 5 v 5, the team in possession strings passes, the team out
@@ -538,6 +538,7 @@ export function choosePass(st, cfg = RONDO) {
       + (jete ? (cfg.fixe.bonus ?? 1.5) * Math.max(0, Math.min(1, (gSF * (m.p[0] - c.p[0]) - 2) / 8))
         * (c.skill?.visionF ?? 1) * (d2(jete.p, m.p) < (cfg.fixe.zone ?? 5) ? 1 + (cfg.fixe.libre ?? 0.6) : 1) : 0)
       + (st.full && cfg.stylePasse ? termeStyle(cfg.stylePasse, tac(st, c.team), { d, gain: (lead[0] - origin[0]) * gSF, lofted: style === 'lofted', pointe: pointeDe(tac(st, c.team).formation, m.post ?? 0, cfg), bascule, servi }) : 0)   // (371) le style change le choix de passe (style-passe.js)
+      + (st.full && cfg.recyclage && !through && !servi && !m.keeper ? termeRecyclage(cfg.recyclage, tac(st, c.team), { d, gain: (lead[0] - origin[0]) * gSF, liberte: recvPressure, presse: foesL.some((o) => hyp(o.p[0] - c.p[0], o.p[2] - c.p[2]) < (cfg.recyclage.pressePorteur ?? 4)), garde: profondeurRole(st, m, cfg.occupationRole ?? {}) <= (cfg.recyclage.garde ?? 0.3), ressort: m.role?.ressort ?? 0.5 }) : 0)   // (379) la relance est une circulation (style-passe.js)
       - (st.full && cfg.liberteStyle && !through && !servi ? malusLiberteStyle(cfg.liberteStyle, tac(st, c.team), recvPressure, { visionF: c.skill?.visionF ?? 1, decF: c.skill?.decF ?? 1, tenue: c.role?.tenue ?? 0.5 }) : 0)   // (378) la possession cherche l'homme libre (style-passe.js)
       + vertB;                                               // (396) la verticalité — 0 sans la clé
                                                               // 0 au défaut 0,5 (l'identité, le patron UT.calme du 49),
