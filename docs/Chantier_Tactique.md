@@ -83,6 +83,21 @@ joueurs avec leur poste et leur rôle dans les formations ».
   la hauteur de ligne : `compressionBallon` (marqueurs et couvreurs à < 20 m se rapprochent du ballon, × compacité). N_def(10) des corps
   2,1 → 2,5 (bloc 239).
 - **Reste** : N_def(10) 2,3-2,7 contre 4,9 ; marquage des défenseurs 9-13 m contre 5,5-6,4 ; interligne du bloc bas 13,5 contre 5-8.
+- **Essai 377, non scellé : la consigne et les qualités pilotent le marquage** (le 01/10 : « c'est des choix tactiques et des qualités
+  de joueur ça aussi »). Sonde de sensibilité (2 × 30 min, centraux de l'équipe A) : consigne marquage 0,1 c. 0,9 → 10,7 c. 10,4 m ;
+  compacité 0,1 c. 0,9 → 10,3 c. 10,4 ; défense notée 30 c. 80 → 10,3 c. 10,6. Aucun levier ne mordait. Essayé, sous clés :
+  - `marquageConsigne` : la distance loin du ballon (zone 10 m … homme 3 m), le rayon où l'on prend l'homme, la laisse, le rayon du
+    marquage à l'homme, la zone loin et le nombre de marqueurs (3 … 6) suivent l'axe marquage ; × la hauteur du bloc, × le rôle
+    (marqueSerre), × la note (2 − markF), le posté compris ;
+  - `pointeComite` : la pointe devant le ballon ne siège plus au comité de soutien (× la profondeur de son rôle : le faux 9 décroche)
+    et tient la ligne à un recul fixé par son rôle, plus par une fraction.
+  Jumeau au bit, mais la mesure ne bouge pas (dans le bruit de ± 1 m). **Pourquoi, vu par l'image** (instantanés bloc bas c. équilibre) :
+  la cible du central posté est elle-même à 12,5-13,5 m de tout adversaire. Le plus proche adversaire est à 17,9 m de son slot en
+  moyenne. Ballon dans la moitié du bloc et attaque installée, l'équipe qui attaque n'a que 4 joueurs à moins de 15 m de la ligne
+  et 6 sur 10 derrière le ballon (livre : 3,7). Ses centraux restent à 33 m derrière le ballon ; contre un bloc bas, l'avant-centre vit à
+  10 m devant la ligne (il siège au comité de soutien). **Le marquage serré n'a personne à serrer.** La consigne de marquage ne pourra
+  mordre qu'une fois l'OCCUPATION offensive réaliste (T2 : latéraux hauts, intérieurs dans les demi-espaces, pointe sur la ligne,
+  rest defense 2 + 1). Le correctif est gardé hors du dépôt, à rejouer après T2.
 
 ### T2 — L'attaque qui s'engage *(en cours)*
 - **Lot 369 (scellé)** : `fixeLigne` (hors appel, la pointe tient la hauteur de la ligne adverse, × rôle et mentalité) et
@@ -193,4 +208,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T1 | 377 (essai) | Consigne et notes branchées sur le marquage : sans effet mesurable — l'attaque adverse n'occupe pas la zone des centraux (4 joueurs à < 15 m de la ligne, 6 derrière le ballon) ; retour à T2 |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |
