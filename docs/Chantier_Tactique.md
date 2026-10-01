@@ -12,6 +12,9 @@ joueurs avec leur poste et leur rôle dans les formations ».
   fait et comment il le réussit.
 - **Chaque loi vit derrière une clé** de `match-config.js` : à `null`, le jeu d'hier au bit (le jumeau). Au neutre (0,5 partout),
   l'identité.
+- **Les sorties (buts, tirs, xG) ne sont PAS un critère pendant le chantier** (01/10 : « ce serait intéressant de se fier à ces chiffres
+  quand on aura un moteur définitif ») : un lot se juge sur la STRUCTURE du jeu (les indicateurs tactiques des livres) ; les sorties sont
+  notées au journal pour la calibration finale.
 - **La preuve vient de la télémétrie** : `engine/stats.js` (les stats du match) et `engine/tactique.js` (la télémétrie tactique),
   rejouées par `scripts/stats-match.mjs --tactiques A,B`. Les cibles sont celles des livres `docs/Book_vers_Moteur` (B = bible
   01-16, M = modèle, R = référentiel). Chaque chantier doit faire entrer ses indicateurs dans la bande des livres ET faire varier

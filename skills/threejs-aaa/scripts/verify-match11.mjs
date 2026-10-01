@@ -8408,5 +8408,20 @@ if (__bloc()) {
   ok(`lot 369 — LES POINTES FIXENT LA LIGNE : le plus avancé à ${eA.toFixed(1)} m de la ligne de hors-jeu adverse (hier ${eN.toFixed(1)})`, eA <= eN - 1);
 }
 
+if (__bloc()) {
+  // LA CIBLE NE CLIGNOTE PAS, LE BLOC SE REFERME AUTOUR DU BALLON (370 — T1, M05/M08/B10). Mesuré : la cible des défenseurs sautait de plus
+  // de 3 m 117-128 fois par minute (livre : 12-25 changements par minute) et les dix défenseurs s'étageaient uniformément autour du ballon.
+  // Le contrat : les sauts de cible > 3 m tombent sous 40 par défenseur et par minute défensive (hier > 80), et la densité des CORPS à
+  // moins de 10 m du ballon (ballon au milieu) monte.
+  const mesure = (over) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); const prev = new Map(); let sauts = 0, tDef = 0, nD = 0, n = 0;
+    for (let i = 0; i < 600 * 60; i++) { matchStep(st, 1 / 60, cfg); const def = st.possession?.team >= 0 && !st.restart ? 1 - st.possession.team : -1; if (def < 0) { prev.clear(); continue; } tDef += 1 / 60;
+      for (const p of st.players) { if (p.team !== def || p.keeper || !p.target) { prev.delete(p.id); continue; } const pv = prev.get(p.id); prev.set(p.id, [p.target[0], p.target[2]]); if (pv && Math.hypot(p.target[0] - pv[0], p.target[2] - pv[1]) > 3) sauts++; }
+      if (i % 30 === 0 && Math.abs(st.ball.p[0]) < 25) { n++; nD += st.players.filter((p) => p.team === def && !p.keeper && Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]) < 10).length; } }
+    return { sautsMin: sauts / 10 / (tDef / 60), nDef: nD / Math.max(1, n) }; };
+  const mA = mesure({}), mN = mesure({ effortRattrape: null, cibleLissee: null, compressionBallon: null });
+  ok(`lot 370 — LA CIBLE NE CLIGNOTE PAS : ${mA.sautsMin.toFixed(1)} sauts > 3 m par défenseur et par minute (hier ${mN.sautsMin.toFixed(1)}) ; N_def(10) des corps ${mA.nDef.toFixed(2)} (hier ${mN.nDef.toFixed(2)})`,
+    mA.sautsMin < 40 && mN.sautsMin > 80 && mA.nDef > mN.nDef);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
