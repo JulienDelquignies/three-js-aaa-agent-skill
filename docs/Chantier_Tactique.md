@@ -44,6 +44,25 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | PPDA | 4,5-7,7 | 7 (gegenpress) à 17 (bloc bas) |
 | Ballon en jeu / touches / corners | 65-71 % / 20-24 / 2-4,5 | 54-58 % / 35-44 / 10 |
 
+## Tableau de bord — audit des 7 presets après les lots 368-376 (contre-press décidé, avant le repli de consigne)
+
+| Indicateur | Avant (audit du 01/10 matin) | Maintenant | Livres |
+|---|---|---|---|
+| Marquage LAT / DC (m du plus proche adversaire) | 12,2 / 12,4 | 8,5 / 10,7 | 6,4 / 5,5 |
+| N_def(10) | 1,9 | 2,4-2,7 | 4,9 |
+| Interligne bloc bas | 12,9 | 14,7 | 5-8 |
+| Pointe → ligne adverse | 9-11 | 4-6,5 | 0-3 |
+| Duels aériens par match | 4-7 | 10-14,5 | 38-50 |
+| Renversements par équipe | 0-3 | 6-12 | ~10-20 |
+| Passes par équipe | 545-620 | 455-535 | 420-475 |
+| Ballons longs direct / possession | 15,8 / 15,9 % | 18,1 / 13,7 % | 8-20 % |
+| Direct speed direct / possession | 1,7 / 1,7 | 2,1 / 1,8 | 2,1 / 1,4 |
+| Contre-pressings bloc bas / équilibre / gegenpress | ~60 / 62 / 84 | 12 / 57 / 100 | 20-30 |
+| Repli du perdant en 3 s | — | 0,2-1,9 m | (DC 1,3 s, 6 en 2,4 s) |
+| Centres par équipe | 8,4 | 21-33 | 9-14 |
+| Ballon en jeu | 68 % | 59-66 % | 54-58 % |
+| Touches / corners par match | 19 / 3 | 13-22 / 2,5-5,8 | 35-44 / 10 |
+
 ## Les chantiers
 
 ### T1 — Le bloc qui se resserre vers le ballon *(en cours)*
