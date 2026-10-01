@@ -28,7 +28,8 @@ export function regardJeu(st, p, cfg) {
   const b = st.ball.p, vDir = Math.atan2(p.v[1], p.v[0]), bDir = Math.atan2(b[2] - p.p[2], b[0] - p.p[0]), d = wrap(bDir - vDir);
   const loinF = CS ? Math.max(0, Math.min(1, ((CS.loin ?? 25) - Math.hypot(b[0] - p.p[0], b[2] - p.p[2])) / Math.max(1e-3, (CS.loin ?? 25) - (CS.pres ?? 12)))) : 1;
   const recule = !CS || st.possession?.team !== p.team;
-  const maxA = recule && p.speed <= (K.vRecul ?? 3.2) ? Math.PI : p.speed <= (K.vChasse ?? 5) ? (K.chasse ?? 100) * Math.PI / 180 : (K.course ?? 45) * Math.PI / 180;
+  const vR = p._vVeut != null ? Math.max(p.speed, p._vVeut) : p.speed;   // (377, cfg.retourPoste) le corps se décide sur l'allure VOULUE : le défenseur qui rentre se retourne et sprinte (hier : lent → face au ballon → la course de dos bridée à 2,5-3,2 m/s → lent)
+  const maxA = recule && vR <= (K.vRecul ?? 3.2) ? Math.PI : vR <= (K.vChasse ?? 5) ? (K.chasse ?? 100) * Math.PI / 180 : (K.course ?? 45) * Math.PI / 180;
   // …LE CORPS S'OUVRE, IL NE FIXE PAS (mesuré : tourné plein, 100 % des corps sur le ballon — p50 0,2°, des tourelles) : une part `part`
   // du chemin vers le ballon (le regard fait le reste), et un biais personnel stable (±biais °, par joueur) — le jeu n'est pas une revue
   const biais = (((p.id * 37) % 21) - 10) / 10 * (K.biais ?? 10) * Math.PI / 180;

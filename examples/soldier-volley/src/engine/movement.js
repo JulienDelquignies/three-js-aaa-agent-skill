@@ -1,4 +1,4 @@
-import { regardJeu, regardJeuArret } from './regard-jeu.js'; import { monteeDe } from './montee-offensive.js'; import { lisserCible, compresserCible } from './cible-lissee.js'; import { attaqueSurfaceStep, attaqueSurfaceCorps } from './attaque-surface.js'; import { restDefenseCorps } from './rest-defense.js'; import { repliDe } from './repli-consigne.js';
+import { regardJeu, regardJeuArret } from './regard-jeu.js'; import { occupationCorps } from './occupation-role.js'; import { monteeDe } from './montee-offensive.js'; import { lisserCible, compresserCible } from './cible-lissee.js'; import { attaqueSurfaceStep, attaqueSurfaceCorps } from './attaque-surface.js'; import { restDefenseCorps } from './rest-defense.js'; import { repliDe, retourDe } from './repli-consigne.js';
 import { capAllure, vitesseCorps } from './allure-corps.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
@@ -22,7 +22,7 @@ export function movePlayers(st, dt, cfg) {
   aideStep(st, dt, cfg);
   if (st.full && cfg.attaqueSurface) attaqueSurfaceStep(st, cfg.attaqueSurface);   // (372) on attaque le centre (attaque-surface.js)   // (A10 quater, cfg.sol.aide) le relevé aidé : après les métiers, avant le pas — l'aidant vient, tend la main
   for (const p of st.players) {
-    if (st.full && cfg.restDefense) restDefenseCorps(st, p, cfg.restDefense);   // (373) l'attaque s'engage, la garde reste (rest-defense.js)
+    if (st.full && cfg.restDefense) restDefenseCorps(st, p, cfg.restDefense); if (st.full && cfg.occupationRole) occupationCorps(st, p, cfg.occupationRole);   /* (377) l'attaque occupe selon les rôles (occupation-role.js) */   // (373) l'attaque s'engage, la garde reste (rest-defense.js)
     if (st.full && cfg.attaqueSurface) attaqueSurfaceCorps(st, p);
     if (st.full && cfg.compressionBallon) compresserCible(st, p, cfg.compressionBallon, st.tactics?.[p.team]);   // (370) le bloc se referme autour du ballon
     if (st.full && cfg.cibleLissee) lisserCible(p, dt, cfg.cibleLissee);   // (370) la cible ne clignote pas (cible-lissee.js)
@@ -367,6 +367,7 @@ export function movePlayers(st, dt, cfg) {
       }
     }
     if (st.full && cfg.sePoser && (p._pose ?? -1) > st.t) top = Math.min(top, cfg.sePoser.v ?? 1.5);   // (303) le receveur face au ballon se pose (match-sim : les appuis avant la réception)
+    if (st.full && cfg.retourPoste) { const RT = retourDe(st, p, cfg.retourPoste, cfg.occupationRole) ?? (cfg.repliConsigne ? repliDe(st, p, cfg.repliConsigne) : null); p._vVeut = RT ? RT.v : null; if (RT) { top = Math.max(top, RT.v); p._effort = Math.max(p._effort ?? 0, RT.eps); } }   // (377) le retour en position selon le rôle (repli-consigne.js)
     if (st.full && cfg.repliConsigne) { const RC = repliDe(st, p, cfg.repliConsigne); if (RC) { top = Math.max(top, RC.v); p._effort = Math.max(p._effort ?? 0, RC.eps); } }   // (376) le bloc se reforme selon la consigne (repli-consigne.js)
     if (st.full && cfg.monteeOffensive) { const MO = monteeDe(st, p, cfg.monteeOffensive, st.tactics?.[p.team], p.role); if (MO) { top = Math.max(top, MO.v); p._effort = Math.max(p._effort ?? 0, MO.eps); } }   // (369) l'équipe suit l'action (montee-offensive.js)
     let wx = 0, wz = 0, dTgt = Infinity;

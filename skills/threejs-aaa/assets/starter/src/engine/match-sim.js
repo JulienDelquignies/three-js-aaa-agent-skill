@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, engageurTient, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique, marquageDe } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js'; import { profondeurRole } from './occupation-role.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -674,7 +674,7 @@ function assignMatchJobs(st, cfg) {
       // …ET LA POINTE N'EST PAS UN SOUTIEN QUAND LE BALLON EST LARGE DANS LE TIERS OFFENSIF (213c, cfg.profondeurAvants.diagonale — l'appel vit chez les POSTÉS et l'attaquant proche de l'ailier était élu au comité : un slotter n'appelle jamais ; 9-11 diagonales/30 min). Le vrai 9 reste dans la surface : il est la CIBLE. Clé absente : le comité d'hier.
       const sgnP = -pitch.ownGoal(atk).sign, balLarge = st.full && cfg.profondeurAvants?.diagonale && Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * sgnP > pitch.hx / 3;
       const entreL = postesEntreLignes(st, cfg, { atk, sg: sgnP, formation: tac(st, atk).formation });   // (231) les intérieurs entre les lignes ne siègent pas au comité
-      for (const q of free) { if (balLarge && pointeDe(tac(st, atk).formation, q.post ?? 0, cfg) && Math.abs(q.p[2]) < 12) continue; if (entreL && entreL.has(q.post)) continue; q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
+      for (const q of free) { if (balLarge && pointeDe(tac(st, atk).formation, q.post ?? 0, cfg) && Math.abs(q.p[2]) < 12) continue; if (entreL && entreL.has(q.post)) continue; q._dAnc = d2(q.p, sa); if (cfg.occupationRole && pointeDe(tac(st, atk).formation, q.post ?? 0, cfg) && (q.p[0] - st.ball.p[0]) * sgnP > (cfg.occupationRole.devant ?? 2)) q._dAnc *= axe(profondeurRole(st, q, cfg.occupationRole), cfg.occupationRole.decroche ?? 0.8, cfg.occupationRole.fixe ?? 3);   /* (377) la pointe devant le ballon fixe la ligne selon son rôle — le faux 9 décroche */ if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
       // LE SOUTIEN EST UN PETIT COMITÉ (lot 103, cfg.soutienN — « trop dense au milieu » : 4 slotters + porteur = 5 corps au ballon, largeur 38 m vs 45-60 réel ; le réel soutient à 2-3, les libérés TIENNENT LA STRUCTURE — relation module ±1). Absente : les 4 d'hier au bit.
       const nSout = cfg.soutienN != null ? Math.round(axe(tac(st, atk).relation, cfg.soutienN - 1, cfg.soutienN + 1)) : 4;
@@ -702,7 +702,7 @@ function assignMatchJobs(st, cfg) {
       for (const p of posted) {
         const want0 = spots[p.post ?? 0] ?? [p.p[0], p.p[2]], cp = comp?.get(p.post) ?? proj?.get(p.post);
         const want = cp ? [want0[0] + (cp[0] - want0[0]) * cp[2], want0[1] + (cp[1] - want0[1]) * cp[2]] : want0;
-        p.job = 'support';
+        p.job = 'support'; p._poste = true;   // (377) le posté (occupation-role.js)
         const R = role(p);
         // …ET L'ANCRAGE DONNE DU MOU (200) : le seuil de recalage du slot × axe(ancrage, colle, libre) — le cloué se recale au pas, le libre vagabonde avant le rappel. ×1 exact à 0,5.
         const anc = cfg.ancrage ? (R.ancrage ?? 0.5) : 0.5;
@@ -867,7 +867,7 @@ function assignMatchJobs(st, cfg) {
       }
       if (best < 0) { p.job = 'support'; p.target = [p.p[0], 0, p.p[2]]; continue; }
       taken.add(best); p._chaise = estAncre(p) ? best : null;
-      p.job = 'support';
+      p.job = 'support'; p._poste = false;
       // L'ÉCONOMIE DU HORS-BALLON : re-visée cadencée (0,7 s / 0,8 m ; > 3,5 m = réaffectation, voir assignTenue) — l'hystérésis PURE gelait le bloc (consigné).
       let want = [slots[best][0], slots[best][1]];
       // le se-montrer s'évalue À CHAQUE cadence (un slot immobile mais fermé se ré-ouvre), même hystérésis
@@ -960,10 +960,10 @@ function assignMatchJobs(st, cfg) {
       if (bi2 > 0) { const t3 = byDist[0]; byDist[0] = byDist[bi2]; byDist[bi2] = t3; }
     }
     // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)
-    const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
+    const MC = st.full ? cfg.marquageConsigne : null, rayonM = st.full ? (cfg.marquageRayon ?? 22) * (MC ? axe(tac(st, defTeamB).marquage, MC.rZone ?? 0.65, MC.rHomme ?? 1.35) : 1) : Infinity;   /* (377) le rayon du marquage à l'homme suit la consigne */
     const sgnDef = Math.sign(defGoal.x || 1);
     const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
-    const RP = st.full && cfg.repli ? cfg.repli : null, zoneLoin = st.full && cfg.garde && !press && Math.abs(anchor[0] - defGoal.x) > pitch.hx * (4 / 3) * (cfg.garde.zoneLoin ?? 1);   // (222) LOIN DE MON BUT, HORS FENÊTRE, LE BLOC TIENT SA ZONE : pas de marquage à l'homme (les marqueurs deviennent des postés) — l'adversaire le plus proche était la couverture ou un marqueur collé à un voisin, 2,5 m partout
+    const RP = st.full && cfg.repli ? cfg.repli : null, zoneLoin = st.full && cfg.garde && !press && Math.abs(anchor[0] - defGoal.x) > pitch.hx * (4 / 3) * (cfg.garde.zoneLoin ?? 1) * (MC ? axe(tac(st, defTeamB).marquage, MC.loinZone ?? 0.8, MC.loinHomme ?? 1.3) : 1);   // (222) LOIN DE MON BUT, HORS FENÊTRE, LE BLOC TIENT SA ZONE : pas de marquage à l'homme (les marqueurs deviennent des postés) — l'adversaire le plus proche était la couverture ou un marqueur collé à un voisin, 2,5 m partout
     if (!zoneLoin) for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
@@ -1042,7 +1042,7 @@ function assignMatchJobs(st, cfg) {
         return;
       }
       // EN 11C11 : quatre marqueurs suffisent — le reste tient le BLOC défensif à son poste (un marquage de dix serait un essaim ; un bloc qui coulisse est une défense lisible)
-      if (st.full && i >= 6) {
+      if (st.full && i >= (MC ? 2 + Math.round(axe(tac(st, p.team).marquage, MC.nZone ?? 2.5, MC.nHomme ?? 5.5)) : 6)) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42) : ligne ~27 m du ballon, longueur 30 — et le bloc est CELUI DE SA TACTIQUE (blocFor : compacité, hauteur).
         const spotsD = spotsBloc;   // hoisté (60)
         const want = spotsD[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]]; if (BP) { const dP = decalageDe(st, p, cfg, BP); want[0] += dP[0]; want[1] += dP[1]; }   /* (275) le slot à l'ancre PERÇUE */
@@ -1059,7 +1059,7 @@ function assignMatchJobs(st, cfg) {
             ? (1 + relC * (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1) : 1;
           want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5) * kC));
         }
-        if (st.full && cfg.marquageElastique) { const wE = zonePrendHomme(st, p, want, attackers, anchor, defGoal, cfg.marquageElastique, tac(st, p.team)); want[0] = wE[0]; want[1] = wE[1]; }   /* (368) le posté prend l'homme de sa zone (marquage-elastique.js) */ p.job = 'mark'; if (st.full && cfg.placement && (p.skill?.posF ?? 1) < 1) { const a = ((p.id * 7919 + Math.floor(st.t / (cfg.placement.tenue ?? 3)) * 104729) % 360) * Math.PI / 180, r = (cfg.placement.bruit ?? 10) * (1 - (p.skill?.posF ?? 1)); want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); }   // (246) LE BRUIT DE PLACEMENT : le mauvais placeur (posF < 1) tient son poste défensif à côté — bruit × (1 − posF) m, direction stable tenue s (hash id × tranche : zéro tirage) ; à 50 et au-dessus : rien. Mesuré : la zone morte serrée du bon placeur lui coûtait la possession (48,3 c. 52,1) — le placement est une PRÉCISION, pas une cadence
+        if (st.full && cfg.marquageElastique) { const wE = zonePrendHomme(st, p, want, attackers, anchor, defGoal, cfg.marquageElastique, tac(st, p.team), cfg.marquageConsigne); want[0] = wE[0]; want[1] = wE[1]; }   /* (368) le posté prend l'homme de sa zone (marquage-elastique.js) */ p.job = 'mark'; if (st.full && cfg.placement && (p.skill?.posF ?? 1) < 1) { const a = ((p.id * 7919 + Math.floor(st.t / (cfg.placement.tenue ?? 3)) * 104729) % 360) * Math.PI / 180, r = (cfg.placement.bruit ?? 10) * (1 - (p.skill?.posF ?? 1)); want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); }   // (246) LE BRUIT DE PLACEMENT : le mauvais placeur (posF < 1) tient son poste défensif à côté — bruit × (1 − posF) m, direction stable tenue s (hash id × tranche : zéro tirage) ; à 50 et au-dessus : rien. Mesuré : la zone morte serrée du bon placeur lui coûtait la possession (48,3 c. 52,1) — le placement est une PRÉCISION, pas une cadence
         const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * (st.full && cfg.placement && cfg.placement.zoneMorte !== true ? 1 : 2 - (p.skill?.posF ?? 1)) && drift <= 3.5)) {   // …le POSITIONING était une ZONE MORTE (151) — (246) INVERSÉE : le recalage serré du bon placeur lui coûtait 5,6 pts de possession (47,5 c. 53,1, 12 × 300 s) ; sous cfg.placement la note est un BRUIT (ligne du dessus), la zone morte ne la lit plus (placement.zoneMorte:true la rend ; placement null : l'hier)
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
@@ -1075,7 +1075,7 @@ function assignMatchJobs(st, cfg) {
       const m = st.full && cfg.marquageSurface ? (st._bAssign?.get(p.id) ?? null) : i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
-        const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]]; if (BP) { const dP = decalageDe(st, p, cfg, BP); wM0[0] += dP[0]; wM0[1] += dP[1]; }   /* (275) */ const wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0; if (st.full && cfg.marquageElastique) { const wE = zonePrendHomme(st, p, wM, attackers, anchor, defGoal, cfg.marquageElastique, tac(st, p.team)); wM[0] = wE[0]; wM[1] = wE[1]; }   // (228) le voisin du sorti glisse vers le trou
+        const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]]; if (BP) { const dP = decalageDe(st, p, cfg, BP); wM0[0] += dP[0]; wM0[1] += dP[1]; }   /* (275) */ const wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0; if (st.full && cfg.marquageElastique) { const wE = zonePrendHomme(st, p, wM, attackers, anchor, defGoal, cfg.marquageElastique, tac(st, p.team), cfg.marquageConsigne); wM[0] = wE[0]; wM[1] = wE[1]; }   // (228) le voisin du sorti glisse vers le trou
         p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0) + (st._bRefermeDx?.get(mapD[p.post ?? 0]) ?? 0), 0, wM[1]]; if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)); if (((p.id * 2654435761 + tr * 40503) % 1000) / 1000 < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { if (p._vuTr !== tr) { p._vuTr = tr; p._vu = [p.target[0], p.target[2]]; } p.target[0] = p._vu[0]; p.target[2] = p._vu[1]; } else p._vuTr = -1; }   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
         return;
       }
@@ -1086,7 +1086,7 @@ function assignMatchJobs(st, cfg) {
       // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui, 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
-      const off = (st.full && cfg.marquageElastique ? Math.max(cfg.marquageElastique.plancher ?? 0.8, distanceElastique(hyp(mp[0] - anchor[0], mp[2] - anchor[2]), cfg.marquageElastique)) * (press ? 0.7 : 1) : press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 1.35, 0.65) : 1) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) ET une CONSIGNE (196, axe marqueSerre : coller/laisser respirer — le même joueur, deux ordres)
+      const off = (st.full && cfg.marquageElastique ? Math.max(cfg.marquageElastique.plancher ?? 0.8, distanceElastique(hyp(mp[0] - anchor[0], mp[2] - anchor[2]), marquageDe(cfg.marquageElastique, cfg.marquageConsigne, tac(st, p.team), p).K)) * (press ? 0.7 : 1) : press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 1.35, 0.65) : 1) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) ET une CONSIGNE (196, axe marqueSerre : coller/laisser respirer — le même joueur, deux ordres)
       const want = [mp[0] + (gx / gl) * off, mp[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && !rouge && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {   // …la bande cède à l'HOMME en zone rouge (192)
