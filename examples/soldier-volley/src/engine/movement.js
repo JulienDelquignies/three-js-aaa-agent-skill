@@ -1,4 +1,4 @@
-import { regardJeu, regardJeuArret } from './regard-jeu.js';
+import { regardJeu, regardJeuArret } from './regard-jeu.js'; import { monteeDe } from './montee-offensive.js';
 import { capAllure, vitesseCorps } from './allure-corps.js';
 import { appuiPas } from './appui.js';
 import { tirage } from './rng.js';
@@ -362,6 +362,7 @@ export function movePlayers(st, dt, cfg) {
       }
     }
     if (st.full && cfg.sePoser && (p._pose ?? -1) > st.t) top = Math.min(top, cfg.sePoser.v ?? 1.5);   // (303) le receveur face au ballon se pose (match-sim : les appuis avant la réception)
+    if (st.full && cfg.monteeOffensive) { const MO = monteeDe(st, p, cfg.monteeOffensive, st.tactics?.[p.team], p.role); if (MO) { top = Math.max(top, MO.v); p._effort = Math.max(p._effort ?? 0, MO.eps); } }   // (369) l'équipe suit l'action (montee-offensive.js)
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
