@@ -14681,6 +14681,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   2 → 4 coureurs × mentalité vers des zones distinctes, anticipés dès la zone de centre en deçà de la ligne). Sur centre : premier toucher
   attaque 17 → 23 / défense 14 → 9, duels aériens attaque 1 → 10 / défense 6 → 3. Jumeau = le 371 au bit ; défaut `890b1b2ca27ba177 /
   196d0cceb579b672` ; bloc 241.
+- **Lot 373 — T2, l'attaque s'engage, la garde reste** : `restDefense` (rest-defense.js — B11 X19). La formation en possession plafonnait
+  (centraux 53, latéraux 55, milieux 68-72 m de leur but, que le ballon soit à 79 ou 88 m). En attaque (possession > 1,5 s, ballon au-delà
+  de la médiane ; le dernier tiers seul essayé d'abord : séquences trop courtes, les corps n'arrivaient pas), centraux et sentinelle
+  tiennent, latéraux à 5 m et milieux à 9 m du ballon × mentalité. Latéraux 44 → 70 m (bloc 242) ; centres 25 par équipe (trop : à
+  recadrer). Jumeau = le 372 au bit ; défaut `467fb09294919a02 / 881acce90e2d4a0d`.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match

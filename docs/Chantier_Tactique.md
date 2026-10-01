@@ -76,7 +76,12 @@ joueurs avec leur poste et leur rôle dans les formations ».
   `attaqueSurface` : dès que le porteur entre en zone de centre, 2 → 4 coureurs (× mentalité) sont désignés vers des zones distinctes
   (second poteau, premier poteau, penalty, entrée de surface), tenus en deçà de la ligne, et attaquent la zone à la frappe. Mesuré (2 × 45
   min) : premier toucher sur centre attaque 17 → 23 / défense 14 → 9 ; duels aériens gagnés attaque 1 → 10 / défense 6 → 3 (bloc 241).
-- **Reste** : rest defense 7,1 (livre 3,7) — latéraux et milieux qui montent en attaque installée ; les touches et corners.
+- **Lot 373 (scellé)** : `restDefense` — la formation en possession plafonnait (ballon à 79 ou 88 m : centraux 53, latéraux 55, milieux
+  68-72 ; 9 joueurs derrière le ballon). En attaque (possession > 1,5 s, ballon au-delà de la médiane), les gardes (centraux, sentinelle,
+  le latéral opposé si la mentalité est prudente) tiennent, latéraux à 5 m et milieux à 9 m du ballon × mentalité. Latéraux en attaque
+  44 → 70 m de leur but (bloc 242) ; marquage des latéraux adverses 12 → 8,4 m ; N_def(10) 2,2 → 2,7 ; centres 6,5 → 24,9 par équipe.
+- **Reste** : la rest defense à la PERTE reste 7,1 (les pertes ont lieu surtout au milieu et chez soi : c'est la géographie des pertes,
+  pas la montée) ; centres 25 par équipe (livre 9-14) et contre-pressings 79 (livre 20-30) à recadrer ; le jeu aérien hors centres (T7).
 - **But** : à la possession installée, les latéraux et les milieux montent, la surface se remplit, les centres arrivent sur des
   attaquants lancés ; la rest defense tombe à ~4.
 - **Indicateurs** : rest defense 3,7 (4-5 en attaque placée) ; arrivées dans la surface au centre (≤ 3-4 dans 90 % des cas, lancées
@@ -151,4 +156,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 369 | Pointe à 7,6 → 4,7 m de la ligne ; centres 8,4 → 18,3 |
 | 01/10 | T1 | 370 | Sauts de cible 117 → 31 par minute ; N_def(10) des corps 2,1 → 2,5. Sorties (non critère) : buts ~4 par équipe, tirs ~19, xG ~3 |
 | 01/10 | T2 | 372 | Centres ×2-4 ; sur centre, duels aériens gagnés par l'attaque 1 → 10 |
+| 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |

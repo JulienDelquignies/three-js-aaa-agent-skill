@@ -8456,5 +8456,18 @@ if (__bloc()) {
   ok(`lot 372 — ON ATTAQUE LE CENTRE : ${A.n} centres (hier ${N.n}), duels aériens gagnés par l'attaque sur centre ${A.aerA} (hier ${N.aerA})`, A.n >= N.n + 3 && A.aerA > N.aerA);
 }
 
+if (__bloc()) {
+  // L'ATTAQUE S'ENGAGE, LA GARDE RESTE (373 — T2, B11 X19). Sondé : la formation en possession plafonnait (latéraux à 50-55 m de leur but
+  // le ballon à ~80 m). Le contrat : en attaque (possession > 1,5 s, ballon au-delà de la ligne médiane), la hauteur médiane des latéraux
+  // monte d'au moins 6 m et les centraux restent derrière le ballon.
+  const mesure = (over) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }); const L = [], C = []; let tm0 = -1, tP = 0;
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); const tm = st.possession?.team ?? -1; if (tm !== tm0) { tm0 = tm; tP = 0; } else tP += 1 / 60;
+      if (i % 30 || st.restart || tm < 0 || tP < 2) continue; const sg = Math.sign(st.pitch.attackGoal(tm).x || 1), bx = st.ball.p[0] * sg; if (bx < 10) continue;
+      for (const q of st.players) if (q.team === tm && !q.keeper) { if (q.post === 0 || q.post === 3) L.push(q.p[0] * sg + st.pitch.hx); if (q.post === 1 || q.post === 2) C.push(bx - q.p[0] * sg); } }
+    const med = (a) => [...a].sort((x, y) => x - y)[a.length >> 1]; return { lat: med(L), cDer: med(C) }; };
+  const A = mesure({}), N = mesure({ restDefense: null });
+  ok(`lot 373 — L'ATTAQUE S'ENGAGE : latéraux à ${A.lat.toFixed(1)} m de leur but en attaque (hier ${N.lat.toFixed(1)}), centraux ${A.cDer.toFixed(1)} m derrière le ballon`, A.lat >= N.lat + 6 && A.cDer > 5);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
