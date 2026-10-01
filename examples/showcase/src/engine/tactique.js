@@ -27,7 +27,7 @@ export function makeTactique(st, { sample = 10 } = {}) {
     rec: 0, recPresse: 0, recOuvert: 0, recDos: 0, recTtp: 0, garde: 0, gardePresse: 0, recPresseN: 0,
     courses: {}, servies: 0, combis: {}, aeriens: 0, aeriensGagnes: 0, secondsDuels: 0, secondsGardes: 0,
     regains: 0, tirs10: 0, delaiTir: [], restDef: [], reforme: [], contrePress: 0, pressD: [],
-    seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
+    pointe: [], seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
   });
   return { e0: 0, frame: 0, sample, E: [E(), E()], enJeu: 0, total: 0, rec: [], courses: [], aer: null, regain: [null, null], perte: [null, null], seqC: null };
 }
@@ -64,6 +64,10 @@ function echantillon(T, st, tm, car) {
   const E = T.E[adv]; E.nDef10 += champ(st, adv).filter((p) => hyp(p.p[0] - b[0], p.p[2] - b[2]) < 10).length; E.nDef10N++;
   const xs = champ(st, adv).map((p) => sens(st, adv, p.p[0], p.p[2])[0]).sort((a, c) => a - c);
   if (xs.length >= 8) { E.inter += (xs[4] + xs[5] + xs[6]) / 3 - (xs[0] + xs[1] + xs[2] + xs[3]) / 4; E.interN++; }
+  // L'ÉCART DE LA POINTE À LA LIGNE (B09 : le 9 fixe les centraux, pinCount 1,5-2,4) : la ligne de hors-jeu adverse (2e plus reculé) moins
+  // l'attaquant le plus avancé, ballon encore devant la ligne (m, 0 = sur la ligne)
+  { const sg = Math.sign(st.pitch.attackGoal(tm).x || 1), D = st.players.filter((q) => q.team === adv && !q.expulse).map((q) => q.p[0] * sg).sort((u, w) => w - u), lx = D[1];
+    if (st.ball.p[0] * sg < lx - 5) T.E[tm].pointe.push(lx - Math.max(...champ(st, tm).map((q) => q.p[0] * sg))); }
   // la DISTANCE DE SOUTIEN au porteur (B06 #20 : 6-18 m selon la sous-phase) : les deux coéquipiers les plus proches
   const c = car >= 0 ? st.players[car] : null;
   if (c) { const ds = champ(st, tm).filter((p) => p.id !== c.id).map((p) => hyp(p.p[0] - c.p[0], p.p[2] - c.p[2])).sort((a, d) => a - d);
@@ -137,7 +141,7 @@ export function tactiqueReport(T, st) {
     return {
       marquage: Object.fromEntries(Object.keys(E.marq).map((f) => [f, r1(E.marq[f] / E.marqN[f])])),
       densiteBallon: r1(E.nDef10 / Math.max(1, E.nDef10N)), interligne: r1(E.inter / Math.max(1, E.interN)), distanceSoutien: r1(E.soutien / Math.max(1, E.soutienN)),
-      distanceIntervention: r1(med(E.pressD)),
+      distanceIntervention: r1(med(E.pressD)), ecartPointeLigne: r1(med(E.pointe)),
       receptions: E.rec, recSousPression: pc(E.recPresse, E.rec), recOuvert: pc(E.recOuvert, E.rec), recDos: pc(E.recDos, E.rec), tempsLibre: r1(E.recTtp / Math.max(1, E.rec)),
       conservation: pc(E.garde, E.rec), conservationSousPression: pc(E.gardePresse, E.recPresse),
       courses: E.courses, coursesServies: pc(E.servies, Object.values(E.courses).reduce((a, b) => a + b, 0)), combinaisons: E.combis,
@@ -150,7 +154,7 @@ export function tactiqueReport(T, st) {
     ballonEnJeu: pc(T.enJeu, T.total), sorties: T.E[0].sorties, equipes: [eq(0), eq(1)],
     cibles: {
       marquage: 'B12 : 5,16 ± 0,6 m ; LAT 6,4 > MIL 5,6 > DC 5,5 > ATT 5,1', densiteBallon: 'B10 T7 : 4,9 médian · 6,3 bloc bas · 4,2 bloc haut', interligne: 'B10 T2 : 10-15 m · bloc bas 5-8',
-      distanceSoutien: 'B06 #20 : 6-18 m', distanceIntervention: 'B01/B12 : 10-15 m bloc médian · ≈ 6 m bloc bas', recSousPression: 'M07/B07 : dos sous forte pression 35-55 %',
+      distanceSoutien: 'B06 #20 : 6-18 m', ecartPointeLigne: 'B09 : le 9 sur la ligne (0-3 m), pinCount 1,5-2,4', distanceIntervention: 'B01/B12 : 10-15 m bloc médian · ≈ 6 m bloc bas', recSousPression: 'M07/B07 : dos sous forte pression 35-55 %',
       recOuvert: 'B07 T7 : 20-35 %', recDos: 'B07 T7 : 15-30 %', conservationSousPression: 'R02 #11 : 66,8 % (sans pression 76,5)', coursesServies: 'B09 T1 : 15-40 %',
       aeriensGagnes: 'R04 : 38-50 duels aériens par match', secondBallonVainqueur: 'B15 D7 : 45 % au milieu', tirsDans10s: 'B11 X3 : 62 % des tirs à ≤ 10 s du regain',
       restDefense: 'B11 X19 : 3,7 joueurs derrière le ballon', blocReforme: 'B11 X15 : 8-12 s', contrePressing: 'B11 X13 : 20-30 par équipe',
