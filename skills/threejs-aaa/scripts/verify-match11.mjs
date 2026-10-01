@@ -8575,5 +8575,25 @@ if (__bloc()) {
     A.d <= N.d - 1.2 && A.libre <= N.libre - 0.06);
 }
 
+if (__bloc()) {
+  // LA ZONE SE REPREND D'OÙ L'ON EST, LE COULOIR EST À LA ZONE EXTÉRIEURE (382 — T1 bis, étape 2). Sondé sous le 381 : les défenseurs
+  // affectés à plus de 8 m de leur cible 43 % du temps — 47 % de ces écarts venaient d'une zone restée à 14,5 m du corps (revenu au marquage
+  // après la presse ou la couverture), et l'ailier sans responsable 43-47 % du temps (hors de toute zone). Le contrat : les affectés à plus
+  // de 8 m de leur cible moins nombreux d'au moins 5 points qu'au 381, et l'ailier servi libre à 5 m au moins 3 points de moins.
+  const Z381 = { rZone: 12, rHomme: 22, tenue: 0.4, corps: 0.4, wZone: 0.75, lZone: 8, lHomme: 18, plancher: 0.8, tauZone: 0.8, vZone: 5, rejoint: 4, vGarde: 6, vPointe: 4, epsGarde: 0.95, epsPointe: 0.65 };
+  const mesure = (over) => { let nA = 0, pres = 0, n = 0, libre = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...over }); let e0 = 0; const pend = new Map();
+      for (let i = 0; i < 2700 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        if (i % 15 === 0 && st._zh) for (const [pid, c] of st._zh) { const p = st.players[pid]; if (p.job !== 'mark') continue; nA++; if (Math.hypot(c[0] - p.p[0], c[1] - p.p[2]) > 8) pres++; }
+        for (; e0 < st.events.length; e0++) { const e = st.events[e0]; if (e.type !== 'pass') continue; const p = st.players[e.by], q = st.players[e.to]; if (!p || !q || q.team !== p.team || (q.post !== 7 && q.post !== 9)) continue; pend.set(q.id, { t: st.t, team: p.team }); }
+        const c = st.possession?.carrier; if (c != null && c >= 0 && pend.has(c)) { const x = pend.get(c); pend.delete(c); const q = st.players[c]; if (q.team !== x.team || st.t - x.t > 3) continue;
+          let d0 = 99; for (const f of st.players) if (f.team !== q.team && !f.keeper) d0 = Math.min(d0, Math.hypot(f.p[0] - q.p[0], f.p[2] - q.p[2])); n++; if (d0 >= 5) libre++; }
+        for (const [id, x] of pend) if (st.t - x.t > 3) pend.delete(id); } }
+    return { pres: pres / Math.max(1, nA), libre: libre / Math.max(1, n) }; };
+  const A = mesure({}), N = mesure({ zoneHomme: Z381 });
+  ok(`lot 382 — LA ZONE SE REPREND, LE COULOIR EST À L'EXTÉRIEUR : affectés à > 8 m de leur cible ${(100 * A.pres).toFixed(0)} % (381 : ${(100 * N.pres).toFixed(0)} %), ailier servi libre à 5 m ${(100 * A.libre).toFixed(0)} % (381 : ${(100 * N.libre).toFixed(0)} %) — 2 × 45 min`,
+    A.pres <= N.pres - 0.05 && A.libre <= N.libre - 0.03);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -202,6 +202,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   lignes 58 → 41 % ; centraux du bloc à l'entrée dans leur moitié 8,5 → 7,5 m, ballon dans la moitié adverse 13,8 → 11,2 ; sentinelle et
   centraux plus servis (5,5 et 4,2 ballons par 10 min). Bloc 1 : deux clauses DATÉES (la sortie de but au bout de sa bande, 33,3 s de
   silence → borne 34 ; la graine 7 sur la dette nommée du 334). Défaut `220aa0b5c3838f09 / 8d2648867cbe9b87`.
+- **Lot 382 (scellé, étape 2)** : sondé sous le 381, quand le défenseur affecté est à plus de 8 m de sa cible (35 % du temps), 47 % des
+  cas sont une zone restée à 14,5 m de son corps (revenu au marquage après la presse, la couverture, l'interception) et 41 % une paire
+  neuve. Deux sous-clés de `zoneHomme` : `reprise` (la zone repart du corps au retour au marquage) et `versLigne` (le couloir est à la
+  zone extérieure : du slot excentré vers la touche, la distance × 0,4). Bloc 249 : affectés à > 8 m 35 → 26 %, ailier servi libre à
+  5 m 57 → 52 % ; quand l'ailier est pris, son défenseur à 7,7 m (10,7), le latéral le prend 27 % du temps (16). Effet de bord :
+  l'avant-centre est serré (3,2 m, libre 18 %) mais reste le plus servi (11 ballons par 10 min) — le choix de passe le force.
+  Défaut `c2fac22265fc1ab6 / e77839af959063ac`.
 - **Reste de T1 bis** : l'ailier sans responsable 42-47 % du temps (hors de toute zone) ; quand pris, le défenseur reste à 10-16 m (la zone
   suit des slots qui sautent) ; paires de 1,5 s p50. Étapes suivantes : (2) des zones qui ne dépendent plus d'un bloc chaîné au ballon
   mais d'une forme qui glisse (hauteur et largeur par ligne, selon la consigne) ; (3) la couverture de l'homme sans zone (le latéral côté
@@ -286,6 +293,7 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
 | 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
+| 01/10 | T1 bis | 382 | La zone se reprend d'où l'on est, le couloir est à la zone extérieure : affectés loin de leur cible 35 → 26 %, ailier libre 57 → 52 % |
 | 01/10 | T1 bis | 381 | Une zone, un homme (zones qui coulissent, affectation géographique, la prise court) : ailier servi à 7,4 m (9,8), libre 57 % (73) |
 | 01/10 | T3 | 379 | La relance est une circulation (style × pression × rôle) ; sens de jeu selon le style : centraux + sentinelle servis 96 → 166, séquences 10+ 4 → 12 (2 × 45 min) |
 | 01/10 | T3 | 378 | La possession cherche l'homme libre (style × vision × décisions × rôle) : marqués servis 18 → 9 % ; meneurs c. destroyers 3,25 c. 2,65 passes par séquence |

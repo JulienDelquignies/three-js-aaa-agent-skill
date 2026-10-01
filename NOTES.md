@@ -14695,6 +14695,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 382 — T1 bis, étape 2 : la zone se reprend d'où l'on est, le couloir est à la zone extérieure** (sous-clés `reprise`,
+  `versLigne` de `zoneHomme` ; sans elles : le 381 au bit). Sonde : 47 % des grands écarts défenseur → cible venaient d'une zone restée à
+  14,5 m du corps. Bloc 249 (contrat reformulé après un premier rouge : « < 3 m » 33 → 36 % seulement sur deux graines, la mesure qui
+  porte est « > 8 m ») : affectés à > 8 m 35 → 26 %, ailier libre 57 → 52 %. Défaut `c2fac22265fc1ab6 / e77839af959063ac` ; banc vert.
 - **Lot 381 — T1 bis, une zone, un homme (étape 1)** (01/10 : « oui on y va je crois en toi »). Diagnostic des lots 377-380 : ailiers
   servis libres entre les lignes, le latéral adverse à 16-17 m sur un autre homme, l'ailier marquable 33 % du temps ; trois retouches
   (sortie du latéral, couloir dans l'affectation, coulissement à l'allure du rôle) sans effet — l'architecture (marquable autour du ballon,

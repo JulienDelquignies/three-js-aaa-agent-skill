@@ -12,6 +12,8 @@
 //   (5) LA ZONE COULISSE, ELLE NE SAUTE PAS : mesuré, les slots du bloc chaîné au ballon bougeaient à 8,7 m/s en moyenne (ils sautent avec
 //       chaque passe) — les cibles à 7,2 m/s, les paires vivaient 0,7 s p50. La zone de chaque défenseur suit son slot au premier ordre
 //       (`tauZone` s), bornée à `vZone` m/s × workRate — le bloc glisse à l'allure d'un bloc ;
+//       revenu au marquage après un autre métier, sa zone repart de son CORPS (`reprise`) ;
+//       le COULOIR est à la zone extérieure : du slot excentré (|z| > exterieur × demi-largeur) vers la touche, la distance × versLigne ;
 //   (4) le défenseur affecté vise CÔTÉ BUT de son homme à la distance élastique (368) × rôle × note (marquageDe, 377), part `w` du chemin
 //       (zone `wZone` … homme 1), tenu en LAISSE à sa zone (zone `lZone` … homme `lHomme` m) ; le non affecté tient sa zone.
 // Les rôles et notes : marqueSerre et markF (la distance), positioning (posF : le coût de la zone — le bon placeur prend son homme),
@@ -27,7 +29,9 @@ export function zoneHommeStep(st, K, cfg) {
   const def = B.team, atk = 1 - def, T = st.tactics?.[def], car = st.possession.carrier;
   const Z = st._zhZ ??= new Map(), dt = st._zhT != null ? Math.max(0, Math.min(0.1, st.t - st._zhT)) : 0; st._zhT = st.t;
   for (const p of st.players) { if (p.team !== def || p.keeper) continue; const r = B.spots[B.mapD[p.post ?? 0]]; if (!r) continue; let z = Z.get(p.id);
-    if (!z || z.team !== def) { Z.set(p.id, { x: r[0], z: r[1], team: def }); continue; }
+    if (!z || z.team !== def) { Z.set(p.id, { x: r[0], z: r[1], team: def, job: p.job }); continue; }
+    if (K.reprise && LIBRES.has(p.job) && z.job !== p.job) { z.x = p.p[0]; z.z = p.p[2]; }   // (382) LA ZONE SE REPREND D'OÙ L'ON EST : revenu au marquage (après la presse, la couverture, l'interception), le défenseur repart de son corps — mesuré : 47 % des grands écarts venaient d'une zone restée à 14,5 m du corps
+    z.job = p.job;
     let dx = (r[0] - z.x) * (1 - Math.exp(-dt / (K.tauZone ?? 0.8))), dz = (r[1] - z.z) * (1 - Math.exp(-dt / (K.tauZone ?? 0.8))); const m = hyp(dx, dz), mx = (K.vZone ?? 5) * (p.skill?.workF ?? 1) * dt;
     if (m > mx) { dx *= mx / m; dz *= mx / m; } z.x += dx; z.z += dz; }
   const zone = (p) => { const z = Z.get(p.id); return [z.x, z.z]; };
@@ -35,7 +39,8 @@ export function zoneHommeStep(st, K, cfg) {
   const A = st.players.filter((q) => q.team === atk && !q.keeper && !q.expulse && !q._sub && q.id !== car);
   const R = ax(T?.marquage, K.rZone ?? 12, K.rHomme ?? 22), prev = st._zhPrev ?? new Map(), paires = [];
   for (const p of D) { const s = zone(p);
-    for (const q of A) { const dz = hyp(q.p[0] - s[0], q.p[2] - s[1]); if (dz > R) continue; const d = dz * (1 - (K.corps ?? 0)) + hyp(q.p[0] - p.p[0], q.p[2] - p.p[2]) * (K.corps ?? 0);   // (381) le coût : la zone, et la part `corps` de la distance au corps (qui peut y être)
+    const ext = K.versLigne != null && Math.abs(s[1]) > (K.exterieur ?? 0.35) * st.pitch.hz;   // (382) LE COULOIR EST À LA ZONE EXTÉRIEURE : du slot excentré à la touche, l'espace est le sien — la distance vers la ligne × versLigne
+    for (const q of A) { const lat = q.p[2] - s[1], out = ext && Math.sign(lat) === Math.sign(s[1]) ? K.versLigne : 1; const dz = hyp(q.p[0] - s[0], lat * out); if (dz > R) continue; const d = dz * (1 - (K.corps ?? 0)) + hyp(q.p[0] - p.p[0], q.p[2] - p.p[2]) * (K.corps ?? 0);   // (381) le coût : la zone, et la part `corps` de la distance au corps (qui peut y être)
       paires.push({ p, q, c: d * (2 - (p.skill?.markF ?? 1)) * (2 - (p.skill?.posF ?? 1)) * (prev.get(p.id) === q.id ? K.tenue ?? 0.7 : 1) }); } }
   paires.sort((a, b) => a.c - b.c);
   const pris = new Set(), fait = new Set(), out = new Map(), nPrev = new Map(), b = st.ball.p, g = st.pitch.ownGoal(def);
