@@ -6,15 +6,16 @@
 // est bornée [3 ; 10] ; (7) les passes réussies sont au plus les passes, et courtes + moyennes + longues = passes.
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
 import { makeStats, statsStep, statsReport } from '../assets/starter/src/engine/stats.js';
+import { makeTactique, tactiqueStep, tactiqueReport } from '../assets/starter/src/engine/tactique.js';
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) { pass++; console.log(`✓ ${m}`); } else { fail++; console.log(`✗ ${m}`); } };
 const fnv = (s) => { let h = 0xcbf29ce484222325n; for (const c of s) { h ^= BigInt(c.charCodeAt(0)); h = (h * 0x100000001b3n) & 0xffffffffffffffffn; } return h.toString(16); };
 const dump = (st) => JSON.stringify({ p: st.players.map((q) => [q.p[0].toFixed(4), q.p[2].toFixed(4), q.yaw.toFixed(3)]), b: st.ball.p.map((x) => x.toFixed(4)), s: st.score, e: st.events.length });
-const jouer = (avec, DUR = 900) => { const st = makeMatch({ full: true, seed: 11 }), cfg = matchCfg({ chrono: { periodes: 2, duree: DUR / 2, pause: 5 } }), S = avec ? makeStats(st) : null;
-  for (let i = 0; i < DUR * 60 * 1.3; i++) { matchStep(st, 1 / 60, cfg); if (S) statsStep(S, st); if (st.restart?.type === 'fin') break; }
-  return { st, S }; };
+const jouer = (avec, DUR = 900) => { const st = makeMatch({ full: true, seed: 11 }), cfg = matchCfg({ chrono: { periodes: 2, duree: DUR / 2, pause: 5 } }), S = avec ? makeStats(st) : null, TQ = avec ? makeTactique(st) : null;
+  for (let i = 0; i < DUR * 60 * 1.3; i++) { matchStep(st, 1 / 60, cfg); if (S) { statsStep(S, st); tactiqueStep(TQ, st); } if (st.restart?.type === 'fin') break; }
+  return { st, S, TQ }; };
 const A = jouer(false), B = jouer(true);
-ok(fnv(dump(A.st)) === fnv(dump(B.st)), `(1) lecture seule : l'empreinte est la même avec et sans stats (${fnv(dump(B.st))})`);
+ok(fnv(dump(A.st)) === fnv(dump(B.st)), `(1) lecture seule : l'empreinte est la même avec et sans stats ni télémétrie tactique (${fnv(dump(B.st))})`);
 const { st, S } = B, R = statsReport(S, st), R1 = statsReport(S, st, { per: 1 }), R2 = statsReport(S, st, { per: 2 });
 ok(R.score[0] === st.score[0] && R.score[1] === st.score[1], `(2) le score des stats ${R.score} = le score du match ${st.score}`);
 const add = (k) => [0, 1].every((t) => R1.equipes[t][k] + R2.equipes[t][k] === R.equipes[t][k]);
@@ -25,4 +26,6 @@ const champ = R.joueurs.filter((j) => !j.keeper && j.minutes > 1);
 ok(champ.length >= 20 && champ.every((j) => j.heat.reduce((a, b) => a + b, 0) > 0 && j.distance > 0), `(5) ${champ.length} joueurs de champ avec heatmap, minutes et distance`);
 ok(R.joueurs.every((j) => j.note == null || (j.note >= 3 && j.note <= 10)), `(6) notes bornées [3 ; 10] (${R.joueurs.filter((j) => j.note != null).map((j) => j.note).sort((a, b) => b - a).slice(0, 3).join(', ')}…)`);
 ok(R.equipes.every((E) => E.passesReussies <= E.passes && E.courtes + E.moyennes + E.longues === E.passes), `(7) passes réussies ≤ passes ; courtes + moyennes + longues = passes (${R.equipes[0].courtes}/${R.equipes[0].moyennes}/${R.equipes[0].longues})`);
+const TR = tactiqueReport(B.TQ, B.st), e0 = TR.equipes[0];
+ok(TR.ballonEnJeu > 30 && TR.ballonEnJeu <= 100 && e0.receptions > 50 && e0.sequences > 10 && Object.values(e0.marquage).every((d) => d > 0 && d < 40) && e0.interligne > 0, `(8) la télémétrie tactique répond : ballon en jeu ${TR.ballonEnJeu} %, ${e0.receptions} réceptions, ${e0.sequences} séquences, marquage ${JSON.stringify(e0.marquage)}, interligne ${e0.interligne} m`);
 console.log(`\n${pass} ✓ / ${fail} ✗`); process.exit(fail ? 1 : 0);

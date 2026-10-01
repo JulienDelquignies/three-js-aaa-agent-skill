@@ -5,6 +5,7 @@
 import { writeFileSync } from 'node:fs';
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
 import { makeStats, statsStep, statsReport } from '../assets/starter/src/engine/stats.js';
+import { makeTactique, tactiqueStep, tactiqueReport } from '../assets/starter/src/engine/tactique.js';
 import { genererEffectif } from '../assets/starter/src/engine/effectif.js';
 import { ROLES_FORMATION } from '../assets/starter/src/engine/formation.js';
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -14,9 +15,9 @@ const rapports = [];
 for (const seed of seeds) {
   const squads = niv ? niv.map((niveau, k) => genererEffectif({ formation: '433', roles: ROLES_FORMATION[433], niveau, graine: seed * 2 + k + 1 })) : null;
   const st = makeMatch({ full: true, seed, ...(tacs ? { tactics: tacs } : {}), ...(squads ? { squads, roles: [ROLES_FORMATION[433], ROLES_FORMATION[433]] } : {}) });
-  const cfg = matchCfg({ chrono: { periodes: 2, duree: DUR / 2, pause: 10 }, ...over }), S = makeStats(st);
-  for (let i = 0; i < DUR * 60 * 1.3; i++) { matchStep(st, 1 / 60, cfg); statsStep(S, st); if (st.restart?.type === 'fin') break; }
-  rapports.push(statsReport(S, st, { per }));
+  const cfg = matchCfg({ chrono: { periodes: 2, duree: DUR / 2, pause: 10 }, ...over }), S = makeStats(st), TQ = makeTactique(st);
+  for (let i = 0; i < DUR * 60 * 1.3; i++) { matchStep(st, 1 / 60, cfg); statsStep(S, st); tactiqueStep(TQ, st); if (st.restart?.type === 'fin') break; }
+  rapports.push({ ...statsReport(S, st, { per }), tactique: tactiqueReport(TQ, st) });
 }
 const N = rapports.length, moy = (f) => rapports.reduce((s, R) => s + (f(R) ?? 0), 0) / N;
 const LIGNES = [
