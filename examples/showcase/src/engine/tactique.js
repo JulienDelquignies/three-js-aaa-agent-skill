@@ -28,7 +28,7 @@ export function makeTactique(st, { sample = 10 } = {}) {
     rec: 0, recPresse: 0, recOuvert: 0, recDos: 0, recTtp: 0, garde: 0, gardePresse: 0, recPresseN: 0,
     courses: {}, servies: 0, combis: {}, aeriens: 0, aeriensGagnes: 0, secondsDuels: 0, secondsGardes: 0,
     regains: 0, tirs10: 0, delaiTir: [], restDef: [], reforme: [], contrePress: 0, pressD: [],
-    pointe: [], repli3: [], meute15: [], seq: 0, seqPasses: 0, seq10: 0, seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
+    pointe: [], repli3: [], meute15: [], seq: 0, seqPasses: 0, seq10: 0, seqL: [], seqVit: [], decisions: 0, optionIgnoree: 0, choixTtp: 0, sorties: {},
   });
   return { e0: 0, frame: 0, sample, tOpp: 0, tOppTeam: -1, E: [E(), E()], enJeu: 0, total: 0, rec: [], courses: [], aer: null, regain: [null, null], perte: [null, null], seqC: null };
 }
@@ -84,7 +84,7 @@ function echantillon(T, st, tm, car) {
 
 function finSeq(T, st) {
   const S = T.seqC; if (!S) return; T.seqC = null; const E = T.E[S.team], dur = st.t - S.t0;
-  E.seq++; E.seqPasses += S.passes; if (S.passes >= 10) E.seq10++;
+  E.seq++; E.seqPasses += S.passes; if (S.passes >= 10) E.seq10++; E.seqL.push(S.passes);   // (378b) la distribution : médiane, p90, maximum
   if (dur > 2) E.seqVit.push(Math.max(0, S.xMax - S.x0) / dur);
 }
 
@@ -160,7 +160,7 @@ export function tactiqueReport(T, st) {
       courses: E.courses, coursesServies: pc(E.servies, Object.values(E.courses).reduce((a, b) => a + b, 0)), combinaisons: E.combis,
       duelsAeriens: E.aeriens, aeriensGagnes: pc(E.aeriensGagnes, E.aeriens), secondBallonVainqueur: pc(E.secondsGardes, E.secondsDuels),
       regains: E.regains, tirsDans10s: E.tirs10, delaiRegainTir: r1(med(E.delaiTir)), restDefense: r1(moy(E.restDef)), blocReforme: r1(med(E.reforme)), repli3s: r1(moy(E.repli3)), meute15: r1(moy(E.meute15)), contrePressing: E.contrePress,
-      sequences: E.seq, passesParSequence: r1(E.seqPasses / Math.max(1, E.seq)), sequences10Passes: E.seq10, directSpeed: r1(moy(E.seqVit)),
+      sequences: E.seq, passesParSequence: r1(E.seqPasses / Math.max(1, E.seq)), passesParSequenceMediane: med(E.seqL), passesParSequenceP90: (() => { const v = [...E.seqL].sort((x, y) => x - y); return v.length ? v[Math.floor(0.9 * (v.length - 1))] : null; })(), passesParSequenceMax: E.seqL.length ? Math.max(...E.seqL) : null, sequences10Passes: E.seq10, directSpeed: r1(moy(E.seqVit)),
       decisions: E.decisions, optionLibreIgnoree: pc(E.optionIgnoree, E.decisions), tempsLibreReceveur: r1(E.choixTtp / Math.max(1, E.decisions)),
     }; };
   return {

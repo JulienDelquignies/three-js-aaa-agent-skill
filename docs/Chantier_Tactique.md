@@ -145,6 +145,12 @@ joueurs avec leur poste et leur rôle dans les formations ».
   destroyer ×0,76) ; nul au neutre et en direct (l'empreinte par défaut ne bouge pas). Bloc 246 : receveurs marqués 18,0 → 9,2 % ; à
   tactique égale, milieu regista / meneur reculé / mezzala 3,25 passes par séquence c. destroyers / box-to-box 2,65. Aussi : possession
   56 → 59 %, durée 15,5 → 17,7 s, passes vers l'arrière 38 → 44 % (livre 40-42).
+- **Distribution des séquences (01/10, 4 affiches × 2 × 90 min, définition Opta : coupée à la perte, à l'arrêt de jeu, au tir)** : tous
+  presets confondus, moyenne 3,0-3,35, médiane 2-3, p90 6-7, **maximum 12-17** (une seule à 24), séquences de 10+ passes 1,5-6 par
+  équipe et par match (livre R01 C18 : 17-24 en possession, ~5 en direct) ; aucune de 20+. Possession et direct ont presque la même
+  distribution (max 15 c. 13, 10+ : 4 c. 2,5 par match). La queue manque : avec 87 % de passes gardées, une loi géométrique donnerait
+  ~28 % de séquences de 10+ — on en compte ~2,5 %. Les séquences meurent d'autre chose que la passe (réception sous pression, duel,
+  conduite, sortie). Télémétrie : `passesParSequenceMediane`, `passesParSequenceP90`, `passesParSequenceMax`.
 - **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
   61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
