@@ -459,9 +459,24 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     // restait indéfendu et la perce du wingDrive convertissait à 73 % (mesuré : 38 buts sur
     // 20 × 300 s, bande 17-30 — l'ailier passait dans un couloir vide).
     const zShift = Math.max(-(bloc.slideMax ?? 8), Math.min(bloc.slideMax ?? 8, anchorZ * (bloc.lateral ?? 0.35)));
+    // (368, bloc.coulisse — T1 du chantier tactique ; B10 : « le bloc comme corps déformable, pas une barre de baby-foot ») : chaque
+    // LIGNE a sa LARGEUR (défense ~34 m, milieu ~28, attaque ~30 — la formation posée en faisait 39 / 28 / 40+) et son GAIN de
+    // coulissement (défense 0,35-0,50, milieu 0,55-0,75), borné par la TOUCHE seulement (k_max = (34 − W/2)/34 : la ligne de touche est
+    // le douzième défenseur) — hier un seul gain 0,35 plafonné à 8 m : N_def(10) 1,9 (livre 4,9), le bloc loin de tout. Absent : hier.
+    const CO = bloc.coulisse, lgC = CO ? (LIGNES[name] ?? LIGNES[433]) : null;
+    const ligneDe = (i) => { if (!lgC) return 0; let k = 0, n = 0; for (; k < lgC.length; k++) { n += lgC[k]; if (i < n) return k; } return lgC.length - 1; };
+    const largeurs = CO ? lgC.map((_, k) => { let m = 0, n0 = lgC.slice(0, k).reduce((a, b) => a + b, 0); for (let j = n0; j < n0 + lgC[k]; j++) m = Math.max(m, Math.abs(F[j]?.[1] ?? 0)); return m; }) : null;
     for (let i = 0; i < F.length; i++) {
       const [f, fz] = F[i];
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * squeeze));
+      if (CO) {
+        const L0 = ligneDe(i), W = (L0 === 0 ? CO.def ?? 34 : L0 === lgC.length - 1 ? CO.att ?? 30 : CO.mil ?? 28) * (CO.f ?? 1), k = L0 === 0 ? CO.kDef ?? 0.42 : L0 === lgC.length - 1 ? CO.kAtt ?? 0.5 : CO.kMil ?? 0.65;
+        let pz = largeurs[L0] > 1e-6 ? (fz / largeurs[L0]) * Math.min(W / 2, largeurs[L0] * pitch.hz * 0.92) : 0;
+        if (bloc.pince != null && Math.abs(anchorZ) > 6 && Math.sign(fz || 1) !== Math.sign(anchorZ)) pz *= bloc.pince;
+        const zMax = Math.max(0, pitch.hz - W / 2 - 1), zS = Math.max(-zMax, Math.min(zMax, anchorZ * k));
+        emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, pz + zS)));
+        continue;
+      }
       // …ET LE CÔTÉ FAIBLE PINCE (lot 96, bloc.pince — l'axe tactics.marquage via blocFor,
       // gate cfg.zone au call-site) : ballon large → le slot du côté OPPOSÉ rentre vers l'axe
       // (réel : le latéral faible vit à 8-14 m de l'axe, mesuré avant à 17,3). Absent : 1, hier.
