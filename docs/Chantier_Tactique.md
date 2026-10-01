@@ -209,6 +209,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   5 m 57 → 52 % ; quand l'ailier est pris, son défenseur à 7,7 m (10,7), le latéral le prend 27 % du temps (16). Effet de bord :
   l'avant-centre est serré (3,2 m, libre 18 %) mais reste le plus servi (11 ballons par 10 min) — le choix de passe le force.
   Défaut `c2fac22265fc1ab6 / e77839af959063ac`.
+- **Essai 383, annulé — l'appel marqué** : 57 % des passes vers l'avant-centre partent alors qu'il est à < 4,5 m d'un défenseur ; la passe
+  SERVIE vers un coureur en appel est exemptée du malus du marqué (240a). Essai `appelMarque` (le malus × part ÷ la protection du rôle et
+  la force) : les appels marqués servis ne baissent pas (3 × 45 min : hier 76, part 0,7 → 79, part 2 → 84) — le malus, jugé sur la liberté
+  projetée à l'ARRIVÉE, pèse peu face au bonus de l'appel ; point d'appui c. renard 18 c. 17. Annulé. Correction du diagnostic du 382 :
+  le volume de l'avant-centre (8-11 ballons par 10 min) est proche du livre (B01 T7 : 10,1) ; l'écart est que centraux et milieux en
+  reçoivent trop peu. Piste : la décision de lancer l'appel (le coureur qui sait qu'il est collé n'appelle pas, ou appelle dans le dos),
+  plutôt que le choix du passeur.
 - **Reste de T1 bis** : l'ailier sans responsable 42-47 % du temps (hors de toute zone) ; quand pris, le défenseur reste à 10-16 m (la zone
   suit des slots qui sautent) ; paires de 1,5 s p50. Étapes suivantes : (2) des zones qui ne dépendent plus d'un bloc chaîné au ballon
   mais d'une forme qui glisse (hauteur et largeur par ligne, selon la consigne) ; (3) la couverture de l'homme sans zone (le latéral côté
