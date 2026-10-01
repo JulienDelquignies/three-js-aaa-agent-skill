@@ -142,3 +142,31 @@ ajoutée pour l'audit : ligne, bloc, longueur, largeur, profondeur). Référence
 | **Style possession ↔ direct** | possession : +passes, courtes, possession > 55 % ; direct : 20-25 % de longues, moins de passes | possession : 50,9 %, 568 passes, 15,9 % de longues ; direct : 47,9 %, 544 passes, 15,8 % de longues ; référence 50,6 %, 570, 13,7 % | **✗ ne mord pas** |
 | **Largeur** | largeur en possession, centres, têtes | large et centres : largeur 52,4 m (référence 50,9), centres 10,3 (7,5), tirs de la tête 1,3 (2,0) | **✗ ne mord pas** |
 | **Le jeu aérien** | 15-20 duels aériens par équipe, 3-4 tirs de la tête | 4-7 duels aériens par MATCH, 0,5-2,5 tirs de la tête, corners 1-3 | **✗ absent, quel que soit le style** |
+
+## 10. La télémétrie tactique contre les livres (01/10) — `tactique.js`, 7 presets × 4 × 90 min
+
+Les cibles viennent de `docs/Book_vers_Moteur` (B06-B15, R01/R02/R14, M07). Valeurs de l'équipe A (le preset) ; la référence est
+`equilibre` c. `equilibre`.
+
+| Indicateur | Moteur | Livres | Verdict |
+|---|---|---|---|
+| Distance au plus proche adversaire, défenseurs (LAT / DC) | 10,5-14,5 m (bloc bas 13,9 / 14,5 : le PLUS lâche) | 6,4 / 5,5 m | ✗ le bloc ne serre pas les hommes |
+| Défenseurs à < 10 m du ballon N_def(10) | 1,8-2,1 pour tous | 4,9 médian · 6,3 bloc bas · 4,2 haut | ✗ le bloc ne se resserre pas vers le ballon |
+| Interligne DEF↔MIL | 11-13 m (bloc bas 12,9) | 10-15 m · bloc bas 5-8 | ✗ pour le bloc bas |
+| Joueurs derrière le ballon à la perte (rest defense) | 7,2-7,5 | 3,7 | ✗ l'attaque ne s'engage pas : peu de monde devant, peu de centres utiles, peu de duels aériens |
+| Réceptions face au jeu (ouvert ≤ 45°) | 43-47 % | 20-35 % | ✗ trop facile |
+| Conservation après réception pressée | 79-82 % | 66,8 % | ✗ trop facile |
+| Appels par équipe / servis | 230-260 appels + 210-250 en profondeur ; 11-14 % servis | ~100 sprints par équipe ; 15-40 % servis | ✗ beaucoup de courses, peu servies |
+| Renversements | 0-3 par équipe | 1 toutes les 8-14 possessions (~10-20) | ✗ le jeu ne change pas de côté — la largeur ne sert à rien |
+| Séquences par équipe | 154-182, 3,3-3,6 passes | 105 ± 25, 3,5 passes | ✗ trop de possessions courtes |
+| Direct speed | 1,6-1,8 m/s pour TOUS les styles | 1,4 possession · 2,1 direct | ✗ aucun style ne change le rythme de progression |
+| Contre-pressings | 37 (bloc bas) à 87 (ligne haute) | 20-30 par équipe | ≈ l'ordre est juste, le volume trop haut |
+| Tirs dans les 10 s du regain | 4-7 par équipe (≈ 50-70 % des tirs) | 62 % | ✓ |
+| Duels aériens | 4-7 par MATCH | 38-50 par match | ✗ |
+| Ballon en jeu | 65-71 % | 54-58 % | ✗ (touches 20-24, corners 2-4,5, sorties de but 6-8 par match ; réel 35-44 / 10 / 16) |
+| Option libre plus avancée ignorée | 18-24 % des passes | non chiffré | indicateur de cohérence, sans cible |
+
+À relire avec prudence : la « distance d'intervention » mesurée (2-3 m, le presseur au moment de l'événement press) n'est pas la
+définition du livre (la distance où le défenseur S'ENGAGE) ; le « troisième homme » (~100 par équipe) compte un événement moteur trop
+large ; le « bloc reformé » (2-4 s) utilise un critère simple (7 joueurs derrière le ballon, longueur ≤ 35 m) que la rest defense à 7
+rend presque toujours vrai.
