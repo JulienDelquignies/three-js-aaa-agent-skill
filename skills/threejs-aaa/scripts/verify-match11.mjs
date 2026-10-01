@@ -8423,5 +8423,22 @@ if (__bloc()) {
     mA.sautsMin < 40 && mN.sautsMin > 80 && mA.nDef > mN.nDef);
 }
 
+if (__bloc()) {
+  // LE STYLE CHANGE LE CHOIX DE PASSE (371 — T3 du chantier tactique, R01/R02/R14). Audit : direct speed 1,6-1,8 m/s et ballons longs
+  // ~16 % pour TOUS les styles. stylePasse (longueur idéale, passe en l'air, verticalité, jeu long sur la pointe — nul au neutre) et les
+  // presets qui règlent tempo et mentalité. Le contrat : le preset direct joue plus long que la possession (≥ 3 points de ballons longs
+  // de plus) et progresse plus vite (direct speed ≥ 0,2 m/s de plus) ; sans la clé, l'écart de longueur tombe sous 3 points.
+  const { makeStats, statsStep, statsReport } = await import('../assets/starter/src/engine/stats.js');
+  const { makeTactique, tactiqueStep, tactiqueReport } = await import('../assets/starter/src/engine/tactique.js');
+  const mesure = (preset, over) => { let lg = 0, ds = 0, n = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed, tactics: [preset, 'equilibre'] }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }), S = makeStats(st), T = makeTactique(st);
+      for (let i = 0; i < 1200 * 60; i++) { matchStep(st, 1 / 60, cfg); statsStep(S, st); tactiqueStep(T, st); }
+      const E = statsReport(S, st).equipes[0]; lg += 100 * E.longues / Math.max(1, E.passes); ds += tactiqueReport(T, st).equipes[0].directSpeed; n++; }
+    return { lg: lg / n, ds: ds / n }; };
+  const D = mesure('direct', {}), P = mesure('possession', {}), D0 = mesure('direct', { stylePasse: null }), P0 = mesure('possession', { stylePasse: null });
+  ok(`lot 371 — LE STYLE CHANGE LE CHOIX DE PASSE : ballons longs direct ${D.lg.toFixed(1)} % c. possession ${P.lg.toFixed(1)} % (sans la clé ${D0.lg.toFixed(1)} c. ${P0.lg.toFixed(1)}) ; direct speed ${D.ds.toFixed(2)} c. ${P.ds.toFixed(2)} m/s`,
+    D.lg - P.lg >= 3 && D.ds - P.ds >= 0.2 && (D.lg - P.lg) > (D0.lg - P0.lg));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

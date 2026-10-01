@@ -14666,6 +14666,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   remontait à 2,9 m/s, à 14,6 m de son poste. Le plus avancé 7,6 → 4,7 m de la ligne (bloc 238) ; centres 8,4 → 18,3 par équipe.
   Un piège noté : une greffe collée derrière un commentaire `//` sur la même ligne ne s'exécute pas (le premier essai ne bougeait
   rien). Banc : jumeau (les quatre clés à null) = le 367 au bit ; défaut `2aa4c1fb23e43f99 / ff4cc6eb77287791` ; blocs 1, 237, 238.
+- **Lot 370 — T1, la cible ne clignote pas, le bloc se referme autour du ballon** : `cibleLissee` (mark / cover / support suivent une
+  cible filtrée 0,15 s, ≤ 14 m/s — la cible sautait de > 3 m 117-128 fois par minute, réécrite après le slot par la ligne accrochée, la
+  bande, l'interligne, le piège, la croyance), `effortRattrape` (l'entretien comble un retard > 2,5 m en 2 s × workRate),
+  `compressionBallon` (les dix défenseurs s'étageaient uniformément : marqueurs et couvreurs à < 20 m du ballon s'en rapprochent,
+  × compacité). 31 sauts par minute, N_def(10) des corps 2,1 → 2,5 (bloc 239). Le lissage à 0,35 s traînait (bloc 36 m) : 0,15 retenu.
+  Sorties hautes (buts ~4 par équipe) — pas un critère pendant le chantier (01/10), notées pour la calibration finale.
+- **Lot 371 — T3, le style change le choix de passe** : `stylePasse` (rondo.choosePass, terme nul au neutre) et les presets qui règlent
+  tempo et mentalité. Bloc 240 : longues direct 25,5 % c. possession 11,1 %, direct speed 2,25 c. 1,50 m/s (livre 2,1 / 1,4).
+  Banc : jumeau (effortRattrape, cibleLissee, compressionBallon, stylePasse à null) = le 369 au bit ; défaut `890b1b2ca27ba177 /
+  4444b258b63b285a` ; blocs 1, 239, 240.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match

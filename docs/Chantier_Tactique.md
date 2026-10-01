@@ -57,8 +57,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   Mesuré : largeur défensive 40 → 34 m ; centraux 12,4 → 10,8 m du plus proche adversaire ; N_def(10) 1,9 → 2,1.
 - **Ce que la mesure a appris** : la distance des défenseurs venait surtout de l'ATTAQUE adverse — ses pointes vivaient 9-13 m devant
   la ligne, personne n'entrait dans la zone des centraux. D'où le lot 369 (T2).
-- **Reste** : N_def(10) 2,1 contre 4,9 — la ligne vit à 27 m DERRIÈRE le ballon (`bloc.ligne`), le ballon est au bord avant du bloc ; le
-  resserrement autour du ballon (B10 : la densité, l'effet de bord de touche ×1,34-2) est la prochaine loi du T1.
+- **Lot 370 (scellé)** : trois causes trouvées par sonde. (1) La cible des défenseurs CLIGNOTAIT : 117-128 sauts de plus de 3 m par
+  défenseur et par minute (livre : 12-25 changements par minute) — cinq couches la réécrivent après le slot ; `cibleLissee` (0,15 s,
+  14 m/s ; 0,35 s faisait traîner le bloc à 36 m) : 31 sauts par minute. (2) Le corps ne rattrapait pas un retard de 6-12 m (l'entretien à
+  la marche) : `effortRattrape`. (3) Les dix défenseurs s'étageaient UNIFORMÉMENT autour du ballon (un tous les ~3,5 m) quelle que soit
+  la hauteur de ligne : `compressionBallon` (marqueurs et couvreurs à < 20 m se rapprochent du ballon, × compacité). N_def(10) des corps
+  2,1 → 2,5 (bloc 239).
+- **Reste** : N_def(10) 2,3-2,7 contre 4,9 ; marquage des défenseurs 9-13 m contre 5,5-6,4 ; interligne du bloc bas 13,5 contre 5-8.
 
 ### T2 — L'attaque qui s'engage *(en cours)*
 - **Lot 369 (scellé)** : `fixeLigne` (hors appel, la pointe tient la hauteur de la ligne adverse, × rôle et mentalité) et
@@ -73,7 +78,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
 - **Entrées** : mentalite, largeur, rôles (piston, latéral offensif, box-to-box, neuf de surface) ; attributs offTheBall, stamina,
   crossing, heading, jumping.
 
-### T3 — Le style qui change le rythme (style, tempo, mentalité, transition)
+### T3 — Le style qui change le rythme (style, tempo, mentalité, transition) *(en cours)*
+- **Lot 371 (scellé)** : `stylePasse` (terme additif du choix de passe, nul au neutre : longueur idéale 8 → 18 m, coût de la passe en
+  l'air, verticalité, jeu long sur la pointe — selon style et mentalité) ; les presets règlent enfin tempo et mentalité. Bloc 240 :
+  ballons longs direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 m/s (livre 2,1 / 1,4). Audit des 7 presets : séquences
+  de 10+ passes possession 8 c. direct 3,8 ; renversements 0-3 → 5-11 par équipe.
+- **Reste** : la possession du preset possession 53 % (cible 55-65) avec autant de passes que les autres ; les passes vers l'arrière
+  (40-42 % c. 24-28) à mesurer ; le soutien qui suit l'action en direct (vitesse, nombre d'arrivées).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
   tenue, une-touche) et la mentalité (risque) ; le soutien sans ballon SUIT l'action en jeu direct ; les presets règlent tempo et
   mentalité de façon cohérente.
@@ -132,3 +143,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | — | — | Audit des 7 presets ; télémétrie `tactique.js` ; ce cahier |
 | 01/10 | T1 | 368 | Largeur défensive 40 → 34 m ; centraux 12,4 → 10,8 m de l'adversaire |
 | 01/10 | T2 | 369 | Pointe à 7,6 → 4,7 m de la ligne ; centres 8,4 → 18,3 |
+| 01/10 | T1 | 370 | Sauts de cible 117 → 31 par minute ; N_def(10) des corps 2,1 → 2,5. Sorties (non critère) : buts ~4 par équipe, tirs ~19, xG ~3 |
+| 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |
