@@ -151,6 +151,23 @@ joueurs avec leur poste et leur rôle dans les formations ».
   distribution (max 15 c. 13, 10+ : 4 c. 2,5 par match). La queue manque : avec 87 % de passes gardées, une loi géométrique donnerait
   ~28 % de séquences de 10+ — on en compte ~2,5 %. Les séquences meurent d'autre chose que la passe (réception sous pression, duel,
   conduite, sortie). Télémétrie : `passesParSequenceMediane`, `passesParSequenceP90`, `passesParSequenceMax`.
+- **Qui joue avec qui (01/10, possession c. direct et équilibre c. équilibre, 2 × 90 min chacun)** — la structure est INVERSÉE :
+  - ballons reçus par joueur et par 10 min : ailiers 8-9, avant-centre 7,6-8,5, milieux 3,6-6,7 (le MIL C, sentinelle, le moins servi
+    des milieux : 3,6-4,5), latéraux 4,4-6,1, centraux 2,4-3,5, gardien 2,2-3,1 (livre B01 T7 : MC 16,5 > DC 15,5 > LAT 14,8 > AIL
+    11,9 > CF 10,1 > GB 9,8 — l'ordre est l'inverse) ;
+  - paires dominantes : ailier ↔ avant-centre (17-28 par match chacune), milieu latéral → ailier ; aucune paire DC ↔ DC, DC ↔ sentinelle
+    ou gardien ↔ DC dans le top 14 (une seule : GB → DC G, 8) ; passes entre défenseurs (gardien compris) 5-13 % (livre 38 %) ;
+    passes de la ligne d'attaque à elle-même 21-24 % ;
+  - séquences de 6+ passes : l'avant-centre et les ailiers y participent à 73-95 %, les centraux à 25-43 % ;
+  - fin des séquences : la passe interceptée ou coupée 34 % (possession) à 44 % (direct), le ballon libre disputé 12-13 %, le tir 7-11 %,
+    perdu en conduite ou duel 5-10 %, perdu à la réception 4-8 %, les sorties (touche, but, corner) 10-14 % ;
+  - réseau (R13 F1-F6) : 90-99 dyades (livre 103), 1ʳᵉ dyade 4,9-6,9 % (4,3), 5 premières 21-25 % (17), 10 premières 33-39 % (28,9),
+    Herfindahl 0,019-0,023 (0,0168) : trop concentré, sur le trio offensif.
+  Lecture : le ballon file vers le trio offensif et y meurt (passes coupées entre ailiers et avant-centre, dans la zone la plus dense) ;
+  la circulation de relance (centraux, sentinelle, gardien, latéraux), qui fait les longues séquences réelles et 38 % des passes,
+  n'existe presque pas — d'où la queue de distribution coupée. Leviers à sonder : le sens de jeu (`passBias`), la garde de l'occupation
+  (377 : centraux à 26 m derrière le ballon, hors de portée de la passe de recyclage), le rôle des centraux et de la sentinelle comme
+  relais (playmaker_defender, regista), le style (la possession recycle par l'arrière).
 - **Reste** : 3,1-3,3 passes par séquence (livre possession 5-6) ; trop de séquences (~170 par équipe par 90 min c. 105 ± 25) ;
   61 % des passes partent d'un porteur pressé à < 3 m ; le direct garde 36 % de passes vers l'arrière (livre 24-28).
 - **But** : le choix de passe lit le style (longueur, verticalité, jeu long vers l'avant-centre, renversements), le tempo (temps de
