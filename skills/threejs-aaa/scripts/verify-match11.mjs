@@ -8376,5 +8376,37 @@ if (__bloc()) {
     mA.part < 0.45 && mN.part >= 0.45 && mA.g + mA.p >= 12);
 }
 
+if (__bloc()) {
+  // LE BLOC QUI SE RESSERRE (368 — T1 du chantier tactique, B10/B12) : chaque ligne a sa largeur et son gain de coulissement (blocCoulisse),
+  // le posté prend l'homme de sa zone et la distance de marquage suit celle du ballon (marquageElastique). Le contrat, lu par les stats et
+  // la télémétrie : la largeur défensive se resserre d'au moins 3 m (hier ~40 m pour un 4-3-3 ; la loi ~34) et les défenseurs ne sont
+  // pas plus loin de leur homme qu'hier.
+  const { makeStats, statsStep, statsReport } = await import('../assets/starter/src/engine/stats.js');
+  const { makeTactique, tactiqueStep, tactiqueReport } = await import('../assets/starter/src/engine/tactique.js');
+  const mesure = (over) => { let larg = 0, dc = 0, n = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }), S = makeStats(st), T = makeTactique(st);
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); statsStep(S, st); tactiqueStep(T, st); }
+      const R = statsReport(S, st), TR = tactiqueReport(T, st); for (const t of [0, 1]) { larg += R.equipes[t].largeurDefensive; dc += TR.equipes[t].marquage.DC; n++; } }
+    return { larg: larg / n, dc: dc / n }; };
+  const mA = mesure({}), mN = mesure({ blocCoulisse: null, marquageElastique: null });
+  ok(`lot 368 — LE BLOC SE RESSERRE : largeur défensive ${mA.larg.toFixed(1)} m (hier ${mN.larg.toFixed(1)}), centraux à ${mA.dc.toFixed(1)} m du plus proche adversaire (hier ${mN.dc.toFixed(1)})`,
+    mA.larg <= mN.larg - 3 && mA.dc <= mN.dc + 0.5);
+}
+
+if (__bloc()) {
+  // LES POINTES FIXENT LA LIGNE, L'ÉQUIPE SUIT L'ACTION (369 — T2, B09) : hors appel, la pointe tient la hauteur de la ligne adverse
+  // (fixeLigne) et le soutien loin de son poste offensif court le rejoindre selon la transition et le style (monteeOffensive). Mesuré
+  // avant : l'avant-centre à 9-11 m devant la ligne de hors-jeu adverse, remontant à 2,9 m/s. Le contrat : l'écart médian du plus avancé
+  // à la ligne baisse d'au moins 1 m.
+  const { makeTactique, tactiqueStep, tactiqueReport } = await import('../assets/starter/src/engine/tactique.js');
+  const mesure = (over) => { let e = 0, n = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }), T = makeTactique(st);
+      for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); tactiqueStep(T, st); }
+      const TR = tactiqueReport(T, st); for (const t of [0, 1]) { e += TR.equipes[t].ecartPointeLigne; n++; } }
+    return e / n; };
+  const eA = mesure({}), eN = mesure({ fixeLigne: null, monteeOffensive: null });
+  ok(`lot 369 — LES POINTES FIXENT LA LIGNE : le plus avancé à ${eA.toFixed(1)} m de la ligne de hors-jeu adverse (hier ${eN.toFixed(1)})`, eA <= eN - 1);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

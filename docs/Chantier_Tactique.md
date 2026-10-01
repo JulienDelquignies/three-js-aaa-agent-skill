@@ -49,9 +49,20 @@ joueurs avec leur poste et leur rôle dans les formations ».
   bas 5-8) ; coulissement k milieux 0,55-0,75, défenseurs 0,35-0,50 ; largeur défensive ; PPDA du bloc bas qui monte vers 15-17.
 - **Entrées** : hauteurBloc, compacite, marquage (zone ↔ homme), pressing ; attributs positioning / concentration / workRate.
 - **Leviers** : `formation.js` (blocFor, les postes défensifs), `marquage.js`, `interligne.js`, le coulissement côté ballon.
-- **Mesuré à la fin** : *à remplir*.
+- **Lot 368 (scellé)** : `blocCoulisse` (chaque ligne : largeur 34 / 28 / 30 m × compacité, gain 0,42 / 0,65 / 0,5, borné par la
+  touche) et `marquageElastique` (distance au porteur potentiel 0,5 m à 6 m du ballon → 12 m à 30 m ; le posté prend l'homme de sa zone).
+  Mesuré : largeur défensive 40 → 34 m ; centraux 12,4 → 10,8 m du plus proche adversaire ; N_def(10) 1,9 → 2,1.
+- **Ce que la mesure a appris** : la distance des défenseurs venait surtout de l'ATTAQUE adverse — ses pointes vivaient 9-13 m devant
+  la ligne, personne n'entrait dans la zone des centraux. D'où le lot 369 (T2).
+- **Reste** : N_def(10) 2,1 contre 4,9 — la ligne vit à 27 m DERRIÈRE le ballon (`bloc.ligne`), le ballon est au bord avant du bloc ; le
+  resserrement autour du ballon (B10 : la densité, l'effet de bord de touche ×1,34-2) est la prochaine loi du T1.
 
-### T2 — L'attaque qui s'engage
+### T2 — L'attaque qui s'engage *(en cours)*
+- **Lot 369 (scellé)** : `fixeLigne` (hors appel, la pointe tient la hauteur de la ligne adverse, × rôle et mentalité) et
+  `monteeOffensive` (en possession, le soutien à plus de 8 m de son poste offensif court le rejoindre : 4,2 m/s en possession posée →
+  6,6 m/s en contre direct, selon transition et style). Mesuré : l'attaquant le plus avancé 7,6 → 4,7 m de la ligne de hors-jeu
+  adverse ; centres 8,4 → 18,3 par équipe ; buts 1,5 → 1,9.
+- **Reste** : rest defense 7,1 (livre 3,7) ; arrivées dans la surface ; duels aériens.
 - **But** : à la possession installée, les latéraux et les milieux montent, la surface se remplit, les centres arrivent sur des
   attaquants lancés ; la rest defense tombe à ~4.
 - **Indicateurs** : rest defense 3,7 (4-5 en attaque placée) ; arrivées dans la surface au centre (≤ 3-4 dans 90 % des cas, lancées
@@ -116,3 +127,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | Date | Chantier | Lot | Ce qui a bougé |
 |---|---|---|---|
 | 01/10 | — | — | Audit des 7 presets ; télémétrie `tactique.js` ; ce cahier |
+| 01/10 | T1 | 368 | Largeur défensive 40 → 34 m ; centraux 12,4 → 10,8 m de l'adversaire |
+| 01/10 | T2 | 369 | Pointe à 7,6 → 4,7 m de la ligne ; centres 8,4 → 18,3 |

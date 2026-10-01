@@ -14654,6 +14654,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   8 × 90 min : neutres 3/2/3, passes 609, réussite 87 % (inchangés) ; 80 c. 50 : buts 2,5 – 1,3, tirs 14,5 – 5,1 (366 : 11,4 – 8,3), 4/1/3
   (le bruit de 8 matchs). Jumeau (`receptionDuel: null`) = le 366 au bit, défaut inchangé (aucune réception contestée dans l'empreinte) ;
   bloc 236 (contestées perdues 28 % ; hier 56 %).
+- **Chantier tactique (01/10, docs/Chantier_Tactique.md)** — « avoir le côté réaliste du foot à travers les tactiques des coachs en paramètre
+  et les attributs des joueurs avec leur poste et leur rôle ». Les livres (docs/Book_vers_Moteur) donnent ~70 indicateurs chiffrés ;
+  la télémétrie tactique (engine/tactique.js, lecture seule) les mesure ; l'audit des 7 presets (registre sections 9-10) : la hauteur et
+  le pressing mordent, le style, la largeur et le jeu aérien non ; défenseurs à 12-14 m de tout adversaire, N_def(10) 1,9.
+- **Lot 368 — T1, le bloc qui se resserre** : `blocCoulisse` (largeur et gain de coulissement par ligne, bornés par la touche — B10) et
+  `marquageElastique` (B12 : la distance au porteur potentiel suit celle du ballon ; le posté prend l'homme de sa zone). Largeur
+  défensive 41 → 34 m, centraux 11,0 → 10,1 m de l'adversaire (bloc 237). Leçon : la distance venait surtout des pointes adverses.
+- **Lot 369 — T2, les pointes fixent la ligne, l'équipe suit l'action** : `fixeLigne` (B09) et `monteeOffensive` (la montée du soutien
+  selon transition et style : le contre direct sprinte). Mesuré : la cible de l'avant-centre était juste (2 m de la ligne) mais il y
+  remontait à 2,9 m/s, à 14,6 m de son poste. Le plus avancé 7,6 → 4,7 m de la ligne (bloc 238) ; centres 8,4 → 18,3 par équipe.
+  Un piège noté : une greffe collée derrière un commentaire `//` sur la même ligne ne s'exécute pas (le premier essai ne bougeait
+  rien). Banc : jumeau (les quatre clés à null) = le 367 au bit ; défaut `2aa4c1fb23e43f99 / ff4cc6eb77287791` ; blocs 1, 237, 238.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match
