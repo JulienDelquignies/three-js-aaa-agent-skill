@@ -131,6 +131,9 @@ joueurs avec leur poste et leur rôle dans les formations ».
   → 13,8 par match (4 × 90 min, livre 38-50) ; bloc 243.
 - **Reste** : les autres sources de jeu aérien (sorties de but longues, dégagements de la tête) ; le marquage serré qui rend le duel
   possible dès la passe (T1).
+- **Essai annulé (375, centreDosage)** : compter pour moitié le coureur qui arrive dans la note du centre (menaceCentre) ne bouge pas les
+  centres (23 → 22,4 par équipe, livre 9-14) — le choix en valeur attendue (choix.js, cfg.choix) pèse le centre par `centreP` /
+  `centreXg`, à peine par le nombre de cibles. Le volume de centres se règle là, à la CALIBRATION FINALE (les constantes de valeur).
 - **But** : le jeu aérien existe (duels sur ballons longs, centres, dégagements) ; le second ballon se dispute selon le placement.
 - **Indicateurs** : duels aériens 38-50 par match, défenseurs 55,7 % de réussite ; le vainqueur récupère 45 % au milieu (67 % sur
   centre) ; tacles réussis 9,3 par équipe ; glissés 5-7.
