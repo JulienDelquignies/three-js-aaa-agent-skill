@@ -14695,6 +14695,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 386 — la passe en retrait se joue au pied** (01/10 : « vérifie aussi ce que fait le gardien sur les passes en retrait, pour moi il
+  prend le ballon à la main »). Confirmé : 30 retraits sur 30 nommés 'control prise-gardien' (surface : les mains, la scène joue la prise
+  à deux mains), 24 comptés 'arrêt' (le ramassage du ballon mort, match-sim, compté parade) ; le discriminant de tenue (gk._mains, 171)
+  calculé une fois, périmé (vrai dans 14 retraits sur 35). `retraitPied` (loi12.js) : la passe délibérée du pied d'un coéquipier (pas une
+  déviation, sans touche adverse) se contrôle au pied — ni prise, ni arrêt, ni tenue aux gants. Bloc 251 : pris aux mains 30/30 → 0/29,
+  arrêts 24 → 1. Défaut inchangé (pas de retrait dans la fenêtre de l'empreinte) ; banc vert. Deux essais 385 (densité) non scellés.
 - **Lot 384 — T3, le risque a un rôle et un style** (`selection.risqueRole`, selection.termeDe). Le calage de la sélection (267) écrasait
   l'écart de risque ; ρ × 3 × style × rôle du passeur (la profondeur du rôle, le rôle naturel du poste à défaut). Piège rencontré :
   match-config.js porte DEUX `selection: {…}` sur la ligne 801 (la seconde gagne) — la clé insérée dans la première ne faisait rien.

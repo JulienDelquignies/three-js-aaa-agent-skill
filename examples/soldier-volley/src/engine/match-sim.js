@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { huitSecondes } from './temps.js'; import { attenteVivanteStep } from './attente-vivante.js'; import { engageDe, rabatDe } from './engage.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, engageurTient, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique, marquageDe } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js'; import { profondeurRole } from './occupation-role.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js'; import { gardienCloche } from './gardien-cloche.js'; import { blocCoulisse } from './bloc-coulisse.js'; import { zonePrendHomme, distanceElastique, marquageDe } from './marquage-elastique.js'; import { fixeLigneX } from './fixe-ligne.js'; import { disputeAerienneStep } from './dispute-aerienne.js'; import { retraitAuPied } from './loi12.js'; import { profondeurRole } from './occupation-role.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -285,7 +285,7 @@ function assignMatchJobs(st, cfg) {
         const evR = st.events[st.events.length - 1];
         gk._remisePrise = !!(evR && evR.type === 'restart-pris' && evR.by === gk.id && st.t - evR.t < 0.6);
       }
-      gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t);
+      gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t); if (st.full && cfg.retraitPied && gk._retraitPied != null && st.t - gk._retraitPied < 1) gk._mains = false;   /* (386) le retrait reçu au pied : pas de tenue aux gants (Loi 12.2), quel que soit l'état périmé */
       // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 = la bouche du but : CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * (st.full && cfg.gkPied?.avance ? Math.max(4.5, Math.abs(gk.p[0] - g.x)) : 4.5), (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];   // (26/09, cfg.gkPied.avance) le spot n'est JAMAIS derrière lui : reçu à 5,7 m, il poussait vers son but (CSC mesuré, graine 3 t=505)
       if (bdC > 0.85) {
@@ -345,8 +345,8 @@ function assignMatchJobs(st, cfg) {
       if (bd < 0.8 && st.ball.p[1] < 1.2 && bSpd < 8 && (towardGoal || bSpd < 2.5)
         && pitch.inBox(st.ball.p[0], st.ball.p[2], own.sign)
         && (!ownerP || ownerP.team !== gk.team)) {
-        simInternals.receive(st, gk.id, cfg);
-        st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'pieds' });
+        const ret386 = st.full && cfg.retraitPied && retraitAuPied(st, gk, cfg.retraitPied); simInternals.receive(st, gk.id, cfg);
+        if (!ret386) st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'pieds' });   // (386) le retrait n'est pas une parade
         continue;
       }
     }

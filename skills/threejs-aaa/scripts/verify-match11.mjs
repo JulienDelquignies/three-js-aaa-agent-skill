@@ -8612,5 +8612,20 @@ if (__bloc()) {
     A.s10[0] >= N.s10[0] * 1.8 && A.s10[0] > 2 * A.s10[1] && A.rec >= N.rec * 1.1);
 }
 
+if (__bloc()) {
+  // LA PASSE EN RETRAIT SE JOUE AU PIED (386 — Loi 12.2 ; « pour moi il prend le ballon à la main »). Sondé : 30 retraits sur 30 nommés
+  // 'prise-gardien' (les mains), 24 comptés 'arrêt'. Le contrat : aucun retrait du pied d'un coéquipier n'est pris aux mains ni compté arrêt.
+  const mesure = (over) => { let n = 0, prise = 0, arret = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...over }); let prev = -1, w = null;
+      for (let i = 0; i < 2700 * 60; i++) { matchStep(st, 1 / 60, cfg); const c = st.possession?.carrier;
+        if (w && st.t - w.t > 0.5) { const ev = st.events.filter((e) => e.t >= w.t - 0.05 && e.t <= w.t + 0.5 && e.by === w.id); if (ev.some((e) => e.type === 'arrêt')) arret++; if (ev.some((e) => e.tech === 'prise-gardien')) prise++; w = null; }
+        if (c !== prev && c != null && c >= 0 && st.players[c].keeper && !st.restart) { const gk = st.players[c]; let last = null; for (let k = st.events.length - 1; k >= 0; k--) if (st.events[k].type === 'pass') { last = st.events[k]; break; }
+          if (last && st.players[last.by]?.team === gk.team && last.by !== gk.id && last.tech !== 'deviation' && st.t - last.t < 6) { n++; w = { t: st.t, id: gk.id }; } }
+        prev = c; } }
+    return { n, prise, arret }; };
+  const A = mesure({}), N = mesure({ retraitPied: null });
+  ok(`lot 386 — LE RETRAIT SE JOUE AU PIED : ${A.n} retraits, pris aux mains ${A.prise} (hier ${N.prise}/${N.n}), comptés arrêt ${A.arret} (hier ${N.arret}) — 2 × 45 min`, A.n >= 10 && A.prise === 0 && A.arret <= 2 && N.prise >= N.n * 0.5);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -1,3 +1,4 @@
+import { retraitAuPied } from './loi12.js';
 import { gpSansTouche } from './grand-pont.js'; import { lacetBorne } from './passe-faisable.js'; import { gardeTouche, mortDe, orientePoursuite } from './prise-suivie.js';
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js'; import { presseLueDe } from './presse-lue.js'; import { serrePorteurDe } from './serre.js';   import { piqueTenteDe, piqueReussiteDe } from './tacle-debout.js'; import { respireDe } from './porte-respire.js'; import { corpsArret } from './corps-arret.js'; // le TEMPO (149) — sans tactiques : equilibre, l'identité
@@ -253,7 +254,7 @@ function receive(st, id, cfg = RONDO) {
     st.hold = 0; st.pressure = 0;
     p.intent = null; p.anchorHint = null; if (st.full && cfg.orientationPasse) p._retour = null;   /* (395) le retournement d'une autre possession ne pilote pas celle-ci */  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
     // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH (les gardiens n'existent pas au rondo) ; le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93).
-    if (p.keeper) {
+    if (p.keeper && !(st.full && cfg.retraitPied && retraitAuPied(st, p, cfg.retraitPied) && ((p._retraitPied = st.t), true))) {   // (386) le retrait du pied d'un coéquipier se contrôle au pied (loi12.js)
       if (st.full && cfg.parades !== false && busteBlock(st, p, cfg)) return;
       st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
       if (st.ball.owner !== id) st.ball.possess(id);
