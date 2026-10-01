@@ -8481,5 +8481,21 @@ if (__bloc()) {
   ok(`lot 374 — LE LONG BALLON SE DISPUTE : ${A} duels aériens (hier ${N}, 2 × 30 min)`, A >= N * 1.4);
 }
 
+if (__bloc()) {
+  // LE CONTRE-PRESS EST UNE DÉCISION, LE BLOC SE REFORME SELON LA CONSIGNE (376 — T4, B11 X13-17). Audit : contre-pressings ~60-100 par
+  // équipe à chaque perte en bloc compact (livre 20-30) ; le perdant ne reculait que de 0,2-1,9 m en 3 s. Le contrat : l'équipe équilibre
+  // contre-presse au moins 25 % de moins qu'hier, et le bloc bas recule plus en 3 s qu'hier.
+  const { makeTactique, tactiqueStep, tactiqueReport } = await import('../assets/starter/src/engine/tactique.js');
+  const mesure = (preset, over) => { let cp = 0, rp = 0, n = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed, tactics: [preset, 'equilibre'] }), cfg = matchCfg({ chrono: { periodes: 2, duree: 2700, pause: 10 }, ...over }), T = makeTactique(st);
+      for (let i = 0; i < 1200 * 60; i++) { matchStep(st, 1 / 60, cfg); tactiqueStep(T, st); }
+      const E = tactiqueReport(T, st).equipes[0]; cp += E.contrePressing; rp += E.repli3s ?? 0; n++; }
+    return { cp: cp / n, rp: rp / n }; };
+  const N0 = { contrePressChoix: null, repliConsigne: null };
+  const eA = mesure('equilibre', {}), eN = mesure('equilibre', N0), bA = mesure('blocBas', {}), bN = mesure('blocBas', N0);
+  ok(`lot 376 — LE CONTRE-PRESS EST UNE DÉCISION : équilibre ${eA.cp.toFixed(1)} contre-pressings (hier ${eN.cp.toFixed(1)}) ; bloc bas ${bA.cp.toFixed(1)} (hier ${bN.cp.toFixed(1)}), recul en 3 s ${bA.rp.toFixed(2)} m (hier ${bN.rp.toFixed(2)})`,
+    eA.cp <= eN.cp * 0.75 && bA.rp > bN.rp);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

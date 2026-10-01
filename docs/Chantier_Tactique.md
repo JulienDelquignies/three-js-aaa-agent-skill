@@ -123,7 +123,13 @@ joueurs avec leur poste et leur rôle dans les formations ».
   renversements 1 toutes les 8-14 possessions ; R_fwd au tiers propre 0,20-0,30 (possession) / 0,45-0,60 (direct).
 - **Entrées** : style, tempo, mentalite, transition, relation ; attributs vision, passing, longShots (passe longue), decisions.
 
-### T4 — Les transitions et le replacement
+### T4 — Les transitions et le replacement *(en cours)*
+- **Lot 376 (scellé)** : `contrePressChoix` (le contre-press est une DÉCISION : assez de siens près du ballon, 7 → 4, et le plus proche à
+  portée de contact, 3 → 7 m, × pressing — hier l'horloge partait à chaque perte en bloc compact) et `repliConsigne` (après la perte, qui ne
+  chasse pas et a sa cible derrière lui y court : pressing faible → sprint 6,6 m/s, fort → trot 3,6). Mesuré (2 × 90 min par preset) :
+  contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5, gegenpressing 100 (inchangé) ; recul du bloc bas en 3 s 1,8 → 2,6 m (bloc 244).
+- **Reste** : la meute à +1,5 s 2,2-2,8 (livre 3-5 pour qui contre-presse) ; le gegenpressing à 100 contre-pressings ; le replacement
+  encore lent (le « rejoint au trot » 338 et l'entretien gouvernent hors de la fenêtre).
 - **But** : le contre-pressing dépend du pressing et de la transition ; le bloc se reforme plus ou moins vite selon la consigne ; la
   contre-attaque va vite à 3-5 joueurs.
 - **Indicateurs** : contre-pressing 20-30 par équipe, premier contact 0,9-1,6 s, 3-5 joueurs à < 10 m à t₀ + 1,5 s ; bloc reformé
@@ -186,4 +192,5 @@ joueurs avec leur poste et leur rôle dans les formations ».
 | 01/10 | T2 | 372 | Centres ×2-4 ; sur centre, duels aériens gagnés par l'attaque 1 → 10 |
 | 01/10 | T2 | 373 | Latéraux en attaque 44 → 70 m ; LAT 12 → 8,4 m de l'adversaire ; N_def(10) 2,7 ; centres 25 (trop) |
 | 01/10 | T7 | 374 | Duels aériens 7,5 → 13,8 par match |
+| 01/10 | T4 | 376 | Contre-pressings bloc bas 14,5 → 3, équilibre 61,5 → 32,5 ; repli bloc bas 1,8 → 2,6 m en 3 s |
 | 01/10 | T3 | 371 | Longues direct 25,5 % c. possession 11,1 % ; direct speed 2,25 c. 1,50 ; passes 440-465 ; ballon en jeu 57-65 % ; sorties de but 16-21 |

@@ -14690,6 +14690,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   les passes basses ; le défenseur le plus proche attaque le receveur côté but, même en retard (marge 3 s ; à 0,6 s : 20 cas sur 67, le
   défenseur à 6 m au toucher). Duels aériens 7,5 → 13,8 par match. Bloc 243 (duels aériens seuls — les têtes non disputées baissent
   quand le ballon se dispute). Jumeau = le 373 au bit ; défaut `467fb09294919a02 / f7712962f22750fb`.
+- **Lot 376 — T4, le contre-press est une décision, le bloc se reforme selon la consigne** : `contrePressChoix` (contrepress.js) et
+  `repliConsigne` (repli-consigne.js — 01/10 : « une équipe qui presse moins doit réformer son bloc plus rapidement ? »). Contre-pressings
+  bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
+  3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
+  son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
 - **Lu en route (sondes pertes et ballons libres, 4 × 90 min) : le ballon ne SORT pas.** Les pertes ont un ordre de grandeur plausible (≈ 150
   passes ratées, 56 tacles gagnés par match ; l'écart aux chiffres Opta est surtout de définition) ; les « ballons libres » (450 par match) sont un
   artefact de sonde : le moteur passe en phase 'loose' à CHAQUE touche de conduite ; les vrais ballons échappés sont ~200 par match
