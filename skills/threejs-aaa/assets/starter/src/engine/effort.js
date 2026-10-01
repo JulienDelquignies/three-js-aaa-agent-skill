@@ -71,6 +71,12 @@ export function intentionDe(p, st, cfg, K, bursting) {
   if (p._efLigne && p._efLigne.until > st.t && g > (K.tolOff ?? 1.2)) { p._reg = 'ligne'; return { v: p._efLigne.v, eps: K.epsActif ?? 0.6, reg: 'ligne' }; }   // (273) la ligne rejoint sa bande en course avant / recul organisé (ligne.js, sous cfg.ligne seulement)
   p._reg = 'ent';
   const vEnt = st.possession?.team === p.team ? (K.vEnt ?? 1.4) : (K.vEntDef ?? K.vEnt ?? 1.4);   // l'entretien du bloc SANS ballon est une marche rapide (Bible 10 : 1,8-2,6 m/s), celui du soutien AVEC ballon une marche
+  // (370, cfg.effortRattrape — T1 du chantier tactique) LE RETARD SE RATTRAPE : l'entretien suivait le slot à SA vitesse, plancher la marche —
+  // sans saut du slot, le corps qui avait pris 6-12 m de retard restait au pas (mesuré : corps → cible p50 9,3 m pour les marqueurs et la
+  // couverture ; N_def(10) des corps 2,1 contre 3,2 sur les cibles). Au-delà de `des` m, le joueur comble l'écart en `tau` s (× workRate),
+  // borné au coulissement actif. Absente : l'entretien d'hier, au bit.
+  const RA = st.full && cfg.effortRattrape;
+  if (RA && g > (RA.des ?? 2.5)) { p._reg = 'rattrape'; return { v: Math.max(vEnt, Math.min(K.vActif ?? 4.2, Math.max(tSpd * 1.15 + 0.4, g / (RA.tau ?? 2) * (p.skill?.workF ?? 1)))), eps: K.epsActif ?? 0.6, reg: 'rattrape' }; }
   return { v: Math.max(vEnt, Math.min(K.vActif ?? 4.2, tSpd * 1.15 + 0.4)), eps: K.epsEnt ?? 0.45, reg: 'ent' };
 }
 
