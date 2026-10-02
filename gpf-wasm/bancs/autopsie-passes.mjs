@@ -33,7 +33,7 @@ const t0 = performance.now();
 for (let pas = 0; pas < MIN * 6000; pas++) {
   if (pas % 10 === 0) {
     const e = corps.etat();
-    if (cerveau && e.enJeu && !e.cpa) for (const i of cerveau.decider(e, dernierToucheur)) {
+    if (cerveau && e.enJeu && !e.cpa) for (const i of cerveau.decider(e)) {
       corps.intention(i.id, i);
       // L'INSTANT DE DÉCISION : la première fois que le porteur reçoit l'ordre de passer à ce receveur
       const avant = derniereIntention.get(i.id);
@@ -47,12 +47,13 @@ for (let pas = 0; pas < MIN * 6000; pas++) {
       }
       derniereIntention.set(i.id, i);
     }
-    if (enVol && cerveau) intentionsEnVol.push(derniereIntention.get(enVol.cibleCorps)?.genre ?? -1);
+    if (enVol && cerveau) intentionsEnVol.push(derniereIntention.get(enVol.cibleCorps)?.job ?? '—');
   }
   corps.avancer(1);
   const ap = corps.etat();
   const parId = new Map(ap.joueurs.map(j => [j.id, j]));
-  for (const ev of corps.journal()) {
+  const evs = corps.journal(); cerveau?.observer(evs);
+  for (const ev of evs) {
     if (ev.type === EV.BUT) butsJournal[ev.equipe]++;
     if (ev.type === EV.PASSE) {
       const pa = parId.get(ev.joueur), ci = parId.get(ev.b);
@@ -130,5 +131,5 @@ if (cerveau) {
   console.log(`  à la décision : au calme ${pc(dd.filter(p => p.calmeDecision).length, dd.length)} · tenue médiane ${q(dd.map(p => p.tenueDecision), 0.5)} s · porte médiane ${q(dd.map(p => p.porteDecision), 0.5)} s · âge de l'arbitrage médian ${q(dd.map(p => p.arbAge), 0.5)} s`);
   for (const [a, b] of [[0, 1.5], [1.5, 3], [3, 99]]) { const s = dd.filter(p => p.advDecision >= a && p.advDecision < b); console.log(`    adversaire à ${a}-${b} m à la décision : ${s.length} passes, réussite ${pc(s.filter(ok).length, s.length)}, délai médian ${q(s.map(p => p.latence), 0.5)} s, à la frappe ${q(s.map(p => p.pressionPasseur), 0.5)} m`); }
   const genres = {}; for (const p of jugees) for (const g of p.intentionsDuReceveur ?? []) genres[g] = (genres[g] ?? 0) + 1;
-  console.log(`  intentions du receveur pendant le vol (passes jugées) : ${JSON.stringify(genres)} (1 aller, 2 presser, 3 passer, 4 tirer, 5 conduire)`);
+  console.log(`  métier du receveur pendant le vol (passes jugées, le cerveau) : ${JSON.stringify(genres)}`);
 }

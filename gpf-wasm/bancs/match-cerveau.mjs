@@ -14,7 +14,9 @@ const corps = await chargerLeCorps();
 corps.lancer({ graine: GRAINE, intentions: true });
 const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE, tactiques: TACS }) : null;
 
-const f = { buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
+const NOMS = Object.fromEntries(Object.entries(GESTE).map(([k, v]) => [v, k.toLowerCase()]));
+const touches = [];   // l'historique des touches (pour l'origine des buts)
+const f = { origines: {}, surPasse: 0, butsJeu: 0, csc: [0, 0], buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
 const PASSES = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE]);
 let dernier = null, passeEnCours = null;
 // LE DIAGNOSTIC DES PASSES : la dernière intention posée par joueur, et pour chaque passe ce que le cerveau voulait
@@ -29,16 +31,31 @@ for (let tick = 0; tick < MIN * 600; tick++) {
   const e = corps.etat();
   if (cerveau && e.enJeu && !e.cpa) {
     const a = performance.now();
-    for (const i of cerveau.decider(e, dernier?.equipe ?? null)) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
+    for (const i of cerveau.decider(e)) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
     tDecide += performance.now() - a; nDecide++;
   }
   corps.avancer(10);
   const apres = corps.etat();
-  for (const ev of corps.journal()) {
-    if (ev.type === EV.BUT) f.buts[ev.equipe]++;
+  const evs = corps.journal(); cerveau?.observer(evs);
+  for (const ev of evs) {
+    if (ev.type === EV.BUT) {
+      f.buts[ev.equipe]++; if (ev.a === 1) f.csc[ev.equipe]++;
+      // L'ORIGINE DU BUT : le geste de la dernière touche de l'équipe qui marque, et la passe décisive (la touche qui précède
+      // la série du buteur est une passe d'un coéquipier — le §6 du cadrage vise ≈ 75 % de buts sur passe)
+      if (ev.a !== 1) {
+        const hist = touches.filter(t => t.t <= ev.t);
+        let i = hist.length - 1; while (i >= 0 && hist[i].equipe !== ev.equipe) i--;
+        const buteur = i >= 0 ? hist[i] : null;
+        f.origines[buteur ? (NOMS[buteur.b] ?? buteur.b) : '?'] = (f.origines[buteur ? (NOMS[buteur.b] ?? buteur.b) : '?'] ?? 0) + 1;
+        let j = i; while (j >= 0 && hist[j].joueur === buteur?.joueur) j--;
+        if (j >= 0 && hist[j].equipe === ev.equipe && (PASSES.has(hist[j].b) || hist[j].b === GESTE.TETE)) f.surPasse++;
+        f.butsJeu++;
+      }
+    }
     else if (ev.type === EV.FAUTE) { f.fautes[ev.equipe]++; if (ev.a === 2) f.jaunes[ev.equipe]++; if (ev.a === 3) f.rouges[ev.equipe]++; }
     else if (ev.type === EV.HORS_JEU) f.horsJeu[ev.equipe]++;
     else if (ev.type === EV.TOUCHE) {
+      touches.push(ev); if (touches.length > 64) touches.shift();
       if (ev.b === GESTE.TIR) f.tirs[ev.equipe]++;
       // une passe se juge à la touche suivante d'un AUTRE joueur : un coéquipier = réussie
       if (passeEnCours && ev.joueur !== passeEnCours.joueur) {
@@ -101,9 +118,10 @@ const med = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s
 const k = 90 / MIN, pc = (a, b) => (b ? (100 * a / b).toFixed(0) : '—');
 const tot = f.poss[0] + f.poss[1];
 console.log(`MATCH ${MODE === 'cerveau' ? 'NOTRE CERVEAU' : 'LEUR IA'} — ${MIN} min de jeu, graine ${GRAINE}${cerveau ? `, tactiques ${TACS.join(' c. ')}` : ''} (${((performance.now() - t0) / 1000).toFixed(0)} s de calcul${cerveau ? `, cerveau ${(tDecide / Math.max(1, nDecide)).toFixed(2)} ms par décision` : ''})`);
-console.log(`  score ${f.buts[0]}-${f.buts[1]} · par 90 min : buts ${((f.buts[0] + f.buts[1]) * k).toFixed(1)} · tirs ${((f.tirs[0] + f.tirs[1]) * k).toFixed(0)}`);
+console.log(`  score ${f.buts[0]}-${f.buts[1]}${f.csc[0] + f.csc[1] ? ` (dont ${f.csc[0] + f.csc[1]} contre son camp)` : ''} · par 90 min : buts ${((f.buts[0] + f.buts[1]) * k).toFixed(1)} · tirs ${((f.tirs[0] + f.tirs[1]) * k).toFixed(0)}`);
 const effMin = enJeu / 600;
 console.log(`  passes ${f.passes[0]} / ${f.passes[1]} (réussite ${pc(f.reussies[0], f.passes[0])} % / ${pc(f.reussies[1], f.passes[1])} %) · par 90 min ${((f.passes[0] + f.passes[1]) * k).toFixed(0)} · temps de jeu effectif ${pc(enJeu, MIN * 600)} % → ${((f.passes[0] + f.passes[1]) / Math.max(effMin, 1e-9)).toFixed(1)} passes par minute effective (réel ≈ 17 : ≈ 1 000 en ≈ 58 min)`);
+console.log(`  buts : ${JSON.stringify(f.origines)} (geste de la dernière touche du buteur) · sur passe ${pc(f.surPasse, f.butsJeu)} % (réel ≈ 75 %)`);
 console.log(`  possession ${pc(f.poss[0], tot)} % / ${pc(f.poss[1], tot)} % · fautes ${f.fautes.join('/')} · jaunes ${f.jaunes.join('/')} · rouges ${f.rouges.join('/')} · hors-jeu ${f.horsJeu.join('/')}`);
 console.log(`  copains : ballon à > 1,5 m pendant ${pc(conduites.loin, conduites.total)} % des conduites (${conduites.total} échantillons), décalage latéral médian ${med(conduites.lateral).toFixed(2)} m ; porteur déclaré : ${pc(conduites.porteLoin, conduites.porteTotal)} % (${conduites.porteTotal})`);
 console.log(`  téléportations (> 3 m en 100 ms, jeu en cours) : ${sauts} · empreinte finale ${empreinte}`);

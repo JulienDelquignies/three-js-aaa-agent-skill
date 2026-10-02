@@ -98,13 +98,20 @@ Un porteur que le cerveau n'a pas encore vu (le ballon vient d'arriver, son inte
 
 Le **journal** (`gf_events`) note chaque touche (dédoublonnée : le porteur « touche » le ballon à chaque pas), but (buteur, contre son camp), faute (gravité, victime, penalty), hors-jeu, coup de pied arrêté, et chaque **passe au contact** (le destinataire que le corps vise vraiment, la force de la touche).
 
+- `contrat.mjs` : le contrat du corps, sans dépendance — les constantes (intentions, passes, événements, gestes), la lecture de l'état et du journal, la pose d'une intention. La page et le cerveau empaqueté le partagent.
 - `corps.mjs` : la couche JavaScript du module : lancer, poser les intentions, avancer, lire l'état et le journal.
 - `cerveau.mjs` : **notre cerveau** (le moteur de match de la skill) aux commandes.
   - À chaque tick de 100 ms, il reçoit le monde du corps : positions, vitesses, regards, ballon, possession.
   - Il décide avec `assignMatchJobs`, les couches de `movePlayers`, `arbitre` et `choosePass`, en respectant ses portes de tenue du ballon.
   - Ses décisions repartent en intentions. Elles lui coûtent 0,9 ms par tick.
+  - Il lit le journal du corps (`observer`). Il en tire la passe en vol (le cerveau fait attaquer sa passe au receveur et y fait réagir la défense) et la tenue du porteur (`st.hold`, comptée depuis sa première touche : la possession déclarée par le corps clignote quand le ballon s'écarte d'un pas).
+  - Il respecte les limites du corps : la ligne vers les gardiens est fermée, car leur gardien ne sait pas jouer une passe en retrait.
+  - Il parle les gestes du corps : la « longue » est la passe dans la course, la « haute » le ballon levé.
+- `empaqueter.sh` : le cerveau en un seul module ES (`out/cerveau.mjs`, 539 Ko), sans le module WebAssembly, pour la page. `bancs/paquet.mjs` garde le paquet : il joue le même match que les sources, au bit près.
 - `bancs/obeissance.mjs` : le corps obéit-il ? Chaque intention est comparée au même match sans elle.
 - `bancs/match-cerveau.mjs` : un match, avec la feuille de match et les critères du cadrage : copains avec le ballon, téléportations, temps de jeu effectif. Il se garde lui-même : le journal doit retrouver le score du moteur, et une empreinte de l'état final dit si deux bancs ont joué le même match.
+- `bancs/autopsie-tirs.mjs` : chaque tir. Le banc mesure l'xG de référence de la skill, la pression, les défenseurs dans le triangle, le gardien, la vitesse et le cadrage, puis l'issue. Il sépare ainsi les occasions, la frappe et le gardien.
+- `bancs/autopsie-buts.mjs` : les touches des 6 secondes qui précèdent chaque but.
 - `bancs/autopsie-passes.mjs` : chaque passe, de la frappe (au pas de 10 ms) à la touche suivante. Pour chacune, le banc mesure le dégagement de la ligne, la pression sur le passeur et sur le receveur, la vitesse du ballon, puis l'issue. Pour une passe du cerveau, il note aussi l'instant de la décision et le délai jusqu'à la frappe. Il sépare ainsi le **choix** de la passe de son **exécution**.
 
 ### Mesures du 2 octobre (graine 7 pour l'obéissance ; 3 graines × 15 min pour le match)
@@ -137,6 +144,28 @@ Le volume de passes « par 90 min » trompe : notre ballon est en jeu 91 % du te
 - Le cerveau décidait avec l'adversaire à 1,7 m, qui arrivait à 5 m/s. Le corps met 0,4 s à armer la frappe.
 - Le cerveau de la skill juge le calme sur l'instant, à 1,8 m, réglage fait pour ses propres corps. `cerveau.mjs` le juge désormais **à la frappe** : chacun est projeté de 0,4 s.
 - Résultat : décision à 2,4 m, frappe à 1,3 m, réussite de 71 % à 75 %.
+
+**D'où venaient les buts** (`autopsie-tirs.mjs` et `autopsie-buts.mjs`, 4 graines × 45 min) :
+
+- **Nos tirs étaient réalistes.** 42 tirs, xG de référence ≈ 0,10 par tir, 6 buts pour 5,2 attendus. Leur gardien arrête 70 % des tirs cadrés, comme en vrai.
+- **9 buts sur 15 étaient contre notre camp.** C'étaient des passes en retrait au gardien. La « courte » de 24 m part à 29 m/s et monte à 2 m. Le gardien est planté : la règle lui interdit les mains, et son moteur ne sait pas la jouer du pied.
+- Avec la ligne vers les gardiens fermée et la passe en vol rendue au cerveau : **0 contre-son-camp** sur 180 min.
+
+| Match, notre cerveau (4 graines × 45 min) | avant | après | réel visé |
+|---|---|---|---|
+| buts par 90 min | 7,5, dont 4,5 contre son camp | 7, dont 0 | 2,75 |
+| tirs par 90 min | 23 | 21,5 | 26 ± 7 |
+| buts venus d'un tir | 40 % | 93 % | — |
+| buts sur passe | — | 25 % | ≈ 75 % |
+| passes par minute de jeu effectif | 18,8 | 19,5 | ≈ 17 |
+| passes réussies | 75 % | 76 % | 80-85 % |
+
+Restent ouverts :
+
+- **La conversion des tirs : 30 %.** Notre xG de référence des tirs a-t-il changé, ou est-ce le gardien ? C'est la prochaine autopsie.
+- **Les buts en solo.** 75 % de nos buts ne suivent pas une passe.
+- **Le temps de jeu effectif : 91 %.** Les coups de pied arrêtés repartent trop vite.
+- **Les fautes : environ 10 par 90 min**, contre 21,5 en vrai.
 
 ## Licences
 

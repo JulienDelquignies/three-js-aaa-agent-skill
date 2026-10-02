@@ -20,7 +20,7 @@ import { movePlayers } from '../skills/threejs-aaa/assets/starter/src/engine/mov
 import { arbitre } from '../skills/threejs-aaa/assets/starter/src/engine/menace.js';
 import { choosePass } from '../skills/threejs-aaa/assets/starter/src/engine/rondo.js';
 import { BallBody } from '../skills/threejs-aaa/assets/starter/src/engine/ball-body.js';
-import { INTENTION, PASSE } from './corps.mjs';
+import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 
 const GPF = { hx: 55, hy: 36 };
 
@@ -40,6 +40,19 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
   let cerveauDe = null, corpsDe = null;
   /** LA POSSESSION EN COURS, côté cerveau : son début, la tenue tirée au calme, l'arbitrage mémorisé, l'intention adoptée. */
   let poss = null;
+  /** CE QUE LE JOURNAL DU CORPS APPREND AU CERVEAU (`observer`) :
+   *  · la dernière équipe à toucher le ballon ;
+   *  · LE TENEUR — le dernier joueur à l'avoir touché, et depuis quand : la tenue du porteur (`st.hold`) se compte de là.
+   *    La possession que déclare le corps clignote quand le ballon s'écarte d'un pas en conduite ; le journal, non ;
+   *  · LA PASSE EN VOL — du contact (l'événement PASSE) à la touche d'un autre joueur. Le cerveau de la skill fait attaquer
+   *    sa passe au receveur et y fait réagir la défense (`st.phase = 'flight'`, `st.pass`) ; sans elle, il voyait un ballon
+   *    libre et renvoyait le receveur à son poste pendant le vol — mesuré : 221 intentions « aller » sur 224 vols. */
+  let dernierToucheur = null, teneur = { id: null, t: 0 }, vol = null;
+  /** LE GARDIEN DU CORPS NE REÇOIT PAS LA PASSE EN RETRAIT : la règle lui interdit les mains, et le moteur ne lui a pas appris
+   *  à la jouer du pied (leur propre IA ne lui passe presque jamais : 0,3 % de ses passes). Mesuré, sur 45 min × 3 graines :
+   *  32 passes au gardien (4,1 %), 4 dans nos filets — la « courte » de 24 m part à 29 m/s, monte à 2 m, et passe au-dessus du
+   *  gardien planté. La ligne vers les gardiens est donc fermée au cerveau (`st.laneVeto`, le veto de sa propre sélection). */
+  let vetoGardiens = null;
   /** LA LATENCE DU CORPS : entre l'ordre de passer et la frappe, le corps de Gameplay Football met 0,4 s — son geste s'arme
    *  (médiane ; p25 0,3, p75 0,5 — `bancs/autopsie-passes.mjs`, 3 graines). Le cerveau de la skill juge le calme sur l'instant
    *  (`calmFoe`), réglé pour ses corps à lui ; ici on le juge À LA FRAPPE : où seront le ballon et l'adversaire quand le ballon
@@ -68,10 +81,30 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         cerveauDe.set(j.id, best); corpsDe.set(best.id, j.id);
       }
     }
+    vetoGardiens = Object.fromEntries(st.players.filter(q => q.keeper).map(q => [q.id, Infinity]));
+  }
+
+  /** LA PASSE EN VOL, dans le repère du cerveau, au premier tick qui suit le contact : d'où elle part, où le corps la joue
+   *  (AI_GetPass : le receveur, sa vitesse × la durée de passe du moteur, et pour la « longue » 20 % de la distance vers le
+   *  but adverse), son style, sa durée. */
+  function volDuCerveau(etat) {
+    const P = etat.joueurs.find(j => j.id === vol.passeur), R = etat.joueurs.find(j => j.id === vol.cible);
+    const qP = cerveauDe.get(vol.passeur), qR = cerveauDe.get(vol.cible);
+    if (!P || !R || !qP || !qR || qP.team !== qR.team) return null;
+    const dt = Math.max(0, etat.t / 1000 - vol.t);
+    const ox = etat.ballon[0] - etat.ballonV[0] * dt, oy = etat.ballon[1] - etat.ballonV[1] * dt;
+    const d = Math.hypot(R.x - ox, R.y - oy), T = Math.pow(Math.min(1, Math.max(0, 0.3 + d * 0.05)), 0.7) * 0.7;
+    let ax = R.x + R.v[0] * T, ay = R.y + R.v[1] * T;
+    if (vol.geste === GESTE.PASSE_LONGUE) ax += (P.equipe === 0 ? 1 : -1) * d * 0.2;
+    const vh = Math.hypot(etat.ballonV[0], etat.ballonV[1]);
+    const [lx, lz] = versCerveau(ax, ay), [x0, z0] = versCerveau(ox, oy);
+    const L = Math.hypot(lx - x0, lz - z0);
+    return { from: qP.id, to: qR.id, lead: [lx, 0, lz], style: vol.geste === GESTE.PASSE_HAUTE ? 'lofted' : L > 13 ? 'driven' : 'ground',
+      t: vol.t, flight: (L / Math.max(4, vh * SX)) * 1.15, origin: [x0, z0], ...(vol.geste === GESTE.PASSE_LONGUE ? { through: true } : {}) };
   }
 
   /** LE MONDE DU CORPS, prêté au cerveau. */
-  function preter(etat, dernierToucheur) {
+  function preter(etat) {
     st.t = etat.t / 1000;
     for (const j of etat.joueurs) {
       const q = cerveauDe.get(j.id); if (!q) continue;
@@ -88,30 +121,49 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
     const { equipe, joueur } = etat.possession;
     const porteurCorps = equipe >= 0 && joueur >= 0 ? etat.joueurs.filter(j => j.equipe === equipe)[joueur] : null;
     const porteur = porteurCorps ? cerveauDe.get(porteurCorps.id) : null;
-    const avant = st.possession.carrier;
+    st.pass = null;
     if (porteur) {
       st.ball.possess(porteur.id);
       st.possession = { team: porteur.team, carrier: porteur.id };
       st.phase = 'carry';
-      if (avant !== porteur.id) { st.hold = 0; st._possChangeAt = st.t; porteur._controleAt = st.t; }
+      // la tenue se compte depuis sa première touche (le journal), pas depuis le dernier clignotement de la possession
+      const depuis = teneur.id === porteurCorps.id ? teneur.t : st.t;
+      st.hold = Math.max(0, st.t - depuis); porteur._controleAt = depuis;
+      vol = null;
+    } else if (vol && etat.enJeu && !etat.cpa && (vol.pass ??= volDuCerveau(etat))) {
+      st.phase = 'flight'; st.pass = vol.pass;
+      st.possession = { team: st.players[vol.pass.from].team, carrier: -1 };
+      st.lastPasser = vol.pass.from; st.hold = 0;
     } else {
       st.possession = { team: dernierToucheur ?? st.lastTouch ?? 0, carrier: -1 };
-      st.phase = 'loose';
+      st.phase = 'loose'; st.hold = 0;
     }
     if (dernierToucheur === 0 || dernierToucheur === 1) st.lastTouch = dernierToucheur;
-    st.pass = null; st.restart = null; st._whistle = null; st._faute = null;
+    st.restart = null; st._whistle = null; st._faute = null;
+    st.laneVeto = vetoGardiens;
     st._decide = true;
   }
 
   return {
     st,
+    /** Le journal du corps (`corps.journal()`), à chaque lecture : touches, passes, arrêts de jeu. */
+    observer(evenements) {
+      for (const ev of evenements) {
+        if (ev.type === EV.TOUCHE) {
+          dernierToucheur = ev.equipe;
+          if (ev.joueur !== teneur.id) teneur = { id: ev.joueur, t: ev.t / 1000 };
+          if (vol && ev.joueur !== vol.passeur) vol = null;
+        } else if (ev.type === EV.PASSE) vol = { passeur: ev.joueur, cible: ev.b, geste: ev.a, t: ev.t / 1000, pass: null };
+        else if (ev.type === EV.BUT || ev.type === EV.FAUTE || ev.type === EV.HORS_JEU || ev.type === EV.CPA) vol = null;
+      }
+    },
     /**
-     * Les intentions d'un tick. `etat` = corps.etat() ; `dernierToucheur` = l'équipe de la dernière touche (le journal).
+     * Les intentions d'un tick. `etat` = corps.etat() ; le journal arrive par `observer`.
      * Rend [{ id, genre, x, y, vitesse, cible, puissance, drapeaux }] pour les joueurs des `equipes` pilotées.
      */
-    decider(etat, dernierToucheur = null) {
+    decider(etat) {
       if (!cerveauDe) apparier(etat);
-      preter(etat, dernierToucheur);
+      preter(etat);
       matchInternals.assignMatchJobs(st, cfg);
       // les couches de placement qui vivent dans le mouvement (zone-homme, occupation, compression, cible lissée…) :
       // on les laisse écrire la cible et la vitesse voulue ; le pas qu'elles font faire au monde prêté est jeté
@@ -126,8 +178,8 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         const t = q.target ?? q.p;
         const [x, y] = versCorps(t[0], t[2]);
         const voulue = Math.hypot(q._wx ?? 0, q._wz ?? 0) / SX;
-        if (q.job === 'press') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8 });
-        else out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.max(1.5, Math.min(8, voulue || 5)) });
+        if (q.job === 'press') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: q.job });
+        else out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.max(1.5, Math.min(8, voulue || 5)), job: q.job });
       }
       return out;
     },
@@ -164,10 +216,11 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
     poss.trace.choix = choix; poss.trace.arbAge = st.t - poss.arb.t;
     if (choix === 'passe' || choix === 'centre') {
       const p = choosePass(st, cfg);
-      const cible = p?.to && p.to.id >= 0 ? corpsDe.get(p.to.id) : null;
+      const cible = p?.to && p.to.id >= 0 && !p.to.keeper ? corpsDe.get(p.to.id) : null;
       if (cible != null) {
-        const loin = (p.dist ?? 0) > 30;
-        const drapeaux = p.style === 'lofted' || p.style === 'chip' || choix === 'centre' ? PASSE.HAUTE : loin ? PASSE.LONGUE : PASSE.COURTE;
+        // LES GESTES DU CORPS (AI_GetAutoPass) : la « courte » au pied ; la « longue » DANS LA COURSE (même force, cible
+        // avancée de 20 % vers le but adverse — pas une passe longue) ; la « haute » levée
+        const drapeaux = p.through ? PASSE.LONGUE : p.style === 'lofted' || p.style === 'chip' || choix === 'centre' ? PASSE.HAUTE : PASSE.COURTE;
         const i = { genre: INTENTION.PASSER, cible, drapeaux };
         poss.intention = { i, jusqua: st.t + (cfg.intentTtl ?? 0.9) };
         return i;

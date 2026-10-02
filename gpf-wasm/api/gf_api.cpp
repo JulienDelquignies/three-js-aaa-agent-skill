@@ -25,7 +25,7 @@ static std::vector<float> g_frame, g_pose;
 // l'ordre des fichiers .anim (celui de gpf-anim.js), traduit en indices de l'énumération BodyPart du moteur (utils/animation.hpp)
 static const BodyPart NODES[13] = {body, middle, neck, left_shoulder, left_elbow, right_shoulder, right_elbow,
                                    left_thigh, left_knee, left_ankle, right_thigh, right_knee, right_ankle};
-static const int MAXP = 22, FRAME_HEAD = 16, FRAME_PER = 14, POSE_PER = 3 + 13 * 4;
+static const int MAXP = 22, FRAME_HEAD = 16, FRAME_PER = 19, POSE_PER = 3 + 13 * 4;
 
 static void add(SHARED_PTR<ScenarioConfig> &sc, bool left, float x, float y, e_PlayerRole role) {
   FormationEntry p(x, y, role, false, true);
@@ -86,7 +86,8 @@ EMSCRIPTEN_KEEPALIVE void gf_step(int n) { while (n-- > 0) g_env->step(); }
 
 /** L'état : en-tête [temps ms, en jeu, coup de pied arrêté, mode, score G, score D, ballon x y z, possession équipe, joueur,
  *  pas, nombre de joueurs, vitesse du ballon x y z (m/s)] puis par joueur [équipe, rôle, x, y, z, dir x, dir y, corps x, corps y,
- *  vitesse, id stable, actif, vitesse x, vitesse y (m/s)]. */
+ *  vitesse, id stable, actif, vitesse x, vitesse y (m/s), geste en cours (e_FunctionType), possède le ballon, désigné pour le
+ *  ballon (match), désigné dans son équipe, tient le ballon en main]. Lecture seule : ces accesseurs ne calculent rien. */
 EMSCRIPTEN_KEEPALIVE float *gf_frame() {
   Match *m = GetGameTask()->GetMatch();
   SharedInfo info = g_env->get_info();
@@ -111,6 +112,10 @@ EMSCRIPTEN_KEEPALIVE float *gf_frame() {
       q[5] = dir.coords[0]; q[6] = dir.coords[1]; q[7] = body.coords[0]; q[8] = body.coords[1];
       q[9] = mv.GetLength(); q[10] = (float)p->GetStableID(); q[11] = p->IsActive() ? 1.f : 0.f;
       q[12] = mv.coords[0]; q[13] = mv.coords[1];
+      q[14] = (float)p->GetCurrentFunctionType(); q[15] = p->HasPossession() ? 1.f : 0.f;
+      q[16] = m->GetDesignatedPossessionPlayer() == p ? 1.f : 0.f;
+      q[17] = m->GetTeam(t)->GetDesignatedTeamPossessionPlayer() == p ? 1.f : 0.f;
+      q[18] = m->GetBallRetainer() == p ? 1.f : 0.f;
       k++;
     }
   }
