@@ -165,7 +165,15 @@ export class GpfMatch {
 
   _camera(dt) {
     if (!this.camRef || q.has('orbit')) return;
-    const pres = q.get('cam') === 'pres', k = 1 - Math.exp(-dt / (pres ? 0.5 : 0.8)), b = this.ball.position;
+    // le champ HORIZONTAL visé (51°, celui d'un écran 16:9 à 30° de vertical) : un téléphone en portrait ne regarde plus le terrain
+    // par une fente de 17°. Le vertical s'ouvre, mais pas au-delà de 50° : plus haut, le haut de l'image passe au-dessus de la
+    // ligne de touche opposée (du vide) et les joueurs deviennent des fourmis — en portrait, ≈ 35° d'horizontal
+    const fov = THREE.MathUtils.clamp(2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(51 / 2)) / this.camRef.aspect)), 30, 50);
+    if (Math.abs(fov - this.camRef.fov) > 0.05) { this.camRef.fov = fov; this.camRef.updateProjectionMatrix(); }
+    // la caméra rapprochée par défaut sur un écran en hauteur (un téléphone tenu droit ne peut pas montrer la largeur du jeu :
+    // la télé y donne des fourmis sous un bandeau vide) ; ?cam=pres ou ?cam=tele imposent l'une ou l'autre
+    const pres = q.get('cam') === 'pres' || (q.get('cam') !== 'tele' && this.camRef.aspect < 1);
+    const k = 1 - Math.exp(-dt / (pres ? 0.5 : 0.8)), b = this.ball.position;
     this.cam.x += ((pres ? b.x : THREE.MathUtils.clamp(b.x, -42, 42)) - this.cam.x) * k;
     this.cam.z += (b.z * (pres ? 1 : 0.85) - this.cam.z) * k;
     if (pres) {   // la caméra RAPPROCHÉE : 15 m du ballon, 7 m de haut — on juge les corps et la complicité avec le ballon
