@@ -156,7 +156,10 @@ bool ElizaController::_GfOnBall(std::vector<PlayerCommand> &commandQueue, Vector
 int ElizaController::_GfPressMode() {
   const GfIntent *gi = gf_intent(CastPlayer());
   if (!gi) return 0;
-  return gi->kind == GF_PRESS ? 2 : gi->kind == GF_MOVE ? 1 : 0;
+  // PRESS drapeau 1 : le cerveau a élu ce presseur, le corps presse À SA FAÇON (sa chasse : les deux plus proches du porteur
+  // vont à leur position de défense côté but, aimantés à portée) — mode 0, la logique du contrôleur
+  if (gi->kind == GF_PRESS) return gi->flags == 1 ? 0 : 2;
+  return gi->kind == GF_MOVE ? 1 : 0;
 }
 
 // Le presseur élu fond sur le porteur adverse : vers sa position anticipée (0,3 s), au sprint, avec l'aimant au ballon et la

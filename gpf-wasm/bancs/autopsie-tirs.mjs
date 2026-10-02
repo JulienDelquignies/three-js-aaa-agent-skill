@@ -19,7 +19,7 @@ const MIN = +(process.argv[2] ?? 15), GRAINE = +(process.argv[3] ?? 7), MODE = p
 const SORTIE = process.argv[5] ?? null;
 const corps = await chargerLeCorps();
 corps.lancer({ graine: GRAINE, intentions: true });
-const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE }) : null;
+const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE, options: process.env.CERVEAU_OPTIONS ? JSON.parse(process.env.CERVEAU_OPTIONS) : {} }) : null;
 // STATS_TIREURS='{"frappe":0.6,"puissance":0.8}' : les attributs des joueurs de champ (des deux équipes) multipliés — la
 // frappe (technical_shot, 14), la puissance (physical_shotpower, 6), la volée (technical_volley, 15). Le gardien reste.
 const TIREURS = process.env.STATS_TIREURS ? JSON.parse(process.env.STATS_TIREURS) : null;

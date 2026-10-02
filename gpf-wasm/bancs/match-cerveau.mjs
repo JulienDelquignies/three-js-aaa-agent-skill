@@ -161,7 +161,7 @@ console.log(`  score ${f.buts[0]}-${f.buts[1]}${f.csc[0] + f.csc[1] ? ` (dont ${
 const effMin = enJeu / 600;
 console.log(`  passes ${f.passes[0]} / ${f.passes[1]} (réussite ${pc(f.reussies[0], f.passes[0])} % / ${pc(f.reussies[1], f.passes[1])} %) · par 90 min ${((f.passes[0] + f.passes[1]) * k).toFixed(0)} · temps de jeu effectif ${pc(enJeu, MIN * 600)} % → ${((f.passes[0] + f.passes[1]) / Math.max(effMin, 1e-9)).toFixed(1)} passes par minute effective (réel ≈ 17 : ≈ 1 000 en ≈ 58 min)`);
 console.log(`  buts : ${JSON.stringify(f.origines)} (geste de la dernière touche du buteur) · sur passe ${pc(f.surPasse, f.butsJeu)} % (réel ≈ 75 %) · le ballon du buteur ${JSON.stringify(f.sources)} · touches du buteur ${JSON.stringify(f.touchesButeur)}`);
-if (cerveau) console.log(`  fautes décidées par la Loi 12 du cerveau (accrochages) : ${cerveau.stats().fautes}`);
+if (cerveau) console.log(`  fautes décidées par la Loi 12 du cerveau (accrochages) : ${cerveau.stats().fautes} · tacles engagés par le cerveau : ${cerveau.stats().tacles}`);
 console.log(`  possession ${pc(f.poss[0], tot)} % / ${pc(f.poss[1], tot)} % · fautes ${f.fautes.join('/')} · jaunes ${f.jaunes.join('/')} · rouges ${f.rouges.join('/')} · hors-jeu ${f.horsJeu.join('/')}`);
 console.log(`  copains : ballon à > 1,5 m pendant ${pc(conduites.loin, conduites.total)} % des conduites (${conduites.total} échantillons), décalage latéral médian ${med(conduites.lateral).toFixed(2)} m ; porteur déclaré : ${pc(conduites.porteLoin, conduites.porteTotal)} % (${conduites.porteTotal})`);
 console.log(`  téléportations (> 3 m en 100 ms, jeu en cours) : ${sauts} · empreinte finale ${empreinte}`);

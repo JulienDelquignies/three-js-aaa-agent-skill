@@ -229,9 +229,57 @@ Deux défauts trouvés en route :
 | jaunes | 3,8 | 6,0 | 3,9 ✗ |
 | rouges | 0 | 0 à 0,1 | ≈ 0,1-0,2 |
 
-Restent ouverts :
-- **Les cartons.** Il y a trop de jaunes : ceux des tacles du corps s'ajoutent à ceux de la Loi 12 du cerveau.
-- **Les penalties.** 0,6 par match. Les tacles du corps dans la surface y contribuent.
+### La passe, la défense et la finition (2 octobre, suite)
+
+**La passe : prévoir avec la physique du corps.** On a mesuré la prévision du cerveau passe par passe (`selection.js`, `bancs/autopsie-passes.mjs`).
+- Il prévoyait 81 % de réussite, et en obtenait 72 %.
+- L'écart vivait sous pression : 59 % des passes partaient avec un adversaire à moins d'1 m, réussies à 65 % pour 80 % prévus.
+- Le terme « bloc » du cerveau (la pression du porteur fait baisser la réussite : 0,06 dans son monde) et son calage par classe sont réajustés ensemble sur les issues du corps, par log-vraisemblance : bloc 0,45.
+- Son choix en valeur attendue (`choix.js`) lit cette réussite.
+
+**La racine : le presseur.** L'ordre PRESSER faisait foncer le presseur, aimanté, droit sur le porteur. Le presseur du cerveau, lui :
+- va à sa garde côté but, sous contrôle ;
+- mord le ballon à moins de 1,6 m ;
+- tacle à son horloge de pression.
+
+Mesuré, chaque fois sur 8 graines :
+
+| Pressing | Buts par match | Passes réussies |
+|---|---|---|
+| chasse permanente | 3,3 | 72 % |
+| à sa garde seulement | 12,3 | 85 % |
+| + les tacles du cerveau | 12,8 | 85 % |
+| + sa morsure | 10 à 12 | 85 % |
+| + la chasse native du corps | 9 | 78 % |
+| **à sa garde, engagement à 3 m, ombre côté but près de son but** | **3,0** | **79 %** |
+
+Les choix retenus :
+- **La garde.** Le presseur va à la cible et à la vitesse du cerveau.
+- **L'engagement.** À moins de 3 m du porteur, il charge (aimant au ballon). Le tacle reste aux réflexes du corps, et la décision de tacle du cerveau (`pressPredicate`, `tackleWindow`, son horloge) l'engage aussi.
+- **L'ombre.** Près de son but, il suit sa garde à la vitesse du porteur + 1 m/s, sans plonger. Le plafond de 2,9 m/s du jockey est fait pour les conduites du monde du cerveau. Charger dès 6,6 m faisait des mêlées : 75 % de buts sur ballons traînants.
+
+**La finition du cerveau** (`strike-sim.js`, `finitionSigma`, lot 258), appliquée à son tir :
+- le côté ouvert, une hauteur tirée au sort (ras de terre, mi-hauteur, lucarne) ;
+- les écarts de cap et d'élévation selon la pression, la distance, la vitesse et la fatigue ;
+- la frappe sous-dosée sous pression.
+
+Le corps ne pilote pas la hauteur : un tir que le cerveau envoie au-dessus devient un tir à côté. Sans la finition, les tirs étaient cadrés à 58 %, et ceux sans défenseur à 3 m convertis à 55 %.
+
+**Le banc de cohérence** : `autopsie-passes.mjs` note la prévision du cerveau pour chaque passe (brute, calée, classe, pression du porteur). `autopsie-tirs.mjs` donne la conversion par pression du tireur.
+
+| 8 matchs de 90 min (réglages par défaut) | avant ce lot | après | réel |
+|---|---|---|---|
+| buts | 3,3 | **2,9** (contre-son-camp 0,4) | 2,75 ✓ |
+| buts / xG de référence | 1,33 | **0,98** | ≈ 1 ✓ |
+| passes réussies | 72 % | **80 %** | 80-85 % ✓ |
+| fautes | 21,3 | **19,4** | 21,5 ✓ |
+| jaunes | 6,0 | **4,3** | 3,9 ✓ |
+| penalties | 0,6 | 0,5 | ≈ 0,3 |
+| tirs | 16,1 | 18,4 | 26 ± 7 (bas) |
+| buts amenés par une passe | 20 % | 40 % | ≈ 75 % |
+| temps de jeu effectif | 72 % | 74,5 % | ≈ 64 % |
+| passes en une touche | 12 % | 8 % | 15-25 % |
+| téléportations | 0 | 0 | 0 ✓ |
 - **Les buts amenés par une passe.**
 - **La réussite des passes.**
 - **Les arrêts de jeu.** Trop peu de six-mètres et de coups francs, d'où le temps effectif.

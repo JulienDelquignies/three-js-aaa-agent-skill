@@ -19,10 +19,17 @@ import { makeMatch, matchCfg, matchInternals } from '../skills/threejs-aaa/asset
 import { movePlayers } from '../skills/threejs-aaa/assets/starter/src/engine/movement.js';
 import { arbitre } from '../skills/threejs-aaa/assets/starter/src/engine/menace.js';
 import { choosePass } from '../skills/threejs-aaa/assets/starter/src/engine/rondo.js';
+import { finitionSigma } from '../skills/threejs-aaa/assets/starter/src/engine/strike-sim.js';
+import { gauss } from '../skills/threejs-aaa/assets/starter/src/engine/attributes.js';
+import { tirage as tirageCerveau } from '../skills/threejs-aaa/assets/starter/src/engine/rng.js';
 import { BallBody } from '../skills/threejs-aaa/assets/starter/src/engine/ball-body.js';
 import { uneTouche } from '../skills/threejs-aaa/assets/starter/src/engine/premiere-intention.js';
 import { accrocheStep } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
 import { tac, axe } from '../skills/threejs-aaa/assets/starter/src/engine/tactics.js';
+import { pressionDe } from '../skills/threejs-aaa/assets/starter/src/engine/reception.js';
+import { pressPredicate } from '../skills/threejs-aaa/assets/starter/src/engine/skills-sim.js';
+import { tackleWindow } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
+import { balPrenable } from '../skills/threejs-aaa/assets/starter/src/engine/dribble.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 
 const GPF = { hx: 55, hy: 36 };
@@ -34,7 +41,7 @@ const GPF = { hx: 55, hy: 36 };
 export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {} } = {}) {
   /** Les réglages de l'adaptateur, chacun débrayable pour la mesure A/B : `flux` (les tirages nommés du cerveau),
    *  `uneTouche` (la première intention posée avant le contact). */
-  const OPT = { flux: true, uneTouche: true, fautes: true, ...options };
+  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, ...options };
   const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
@@ -44,15 +51,27 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   // 75 % des réceptions, et leur propre IA y joue en une touche avec 67-86 % de réussite (3 graines × 15 min). Le seuil
   // devient celui du corps : 15 m/s (au-delà, trop peu de cas pour juger).
   cfg.uneTouche = { ...cfg.uneTouche, vmax: 15 };
+  // (à l'essai) le plafond du jockey — 2,9 m/s dans le monde du cerveau ; les porteurs du corps conduisent à 3,3-3,8 m/s
+  if (OPT.jockeyCap) cfg.jockey = { ...cfg.jockey, cap: OPT.jockeyCap };
   // L'ACCROCHAGE CALÉ SUR LE CORPS : le cerveau règle sa probabilité par épisode (le défenseur battu dans le dos d'un porteur
-  // lancé) pour ≈ 17 accrochages par match dans SON monde (duel.js, lot 97). Dans celui du corps l'épisode revient deux fois
-  // plus : 35,9 accrochages sifflés par match à sa probabilité (8 matchs de 90 min). Le facteur rend son intention au cerveau.
-  const ACCROCHE_CORPS = 17 / 35.9;
+  // lancé) pour ≈ 17 accrochages par match dans SON monde (duel.js, lot 97). L'épisode dépend du pressing du corps : sous la
+  // chasse permanente, 35,9 accrochages par match à sa probabilité (facteur 17/35,9) ; sous le pressing à la garde du cerveau
+  // (l'ombre côté but, l'engagement à 3 m), il revient moins — le facteur × 1,7 rend ≈ 17 (8 matchs × 45 min : 17,2 par 90).
+  const ACCROCHE_CORPS = (17 / 35.9) * (OPT.accroche ?? 1);
   cfg.accrocheMod = (s2, c, k) => accrocheStep(s2, c, k, axe(tac(s2, 1 - c.team).pressing, 0.7, 1.3) * ACCROCHE_CORPS);
   // …ET DANS SA SURFACE, LA RETENUE AUSSI : le cerveau y retient déjà la main (×0,15, puis retenueSurface.accro 0,4), mais
   // les attaques du corps finissent plus souvent en dribble dans la surface que dans son monde — 1 penalty par match mesuré
   // (8 matchs de 90 min), pour ≈ 0,27 au réel. La retenue de surface est calée sur ce taux.
   cfg.retenueSurface = { ...cfg.retenueSurface, accro: (cfg.retenueSurface?.accro ?? 0.4) * 0.27 };
+  // LA RÉUSSITE DE LA PASSE CALÉE SUR LE CORPS (selection.js — le modèle du cerveau, calé dans son monde) : sur 3 430 passes du
+  // cerveau (8 graines × 30 min), il prévoyait 81 % et en réussissait 72 %. L'écart vit SOUS PRESSION : 59 % des passes partent
+  // avec la pression du porteur > 0,8 (le presseur arrive pendant l'armé de 0,4 s du corps, et leurs défenseurs bloquent de
+  // près) — 65 % réussies pour 80 % prévus. Le terme « bloc » (pRel = 1 − bloc × pression, 0,06 dans son monde) et le calage
+  // par classe sont réajustés ensemble sur les issues du corps (log-vraisemblance, bancs/autopsie-passes.mjs) : bloc 0,45.
+  // Le choix en valeur attendue du cerveau (choix.js) lit cette réussite : la passe sous pression perd de sa valeur.
+  cfg.selection = { ...cfg.selection, bloc: 0.45, calage: { ...cfg.selection.calage,
+    BACK_SAFE: [1.731, 1.265], MID_GROUND: [1.333, 0.672], SHORT_GROUND: [1.679, 1.304], THROUGH: [0.209, 0.365],
+    LONG_GROUND: [1.072, 0.348], CHANNEL: [1.138, 0.932] } };
   const SX = st.pitch.hx / GPF.hx, SZ = st.pitch.hz / GPF.hy;
   const versCerveau = (x, y) => [x * SX, -y * SZ];
   const versCorps = (x, z) => [x / SX, -z / SZ];
@@ -71,7 +90,11 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   /** La une-touche décidée et pas encore frappée : { id (cerveau), cible (id du corps), jusqua }. */
   let uneToucheTenue = null;
   /** Les décisions de première intention (pour les bancs) : tentées, jouées, et les refus du cerveau par motif (st.deny). */
-  const stats = { utDecisions: 0, utJouees: 0, fautes: 0 };
+  const stats = { utDecisions: 0, utJouees: 0, fautes: 0, tacles: 0 };
+  /** LES ENGAGEMENTS EN COURS : le défenseur qui a décidé de tacler (id cerveau → fin du geste, s). */
+  const engagements = new Map();
+  /** La durée du geste de tacle debout du cerveau (animkit-data.js, tacleDebout : 0,7 s, contact à 0,28 s). */
+  const DUREE_TACLE = 0.7;
   /** LE GARDIEN DU CORPS NE REÇOIT PAS LA PASSE EN RETRAIT : la règle lui interdit les mains, et le moteur ne lui a pas appris
    *  à la jouer du pied (leur propre IA ne lui passe presque jamais : 0,3 % de ses passes). Mesuré, sur 45 min × 3 graines :
    *  32 passes au gardien (4,1 %), 4 dans nos filets — la « courte » de 24 m part à 29 m/s, monte à 2 m, et passe au-dessus du
@@ -214,6 +237,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
       // carton), ou le carton seul quand l'avantage a été joué (gf_carton)
       const F0 = OPT.fautes ? st._faute : null, n0 = st.events.length;
       matchInternals.assignMatchJobs(st, cfg);
+      decideTacle(etat);
       const fautes = [];
       if (F0 && !st._faute) {
         const cartons = st.events.slice(n0).filter(e => e.type === 'carton' && e.by === F0.par);
@@ -235,6 +259,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         if (!equipes.includes(q.team)) continue;
         const id = corpsDe.get(q.id); if (id == null) continue;
         if (q.keeper) { out.push({ id, genre: INTENTION.IA }); continue; }
+        // le défenseur engagé dans un tacle fonce sur le porteur le temps du geste (l'ordre PRESSER : aimant au ballon, hâte) —
+        // le tacle lui-même reste aux réflexes du corps
+        if ((engagements.get(q.id) ?? -1) > st.t) { const t2 = q.target ?? q.p; const [x2, y2] = versCorps(t2[0], t2[2]); out.push({ id, genre: INTENTION.PRESSER, x: x2, y: y2, vitesse: 8, job: 'tacle' }); continue; }
         if (uneToucheTenue && uneToucheTenue.id === q.id && st.t < uneToucheTenue.jusqua) {
           out.push({ id, genre: INTENTION.PASSER, cible: uneToucheTenue.cible, drapeaux: PASSE.COURTE, uneTouche: true }); continue;
         }
@@ -242,7 +269,27 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         const t = q.target ?? q.p;
         const [x, y] = versCorps(t[0], t[2]);
         const voulue = Math.hypot(q._wx ?? 0, q._wz ?? 0) / SX;
-        if (q.job === 'press') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: q.job });
+        // LE PRESSEUR DU CERVEAU VA À SA GARDE (movement.js : il sprinte jusqu'à 4,2 m du porteur, puis arrive sous contrôle à
+        // ≤ 2,9 m/s vers un point côté but, et ne mord le ballon qu'à < 1,6 m). L'ordre PRESSER du corps le faisait foncer,
+        // aimanté, droit sur le porteur : 60 % de nos passes partaient avec un adversaire à moins d'1 m (réel : un quart sous
+        // pression). Il reçoit désormais sa cible et sa vitesse ; les réflexes de tacle du corps restent les siens.
+        // …ET IL MORD (match-sim.js, lot 159 — à < 1,6 m sa cible devient LE BALLON) : c'est son engagement, que le corps
+        // exécute par sa chasse aimantée (PRESSER) ; le tacle lui-même reste aux réflexes du corps
+        const mord = q.job === 'press' && OPT.mord && q.target && Math.hypot(q.target[0] - st.ball.p[0], q.target[2] - st.ball.p[2]) < 0.6;
+        const porteurP = st.players[st.possession.carrier];
+        // …et PRÈS DE SON BUT le défenseur s'engage de plus loin : on ne laisse pas frapper (mesuré : 22 % des tirs partaient
+        // sans défenseur à 3 m, convertis à 55 %)
+        const pres30 = porteurP && Math.hypot(st.pitch.ownGoal(q.team).x - porteurP.p[0], porteurP.p[2]) < 30;
+        const aPortee = OPT.rayonCharge && porteurP && porteurP.team !== q.team && Math.hypot(q.p[0] - porteurP.p[0], q.p[2] - porteurP.p[2]) < OPT.rayonCharge * (pres30 && !OPT.ombre ? OPT.rayonSurface : 1);
+        if (q.job === 'press' && aPortee) out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: 'charge' });
+        // L'OMBRE : près de son but (porteur à moins de 30 m), le presseur suit SA GARDE côté but — la cible du cerveau, entre le
+        // ballon et le but — sans plonger, à la vitesse du porteur + 1 m/s (le plafond de 2,9 m/s du jockey est fait pour les
+        // conduites du monde du cerveau ; les porteurs du corps vont à 3,3-3,8 m/s). Mesuré (8 × 45 min) : charger dès 6,6 m
+        // près du but faisait 75 % de buts sur des ballons traînants de mêlées ; l'ombre rend 67 % de buts sur passe, 3 buts
+        // par match à l'xG près, 20 tirs, 79 % de passes réussies
+        else if (q.job === 'press' && OPT.ombre && pres30 && porteurP && porteurP.team !== q.team) out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.min(8, Math.hypot(porteurP.v[0], porteurP.v[1]) / SX + 1), job: 'ombre' });
+        else if (q.job === 'press' && OPT.presse === 'corps') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, drapeaux: 1, job: q.job });
+        else if (q.job === 'press' && (!OPT.presseGarde || mord)) out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: mord ? 'mord' : q.job });
         else out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.max(1.5, Math.min(8, voulue || 5)), job: q.job });
       }
       // L'ACCROCHAGE DU BATTU (duel.js, lot 97 de la skill — le défenseur dépassé qui retient le porteur, l'axe de pressing de
@@ -272,6 +319,38 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     /** Les compteurs de la première intention et les refus nommés du cerveau (st.deny), pour les bancs. */
     stats() { return { ...stats, refus: { ...(st.deny ?? {}) } }; },
   };
+
+  /**
+   * LE TACLE DU CERVEAU (rondo-sim.js, le pas du porteur) : la pression est un duel sur le BALLON — un défenseur dans le rayon de
+   * contestation (0,9 m) et plus près du ballon que le porteur (pressPredicate) ; elle s'accumule tant qu'il y en a un ; quand elle
+   * passe l'horloge du tacle (tacleHorloge, plus longue dans sa surface) et que le ballon est prenable (tackleWindow), le défenseur
+   * s'engage — recharge de 1,5 s. Le presseur se tient à sa garde (presseGarde) ; sans cette décision il ne taclait plus jamais
+   * (mesuré : 12 buts par match), et l'ordre PRESSER permanent le faisait coller au porteur (60 % des passes sous pression).
+   */
+  function decideTacle(etat) {
+    const c = st.players[st.possession.carrier];
+    if (!OPT.tacle || !c || st.phase !== 'carry' || !etat.enJeu || etat.cpa) { st.pressure = 0; return; }
+    const press = pressPredicate(st, c, cfg);
+    st.pressure = press.length ? (st.pressure ?? 0) + 0.1 : 0;
+    const q = press[0];
+    if (q && st.pressure >= horlogeTacle(q) && tackleWindow(st, q, cfg, balPrenable)) {
+      st.pressure = 0; q.tackleCd = st.t + cfg.standCooldown;
+      engagements.set(q.id, st.t + DUREE_TACLE); stats.tacles++;
+    }
+  }
+
+  /** L'horloge du tacle — copie de rondo-sim.js tacleHorloge (non exportée) : tackleTime × tacleVif.tot × (2 − tempo du
+   *  tacleur), × frein ÷ agressivité quand le ballon est dans SA surface (la retenue de surface, lot 169). */
+  function horlogeTacle(q) {
+    if (!st.full || !cfg.tacleVif) return cfg.tackleTime;
+    let h = cfg.tackleTime * (cfg.tacleVif.tot ?? 0.25) * (2 - (q?.skill?.tacleTempoF ?? 1));
+    const RS = cfg.retenueSurface;
+    if (RS && q) {
+      const g = st.pitch?.ownGoal?.(q.team);
+      if (g && Math.abs(st.ball.p[0] - g.x) < 16.5 && Math.abs(st.ball.p[2]) < 20.16 && Math.abs(q.p[0] - g.x) < 18) h *= (RS.frein ?? 1.9) / Math.max(0.7, q.skill?.aggrF ?? 1);
+    }
+    return h;
+  }
 
   /** Le temps (s) avant que le ballon arrive au receveur, sur sa ligne actuelle ; null s'il s'en éloigne. */
   function arriveeAuPied(R) {
@@ -333,19 +412,52 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         // LES GESTES DU CORPS (AI_GetAutoPass) : la « courte » au pied ; la « longue » DANS LA COURSE (même force, cible
         // avancée de 20 % vers le but adverse — pas une passe longue) ; la « haute » levée
         const drapeaux = p.through ? PASSE.LONGUE : p.style === 'lofted' || p.style === 'chip' || choix === 'centre' ? PASSE.HAUTE : PASSE.COURTE;
-        const i = { genre: INTENTION.PASSER, cible, drapeaux };
+        // la prévision du cerveau (selection.js : la probabilité brute, calée, la classe) — pour le banc de cohérence
+        const i = { genre: INTENTION.PASSER, cible, drapeaux, sel: p.cls ? { p: p.pBrut, pHat: p.pSucc, cls: p.cls, Pc: pressionDe(st, c, cfg.passe ?? {}, cfg).P } : null };
         poss.intention = { i, jusqua: st.t + (cfg.intentTtl ?? 0.9) };
         return i;
       }
     }
     if (choix === 'tir') {
-      // le côté ouvert : à l'opposé du gardien adverse
-      const gk = st.players.find(q => q.keeper && q.team !== c.team);
-      const [gx, gy] = versCorps(gk.p[0], gk.p[2]);
-      const butX = c.team === 0 ? GPF.hx : -GPF.hx;
-      return { genre: INTENTION.TIRER, x: butX, y: gy > 0 ? -2.6 : 2.6, puissance: 0.85 };
+      if (poss.tir && st.t < poss.tir.jusqua) return poss.tir.i;
+      const i = tirDuCerveau(c);
+      poss.tir = { i, jusqua: st.t + (cfg.intentTtl ?? 0.9) };
+      return i;
     }
     return conduite(c);
+  }
+
+  /**
+   * LE TIR DU CERVEAU, avec SON échelle de finition (strike-sim.js, lot 258 — « mesuré avant : conversion 24,5 % (réel 11),
+   * cadrés 55 % (33) », exactement les nôtres sans elle) : le point visé — le côté ouvert, à 0,9 m du poteau, la hauteur tirée
+   * dans le mélange du cerveau (ras de terre, mi-hauteur, lucarne) —, puis les écarts de cap et d'élévation de finitionSigma
+   * (pression du défenseur le plus proche, distance, vitesse de frappe, fatigue, finition du tireur) et la frappe sous-dosée
+   * sous pression. Le corps ne pilote pas la hauteur d'une frappe : un tir que le cerveau envoie AU-DESSUS devient un tir à
+   * côté, du même côté — le cadrage reste celui du cerveau. Tirages seedés (le flux 'tir' du cerveau).
+   */
+  function tirDuCerveau(c) {
+    const gk = st.players.find(q => q.keeper && q.team !== c.team);
+    const goal = st.pitch.attackGoal(c.team);
+    const DEMI = 3.66, BARRE = 2.44, SPD = 28;
+    const cote = gk && gk.p[2] > 0 ? -1 : 1;
+    const zVise = cote * (DEMI - 0.9);
+    if (!OPT.finition || !cfg.finition) { const [x0, y0] = versCorps(goal.x, zVise); return { genre: INTENTION.TIRER, x: x0, y: y0, puissance: 0.85 }; }
+    const F = cfg.finition, rnd = tirageCerveau(st, 'tir', c.id, st.rnd ?? (() => 0.5));
+    const H = F.hauteur ?? {}, u = rnd(), pB = H.p?.[0] ?? 0.62, pM = H.p?.[1] ?? 0.30;
+    const yVise = u < pB ? (H.bas ?? 0.35) : u < pB + pM ? (H.mi ?? 1.0) : (H.lucarne ?? 1.95);
+    let foeP = 99;
+    for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]));
+    const P = Math.max(0, Math.min(1, 1 - Math.max(0, foeP - 1) / Math.max(0.5, (F.press ?? 5) - 1)));
+    const dG = Math.hypot(goal.x - c.p[0], zVise - c.p[2]);
+    const L = finitionSigma(F, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible: false, P, stam: c.stam ?? 1, spd: SPD, dG });
+    const zArr = zVise + dG * Math.tan(gauss(rnd) * L.sigPsi), yArr = yVise + dG * Math.tan(gauss(rnd) * L.sigTheta);
+    const cadre = Math.abs(zArr) < DEMI && yArr > 0 && yArr < BARRE;
+    // au-dessus (ou dessous) mais dans la largeur : le manqué devient un manqué à côté, du même côté que la visée
+    const zFinal = cadre || Math.abs(zArr) >= DEMI ? zArr : Math.sign(zArr || cote) * (DEMI + 0.8);
+    const [x, y] = versCorps(goal.x, zFinal);
+    const puissance = Math.max(0.3, Math.min(1, 0.85 * Math.exp(gauss(rnd) * L.sigV + L.muV)));
+    stats.tirs = (stats.tirs ?? 0) + 1; if (cadre) stats.tirsCadres = (stats.tirsCadres ?? 0) + 1;
+    return { genre: INTENTION.TIRER, x, y, puissance };
   }
 
   /** LA CONDUITE : la poussée du cerveau (`push`, lissée 0,35 s), prolongée à 8 m ; sa vitesse voulue (le seau « carry »). */

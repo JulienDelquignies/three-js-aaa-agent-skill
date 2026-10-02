@@ -19,7 +19,8 @@ class Team;
 enum GfIntentKind {
   GF_AI = 0,       // le contrôleur du moteur décide (Eliza)
   GF_MOVE = 1,     // aller en (x, y) à `speed` m/s — placement, appel, repli ; pas de chasse du porteur
-  GF_PRESS = 2,    // presser le porteur adverse (sa chasse forcée), en partant vers (x, y)
+  GF_PRESS = 2,    // presser le porteur adverse, en partant vers (x, y) — drapeau 0 : la chasse forcée (fondre, aimanté) ;
+                   // drapeau 1 : la chasse du corps (sa logique de pressing : position de défense côté but, aimant à portée)
   GF_PASS = 3,     // porteur : passer à `target` (id stable) — flags 0 courte, 1 longue, 2 haute
   GF_SHOOT = 4,    // porteur : tirer vers (x, y) (un point de la ligne de but), `power` 0..1
   GF_DRIBBLE = 5,  // porteur : conduire vers (x, y) à `speed` m/s

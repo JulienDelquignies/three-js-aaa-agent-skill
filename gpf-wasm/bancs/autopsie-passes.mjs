@@ -62,7 +62,9 @@ for (let pas = 0; pas < MIN * 6000; pas++) {
       const [bx, by] = ap.ballon;
       const it = derniereIntention.get(ev.joueur);
       const r = { t: ev.t, equipe: ev.equipe, passeur: ev.joueur, geste: ev.a, cibleCorps: ev.b, force: ev.c, imposee: ev.d,
-        voulue: it?.genre === 3 ? it.cible : null, vBallon: Math.hypot(ap.ballonV[0], ap.ballonV[1]), zBallon: ap.ballonV[2] };
+        voulue: it?.genre === 3 ? it.cible : null, vBallon: Math.hypot(ap.ballonV[0], ap.ballonV[1]), zBallon: ap.ballonV[2],
+        // LA PRÉVISION DU CERVEAU pour cette passe (selection.js) : brute, calée, la classe ; la une-touche (premiere-intention)
+        ...(it?.genre === 3 && it.sel ? { pBrut: it.sel.p, pHat: it.sel.pHat, cls: it.sel.cls, Pc: it.sel.Pc } : {}), ...(it?.uneTouche ? { uneTouche: true } : {}) };
       if (ci) {
         const d = Math.hypot(ci.x - bx, ci.y - by), T = dureeDePasse(d);
         const vx = ci.x + ci.v[0] * T, vy = ci.y + ci.v[1] * T;
