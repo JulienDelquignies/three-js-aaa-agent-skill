@@ -24,13 +24,22 @@ export class GpfMatch {
   constructor(scene, renderer) {
     this.scene = scene; this.renderer = renderer;
     this.players = []; this.acc = 0; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0; this.t = 0;
-    this._fpsN = 0; this._fpsT0 = performance.now();
+    this._fpsN = 0; this._fpsT0 = performance.now(); this._cpuMs = 0; this._cpuN = 0;
+    this.tot = { frames: 0, cpuMs: 0, simMs: 0, simSteps: 0, poseMs: 0, t0: performance.now() };   // cumulés, pour le diagnostic
     this.cam = { x: 0, z: 0 };
     this._hud = document.getElementById('gpfHud');
     this.ready = this._load();
   }
 
   async _load() {
+    // ?dpr=1 : la densité de pixels imposée (le moteur la plafonne à 2) — le coût du remplissage se lit en la baissant
+    if (q.has('dpr')) this.renderer.setPixelRatio(Math.min(2, Math.max(0.25, Number(q.get('dpr')) || 1)));
+    // le CALCUL d'une image : tout le rappel de la boucle (simulation, poses, caméra, soumission du rendu). Une image qui dure
+    // bien plus longtemps que son calcul attend la carte graphique (ou la cadence de l'écran)
+    const r = this.renderer, loop = r.setAnimationLoop.bind(r);
+    r.setAnimationLoop = (cb) => loop(cb && (async (...a) => {
+      const t = performance.now(); await cb(...a); const d = performance.now() - t; this._cpuMs += d; this._cpuN++; this.tot.cpuMs += d; }));
+    this.api = r.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
     this._buildPitch();
     // LE MOTEUR : le module WebAssembly et ses données (6 Mo : animations, maillages des corps, police) — servis depuis ./gpf/
     const base = new URL('./gpf/', location.href).href;
@@ -64,6 +73,7 @@ export class GpfMatch {
     this.ball.castShadow = true; this.scene.add(this.ball);
     this._v = new THREE.Vector3();
     window.__gpf = this;
+    if (q.has('diag')) import('./gpf-diag.js').then((m) => m.runDiag(this));
   }
 
   _buildPitch() {
@@ -115,23 +125,24 @@ export class GpfMatch {
     // LE PAS FIXE : 10 ms de jeu par pas, autant de pas que le temps réel écoulé (plafonné : un onglet en pause ne rattrape pas)
     this.acc = Math.min(this.acc + dt * (Number(q.get('vitesse')) || 1), 0.1);
     let n = 0; while (this.acc >= 0.01) { this.acc -= 0.01; n++; }
-    if (n) { const t0 = performance.now(); this.M._gf_step(n); this.simMs += performance.now() - t0; this.simSteps += n; }
+    if (n) { const t0 = performance.now(); this.M._gf_step(n); const d = performance.now() - t0; this.simMs += d; this.simSteps += n; this.tot.simMs += d; this.tot.simSteps += n; }
     const tp = performance.now();
     const F = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), this.HEAD + 22 * this.PER);
     const Q = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_pose(), 22 * this.POSE);
     for (let k = 0; k < 22; k++) this._pose(this.players[k], Q, k * this.POSE);
     this.ball.position.set(F[6], Math.max(0.11, F[8]), -F[7]);
-    this.poseMs += performance.now() - tp; this.poseN++;
+    const dp = performance.now() - tp; this.poseMs += dp; this.poseN++; this.tot.poseMs += dp; this.tot.frames++;
     this._camera(dt);
     this.t += dt;
     const now = performance.now(); this._fpsN++;
     if (now - this._fpsT0 > 500) {
       const fps = this._fpsN * 1000 / (now - this._fpsT0), msPas = this.simSteps ? this.simMs / this.simSteps : 0, msPose = this.poseN ? this.poseMs / this.poseN : 0;
-      this.stats = { fps, msPas, msPose, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
+      const cpu = this._cpuN ? this._cpuMs / this._cpuN : 0, cv = this.renderer.domElement;
+      this.stats = { fps, cpu, msPas, msPose, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
       // en capture (?capture : images calculées une à une, rendu logiciel), les mesures de vitesse ne disent rien : le score et le temps seuls
       if (this._hud) this._hud.textContent = q.has('capture') ? `Gameplay Football ${F[4]}-${F[5]} · ${(F[0] / 1000).toFixed(0)} s de jeu`
-        : `GPF ${F[4]}-${F[5]} · ${(F[0] / 1000).toFixed(0)} s · ${fps.toFixed(0)} images/s · simulation ${msPas.toFixed(2)} ms par pas de 10 ms · poses ${msPose.toFixed(2)} ms par image · démarrage ${this.bootMs.toFixed(0)} ms`;
-      this._fpsN = 0; this._fpsT0 = now; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0;
+        : `GPF ${F[4]}-${F[5]} · ${(F[0] / 1000).toFixed(0)} s · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
+      this._fpsN = 0; this._fpsT0 = now; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0; this._cpuMs = 0; this._cpuN = 0;
     }
   }
 

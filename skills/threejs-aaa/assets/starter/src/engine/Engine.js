@@ -29,7 +29,11 @@ export class Engine {
 
   async boot() {
     const forceWebGL = new URLSearchParams(location.search).has('webgl');
-    this.renderer = createRenderer(this.parent, { forceWebGL });
+    // ?gpu=perf : demander la carte graphique la plus puissante (un portable à deux cartes donne sinon souvent l'intégrée) ;
+    // ?gpu=eco : la plus économe. WebGPU seulement — le repli WebGL suit le choix du navigateur.
+    const gpu = new URLSearchParams(location.search).get('gpu');
+    const powerPreference = gpu === 'perf' ? 'high-performance' : gpu === 'eco' ? 'low-power' : undefined;
+    this.renderer = createRenderer(this.parent, { forceWebGL, powerPreference });
     await this.renderer.init();                 // MANDATORY for WebGPU
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);

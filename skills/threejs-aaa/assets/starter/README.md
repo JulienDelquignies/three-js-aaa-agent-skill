@@ -19,6 +19,11 @@ Open the printed localhost URL. Drag to orbit. Open the console and inspect
 > implementation (some headless setups, very old Dawn builds), append **`?webgl`** to the URL
 > to force the WebGL2 path — the whole pipeline (IBL, shadows, bloom) runs identically.
 > Modern Chrome/Edge/Firefox and Safari 26+ run WebGPU fine.
+>
+> **Slow on a laptop?** Dual-GPU laptops often give the browser the integrated GPU. Append
+> **`?gpu=perf`** to ask WebGPU for the high-performance adapter (`powerPreference`; `?gpu=eco` asks
+> for the low-power one). If the browser ignores the hint, set it per app in the OS (Windows:
+> Settings → System → Display → Graphics).
 
 ## Layout
 
