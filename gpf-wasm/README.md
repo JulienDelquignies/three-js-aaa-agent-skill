@@ -286,6 +286,75 @@ Le corps ne pilote pas la hauteur : un tir que le cerveau envoie au-dessus devie
 - **Le hors-jeu.**
 - **L'avantage du domicile.** Rien ne le modélise : les deux équipes sont identiques.
 
+### Les séries de mesure, la passe dans le corps, la reprise au but (2 octobre, suite)
+
+**La règle de mesure : trier court, valider complet** (`bancs/serie.mjs`).
+- **La série courte** joue 8 graines × 20 min d'horloge, un match par cœur : environ 7 min pour deux variantes. Elle sert à trancher entre variantes.
+- **La série complète** joue 8 × 90 min (environ 17 min). Elle valide la variante retenue.
+- **Le cache.** Un match déjà joué avec le même code (cerveau, contrat, corps, module WebAssembly, banc), les mêmes options, la même graine et la même durée n'est pas rejoué : le moteur est déterministe.
+- **Le tableau** ramène tout à 90 min, à côté du réel visé. Les buts sont bruités (± 1,7 par match) : une série courte ne lit un écart de buts qu'au-delà d'environ 1 but par match.
+
+```
+node bancs/serie.mjs --variantes '{"base":{},"essai":{"rayonCharge":4}}'   # courte
+node bancs/serie.mjs --complet                                              # complète, réglages par défaut
+```
+
+**Les talonnades.** Le banc lit le journal à chaque pas de 10 ms. À chaque passe, il mesure l'écart entre le regard du passeur et le départ du ballon, au contact.
+- 9 % des passes partaient à plus de 150° du regard (réel : 0,2 à 0,5 %), à 16 m/s, le passeur lancé à 5,6 m/s.
+- La cause : à la décision, 35 % des passes du cerveau étaient à plus de 100° de son regard. Le coût d'angle de son choix (`coutAngle`) ne suffit pas.
+- La porte au contact de la skill (`horsCorps` : la frappe refusée) vit dans sa propre frappe, que le corps remplace. Or le corps de Gameplay Football n'a pour ces passes que ses gestes « 180 » : la talonnade, à l'arrêt comme en plein sprint.
+
+La règle (`talon`, `pTalon`) : au-delà de 100° (`passeFaisable.contact`), le joueur **se tourne d'abord**, au pas, ballon au pied, vers sa passe. Elle part quand elle est dans le corps. La talonnade permise (`talonReel` : au sol, 10 m au plus) reste rare : un tirage par possession et par destinataire, calé sur le réel.
+
+| 8 × 20 min | talonnades | passes réussies | tirs par 90 min |
+|---|---|---|---|
+| sans règle | 9 % | 79 % | 15,8 |
+| une autre passe, dans le corps | 4 % | 76 % | 20,3 |
+| se tourner d'abord | 5 % | 79 % | 25,3 |
+| **se tourner d'abord, talonnade rare** | **1 %** | **78 %** | **24,8** |
+
+Le seuil vient du cerveau (100°). Essayé à 135°, là où le corps a ses passes en se tournant (reprise ci-dessous comprise) : 3 % de talonnades au lieu de 1 %, 7 % de tirs en une touche au lieu de 21 %.
+
+**Les têtes, une erreur de mesure.** Aucune animation du corps ne déclare le geste « tête » : ses 13 têtes sont des passes, des tirs et des interventions dont la partie du corps au contact est la tête. Le journal porte le type de touche (`e_TouchType` 1 : intentionnelle, pas du pied), et le banc compte désormais les têtes ainsi. Le « 0 tête » d'avant était faux.
+
+**La reprise au but en première intention** (`reprise`). Le cerveau de la skill reprend ses vols au contact, dans son monde (`tete.js`, `voleeStep`). Le corps, lui, ne reprend que si on le lui a demandé avant, au moins une latence plus tôt. L'adaptateur décide donc au contact projeté, une fois par passe :
+- **la tête** si le ballon arrive entre 1,5 m et le front sauté, à moins de 12 m du but, dans la surface, le but dans le corps (120°) ;
+- **la volée** si le ballon arrive entre 0,25 et 1,15 m, à moins de 14 m du but, dans la surface, le but dans le corps (100°) ;
+- **au sol**, ce que l'arbitrage du cerveau (`arbitre`) choisirait le ballon au pied : le tir s'il vaut plus que la passe, le centre ou la conduite.
+
+Le tir garde la loi de finition du cerveau, calculée au point de contact.
+
+| 8 × 20 min | tirs en une touche | buts amenés par une passe | têtes par 90 min |
+|---|---|---|---|
+| sans | 5 % | 22 % | 35 |
+| avec | 21 % | 40 % | 48 |
+
+**La validation : 8 matchs de 90 min** (réglages par défaut : se tourner d'abord, talonnade rare, reprise au but).
+
+| | avant | après | réel |
+|---|---|---|---|
+| talonnades | ≈ 9 % | **1 %** | < 1 % ✓ |
+| tirs | 18,4 | **24,1** | 26 ± 7 ✓ |
+| fautes | 19,4 | **21,8** | 21,5 ✓ |
+| jaunes | 4,3 | **3,9** | 3,9 ✓ |
+| passes réussies | 80 % | 79 % | 80-85 % |
+| buts amenés par une passe | 40 % | **48 %** | ≈ 75 % |
+| buts marqués en une touche | 1 sur 20 | **11 sur 29** | environ la moitié |
+| tirs en une touche | ≈ 5 % | 20 % | ≈ 30 % (ordre de grandeur) |
+| buts | 2,9 | **3,9** ✗ | 2,75 |
+| buts / xG de référence | 0,98 | 1,17 | ≈ 1 |
+| téléportations | 0 | 0 | 0 ✓ |
+
+Le prix est le nombre de buts. Les tirs en une touche convertissent à 28 % (11 sur environ 39), les autres à 12 %. C'est le prochain point à disséquer : le placement du gardien du corps et la distance de ces tirs. Les têtes au but restent sans but (0 sur 29).
+
+**La carte du C++** (`carte-cpp.md`, une lecture du code, rien de compilé) propose quatre correctifs, chacun armé par une marque que seule l'intention pose (la garde au bit près tient) :
+- **la hauteur du tir**, aujourd'hui fixe à 2,9° (`humanoid_utils.cpp`) ;
+- **la talonnade sur demande** : une ligne après la sélection du geste retire les quatre talonnades ;
+- **les coups de pied arrêtés**, que leur IA tire au hasard ;
+- **la passe en retrait au gardien**, à mesurer d'abord.
+
+Le piège de construction : `build.sh` ne suit pas les en-têtes. Changer une structure du moteur (`gamedefines.hpp`) sans tout recompiler corromprait la mémoire sans erreur visible. Les correctifs passent donc par des champs que le moteur ignore déjà.
+
 ## Licences
 
 `LICENCES.txt`, copié à côté du module, réunit les avis : l'Unlicense du moteur, la licence Apache 2.0 de ses fichiers, la police et les bibliothèques compilées dedans (SDL2, FreeType, HarfBuzz, zlib, Boost).

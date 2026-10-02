@@ -30,6 +30,8 @@ import { pressionDe } from '../skills/threejs-aaa/assets/starter/src/engine/rece
 import { pressPredicate } from '../skills/threejs-aaa/assets/starter/src/engine/skills-sim.js';
 import { tackleWindow } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
 import { balPrenable } from '../skills/threejs-aaa/assets/starter/src/engine/dribble.js';
+import { ecartCorps, talonPermis } from '../skills/threejs-aaa/assets/starter/src/engine/passe-faisable.js';
+import { butDansCorps } from '../skills/threejs-aaa/assets/starter/src/engine/reprise-physique.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 
 const GPF = { hx: 55, hy: 36 };
@@ -40,8 +42,11 @@ const GPF = { hx: 55, hy: 36 };
  */
 export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {} } = {}) {
   /** Les réglages de l'adaptateur, chacun débrayable pour la mesure A/B : `flux` (les tirages nommés du cerveau),
-   *  `uneTouche` (la première intention posée avant le contact). */
-  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, ...options };
+   *  `uneTouche` (la première intention posée avant le contact), `talon` (la passe hors du corps : 'tourne' — se tourner
+   *  d'abord —, 'autre' — une autre passe —, null — telle quelle), `pTalon` (la part des talonnades permises jouées),
+   *  `seuilCorps` (l'écart au regard, en degrés, au-delà duquel la passe est hors du corps ; null : celui du cerveau, 100°),
+   *  `reprise` (la reprise au but en première intention). */
+  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, ...options };
   const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
@@ -87,10 +92,10 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
    *    sa passe au receveur et y fait réagir la défense (`st.phase = 'flight'`, `st.pass`) ; sans elle, il voyait un ballon
    *    libre et renvoyait le receveur à son poste pendant le vol — mesuré : 221 intentions « aller » sur 224 vols. */
   let dernierToucheur = null, teneur = { id: null, t: 0 }, vol = null;
-  /** La une-touche décidée et pas encore frappée : { id (cerveau), cible (id du corps), jusqua }. */
+  /** La première intention décidée et pas encore jouée : { id (cerveau), i (l'intention : la passe ou la reprise au but), jusqua }. */
   let uneToucheTenue = null;
   /** Les décisions de première intention (pour les bancs) : tentées, jouées, et les refus du cerveau par motif (st.deny). */
-  const stats = { utDecisions: 0, utJouees: 0, fautes: 0, tacles: 0 };
+  const stats = { utDecisions: 0, utJouees: 0, fautes: 0, tacles: 0, seTourne: 0, autreChoix: 0, talons: 0, angles: [0, 0, 0, 0], reprises: { tete: 0, volee: 0, sol: 0 }, reprisesJouees: 0 };
   /** LES ENGAGEMENTS EN COURS : le défenseur qui a décidé de tacler (id cerveau → fin du geste, s). */
   const engagements = new Map();
   /** La durée du geste de tacle debout du cerveau (animkit-data.js, tacleDebout : 0,7 s, contact à 0,28 s). */
@@ -217,6 +222,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
           dernierToucheur = ev.equipe;
           if (ev.joueur !== teneur.id) teneur = { id: ev.joueur, t: ev.t / 1000 };
           if (uneToucheTenue && ev.joueur !== corpsDe.get(uneToucheTenue.id)) uneToucheTenue = null;   // un autre a joué le ballon
+          else if (uneToucheTenue?.i.genre === INTENTION.TIRER && ev.b === GESTE.TIR) { stats.reprisesJouees++; uneToucheTenue = null; }
           if (vol && ev.joueur !== vol.passeur) vol = null;
         } else if (ev.type === EV.PASSE) {
           if (uneToucheTenue && corpsDe.get(uneToucheTenue.id) === ev.joueur) { stats.utJouees++; uneToucheTenue = null; }
@@ -263,7 +269,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         // le tacle lui-même reste aux réflexes du corps
         if ((engagements.get(q.id) ?? -1) > st.t) { const t2 = q.target ?? q.p; const [x2, y2] = versCorps(t2[0], t2[2]); out.push({ id, genre: INTENTION.PRESSER, x: x2, y: y2, vitesse: 8, job: 'tacle' }); continue; }
         if (uneToucheTenue && uneToucheTenue.id === q.id && st.t < uneToucheTenue.jusqua) {
-          out.push({ id, genre: INTENTION.PASSER, cible: uneToucheTenue.cible, drapeaux: PASSE.COURTE, uneTouche: true }); continue;
+          out.push({ id, ...uneToucheTenue.i }); continue;
         }
         if (porteur && q === porteur) { out.push({ id, ...porteurDecide(q), trace: poss?.trace }); continue; }
         const t = q.target ?? q.p;
@@ -308,9 +314,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         if (t != null && t <= AVANCE_UNE_TOUCHE) {
           vol.ut = premiereIntention(R, t);
           if (vol.ut) {
-            uneToucheTenue = { id: R.id, cible: vol.ut, jusqua: st.t + t + 0.8 };
+            uneToucheTenue = { id: R.id, i: vol.ut, jusqua: st.t + t + 0.8 };
             const o = out.find(i => i.id === corpsDe.get(R.id));
-            if (o) Object.assign(o, { genre: INTENTION.PASSER, cible: vol.ut, drapeaux: PASSE.COURTE, uneTouche: true });
+            if (o) { for (const k of Object.keys(o)) if (k !== 'id') delete o[k]; Object.assign(o, vol.ut); }
           }
         }
       }
@@ -360,8 +366,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     return le > 0 ? le / v : null;
   }
 
-  /** La décision du cerveau (`uneTouche`) au moment où le ballon arrive : rend l'id du corps du partenaire servi, ou null
-   *  (le corps contrôlera). Le ballon est posé au pied du receveur avec sa vitesse et sa hauteur d'aujourd'hui. */
+  /** La décision du cerveau au moment où le ballon arrive : la reprise au but (`repriseAuBut`), sinon la passe en une touche
+   *  (`uneTouche`) — rend l'intention, ou null (le corps contrôlera). Le ballon est posé au pied du receveur avec sa vitesse et
+   *  sa hauteur d'aujourd'hui. */
   function premiereIntention(R, t) {
     stats.utDecisions++;
     // LE MONDE AU CONTACT : le cerveau juge la pression, les couloirs et les partenaires à la RÉCEPTION — chacun est donc
@@ -370,10 +377,43 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     const bx = st.ball.p[0] + st.ball.v[0] * t, bz = st.ball.p[2] + st.ball.v[2] * t;
     for (const q of st.players) if (q !== R) { q.p = [q.p[0] + (q.v?.[0] ?? 0) * t, q.p[1], q.p[2] + (q.v?.[1] ?? 0) * t]; }
     R.p = [bx, R.p[1], bz];
+    // la hauteur du ballon au contact : son vol balistique (sans rebond ni frottement — un indicateur de geste)
+    const h = Math.max(0, st.ball.p[1] + st.ball.v[1] * t - 4.905 * t * t);
     st.ball = new BallBody([bx, st.ball.p[1], bz], [st.ball.v[0], st.ball.v[1], st.ball.v[2]], [0, 0, 0]);
+    if (OPT.reprise) { const r = repriseAuBut(R, h); if (r) return r; }
     if (!uneTouche(st, R, cfg)) return null;
     const m = st.pass?.to;
-    return m != null && m !== R.id ? corpsDe.get(m) ?? null : null;
+    const cible = m != null && m !== R.id ? corpsDe.get(m) ?? null : null;
+    return cible != null ? { genre: INTENTION.PASSER, cible, drapeaux: PASSE.COURTE, uneTouche: true } : null;
+  }
+
+  /**
+   * LA REPRISE AU BUT EN PREMIÈRE INTENTION — les lois du cerveau (tete.js, voleeStep) au contact projeté : dans la surface, LA
+   * TÊTE (ballon entre tete.min et le front sauté) à moins de tete.but m du but, LA VOLÉE (volee.min-max) à moins de volee.but
+   * m, le but dans le corps (reprisePhysique.corpsTete / corpsVolee) ; AU SOL, ce que l'arbitrage du cerveau choisirait le
+   * ballon au pied (`arbitre` : le tir s'il vaut plus que la passe, le centre, la conduite). Le cerveau de la skill reprend
+   * ses vols au contact dans son monde ; le corps, lui, ne reprend que si on le lui a demandé avant (son ordre de la latence).
+   * Rend l'intention de tir (la loi de finition du cerveau, au point de contact) ou null.
+   */
+  function repriseAuBut(R, h) {
+    const goal = st.pitch.attackGoal(R.team), sgn = Math.sign(goal.x || 1);
+    const dG = Math.hypot(goal.x - R.p[0], R.p[2]), surface = st.pitch.inBox(R.p[0], R.p[2], sgn);
+    const T = cfg.tete ?? {}, V = cfg.volee ?? {};
+    let geste = null;
+    if (h >= (T.min ?? 1.5)) { if (h <= (T.max ?? 2.2) + (T.saut ?? 0.75) && surface && dG < (T.but ?? 12) && butDansCorps(st, R, goal.x, 0, cfg, 'tete')) geste = 'tete'; }
+    else if (h >= (V.min ?? 0.25)) { if (h <= (V.max ?? 1.15) && surface && dG < (V.but ?? 14) && butDansCorps(st, R, goal.x, 0, cfg, 'volee')) geste = 'volee'; }
+    else if (butDansCorps(st, R, goal.x, 0, cfg, 'volee')) {
+      // au sol : l'arbitrage du cerveau, le ballon posé au pied du receveur (le monde est reprêté au tick suivant)
+      const sauve = { phase: st.phase, possession: st.possession, pass: st.pass, hold: st.hold, ball: st.ball };
+      st.phase = 'carry'; st.possession = { team: R.team, carrier: R.id }; st.pass = null; st.hold = 0;
+      st.ball = new BallBody([R.p[0], 0.11, R.p[2]], [0, 0, 0], [0, 0, 0]); st.ball.possess(R.id);
+      const r = arbitre(st, R, cfg);
+      Object.assign(st, sauve);
+      if (r?.meilleure === 'tir') geste = 'sol';
+    }
+    if (!geste) return null;
+    stats.reprises[geste]++;
+    return { ...tirDuCerveau(R), reprise: geste };
   }
 
   /**
@@ -406,9 +446,23 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     const choix = poss.arb.r?.meilleure;
     poss.trace.choix = choix; poss.trace.arbAge = st.t - poss.arb.t;
     if (choix === 'passe' || choix === 'centre') {
-      const p = choosePass(st, cfg);
+      let p = choosePass(st, cfg);
+      // LA PASSE DANS LE CORPS (passe-faisable.js — la porte au contact de la skill, 100°) : au-delà, le corps de Gameplay
+      // Football n'a que ses gestes « 180 » — la talonnade, à l'arrêt comme en plein sprint. Le cerveau ne la permet que courte
+      // et au sol (talonReel, ≤ 10 m) ; sinon, selon le réglage : « tourne » — le joueur SE TOURNE D'ABORD avec le ballon,
+      // la passe partira quand elle sera dans le corps — ou « autre » — il choisit une autre passe, dans le corps.
+      if (OPT.talon && p?.lead) {
+        const h = horsDuCorps(c, p, choix);
+        if (h && OPT.talon === 'autre') {
+          const veto = st.laneVeto; st.laneVeto = { ...veto, [p.to.id]: Infinity };
+          const p2 = choosePass(st, cfg); st.laneVeto = veto; stats.autreChoix++;
+          if (!p2?.lead || horsDuCorps(c, p2, choix)) return conduite(c);
+          p = p2;
+        } else if (h) { stats.seTourne++; return seTourner(c, p.lead); }
+      }
       const cible = p?.to && p.to.id >= 0 && !p.to.keeper ? corpsDe.get(p.to.id) : null;
       if (cible != null) {
+        if (p.lead) { const th = ecartCorps(p.lead[0] - c.p[0], p.lead[2] - c.p[2], c.yaw) * 180 / Math.PI; stats.angles[th < 45 ? 0 : th < 100 ? 1 : th < 150 ? 2 : 3]++; }
         // LES GESTES DU CORPS (AI_GetAutoPass) : la « courte » au pied ; la « longue » DANS LA COURSE (même force, cible
         // avancée de 20 % vers le but adverse — pas une passe longue) ; la « haute » levée
         const drapeaux = p.through ? PASSE.LONGUE : p.style === 'lofted' || p.style === 'chip' || choix === 'centre' ? PASSE.HAUTE : PASSE.COURTE;
@@ -458,6 +512,27 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     const puissance = Math.max(0.3, Math.min(1, 0.85 * Math.exp(gauss(rnd) * L.sigV + L.muV)));
     stats.tirs = (stats.tirs ?? 0) + 1; if (cadre) stats.tirsCadres = (stats.tirsCadres ?? 0) + 1;
     return { genre: INTENTION.TIRER, x, y, puissance };
+  }
+
+  /** La passe hors du corps (au-delà de passeFaisable.contact du regard) et qui n'est pas une talonnade permise : { th (°), dP }
+   *  ou null. La talonnade permise est comptée. */
+  function horsDuCorps(c, p, choix) {
+    const K = cfg.passeFaisable; if (K?.contact == null) return null;
+    const dx = p.lead[0] - c.p[0], dz = p.lead[2] - c.p[2], dP = Math.hypot(dx, dz);
+    const th = ecartCorps(dx, dz, c.yaw) * 180 / Math.PI;
+    if (th <= (OPT.seuilCorps ?? K.contact)) return null;
+    // la talonnade permise (courte, au sol) reste RARE : un tirage par possession et par destinataire (stable d'un tick à
+    // l'autre — sinon le joueur qui se tourne retirerait sa chance à chaque tick), calé sur le réel (0,2-0,5 % des passes)
+    if (talonPermis(st, cfg, dP, { style: p.style, cross: choix === 'centre', clear: !!p.clear })
+      && tirage(c.id * 64 + (p.to?.id ?? 0), poss?.debut ?? st.t) < OPT.pTalon) { stats.talons++; return null; }
+    return { th, dP };
+  }
+
+  /** SE TOURNER D'ABORD : la conduite vers la passe voulue, au pas (2 m/s) — le corps pivote avec le ballon. */
+  function seTourner(c, lead) {
+    const dx = lead[0] - c.p[0], dz = lead[2] - c.p[2], n = Math.hypot(dx, dz) || 1;
+    const [x, y] = versCorps(c.p[0] + (dx / n) * 8, c.p[2] + (dz / n) * 8);
+    return { genre: INTENTION.CONDUIRE, x, y, vitesse: 2 };
   }
 
   /** LA CONDUITE : la poussée du cerveau (`push`, lissée 0,35 s), prolongée à 8 m ; sa vitesse voulue (le seau « carry »). */

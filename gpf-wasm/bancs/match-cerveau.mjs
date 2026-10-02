@@ -30,6 +30,11 @@ const MODES = { 1: 'engagement', 2: 'six-mètres', 3: 'coup franc', 4: 'corner',
 const remises = {};
 const f = { sources: {}, touchesButeur: {}, origines: {}, surPasse: 0, butsJeu: 0, csc: [0, 0], buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
 const PASSES = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE]);
+// LA TÊTE : le corps n'a pas de geste « tête » à lui (aucune animation ne déclare ce type) — ses têtes sont des passes, des
+// tirs et des interventions dont la partie du corps au contact n'est ni le pied ni la jambe (touche intentionnelle « sans le
+// pied », e_TouchType 1, que le journal porte en a). Les gardiens (prises, parades) sont à part.
+const GESTES_TETE = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE, GESTE.TIR, GESTE.INTERVENTION]);
+const deLaTete = (ev) => ev.a === 1 && GESTES_TETE.has(ev.b);
 let dernier = null, passeEnCours = null;
 // LE DIAGNOSTIC DES PASSES : la dernière intention posée par joueur, et pour chaque passe ce que le cerveau voulait
 const derniereIntention = new Map();
@@ -37,6 +42,9 @@ const diag = { voulues: 0, auDestinataire: 0, aUnAutre: 0, perdues: 0, parType: 
 let receptionA = new Map();   // joueur → instant où il a reçu le ballon
 const conduites = { loin: 0, total: 0, lateral: [], porteLoin: 0, porteTotal: 0 };
 let suivi = { id: null, depuis: 0 }, sauts = 0, prev = null, tDecide = 0, nDecide = 0, enJeu = 0;
+// LA TALONNADE (réel : 0,2-0,5 % des passes) : à chaque passe, l'écart entre le regard du passeur et le départ du ballon, lus
+// au pas même du contact (le journal est lu à chaque pas de 10 ms) ; au-delà de 150°, le ballon part dans le dos du joueur
+const departs = [];
 const t0 = performance.now();
 
 // L'HORLOGE DU MATCH (par défaut) : le match dure MIN minutes d'horloge — arrêts de jeu compris à leur durée réelle (corps.mjs,
@@ -53,9 +61,19 @@ for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
     corps.fautes(d.fautes);
     tDecide += performance.now() - a; nDecide++;
   }
-  corps.avancer(10);
+  const evs = [];
+  for (let s = 0; s < 10; s++) {
+    corps.avancer(1);
+    const j = corps.journal(); if (!j.length) continue;
+    for (const ev of j) if (ev.type === EV.PASSE) {
+      const E = corps.etat(), p = E.joueurs.find(q => q.id === ev.joueur), v = E.ballonV;
+      const n = Math.hypot(v[0], v[1]), m = p ? Math.hypot(p.dir[0], p.dir[1]) : 0;
+      if (n > 2 && m > 0.1) departs.push({ a: Math.acos(Math.max(-1, Math.min(1, (v[0] * p.dir[0] + v[1] * p.dir[1]) / (n * m)))) * 180 / Math.PI, v: n, gardien: p.role === 0, vitesse: p.vitesse });
+    }
+    evs.push(...j);
+  }
   const apres = corps.etat();
-  const evs = corps.journal(); cerveau?.observer(evs);
+  cerveau?.observer(evs);
   for (const ev of evs) {
     if (ev.type === EV.BUT) {
       if (tirOuvert && tirOuvert.equipe === ev.equipe && ev.a !== 1) tirsXg.buts++;
@@ -67,7 +85,8 @@ for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
         const hist = touches.filter(t => t.t <= ev.t);
         let i = hist.length - 1; while (i >= 0 && hist[i].equipe !== ev.equipe) i--;
         const buteur = i >= 0 ? hist[i] : null;
-        f.origines[buteur ? (NOMS[buteur.b] ?? buteur.b) : '?'] = (f.origines[buteur ? (NOMS[buteur.b] ?? buteur.b) : '?'] ?? 0) + 1;
+        const geste = !buteur ? '?' : deLaTete(buteur) ? 'tête' : NOMS[buteur.b] ?? buteur.b;
+        f.origines[geste] = (f.origines[geste] ?? 0) + 1;
         let j = i; while (j >= 0 && hist[j].joueur === buteur?.joueur) j--;
         if (j >= 0 && hist[j].equipe === ev.equipe && (PASSES.has(hist[j].b) || hist[j].b === GESTE.TETE)) f.surPasse++;
         f.butsJeu++;
@@ -92,7 +111,7 @@ for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
         const j = apres.joueurs.find(k => k.id === ev.joueur), sens = ev.equipe === 0 ? 1 : -1;
         if (j) { const x = xgRef(55 - j.x * sens, j.y * sens); tirsXg.n++; tirsXg.xg += x; tirOuvert = { equipe: ev.equipe }; }
       }
-      if (ev.b === GESTE.TETE) ut.tetes++;
+      if (deLaTete(ev)) ut.tetes++;
       if (utPrec?.joueur !== ev.joueur) utApresCpa = false;
       utPrec = ev;
       if (ev.b === GESTE.TIR) f.tirs[ev.equipe]++;
@@ -169,7 +188,9 @@ const typ = { 4: 'courte', 5: 'longue', 6: 'haute' };
 console.log(`  passes par type : ${Object.entries(diag.parType).map(([k, v]) => `${typ[k]} ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
 console.log(`  passes par distance au destinataire voulu : ${Object.entries(diag.parDist).map(([k, v]) => `${k} m ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
 if (diag.voulues) console.log(`  passes voulues par le cerveau : ${diag.voulues} — au destinataire ${pc(diag.auDestinataire, diag.voulues)} %, à un autre coéquipier ${pc(diag.aUnAutre, diag.voulues)} %, perdues ${pc(diag.perdues, diag.voulues)} %`);
-console.log(`  une touche : passes ${ut.une}/${ut.passes} (${pc(ut.une, ut.passes)} % ; réel 15-25 %) · tirs ${ut.tirsUne}/${ut.tirs} · têtes ${ut.tetes}${cerveau ? ` · le cerveau : ${cerveau.stats().utDecisions} décisions, ${cerveau.stats().utJouees} jouées ; refus ${JSON.stringify(Object.fromEntries(Object.entries(cerveau.stats().refus).filter(([k]) => /^(ut|ar)-/.test(k))))}` : ''}`);
+console.log(`  une touche : passes ${ut.une}/${ut.passes} (${pc(ut.une, ut.passes)} % ; réel 15-25 %) · tirs ${ut.tirsUne}/${ut.tirs} · têtes ${ut.tetes}${cerveau ? ` · le cerveau : ${cerveau.stats().utDecisions} décisions, ${cerveau.stats().utJouees} jouées ; refus ${JSON.stringify(Object.fromEntries(Object.entries(cerveau.stats().refus).filter(([k]) => /^(ut|ar)-/.test(k))))} · reprises au but décidées ${JSON.stringify(cerveau.stats().reprises)}, jouées ${cerveau.stats().reprisesJouees}` : ''}`);
 console.log(`  tirs : ${tirsXg.n}, xG de référence ${tirsXg.xg.toFixed(2)}, buts sur tir ${tirsXg.buts} → buts/xG ${(tirsXg.buts / Math.max(1e-9, tirsXg.xg)).toFixed(2)} · remises ${JSON.stringify(remises)}`);
+const champ = departs.filter(d => !d.gardien), talons = champ.filter(d => d.a > 150);
+console.log(`  talonnades : ${talons.length}/${champ.length} (${pc(talons.length, champ.length)} % ; ballon parti à > 150° du regard du passeur, joueurs de champ) · > 100° : ${champ.filter(d => d.a > 100).length} · le ballon des talonnades ${med(talons.map(d => d.v)).toFixed(1)} m/s, le passeur à ${med(talons.map(d => d.vitesse)).toFixed(1)} m/s (médianes)${cerveau ? ` · le cerveau : angles à la décision ${JSON.stringify(cerveau.stats().angles)} (< 45°, 45-100, 100-150, > 150), se tourne ${cerveau.stats().seTourne}, autre choix ${cerveau.stats().autreChoix}, talons permis ${cerveau.stats().talons}` : ''}`);
 const tq = (q) => { const s = [...diag.tenues].sort((a, b) => a - b); return s.length ? s[Math.floor(q * (s.length - 1))].toFixed(2) : '—'; };
 console.log(`  tenue avant la passe (réception → passe) : p25 ${tq(0.25)} · médiane ${tq(0.5)} · p75 ${tq(0.75)} s`);
