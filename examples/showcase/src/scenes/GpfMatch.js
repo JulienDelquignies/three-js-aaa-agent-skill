@@ -8,9 +8,13 @@ import { jointsFromSample, restOffsets, GPF_NODES } from '../engine/gpf-anim.js'
 import { quatMul } from '../engine/vecmath.js';
 import { DUEL_CAST } from './duel-joueurs.js';
 
-// GpfMatch — LE LOT L0 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense), compilé
-// en WebAssembly SANS son rendu (gpf-wasm/), joue un 11 contre 11 — l'IA du jeu des deux côtés — et notre three.js le dessine avec
-// NOS humains (les Rocketbox n° 18 et n° 10 du duel). Chaque image : le moteur avance au pas fixe de 10 ms (100 Hz), puis les poses
+// GpfMatch — LES LOTS L0 ET L2 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense),
+// compilé en WebAssembly SANS son rendu (gpf-wasm/), joue un 11 contre 11, et notre three.js le dessine avec NOS humains (les
+// Rocketbox n° 18 et n° 10 du duel). Qui décide :
+//   · par défaut, NOTRE CERVEAU (lot L2) — le moteur de match de la skill, empaqueté (gpf/cerveau.mjs, branche
+//     feat/l2-cerveau-corps) : toutes les 100 ms il reçoit le monde du corps et rend une intention par joueur de champ
+//     (aller, presser, passer, tirer, conduire) ; le corps garde ses gestes, ses gardiens, ses coups de pied arrêtés ;
+//   · ?ia : l'IA du jeu des deux côtés (le lot L0) ; ?contre=ia : notre cerveau à gauche, leur IA à droite. Chaque image : le moteur avance au pas fixe de 10 ms (100 Hz), puis les poses
 // (racine + 13 articulations locales par joueur, gf_pose) passent par gpf-anim.jointsFromSample (le port validé : cheville au
 // ballon à ±2 cm de leur moteur) sur le rig canonique ; la racine est posée sans lacet, le cap vit dans le bassin.
 //
@@ -47,7 +51,16 @@ export class GpfMatch {
     const t0 = performance.now();
     this.M = await GpfModule({ locateFile: (p) => base + p, print: () => {}, printErr: (s) => console.warn('[gpf]', s) });
     this.M._gf_init(1, Number(q.get('md')) || 0.027);
-    this.M._gf_reset(Number(q.get('seed')) || 7, 1.0, 1.0, 1e9);
+    const graine = Number(q.get('seed')) || 7;
+    this.M._gf_reset(graine, 1.0, 1.0, 1e9);
+    // NOTRE CERVEAU : le paquet (cerveau + contrat du corps), les intentions ouvertes, un tick de décision tous les 10 pas
+    this.mode = q.has('ia') ? 'ia' : q.get('contre') === 'ia' ? 'contre' : 'cerveau';
+    if (this.mode !== 'ia') {
+      this.C = await import(/* @vite-ignore */ base + 'cerveau.mjs');
+      this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1] });
+      this.M._gf_intents(1);
+      this.pas = 0; this.cerveauMs = 0; this.cerveauN = 0;
+    }
     this.bootMs = performance.now() - t0;
     this.HEAD = this.M._gf_frame_head(); this.PER = this.M._gf_frame_per(); this.POSE = this.M._gf_pose_per();
 
@@ -125,7 +138,20 @@ export class GpfMatch {
     // LE PAS FIXE : 10 ms de jeu par pas, autant de pas que le temps réel écoulé (plafonné : un onglet en pause ne rattrape pas)
     this.acc = Math.min(this.acc + dt * (Number(q.get('vitesse')) || 1), 0.1);
     let n = 0; while (this.acc >= 0.01) { this.acc -= 0.01; n++; }
-    if (n) { const t0 = performance.now(); this.M._gf_step(n); const d = performance.now() - t0; this.simMs += d; this.simSteps += n; this.tot.simMs += d; this.tot.simSteps += n; }
+    if (n) {
+      const t0 = performance.now();
+      if (this.cerveau) {
+        // le pas fixe découpé sur le tick du cerveau : il décide au début de chaque centaine de millisecondes, lit le journal
+        // après chaque avance (la passe en vol, la tenue du porteur)
+        for (let reste = n; reste > 0;) {
+          if (this.pas % 10 === 0) this._decider();
+          const k = Math.min(reste, 10 - (this.pas % 10));
+          this.M._gf_step(k); this.pas += k; reste -= k;
+          this.cerveau.observer(this.C.lireJournal(this.M));
+        }
+      } else this.M._gf_step(n);
+      const d = performance.now() - t0; this.simMs += d; this.simSteps += n; this.tot.simMs += d; this.tot.simSteps += n;
+    }
     const tp = performance.now();
     const F = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), this.HEAD + 22 * this.PER);
     const Q = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_pose(), 22 * this.POSE);
@@ -138,12 +164,24 @@ export class GpfMatch {
     if (now - this._fpsT0 > 500) {
       const fps = this._fpsN * 1000 / (now - this._fpsT0), msPas = this.simSteps ? this.simMs / this.simSteps : 0, msPose = this.poseN ? this.poseMs / this.poseN : 0;
       const cpu = this._cpuN ? this._cpuMs / this._cpuN : 0, cv = this.renderer.domElement;
-      this.stats = { fps, cpu, msPas, msPose, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
+      const msCerveau = this.cerveauN ? this.cerveauMs / this.cerveauN : 0;
+      this.stats = { fps, cpu, msPas, msPose, msCerveau, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
+      const qui = this.mode === 'ia' ? 'leur IA des deux côtés' : this.mode === 'contre' ? 'notre cerveau (gauche) contre leur IA' : 'notre cerveau, leurs corps';
+      const horloge = `${Math.floor(F[0] / 60000)}:${String(Math.floor(F[0] / 1000) % 60).padStart(2, '0')}`;
       // en capture (?capture : images calculées une à une, rendu logiciel), les mesures de vitesse ne disent rien : le score et le temps seuls
-      if (this._hud) this._hud.textContent = q.has('capture') ? `Gameplay Football ${F[4]}-${F[5]} · ${(F[0] / 1000).toFixed(0)} s de jeu`
-        : `GPF ${F[4]}-${F[5]} · ${(F[0] / 1000).toFixed(0)} s · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
+      if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}`
+        : `${F[4]}-${F[5]} · ${horloge} · ${qui} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
+      this.cerveauMs = 0; this.cerveauN = 0;
       this._fpsN = 0; this._fpsT0 = now; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0; this._cpuMs = 0; this._cpuN = 0;
     }
+  }
+
+  // un tick de NOTRE CERVEAU : l'état du corps prêté, une intention par joueur piloté (hors jeu arrêté : le corps les mène)
+  _decider() {
+    const t0 = performance.now();
+    const e = this.C.lireEtat(this.M, this.HEAD, this.PER);
+    if (e.enJeu && !e.cpa) for (const i of this.cerveau.decider(e)) this.C.poserIntention(this.M, i.id, i);
+    this.cerveauMs += performance.now() - t0; this.cerveauN++;
   }
 
   // une pose : la racine dans la scène, puis les articulations du port (rest ⊗ q_spec, la convention de la couche de geste)
