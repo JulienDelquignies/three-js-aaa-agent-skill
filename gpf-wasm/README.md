@@ -75,6 +75,7 @@ S'y ajoute `api/SDL2/SDL2_rotozoom.h`, un remplaçant de SDL2_gfx : seul `zoomSu
 | Regardé en temps réel | ≈ 6,6 % d'un cœur |
 | Les poses des 22 humains dans la page | 0,85 ms par image (lecture, port des articulations, écriture des os), hors rendu |
 | Déterminisme | même empreinte au bit après 2 000 pas, graine 7 : Node, Chromium, et les deux variantes d'exceptions (`determinisme.mjs`) |
+| Téléphone Pixel 10 Pro Fold (page du cockpit) | **61 images/s** ; simulation 1,19 ms par pas ; poses 1,03 ms par image ; démarrage 0,66 s |
 
 **Leur IA sur 90 vraies minutes n'est pas du football.** Le match entier, IA contre IA, finit 14-21, et chaque joueur court 23 km (le réel : 10 à 12). Leur IA est réglée pour des matchs de 5 minutes de jeu effectif. Le cadrage le prévoyait : leur corps, notre cerveau.
 
