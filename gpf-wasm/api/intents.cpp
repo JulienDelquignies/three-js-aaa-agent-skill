@@ -57,6 +57,10 @@ void gf_event(int type, int team, int player, float a, float b, float c, float d
   g_journal.insert(g_journal.end(), ev, ev + GF_EV_SIZE);
 }
 
+static float g_arrets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+unsigned long gf_arret_ms(int mode) { return mode >= 0 && mode < 8 && g_arrets[mode] > 0 ? (unsigned long)g_arrets[mode] : 0; }
+void gf_arrets_set(const float *ms, int n) { for (int i = 0; i < 8; i++) g_arrets[i] = i < n ? ms[i] : 0.0f; }
+
 const float *gf_events_take(int *count) {
   g_lu.swap(g_journal);
   g_journal.clear();

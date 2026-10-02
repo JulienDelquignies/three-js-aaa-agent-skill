@@ -151,4 +151,33 @@ sub('onthepitch/player/humanoid/humanoid.cpp',
       }
 
       else if (currentAnim.functionType == e_FunctionType_Shot) {''')
+# 7. LES ATTRIBUTS DES JOUEURS, réglables de l'extérieur (gf_set_stat) : la porte par laquelle les attributs de la carrière
+#    pilotent le corps (lot L3), et le réglage du duel tireur-gardien (lot L2). Sans appel, rien ne change.
+sub('data/playerdata.hpp',
+    '''    inline float GetStat(PlayerStat name) const { return stats.GetReal(name); }''',
+    '''    inline float GetStat(PlayerStat name) const { return stats.GetReal(name); }
+    void SetStat(PlayerStat name, float value) { stats.Set(name, value); UpdateValues(); }  // [gf-intent]''')
+# 8. L'HORLOGE DU MATCH : à chaque arrêt de jeu, l'arbitre avance l'horloge de la vraie durée de la remise (api/intents.hpp,
+#    gf_arret_ms ; 0 par défaut). Sept arrêts : but, corner, six-mètres, touche, hors-jeu, faute, penalty — pas la mi-temps.
+sub('onthepitch/referee.cpp',
+    '          buffer.desiredSetPiece = e_GameMode_KickOff;\n          buffer.stopTime = match->GetActualTime_ms();\n          // Number of ms for replay.',
+    "          buffer.desiredSetPiece = e_GameMode_KickOff;\n          buffer.stopTime = match->GetActualTime_ms();\n          match->BumpActualTime_ms(gf_arret_ms(e_GameMode_KickOff));  // [gf-intent] l'horloge du match\n          // Number of ms for replay.")
+sub('onthepitch/referee.cpp',
+    '          buffer.desiredSetPiece = e_GameMode_Corner;\n          buffer.stopTime = match->GetActualTime_ms();',
+    "          buffer.desiredSetPiece = e_GameMode_Corner;\n          buffer.stopTime = match->GetActualTime_ms();\n          match->BumpActualTime_ms(gf_arret_ms(e_GameMode_Corner));  // [gf-intent] l'horloge du match")
+sub('onthepitch/referee.cpp',
+    '          buffer.desiredSetPiece = e_GameMode_GoalKick;\n          buffer.stopTime = match->GetActualTime_ms();',
+    "          buffer.desiredSetPiece = e_GameMode_GoalKick;\n          buffer.stopTime = match->GetActualTime_ms();\n          match->BumpActualTime_ms(gf_arret_ms(e_GameMode_GoalKick));  // [gf-intent] l'horloge du match")
+sub('onthepitch/referee.cpp',
+    '          buffer.desiredSetPiece = e_GameMode_ThrowIn;\n          buffer.stopTime = match->GetActualTime_ms();',
+    "          buffer.desiredSetPiece = e_GameMode_ThrowIn;\n          buffer.stopTime = match->GetActualTime_ms();\n          match->BumpActualTime_ms(gf_arret_ms(e_GameMode_ThrowIn));  // [gf-intent] l'horloge du match")
+sub('onthepitch/referee.cpp',
+    '          match->StopPlay();\n          buffer.desiredSetPiece = e_GameMode_FreeKick;\n          buffer.stopTime = match->GetActualTime_ms();',
+    "          match->StopPlay();\n          buffer.desiredSetPiece = e_GameMode_FreeKick;\n          buffer.stopTime = match->GetActualTime_ms();\n          match->BumpActualTime_ms(gf_arret_ms(e_GameMode_FreeKick));  // [gf-intent] l'horloge du match")
+sub('onthepitch/referee.cpp',
+    '      DO_VALIDATION;\n      buffer.desiredSetPiece = e_GameMode_FreeKick;\n      buffer.stopTime = match->GetActualTime_ms();',
+    "      DO_VALIDATION;\n      buffer.desiredSetPiece = e_GameMode_FreeKick;\n      buffer.stopTime = match->GetActualTime_ms();\n      match->BumpActualTime_ms(gf_arret_ms(e_GameMode_FreeKick));  // [gf-intent] l'horloge du match")
+sub('onthepitch/referee.cpp',
+    '      buffer.desiredSetPiece = e_GameMode_Penalty;\n      buffer.stopTime = match->GetActualTime_ms();',
+    "      buffer.desiredSetPiece = e_GameMode_Penalty;\n      buffer.stopTime = match->GetActualTime_ms();\n      match->BumpActualTime_ms(gf_arret_ms(e_GameMode_Penalty));  // [gf-intent] l'horloge du match")
 print('patch: ok')

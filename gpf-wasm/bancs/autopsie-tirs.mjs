@@ -20,6 +20,14 @@ const SORTIE = process.argv[5] ?? null;
 const corps = await chargerLeCorps();
 corps.lancer({ graine: GRAINE, intentions: true });
 const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE }) : null;
+// STATS_TIREURS='{"frappe":0.6,"puissance":0.8}' : les attributs des joueurs de champ (des deux équipes) multipliés — la
+// frappe (technical_shot, 14), la puissance (physical_shotpower, 6), la volée (technical_volley, 15). Le gardien reste.
+const TIREURS = process.env.STATS_TIREURS ? JSON.parse(process.env.STATS_TIREURS) : null;
+if (TIREURS) {
+  const ATTR = { frappe: 14, puissance: 6, volee: 15 };
+  for (const j of corps.etat().joueurs) if (j.role !== 0)
+    for (const [nom, k] of Object.entries(TIREURS)) corps.M._gf_set_stat(j.id, ATTR[nom], Math.min(1, corps.M._gf_get_stat(j.id, ATTR[nom]) * k));
+}
 const HX = 55, POTEAU = 3.7, BARRE = 2.5;
 
 const tirs = [];
@@ -103,7 +111,7 @@ const q = (a, k, d = 1) => { const s = a.filter(Number.isFinite).sort((x, y) => 
 const somme = (a) => a.reduce((s, x) => s + x, 0);
 const T = tirs.filter(p => p.issue);
 const buts = T.filter(p => p.issue === 'but');
-console.log(`AUTOPSIE DES TIRS — ${MODE === 'cerveau' ? 'NOTRE CERVEAU' : 'LEUR IA'}, ${MIN} min, graine ${GRAINE} (${((performance.now() - t0) / 1000).toFixed(0)} s) · score ${fin.score.join('-')} · empreinte finale ${empreinte}`);
+console.log(`AUTOPSIE DES TIRS — ${MODE === 'cerveau' ? 'NOTRE CERVEAU' : 'LEUR IA'}${TIREURS ? ` · tireurs ${JSON.stringify(TIREURS)}` : ''}, ${MIN} min, graine ${GRAINE} (${((performance.now() - t0) / 1000).toFixed(0)} s) · score ${fin.score.join('-')} · empreinte finale ${empreinte}`);
 console.log(`  ${tirs.length} tirs : buts ${buts.length} (${pc(buts.length, T.length)}) · xG de référence ${somme(T.map(p => p.xg)).toFixed(2)} (moyen ${q(T.map(p => p.xg), 0.5, 3)} médian) · issues ${JSON.stringify(T.reduce((o, p) => (o[p.issue] = (o[p.issue] ?? 0) + 1, o), {}))}`);
 console.log(`  d'où : distance médiane ${q(T.map(p => p.dist), 0.5)} m (p25 ${q(T.map(p => p.dist), 0.25)}, p75 ${q(T.map(p => p.dist), 0.75)}) · pression ${q(T.map(p => p.pression), 0.5)} m · défenseurs dans le triangle ${q(T.map(p => p.defDansTriangle), 0.5, 0)} (médiane ; 0 dans ${pc(T.filter(p => p.defDansTriangle === 0).length, T.length)})`);
 console.log(`  la frappe : ballon ${q(T.map(p => p.vBallon), 0.5)} m/s · cadrée (vol droit) ${pc(T.filter(p => p.cadreDroit).length, T.length)} · le gardien : sorti à ${q(T.map(p => p.gkSortie), 0.5)} m du centre du but, décalé de ${q(T.map(p => p.gkDecalage), 0.5)} m de la ligne de tir`);

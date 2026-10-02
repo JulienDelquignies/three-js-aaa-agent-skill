@@ -8,14 +8,26 @@
 //   · la téléportation : les sauts de plus de 3 m en 100 ms hors coups de pied arrêtés (un sprint en fait 0,9).
 import { chargerLeCorps, EV, GESTE } from '../corps.mjs';
 import { creerCerveau } from '../cerveau.mjs';
+import { xgRef } from '../../skills/threejs-aaa/assets/starter/src/engine/stats.js';
 const MIN = +(process.argv[2] ?? 10), GRAINE = +(process.argv[3] ?? 7), MODE = process.argv[4] ?? 'cerveau';
 const TACS = [process.argv[5] ?? 'equilibre', process.argv[6] ?? 'equilibre'];
 const corps = await chargerLeCorps();
-corps.lancer({ graine: GRAINE, intentions: true });
-const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE, tactiques: TACS }) : null;
+corps.lancer({ graine: GRAINE, intentions: true, ...(process.env.HORLOGE === '0' ? { matchDuration: 0.027, arrets: null } : {}) });
+// CERVEAU_OPTIONS='{"uneTouche":false}' : un réglage de l'adaptateur débrayé, pour la mesure A/B
+const OPTIONS = process.env.CERVEAU_OPTIONS ? JSON.parse(process.env.CERVEAU_OPTIONS) : {};
+const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE, tactiques: TACS, options: OPTIONS }) : null;
 
 const NOMS = Object.fromEntries(Object.entries(GESTE).map(([k, v]) => [v, k.toLowerCase()]));
 const touches = [];   // l'historique des touches (pour l'origine des buts)
+// LA UNE-TOUCHE : la passe (ou le tir) jouée sur la PREMIÈRE touche du joueur — la touche précédente du journal est d'un autre
+// joueur, en jeu (la première touche après un coup de pied arrêté est exclue)
+const ut = { passes: 0, une: 0, tirs: 0, tirsUne: 0, tetes: 0 };
+let utPrec = null, utApresCpa = false;
+// LES TIRS ET LEUR xG DE RÉFÉRENCE (stats.js xgRef, indépendant des deux moteurs) : un but compte pour le tir s'il suit la frappe
+// sans touche d'un autre camp ; LES REMISES par type de coup de pied arrêté (e_GameMode)
+const tirsXg = { n: 0, xg: 0, buts: 0 }; let tirOuvert = null;
+const MODES = { 1: 'engagement', 2: 'six-mètres', 3: 'coup franc', 4: 'corner', 5: 'touche', 6: 'penalty' };
+const remises = {};
 const f = { origines: {}, surPasse: 0, butsJeu: 0, csc: [0, 0], buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
 const PASSES = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE]);
 let dernier = null, passeEnCours = null;
@@ -27,8 +39,13 @@ const conduites = { loin: 0, total: 0, lateral: [], porteLoin: 0, porteTotal: 0 
 let suivi = { id: null, depuis: 0 }, sauts = 0, prev = null, tDecide = 0, nDecide = 0, enJeu = 0;
 const t0 = performance.now();
 
-for (let tick = 0; tick < MIN * 600; tick++) {
+// L'HORLOGE DU MATCH (par défaut) : le match dure MIN minutes d'horloge — arrêts de jeu compris à leur durée réelle (corps.mjs,
+// ARRETS_REELS) —, la mi-temps sifflée à la moitié. HORLOGE=0 : MIN minutes simulées, sans mi-temps (les bancs d'avant).
+const HORLOGE = process.env.HORLOGE !== '0', FIN = MIN * 60000;
+let miTemps = false;
+for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
   const e = corps.etat();
+  if (HORLOGE && !miTemps && e.t >= FIN / 2) { corps.miTemps(); miTemps = true; }
   if (cerveau && e.enJeu && !e.cpa) {
     const a = performance.now();
     for (const i of cerveau.decider(e)) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
@@ -39,6 +56,8 @@ for (let tick = 0; tick < MIN * 600; tick++) {
   const evs = corps.journal(); cerveau?.observer(evs);
   for (const ev of evs) {
     if (ev.type === EV.BUT) {
+      if (tirOuvert && tirOuvert.equipe === ev.equipe && ev.a !== 1) tirsXg.buts++;
+      tirOuvert = null;
       f.buts[ev.equipe]++; if (ev.a === 1) f.csc[ev.equipe]++;
       // L'ORIGINE DU BUT : le geste de la dernière touche de l'équipe qui marque, et la passe décisive (la touche qui précède
       // la série du buteur est une passe d'un coéquipier — le §6 du cadrage vise ≈ 75 % de buts sur passe)
@@ -54,8 +73,20 @@ for (let tick = 0; tick < MIN * 600; tick++) {
     }
     else if (ev.type === EV.FAUTE) { f.fautes[ev.equipe]++; if (ev.a === 2) f.jaunes[ev.equipe]++; if (ev.a === 3) f.rouges[ev.equipe]++; }
     else if (ev.type === EV.HORS_JEU) f.horsJeu[ev.equipe]++;
+    else if (ev.type === EV.CPA) { utApresCpa = true; tirOuvert = null; const m = MODES[ev.a] ?? ev.a; remises[m] = (remises[m] ?? 0) + 1; }
     else if (ev.type === EV.TOUCHE) {
       touches.push(ev); if (touches.length > 64) touches.shift();
+      const premiere = utPrec && utPrec.joueur !== ev.joueur && !utApresCpa;
+      if (PASSES.has(ev.b) && !utApresCpa) { ut.passes++; if (premiere) ut.une++; }
+      if (ev.b === GESTE.TIR) { ut.tirs++; if (premiere) ut.tirsUne++; }
+      if (tirOuvert && ev.equipe !== tirOuvert.equipe) tirOuvert = null;   // le ballon a changé de camp : le tir est fini
+      if (ev.b === GESTE.TIR) {
+        const j = apres.joueurs.find(k => k.id === ev.joueur), sens = ev.equipe === 0 ? 1 : -1;
+        if (j) { const x = xgRef(55 - j.x * sens, j.y * sens); tirsXg.n++; tirsXg.xg += x; tirOuvert = { equipe: ev.equipe }; }
+      }
+      if (ev.b === GESTE.TETE) ut.tetes++;
+      if (utPrec?.joueur !== ev.joueur) utApresCpa = false;
+      utPrec = ev;
       if (ev.b === GESTE.TIR) f.tirs[ev.equipe]++;
       // une passe se juge à la touche suivante d'un AUTRE joueur : un coéquipier = réussie
       if (passeEnCours && ev.joueur !== passeEnCours.joueur) {
@@ -129,5 +160,7 @@ const typ = { 4: 'courte', 5: 'longue', 6: 'haute' };
 console.log(`  passes par type : ${Object.entries(diag.parType).map(([k, v]) => `${typ[k]} ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
 console.log(`  passes par distance au destinataire voulu : ${Object.entries(diag.parDist).map(([k, v]) => `${k} m ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
 if (diag.voulues) console.log(`  passes voulues par le cerveau : ${diag.voulues} — au destinataire ${pc(diag.auDestinataire, diag.voulues)} %, à un autre coéquipier ${pc(diag.aUnAutre, diag.voulues)} %, perdues ${pc(diag.perdues, diag.voulues)} %`);
+console.log(`  une touche : passes ${ut.une}/${ut.passes} (${pc(ut.une, ut.passes)} % ; réel 15-25 %) · tirs ${ut.tirsUne}/${ut.tirs} · têtes ${ut.tetes}${cerveau ? ` · le cerveau : ${cerveau.stats().utDecisions} décisions, ${cerveau.stats().utJouees} jouées ; refus ${JSON.stringify(Object.fromEntries(Object.entries(cerveau.stats().refus).filter(([k]) => /^(ut|ar)-/.test(k))))}` : ''}`);
+console.log(`  tirs : ${tirsXg.n}, xG de référence ${tirsXg.xg.toFixed(2)}, buts sur tir ${tirsXg.buts} → buts/xG ${(tirsXg.buts / Math.max(1e-9, tirsXg.xg)).toFixed(2)} · remises ${JSON.stringify(remises)}`);
 const tq = (q) => { const s = [...diag.tenues].sort((a, b) => a - b); return s.length ? s[Math.floor(q * (s.length - 1))].toFixed(2) : '—'; };
 console.log(`  tenue avant la passe (réception → passe) : p25 ${tq(0.25)} · médiane ${tq(0.5)} · p75 ${tq(0.75)} s`);

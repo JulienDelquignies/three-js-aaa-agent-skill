@@ -60,3 +60,11 @@ static const int GF_EV_SIZE = 8;
 void gf_event(int type, int team, int player, float a = 0, float b = 0, float c = 0, float d = 0);
 /** Le journal accumulé depuis la dernière lecture : pointeur et nombre d'événements ; la lecture le vide. */
 const float *gf_events_take(int *count);
+
+// ── L'HORLOGE DU MATCH ─────────────────────────────────────────────────────────────────────────────────────────────────
+// Le corps simule chaque remise en jeu en ≈ 4 s (2 s avant le placement, 2 s avant le coup de sifflet) ; une vraie remise
+// dure 10 à 60 s. À chaque arrêt de jeu, l'arbitre avance l'horloge du match de ce supplément, SANS le simuler — l'écran
+// coupe le temps mort comme une retransmission, la feuille de match le compte. Indexé par e_GameMode (1 engagement après
+// un but, 2 six-mètres, 3 coup franc et hors-jeu, 4 corner, 5 touche, 6 penalty) ; 0 par défaut : rien ne change.
+unsigned long gf_arret_ms(int mode);
+void gf_arrets_set(const float *ms, int n);

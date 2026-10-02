@@ -20,6 +20,7 @@ import { movePlayers } from '../skills/threejs-aaa/assets/starter/src/engine/mov
 import { arbitre } from '../skills/threejs-aaa/assets/starter/src/engine/menace.js';
 import { choosePass } from '../skills/threejs-aaa/assets/starter/src/engine/rondo.js';
 import { BallBody } from '../skills/threejs-aaa/assets/starter/src/engine/ball-body.js';
+import { uneTouche } from '../skills/threejs-aaa/assets/starter/src/engine/premiere-intention.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 
 const GPF = { hx: 55, hy: 36 };
@@ -28,11 +29,19 @@ const GPF = { hx: 55, hy: 36 };
  * Un cerveau pour un match : `tactiques` = les deux tactiques de la skill (noms de presets ou objets), `graine` = celle du
  * match. `decider(etat)` rend les intentions des joueurs que le cerveau pilote (tous sauf les gardiens).
  */
-export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } = {}) {
+export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {} } = {}) {
+  /** Les réglages de l'adaptateur, chacun débrayable pour la mesure A/B : `flux` (les tirages nommés du cerveau),
+   *  `uneTouche` (la première intention posée avant le contact). */
+  const OPT = { flux: true, uneTouche: true, ...options };
   const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
   const cfg = matchCfg({ chrono: null, loi3: null });
+  // LE BALLON JOUABLE EN UNE TOUCHE EST CELUI DU CORPS : le cerveau refuse la première intention au-delà de 9,5 m/s à
+  // l'arrivée — réglé pour ses passes à lui, dosées pour arriver à ≈ 5 m/s. Celles du corps arrivent à 9,5-15 m/s dans
+  // 75 % des réceptions, et leur propre IA y joue en une touche avec 67-86 % de réussite (3 graines × 15 min). Le seuil
+  // devient celui du corps : 15 m/s (au-delà, trop peu de cas pour juger).
+  cfg.uneTouche = { ...cfg.uneTouche, vmax: 15 };
   const SX = st.pitch.hx / GPF.hx, SZ = st.pitch.hz / GPF.hy;
   const versCerveau = (x, y) => [x * SX, -y * SZ];
   const versCorps = (x, z) => [x / SX, -z / SZ];
@@ -48,6 +57,10 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
    *    sa passe au receveur et y fait réagir la défense (`st.phase = 'flight'`, `st.pass`) ; sans elle, il voyait un ballon
    *    libre et renvoyait le receveur à son poste pendant le vol — mesuré : 221 intentions « aller » sur 224 vols. */
   let dernierToucheur = null, teneur = { id: null, t: 0 }, vol = null;
+  /** La une-touche décidée et pas encore frappée : { id (cerveau), cible (id du corps), jusqua }. */
+  let uneToucheTenue = null;
+  /** Les décisions de première intention (pour les bancs) : tentées, jouées, et les refus du cerveau par motif (st.deny). */
+  const stats = { utDecisions: 0, utJouees: 0 };
   /** LE GARDIEN DU CORPS NE REÇOIT PAS LA PASSE EN RETRAIT : la règle lui interdit les mains, et le moteur ne lui a pas appris
    *  à la jouer du pied (leur propre IA ne lui passe presque jamais : 0,3 % de ses passes). Mesuré, sur 45 min × 3 graines :
    *  32 passes au gardien (4,1 %), 4 dans nos filets — la « courte » de 24 m part à 29 m/s, monte à 2 m, et passe au-dessus du
@@ -59,6 +72,11 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
    *  partira. Sans cela, mesuré : le porteur décidait avec l'adversaire à 1,7 m qui fonçait à 5 m/s, et 57 % de nos passes
    *  partaient avec un adversaire à moins d'un mètre (leur IA : 18 %) — réussies à 63 %. */
   const LATENCE = 0.4;
+  /** LA PREMIÈRE INTENTION SE DÉCIDE AVANT LE CONTACT : le corps doit avoir l'ordre de passer quand le ballon arrive (leur
+   *  propre IA le pose jusqu'à 1 s avant). Le cerveau de la skill tranche à la réception (`receive` → `uneTouche`) ; ici il
+   *  tranche UNE FOIS par passe, quand le ballon est à moins de la latence du corps + un tick du receveur — une seule fois,
+   *  sinon ses tirages se répéteraient à chaque tick et gonfleraient ses chances. L'ordre tient jusqu'à la frappe. */
+  const AVANCE_UNE_TOUCHE = LATENCE + 0.1;
   /** Un tirage seedé et sans état (la graine, le porteur, l'instant) — le cerveau ne consomme pas son propre hasard. */
   const tirage = (a, b) => { let h = (graine * 2654435761 ^ a * 40503 ^ Math.round(b * 1000) * 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
@@ -141,6 +159,10 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
     if (dernierToucheur === 0 || dernierToucheur === 1) st.lastTouch = dernierToucheur;
     st.restart = null; st._whistle = null; st._faute = null;
     st.laneVeto = vetoGardiens;
+    // LES TIRAGES NOMMÉS DU CERVEAU (rng.tirage, lot 264) : son pas de simulation les arme à chaque image — le tick physique
+    // (1/60 s), les compteurs remis à zéro. Sans eux, chaque tirage retombait sur un générateur séquentiel : le hasard d'une
+    // décision dépendait de tous les tirages faits avant elle dans le tick.
+    if (OPT.flux && cfg.flux) { const F = st._flux ??= { seed: (st.seed ?? 1) >>> 0, tick: 0, k: new Map() }; F.tick = Math.round(st.t * 60); F.k.clear(); }
     st._decide = true;
   }
 
@@ -152,8 +174,12 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         if (ev.type === EV.TOUCHE) {
           dernierToucheur = ev.equipe;
           if (ev.joueur !== teneur.id) teneur = { id: ev.joueur, t: ev.t / 1000 };
+          if (uneToucheTenue && ev.joueur !== corpsDe.get(uneToucheTenue.id)) uneToucheTenue = null;   // un autre a joué le ballon
           if (vol && ev.joueur !== vol.passeur) vol = null;
-        } else if (ev.type === EV.PASSE) vol = { passeur: ev.joueur, cible: ev.b, geste: ev.a, t: ev.t / 1000, pass: null };
+        } else if (ev.type === EV.PASSE) {
+          if (uneToucheTenue && corpsDe.get(uneToucheTenue.id) === ev.joueur) { stats.utJouees++; uneToucheTenue = null; }
+          vol = { passeur: ev.joueur, cible: ev.b, geste: ev.a, t: ev.t / 1000, pass: null };
+        }
         else if (ev.type === EV.BUT || ev.type === EV.FAUTE || ev.type === EV.HORS_JEU || ev.type === EV.CPA) vol = null;
       }
     },
@@ -174,6 +200,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         if (!equipes.includes(q.team)) continue;
         const id = corpsDe.get(q.id); if (id == null) continue;
         if (q.keeper) { out.push({ id, genre: INTENTION.IA }); continue; }
+        if (uneToucheTenue && uneToucheTenue.id === q.id && st.t < uneToucheTenue.jusqua) {
+          out.push({ id, genre: INTENTION.PASSER, cible: uneToucheTenue.cible, drapeaux: PASSE.COURTE, uneTouche: true }); continue;
+        }
         if (porteur && q === porteur) { out.push({ id, ...porteurDecide(q), trace: poss?.trace }); continue; }
         const t = q.target ?? q.p;
         const [x, y] = versCorps(t[0], t[2]);
@@ -181,9 +210,49 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         if (q.job === 'press') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: q.job });
         else out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.max(1.5, Math.min(8, voulue || 5)), job: q.job });
       }
+      // LA PREMIÈRE INTENTION, une fois par passe : le monde est déjà décidé pour ce tick, on peut le salir (il est reprêté au
+      // suivant) — le ballon posé au pied du receveur, à sa vitesse d'arrivée, et la fonction du cerveau tranche
+      if (OPT.uneTouche && st.phase === 'flight' && vol?.pass && vol.ut === undefined) {
+        const R = st.players[vol.pass.to];
+        const t = R && !R.keeper && equipes.includes(R.team) ? arriveeAuPied(R) : null;
+        if (t != null && t <= AVANCE_UNE_TOUCHE) {
+          vol.ut = premiereIntention(R, t);
+          if (vol.ut) {
+            uneToucheTenue = { id: R.id, cible: vol.ut, jusqua: st.t + t + 0.8 };
+            const o = out.find(i => i.id === corpsDe.get(R.id));
+            if (o) Object.assign(o, { genre: INTENTION.PASSER, cible: vol.ut, drapeaux: PASSE.COURTE, uneTouche: true });
+          }
+        }
+      }
       return out;
     },
+    /** Les compteurs de la première intention et les refus nommés du cerveau (st.deny), pour les bancs. */
+    stats() { return { ...stats, refus: { ...(st.deny ?? {}) } }; },
   };
+
+  /** Le temps (s) avant que le ballon arrive au receveur, sur sa ligne actuelle ; null s'il s'en éloigne. */
+  function arriveeAuPied(R) {
+    const vx = st.ball.v[0], vz = st.ball.v[2], v = Math.hypot(vx, vz);
+    if (v < 0.5) return null;
+    const le = ((R.p[0] - st.ball.p[0]) * vx + (R.p[2] - st.ball.p[2]) * vz) / v;
+    return le > 0 ? le / v : null;
+  }
+
+  /** La décision du cerveau (`uneTouche`) au moment où le ballon arrive : rend l'id du corps du partenaire servi, ou null
+   *  (le corps contrôlera). Le ballon est posé au pied du receveur avec sa vitesse et sa hauteur d'aujourd'hui. */
+  function premiereIntention(R, t) {
+    stats.utDecisions++;
+    // LE MONDE AU CONTACT : le cerveau juge la pression, les couloirs et les partenaires à la RÉCEPTION — chacun est donc
+    // projeté du temps qui reste (sa vitesse × t), le receveur au point où le ballon l'atteint. Juger 0,5 s avant, c'était
+    // voir le presseur encore loin : 66 % de refus « pas envie », 9 % de une-touche.
+    const bx = st.ball.p[0] + st.ball.v[0] * t, bz = st.ball.p[2] + st.ball.v[2] * t;
+    for (const q of st.players) if (q !== R) { q.p = [q.p[0] + (q.v?.[0] ?? 0) * t, q.p[1], q.p[2] + (q.v?.[1] ?? 0) * t]; }
+    R.p = [bx, R.p[1], bz];
+    st.ball = new BallBody([bx, st.ball.p[1], bz], [st.ball.v[0], st.ball.v[1], st.ball.v[2]], [0, 0, 0]);
+    if (!uneTouche(st, R, cfg)) return null;
+    const m = st.pass?.to;
+    return m != null && m !== R.id ? corpsDe.get(m) ?? null : null;
+  }
 
   /**
    * LE PORTEUR, aux portes du cerveau (rondo-sim.js, le bloc de décision du porteur) :

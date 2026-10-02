@@ -23,7 +23,7 @@ ls $OBJ/*.err 2>/dev/null | wc -l | xargs echo "fichiers en erreur :"
 em++ $OBJ/*.o -O3 $EHL -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 \
   -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=GpfModule -sENVIRONMENT=web,worker,node \
   -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sSTACK_SIZE=4194304 \
-  -sEXPORTED_FUNCTIONS=_gf_init,_gf_reset,_gf_step,_gf_frame,_gf_pose,_gf_frame_head,_gf_frame_per,_gf_pose_per,_gf_intents,_gf_set_intent,_gf_events,_gf_events_n,_malloc,_free \
+  -sEXPORTED_FUNCTIONS=_gf_init,_gf_reset,_gf_step,_gf_frame,_gf_pose,_gf_frame_head,_gf_frame_per,_gf_pose_per,_gf_intents,_gf_set_intent,_gf_events,_gf_events_n,_gf_set_stat,_gf_get_stat,_gf_set_arrets,_gf_mi_temps,_malloc,_free \
   -sEXPORTED_RUNTIME_METHODS=HEAPF32,FS,ccall,cwrap \
   --preload-file build/data@/data \
   -o $OUT/gpf.mjs

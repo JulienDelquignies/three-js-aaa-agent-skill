@@ -77,6 +77,7 @@ EMSCRIPTEN_KEEPALIVE int gf_reset(int seed, float leftDifficulty, float rightDif
   sc->reverse_team_processing = (seed % 2) != 0;      // comme scenario_builder.py
   sc->game_duration = gameDuration;
   sc->offsides = true;
+  gf_arrets_set(nullptr, 0);                          // l'horloge du match : aucun supplément tant qu'on n'en pose pas
   g_env->reset(*sc, true);
   return 1;
 }
@@ -168,6 +169,43 @@ static int g_nEvents = 0;
 /** Le journal depuis la dernière lecture (GF_EV_SIZE nombres par événement), et le vide ; `gf_events_n` dit combien. */
 EMSCRIPTEN_KEEPALIVE const float *gf_events() { return gf_events_take(&g_nEvents); }
 EMSCRIPTEN_KEEPALIVE int gf_events_n() { return g_nEvents; }
+
+/** LES ATTRIBUTS D'UN JOUEUR (id stable, PlayerStat dans l'ordre de utils.hpp : 0 équilibre, 1 réaction, 2 accélération,
+ *  3 vitesse, 4 endurance, 5 agilité, 6 puissance de frappe, 7 tacle debout, 8 tacle glissé, 9 contrôle, 10 dribble,
+ *  11 passe courte, 12 passe haute, 13 tête, 14 frappe, 15 volée, 16 calme, 17 activité, 18 résilience, 19 placement
+ *  défensif, 20 placement offensif, 21 vision). La valeur de base (0..1) : le moteur la multiplie ensuite par la difficulté
+ *  et la fatigue (Player::GetStat). */
+static Player *joueurParId(int stableId) {
+  Match *m = GetGameTask()->GetMatch();
+  for (int t = 0; t < 2; t++) {
+    std::vector<Player *> players;
+    m->GetTeam(t)->GetAllPlayers(players);
+    for (auto p : players) if (p->GetStableID() == stableId) return p;
+  }
+  return nullptr;
+}
+EMSCRIPTEN_KEEPALIVE int gf_set_stat(int stableId, int stat, float value) {
+  Player *p = joueurParId(stableId);
+  if (!p || stat < 0 || stat >= player_stat_max) return 0;
+  const_cast<PlayerData *>(p->GetPlayerData())->SetStat((PlayerStat)stat, value);
+  return 1;
+}
+EMSCRIPTEN_KEEPALIVE float gf_get_stat(int stableId, int stat) {
+  Player *p = joueurParId(stableId);
+  if (!p || stat < 0 || stat >= player_stat_max) return -1.0f;
+  return p->GetPlayerData()->GetStat((PlayerStat)stat);
+}
+
+/** L'HORLOGE DU MATCH : les suppléments (ms) de chaque remise en jeu, au-delà des ≈ 4 s que le corps simule — engagement
+ *  après un but, six-mètres, coup franc (faute ou hors-jeu), corner, touche, penalty (voir intents.hpp). */
+EMSCRIPTEN_KEEPALIVE void gf_set_arrets(float engagement, float sixMetres, float coupFranc, float corner, float touche, float penalty) {
+  const float ms[8] = {0, engagement, sixMetres, coupFranc, corner, touche, penalty, 0};
+  gf_arrets_set(ms, 8);
+}
+/** LA MI-TEMPS, sifflée maintenant (à la première action en jeu) : l'arbitre du corps arrête le jeu et donne l'engagement
+ *  de la seconde période à l'autre équipe (sa logique de seconde période, déclenchée par l'horloge continue du match
+ *  plutôt que par la sienne, qui s'arrête quand le ballon est mort). Les équipes ne changent pas de côté. */
+EMSCRIPTEN_KEEPALIVE int gf_mi_temps() { GetScenarioConfig().second_half = 0; return 1; }
 
 EMSCRIPTEN_KEEPALIVE int gf_frame_head() { return FRAME_HEAD; }
 EMSCRIPTEN_KEEPALIVE int gf_frame_per() { return FRAME_PER; }

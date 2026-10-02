@@ -33,6 +33,20 @@ export function lireJournal(M) {
   return out;
 }
 
+/** LA DURÉE RÉELLE D'UNE REMISE EN JEU (temps mort total, en secondes ; ordres de grandeur du football d'élite, calés sur un
+ *  temps de jeu effectif ≈ 58 min sur 90). Le corps en simule ≈ 4 s (≈ 1 s pour l'engagement après un but) : l'horloge du
+ *  match avance du reste, sans le simuler — l'écran coupe le temps mort comme une retransmission. */
+export const ARRETS_REELS = { engagement: 60, sixMetres: 20, coupFranc: 25, corner: 28, touche: 10, penalty: 60 };
+const SIMULE = { engagement: 1, sixMetres: 4, coupFranc: 4, corner: 4, touche: 4, penalty: 4 };
+/** Poser les durées des remises (gf_set_arrets) ; null : le corps seul (≈ 4 s par remise). */
+export function poserLesArrets(M, arrets = ARRETS_REELS) {
+  const ms = (k) => (arrets ? Math.max(0, (arrets[k] - SIMULE[k]) * 1000) : 0);
+  M._gf_set_arrets(ms('engagement'), ms('sixMetres'), ms('coupFranc'), ms('corner'), ms('touche'), ms('penalty'));
+}
+/** LA DURÉE DU CHRONO qui fait coller l'horloge du match au temps simulé — et qui donne au corps la fatigue d'un vrai match
+ *  (player.cpp : la fatigue s'accumule ÷ ce facteur ; 0,027, le réglage de GRF, l'accélère 18 fois). */
+export const CHRONO_REEL = 4.75;
+
 /** Poser l'intention TENUE d'un joueur (id stable). */
 export function poserIntention(M, id, { genre = 0, x = 0, y = 0, vitesse = 0, cible = -1, puissance = 0, drapeaux = 0 } = {}) {
   M._gf_set_intent(id, genre, x, y, vitesse, cible, puissance, drapeaux);

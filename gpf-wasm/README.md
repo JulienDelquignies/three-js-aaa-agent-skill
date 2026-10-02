@@ -160,12 +160,54 @@ Le volume de passes « par 90 min » trompe : notre ballon est en jeu 91 % du te
 | passes par minute de jeu effectif | 18,8 | 19,5 | ≈ 17 |
 | passes réussies | 75 % | 76 % | 80-85 % |
 
-Restent ouverts :
+### Le match à l'horloge (2 octobre, 8 matchs de 90 min, graines 3 à 29)
 
-- **La conversion des tirs : 30 %.** Notre xG de référence des tirs a-t-il changé, ou est-ce le gardien ? C'est la prochaine autopsie.
-- **Les buts en solo.** 75 % de nos buts ne suivent pas une passe.
-- **Le temps de jeu effectif : 91 %.** Les coups de pied arrêtés repartent trop vite.
-- **Les fautes : environ 10 par 90 min**, contre 21,5 en vrai.
+**La fatigue était accélérée 18 fois.** Le corps accumule la fatigue divisée par le facteur de son chrono (`player.cpp`) :
+- au réglage de GRF (`match_duration` 0,027), un joueur était épuisé vers la 12ᵉ minute, attributs ramenés à 70 % ;
+- à 4,75 (`CHRONO_REEL`), l'horloge du match colle au temps simulé, et un joueur qui court 10,5 km finit à environ 60 % de fraîcheur.
+
+Toutes les mesures L2 précédentes (et la page) voyaient donc des joueurs épuisés. Le « 2,4 fois l'xG » en venait.
+
+**L'horloge du match.**
+- Une remise en jeu dure ce qu'elle dure en vrai : touche 10 s, six-mètres 20 s, coup franc 25 s, corner 28 s, but 60 s, penalty 60 s.
+- Le corps en simule environ 4 s ; l'horloge avance du reste (`gf_set_arrets`, 7 points d'accroche dans l'arbitre), et l'écran coupe le temps mort.
+- La mi-temps est sifflée à 45:00 de l'horloge continue (`gf_mi_temps`), pas à celle du corps, qui s'arrête ballon mort.
+- `match-cerveau.mjs` joue désormais un match à l'horloge (`HORLOGE=0` : les bancs d'avant).
+
+**Les attributs du corps se règlent de l'extérieur** (`gf_set_stat`, `gf_get_stat`). C'est la porte du lot L3. Leur effectif par défaut est une élite synthétique : gardien à 1,00 en réaction, quatre tireurs à 1,00.
+
+**La passe en une touche est décidée par notre cerveau** (`premiere-intention.js`).
+- Il tranche une fois par passe, environ 0,5 s avant l'arrivée, sur le monde projeté au contact. L'ordre de passe est tenu jusqu'à la frappe.
+- Le seuil du ballon jouable est celui du corps : 15 m/s. Leur IA joue en une touche entre 9,5 et 15 m/s avec 67-86 % de réussite.
+- Les tirages du cerveau passent par ses flux nommés, comme dans son propre pas.
+
+| Par match (moyenne des 8) | mesuré | réel |
+|---|---|---|
+| buts | **2,9** | 2,75 ✓ |
+| buts / xG de référence | **1,11** (conversion 12 %) | ≈ 1 (11 %) ✓ |
+| cartons jaunes | **3,75** | 3,9 ✓ |
+| touches | **49** | 40-45 ✓ |
+| tirs | 18,6 | 26 ± 7 |
+| nuls | 3 sur 8 | ≈ 25 % |
+| passes réussies | 73 % | 80-85 % |
+| passes par minute de jeu effectif | 21 | ≈ 17 |
+| temps de jeu effectif | 79 % | ≈ 64 % |
+| six-mètres / coups francs | 6 / 7 | 17 / 22 |
+| fautes | 7 | 21,5 ✗ |
+| hors-jeu | 0,4 | ≈ 4 |
+| passes en une touche | 11 % | 15-25 % |
+| buts amenés par une passe | ≈ 20 % | ≈ 75 % ✗ |
+| contre-son-camp | 2 en 8 matchs | ≈ 0,1 par match |
+| téléportations | 0 | 0 ✓ |
+| décalage latéral en conduite | 0,11 m | < 0,15 m ✓ |
+
+Restent ouverts :
+- **Les fautes.** Le corps ne siffle que les contacts des tacles, et le tacle reste un réflexe du corps. Le cerveau a un répertoire de duels (tacle glissé, charge, maillot tiré, `duel.js`) que l'adaptateur n'utilise pas encore.
+- **Les buts amenés par une passe.**
+- **La réussite des passes.**
+- **Les arrêts de jeu.** Trop peu de six-mètres et de coups francs, d'où le temps effectif.
+- **Le hors-jeu.**
+- **L'avantage du domicile.** Rien ne le modélise : les deux équipes sont identiques.
 
 ## Licences
 
