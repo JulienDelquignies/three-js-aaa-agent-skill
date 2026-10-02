@@ -190,7 +190,11 @@ export class GpfMatch {
   _decider() {
     const t0 = performance.now();
     const e = this.C.lireEtat(this.M, this.HEAD, this.PER);
-    if (e.enJeu && !e.cpa) for (const i of this.cerveau.decider(e)) this.C.poserIntention(this.M, i.id, i);
+    if (e.enJeu && !e.cpa) {
+      const d = this.cerveau.decider(e);
+      for (const i of d) this.C.poserIntention(this.M, i.id, i);
+      this.C.poserFautes(this.M, d.fautes);   // la Loi 12 du cerveau : l'arbitre du corps siffle, ou montre le carton
+    }
     this.cerveauMs += performance.now() - t0; this.cerveauN++;
   }
 
