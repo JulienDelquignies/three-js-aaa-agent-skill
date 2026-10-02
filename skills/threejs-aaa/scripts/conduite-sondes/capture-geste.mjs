@@ -133,6 +133,19 @@ if (String(T0).startsWith('demi')) {
   if (!L[k]) { console.log('pas de demi-tour n°', k); process.exit(1); }
   T0n = Math.max(0.05, L[k].t - 1.2); suitId = L[k].by; await ouvre();
 }
+// T0 = 'clip:<nom>[:k]' : la k-ième fois que la COUCHE DE GESTE joue ce clip (son nom ou son miroir « -gauche ») — filmé de AVANT s
+// avant (1,0 par défaut) ; `I = porteur` suit le joueur qui le joue. (L'A/B des gestes portés : la même partie avec ?gpf=1, la sim est
+// identique au bit — le même instant, le même joueur, seul le corps dessiné change.)
+if (String(T0).startsWith('clip')) {
+  const parts = String(T0).split(':'), nom = parts[1], k = Number(parts[2] ?? 0);
+  const L = await pg.evaluate(([nom, k]) => { const sc = window.__scene, st = sc.state, out = [];
+    for (const pl of sc.players) { const G = pl.gestureLayer, beg = G.begin.bind(G); G.begin = (spec, ...a) => { if (String(spec?.name ?? '').replace(/-gauche$/, '') === nom) out.push({ t: +st.t.toFixed(3), by: pl.sim.id, gauche: /-gauche$/.test(spec.name) }); return beg(spec, ...a); }; }
+    while (st.t < 180 && out.length <= k) sc.update(1 / 60);   // (on s'arrête au k-ième : la partie d'après ne sert à rien)
+    return out; }, [nom, k]);
+  console.log(`clips « ${nom} » trouvés :`, L.length, JSON.stringify(L.slice(0, 12)));
+  if (!L[k]) { console.log('pas de clip n°', k); process.exit(1); }
+  T0n = Math.max(0.05, L[k].t - Number(process.env.AVANT ?? 1.0)); suitId = L[k].by; await ouvre();
+}
 const P = { T: T0n, i: I === 'porteur' ? -1 : Number(I), suitId, dist: Number(DIST), cam: process.env.CAM ?? 'cote' };   // I = 'porteur' : la caméra suit le porteur du moment
 await pg.evaluate((P) => {
   window.__majCam = (s, dt) => { const c = window.__cam ??= { dir: Math.hypot(s.v[0], s.v[1]) > 0.5 ? [s.v[0], s.v[1]] : [Math.cos(s.yaw), Math.sin(s.yaw)], pos: null, sign: null };   // arrêté : son regard

@@ -13,7 +13,7 @@ import { tintPart } from '../engine/part-tint.js';
 import { applyKit } from '../engine/kit-uv.js';
 import { loadSquad, setCloner, rigBones } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
-import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js'; import { mirrorGen } from '../engine/motion-rig.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
+import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec, GENERATORS } from '../engine/motion-cast.js'; import { installGpf } from '../engine/gpf-anim.js'; import { mirrorGen } from '../engine/motion-rig.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js'; import { makeDuel, duelCfg, CAGE, CAGE_STADE } from '../engine/duel-1v1.js'; import { buildCage } from './duel-cage.js'; import { setupDuelDay } from './duel-ciel.js'; import { DUEL_CAST, DUEL_CAST_VILLE, TENUE_GARDIEN, tenueGardien } from './duel-joueurs.js';   // (duel) le 1c1 : un MATCH sur la cage, un joueur par camp, ?duel
@@ -53,6 +53,9 @@ export class Rondo {
     this.free = q.has('orbit');
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.duelMode = q.has('duel'); this.matchMode = q.has('match') || this.duelMode;   // (duel) le 1c1 EST un match (lois du 11c11) sur la cage
+    // ?gpf=1 (ou ?gpf=controleInterieur,tacle…) : les gestes PORTÉS de Gameplay Football remplacent les générés du même nom (gpf-anim.js) —
+    // la sim ne lit pas les specs : même graine, même partie, seul le corps dessiné change (l'A/B des gestes)
+    if (q.get('gpf')) this._gpf = installGpf(GENERATORS, q.get('gpf'));
     // LE 11C11 (?full) : terrain Loi 1, 10 + gardien par équipe, postes de formation — la même scène, le même moteur : une CONFIGURATION (la preuve que l'architecture scale à 22 corps)
     this.fullMode = this.matchMode && q.has('full');
 
@@ -1010,7 +1013,7 @@ export class Rondo {
         // tacle glissé » : la sim pose down AU LANCEMENT du glissé, le gel voyait down > 0 dès
         // la frame 1 et FIGEAIT le clip à sa pose DEBOUT de départ — t0 poursuivi 3,15 → 3,80
         // mesuré, la glissade ne s'est jamais dessinée). Avant 55 %, le clip DÉROULE.
-        if (lying) { const hold = pl.gestureLayer.duration * 0.55;
+        if (lying) { const hold = pl.gestureLayer.spec?.holdAt ?? pl.gestureLayer.duration * 0.55;   // (gpf) le tacle porté dit où il est couché
           if (t >= hold || (typeof window !== 'undefined' && window.__sabotage === 'tacle-gel')) { meta.t0 += dtP; t = Math.min(t, hold); } }
         // LE GARDIEN AU SOL VIT À L'HORLOGE DE LA SIM (lot 91) : gk.rise pilote la QUEUE du clip
         // — sol : tenir la pose couchée (patron du tacleur) ; relevé : rejouer le segment authoré
