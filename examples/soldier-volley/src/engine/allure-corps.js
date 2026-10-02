@@ -22,6 +22,9 @@ export function ecartPermis(v, K) {
 /** Le cap voulu, capé contre la course du joueur. Renvoie `want` inchangé si rien à caper. Pure. */
 export function capAllure(st, p, cfg, want) {
   const K0 = cfg.allureCorps;
+  const GC = st.full && p.keeper ? cfg.gardienCourse : null;
+  if (GC) { if (want == null || !(p.speed > 0.25)) return want; if (!gkDanger(st, p, GC)) return capGardien(p, want, GC);   // (388) le gardien hors danger court face à sa course
+    if (p.speed <= (GC.vDanger ?? 4)) return want; const h = Math.atan2(p.v[1], p.v[0]), d = wrap(want - h), lim = (GC.croise ?? 90) * D; return Math.abs(d) <= lim ? want : h + Math.sign(d) * lim; }   // …en danger, au-delà de vDanger : le pas croisé (hanches de côté, le regard par-dessus l'épaule), jamais de dos
   if (!K0 || !st.full || p.keeper || want == null || !(p.speed > 0.25)) return want;
   // (359, cfg.corpsSobre) la table descend à 1,5 m/s, la course arrière s'arrête à vRecul, et le travers ne DURE pas : après tRecul s
   // de corps à > 60° de la course, le cap se referme à 30° (mesuré diag-D : épisodes de 5-13 s au trot de repli). Absente : l'hier au bit.
@@ -52,4 +55,23 @@ export function vitesseCorps(st, p, cfg) {
   let vm = T[T.length - 1][1];
   for (let i = 1; i < T.length; i++) if (a <= T[i][0]) { vm = T[i - 1][1] + (T[i][1] - T[i - 1][1]) * (a - T[i - 1][0]) / (T[i][0] - T[i - 1][0]); break; }
   if (sp > vm) { p.v[0] *= vm / sp; p.v[1] *= vm / sp; }
+}
+
+// (388, cfg.gardienCourse — 01/10 : « je vois encore des joueurs ne pas courir dans l'axe de leur direction ») LE GARDIEN COURT FACE À SA
+// COURSE QUAND RIEN NE PRESSE. Mesuré (15 min) : le gardien exempté de cette loi regardait TOUJOURS le ballon (regardGardien) — en
+// repositionnement (job walk) à ≥ 5 m/s son corps était à 158° de sa course (il courait de dos), en jeu 2-5 m/s à > 90° dans 40-45 % des cas.
+// La loi : hors danger (ballon adverse à moins de `danger` m de son but, ou tir / passe adverse en vol vers son but), le cap voulu est capé
+// contre la course : libre sous vRecul (le recul face au jeu), `chasse`° jusqu'à vChasse (le pas chassé), `course`° au-delà. En danger :
+// le regard sur le ballon d'hier sous vDanger m/s ; au-delà, le pas croisé (croise° au plus : hanches de côté, jamais de dos — mesuré : en
+// danger le gardien reculait de dos à > 100° dans 112 cas sur 127 au-delà de 3,5 m/s). Absente : hier, au bit.
+export function gkDanger(st, p, K) {
+  const og = st.pitch.ownGoal(p.team), b = st.ball.p, dB = Math.hypot(b[0] - og.x, b[2]);
+  if (st.possession?.team >= 0 && st.possession.team !== p.team && dB < (K.danger ?? 30)) return true;
+  if (st.phase === 'flight' && st.pass && st.players[st.pass.from]?.team !== p.team && dB < (K.danger ?? 30) + 15) return true;
+  return false;
+}
+function capGardien(p, want, K) {
+  const h = Math.atan2(p.v[1], p.v[0]), d = wrap(want - h);
+  const lim = p.speed <= (K.vRecul ?? 3.5) ? null : p.speed <= (K.vChasse ?? 4.5) ? (K.chasse ?? 90) * D : (K.course ?? 30) * D;
+  return lim == null || Math.abs(d) <= lim ? want : h + Math.sign(d) * lim;
 }

@@ -8642,5 +8642,17 @@ if (__bloc()) {
     A20.proche >= 8.8 && A24.proche >= 8.8 && A20.mur >= 4 && A24.mur >= 3);
 }
 
+if (__bloc()) {
+  // LE GARDIEN COURT FACE À SA COURSE QUAND RIEN NE PRESSE (388 — « je vois encore des joueurs ne pas courir dans l'axe de leur direction »).
+  // Sondé (15 min) : le gardien regardait toujours le ballon — en repositionnement à ≥ 5 m/s le corps à 158° de sa course (de dos). Le contrat :
+  // au-delà de 4,5 m/s, le corps du gardien à plus de 100° de sa course moins de 10 % du temps (hier : la majorité).
+  const mesure = (over) => { let n = 0, dos = 0; const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ ...over });
+    for (let i = 0; i < 900 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue;
+      for (const p of st.players) { if (!p.keeper) continue; const v = Math.hypot(p.v[0], p.v[1]); if (v < 4.5) continue; let a = Math.abs(Math.atan2(p.v[1], p.v[0]) - p.yaw); while (a > Math.PI) a = Math.abs(a - 2 * Math.PI); n++; if (a > 100 * Math.PI / 180) dos++; } }
+    return { n, part: dos / Math.max(1, n) }; };
+  const A = mesure({}), N = mesure({ gardienCourse: null });
+  ok(`lot 388 — LE GARDIEN COURT FACE À SA COURSE : au-delà de 4,5 m/s, corps à > 100° de la course ${(100 * A.part).toFixed(0)} % (hier ${(100 * N.part).toFixed(0)} %) — ${A.n} c. ${N.n} échantillons`, A.n >= 30 && A.part < 0.1 && N.part > 0.3);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

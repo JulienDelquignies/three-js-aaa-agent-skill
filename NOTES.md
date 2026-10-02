@@ -14695,6 +14695,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 388 — le gardien court face à sa course** (« je vois encore des joueurs ne pas courir dans l'axe de leur direction »). Sonde
+  (15 min, ≥ 2 m/s) : le coupable principal est le GARDIEN — exempté de la loi d'allure (358/359), il regardait toujours le ballon : en
+  repositionnement à ≥ 5 m/s le corps à 158° de sa course, en jeu 2-5 m/s à > 90° dans 40-45 % des cas. Les joueurs de champ restent
+  propres hors gestes (support au trot 15 % à > 45°, passes en course 56-75 % à > 45° au-delà de 5 m/s — le geste, dette d'animation).
+  `gardienCourse` (allure-corps.capAllure) : hors danger, libre sous 3,5 m/s, pas chassé 90° jusqu'à 4,5, 30° au-delà ; en danger, le
+  regard sur le ballon sous 4 m/s, le pas croisé (90°) au-delà. Bloc 253 : au-delà de 4,5 m/s, corps à > 100° de sa course 57 → 1 %.
+  Défaut inchangé (le cap ne déplace presque pas les corps) ; banc vert.
 - **Lot 387 — les coups de pied arrêtés (« vérifie tout ce qui se passe, placement des joueurs, geste du tireur, choix du tireur »)**.
   Audit (sondes cpa / cfp, 2-8 matchs) : sorties de but prises par le gardien sauf exception (un ailier, un latéral), Loi 16 tenue
   (aucun adversaire en surface), passe courte ; coups francs : direct jusqu'à 30 m (14/26 tirés, 1 but), lobé dans la surface au-delà
