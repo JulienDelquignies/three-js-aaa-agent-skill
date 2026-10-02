@@ -8654,5 +8654,19 @@ if (__bloc()) {
   ok(`lot 388 — LE GARDIEN COURT FACE À SA COURSE : au-delà de 4,5 m/s, corps à > 100° de la course ${(100 * A.part).toFixed(0)} % (hier ${(100 * N.part).toFixed(0)} %) — ${A.n} c. ${N.n} échantillons`, A.n >= 30 && A.part < 0.1 && N.part > 0.3);
 }
 
+if (__bloc()) {
+  // LE PRESSEUR ET LE COUVREUR GARDENT LEUR RÔLE (389 — la stabilité des métiers près du ballon). Sondé : l'élection se refaisait à chaque image,
+  // le presseur changeait 53,6 fois par minute de possession adverse ; la cible près du ballon durait 0,87 s p50. Le contrat : au moins 25 %
+  // de changements de presseur en moins qu'hier (2 × 30 min).
+  const mesure = (over) => { let sw = 0, tps = 0;
+    for (const seed of [3, 11]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...over }); let prev = null, seq = null;
+      for (let i = 0; i < 1800 * 60; i++) { matchStep(st, 1 / 60, cfg); const tm = st.possession?.team; if (st.restart || !(tm >= 0)) { prev = null; continue; }
+        tps += 1 / 60; const pr = st.players.filter((p) => p.team !== tm && p.job === 'press').map((p) => p.id).sort().join(',');
+        if (seq !== st._possChangeAt) { seq = st._possChangeAt; prev = pr; continue; } if (pr !== prev) { sw++; prev = pr; } } }
+    return sw / (tps / 60); };
+  const A = mesure({}), N = mesure({ tenueRoles: null });
+  ok(`lot 389 — LE PRESSEUR GARDE SON RÔLE : ${A.toFixed(1)} changements de presseur par minute (hier ${N.toFixed(1)})`, A <= N * 0.75);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

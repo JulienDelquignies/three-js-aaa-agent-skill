@@ -14695,6 +14695,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   bloc bas 14,5 → 3, équilibre 61,5 → 32,5 (livre 20-30), gegenpressing 100 ; recul du bloc bas en 3 s 1,8 → 2,6 m. Télémétrie : repli à
   3 s, meute à +1,5 s. Un audit lancé pendant une modification du moteur se contamine (chaque match est un processus qui charge le code à
   son départ) : relancé propre. Jumeau = le 374 au bit ; défaut `5fe76d290c1a8f0d / 92dc4c5d437e1f59` ; bloc 244.
+- **Lot 389 — le presseur et le couvreur gardent leur rôle** (02/10 : « oui vas-y fais la 1 » — la stabilité des métiers près du ballon,
+  après l'essai « ballon prédit » sans effet). `tenueRoles` (tenue-roles.js) : pendant une même possession adverse, le presseur puis le
+  couvreur d'hier gardent leur rang tant qu'ils ne sont pas plus loin de l'ancre que le meilleur candidat de plus de 3 m × pressing ÷
+  décisions. Bloc 254 : changements de presseur 53,6 → 32,5 par minute de possession adverse ; épisode « cible près du ballon » p50
+  0,87 → 1,10 s, corps entré 53 → 62 %. La DENSITÉ ne bouge pas (N_def(10) 2,07 → 2,04) : le plafond est la géométrie du bloc (ballon au
+  bord avant, ~2,5). Plafond de match-sim (verify-sync compte 1250 max) : l'appel fusionné avec la ligne de commentaire voisine.
+  Défaut `bdba30561a01f4b5 / 98b9c0147d70ad02` ; banc vert.
 - **Lot 388 — le gardien court face à sa course** (« je vois encore des joueurs ne pas courir dans l'axe de leur direction »). Sonde
   (15 min, ≥ 2 m/s) : le coupable principal est le GARDIEN — exempté de la loi d'allure (358/359), il regardait toujours le ballon : en
   repositionnement à ≥ 5 m/s le corps à 158° de sa course, en jeu 2-5 m/s à > 90° dans 40-45 % des cas. Les joueurs de champ restent

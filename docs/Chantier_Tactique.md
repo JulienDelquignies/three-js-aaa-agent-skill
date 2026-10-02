@@ -116,6 +116,8 @@ c. 0,80) — à reprendre.
   mais la STABILITÉ des métiers près du ballon : qui presse, qui couvre, qui ferme change trop vite pour qu'un corps arrive.
 - **Géométrie** : un bloc de 31 × 34 m dont le ballon est au bord avant contient ~1,5 défenseur dans le demi-disque de 10 m, plus les
   presseurs : ~2,5 — le moteur y est. Le 4,9 du livre (dérivé) suppose le ballon DANS le bloc (le bloc coulissé jusqu'à l'envelopper).
+- **Lot 389 (scellé)** : la tenue des rôles (presseur, couvreur) — changements de presseur 53,6 → 32,5 / min, cibles plus stables ; la
+  densité ne bouge pas (2,04) : le plafond est géométrique. Reste la piste 2 (le bloc qui enveloppe le ballon côté fort).
 - **Piste** : l'élection des métiers défensifs près du ballon avec tenue (le presseur, le couvreur et le fermeur gardent leur rôle tant
   que le ballon reste dans leur secteur) et un bloc qui enveloppe le ballon côté fort (B10 : la zone abandonnée côté faible).
 
