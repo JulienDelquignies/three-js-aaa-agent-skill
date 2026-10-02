@@ -50,13 +50,18 @@ export class GpfMatch {
     const { default: GpfModule } = await import(/* @vite-ignore */ base + 'gpf.mjs');
     const t0 = performance.now();
     this.M = await GpfModule({ locateFile: (p) => base + p, print: () => {}, printErr: (s) => console.warn('[gpf]', s) });
-    this.M._gf_init(1, Number(q.get('md')) || 0.027);
+    // L'HORLOGE DU MATCH : 4,75 fait coller leur chrono au temps simulé et donne aux corps la fatigue d'un vrai match (0,027,
+    // le réglage de GRF, les épuisait vers la 12e minute) ; les remises en jeu durent leur vrai temps (l'écran coupe le temps
+    // mort comme une retransmission) ; la mi-temps à 45:00, le coup de sifflet final à 90:00
+    this.M._gf_init(1, Number(q.get('md')) || 4.75);
     const graine = Number(q.get('seed')) || 7;
     this.M._gf_reset(graine, 1.0, 1.0, 1e9);
+    this.C = await import(/* @vite-ignore */ base + 'cerveau.mjs');
+    if (q.get('arrets') !== '0') this.C.poserLesArrets(this.M);
+    this.periode = 1;
     // NOTRE CERVEAU : le paquet (cerveau + contrat du corps), les intentions ouvertes, un tick de décision tous les 10 pas
     this.mode = q.has('ia') ? 'ia' : q.get('contre') === 'ia' ? 'contre' : 'cerveau';
     if (this.mode !== 'ia') {
-      this.C = await import(/* @vite-ignore */ base + 'cerveau.mjs');
       this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1] });
       this.M._gf_intents(1);
       this.pas = 0; this.cerveauMs = 0; this.cerveauN = 0;
@@ -138,6 +143,7 @@ export class GpfMatch {
     // LE PAS FIXE : 10 ms de jeu par pas, autant de pas que le temps réel écoulé (plafonné : un onglet en pause ne rattrape pas)
     this.acc = Math.min(this.acc + dt * (Number(q.get('vitesse')) || 1), 0.1);
     let n = 0; while (this.acc >= 0.01) { this.acc -= 0.01; n++; }
+    if (this.periode === 3) n = 0;   // le coup de sifflet final : le match est figé sur son score
     if (n) {
       const t0 = performance.now();
       if (this.cerveau) {
@@ -151,6 +157,10 @@ export class GpfMatch {
         }
       } else this.M._gf_step(n);
       const d = performance.now() - t0; this.simMs += d; this.simSteps += n; this.tot.simMs += d; this.tot.simSteps += n;
+      // la mi-temps et la fin, à l'horloge du match
+      const tMatch = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), 1)[0];
+      if (this.periode === 1 && tMatch >= 45 * 60000) { this.M._gf_mi_temps(); this.periode = 2; }
+      if (this.periode === 2 && tMatch >= 90 * 60000) this.periode = 3;
     }
     const tp = performance.now();
     const F = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), this.HEAD + 22 * this.PER);
@@ -167,7 +177,7 @@ export class GpfMatch {
       const msCerveau = this.cerveauN ? this.cerveauMs / this.cerveauN : 0;
       this.stats = { fps, cpu, msPas, msPose, msCerveau, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
       const qui = this.mode === 'ia' ? 'leur IA des deux côtés' : this.mode === 'contre' ? 'notre cerveau (gauche) contre leur IA' : 'notre cerveau, leurs corps';
-      const horloge = `${Math.floor(F[0] / 60000)}:${String(Math.floor(F[0] / 1000) % 60).padStart(2, '0')}`;
+      const horloge = this.periode === 3 ? 'fin du match' : `${Math.floor(F[0] / 60000)}:${String(Math.floor(F[0] / 1000) % 60).padStart(2, '0')}${this.periode === 2 ? ' (2e mi-temps)' : ''}`;
       // en capture (?capture : images calculées une à une, rendu logiciel), les mesures de vitesse ne disent rien : le score et le temps seuls
       if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}`
         : `${F[4]}-${F[5]} · ${horloge} · ${qui} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
