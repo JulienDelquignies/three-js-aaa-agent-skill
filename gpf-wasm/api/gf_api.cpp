@@ -1,0 +1,146 @@
+// gf_api.cpp — L'API WebAssembly du moteur de match de Google Research Football (Gameplay Football, licence Unlicense) :
+// un match 11 contre 11, l'IA du jeu des deux côtés, sans rendu ; l'état et les POSES (les 13 articulations de chaque joueur)
+// lus par JavaScript sur la mémoire du module (vues Float32). La même séquence que l'environnement Python
+// (football_env_core.py) : start_game → reset(ScenarioConfig) → step × n → get_info, plus l'export des poses que Python n'a pas.
+//
+// Repère : les MÈTRES du moteur (x le long du terrain, ±55 ; y en travers, ±36 ; z en haut). L'équipe 2 est traitée par le
+// moteur EN MIROIR (Match::GetTeamState la rétablit en niant x et y) : on fait de même pour sa racine, et son corps tourne de
+// 180° autour de z. Les rotations des nœuds sont LOCALES (relatives au parent), comme dans les fichiers .anim.
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <emscripten/emscripten.h>
+
+#include "game_env.hpp"
+#include "main.hpp"
+#include "gametask.hpp"
+#include "onthepitch/match.hpp"
+#include "onthepitch/team.hpp"
+#include "onthepitch/ball.hpp"
+#include "onthepitch/player/player.hpp"
+
+static GameEnv *g_env = nullptr;
+static std::vector<float> g_frame, g_pose;
+// l'ordre des fichiers .anim (celui de gpf-anim.js), traduit en indices de l'énumération BodyPart du moteur (utils/animation.hpp)
+static const BodyPart NODES[13] = {body, middle, neck, left_shoulder, left_elbow, right_shoulder, right_elbow,
+                                   left_thigh, left_knee, left_ankle, right_thigh, right_knee, right_ankle};
+static const int MAXP = 22, FRAME_HEAD = 16, FRAME_PER = 12, POSE_PER = 3 + 13 * 4;
+
+static void add(SHARED_PTR<ScenarioConfig> &sc, bool left, float x, float y, e_PlayerRole role) {
+  FormationEntry p(x, y, role, false, true);
+  (left ? sc->left_team : sc->right_team).push_back(p);
+}
+// le 11 contre 11 de 11_vs_11_stochastic.py (les deux équipes décrites du côté gauche : le moteur retourne la seconde)
+static void team11(SHARED_PTR<ScenarioConfig> &sc, bool left, bool kickoff) {
+  add(sc, left, -1.000000, 0.000000, e_PlayerRole_GK);
+  if (kickoff) { add(sc, left, 0.000000, 0.020000, e_PlayerRole_RM); add(sc, left, 0.000000, -0.020000, e_PlayerRole_CF); }
+  else { add(sc, left, -0.050000, 0.000000, e_PlayerRole_RM); add(sc, left, -0.010000, 0.216102, e_PlayerRole_CF); }
+  add(sc, left, -0.422000, -0.19576, e_PlayerRole_LB);
+  add(sc, left, -0.500000, -0.06356, e_PlayerRole_CB);
+  add(sc, left, -0.500000, 0.063559, e_PlayerRole_CB);
+  add(sc, left, -0.422000, 0.195760, e_PlayerRole_RB);
+  add(sc, left, -0.184212, -0.10568, e_PlayerRole_CM);
+  add(sc, left, -0.267574, 0.000000, e_PlayerRole_CM);
+  add(sc, left, -0.184212, 0.105680, e_PlayerRole_CM);
+  add(sc, left, -0.010000, -0.21610, e_PlayerRole_LM);
+}
+
+extern "C" {
+
+/** Démarrer le moteur. physicsStepsPerFrame : pas physiques de 10 ms par appel à gf_step (1 = 10 ms) ;
+ *  matchDuration : la vitesse du chrono (0,027 = ×18 de Google Research Football ; 4,75 = 90 vraies minutes). */
+EMSCRIPTEN_KEEPALIVE int gf_init(int physicsStepsPerFrame, float matchDuration) {
+  if (g_env) return 0;
+  setenv("GFOOTBALL_DATA_DIR", "/data", 1);
+  setenv("GFOOTBALL_FONT", "/data/media/fonts/dejavu/DejaVuSansMono.ttf", 1);   // comme la version Python : la police n'est pas cherchée sous data_dir
+  setenv("GFOOTBALL_MATCH_DURATION", std::to_string(matchDuration).c_str(), 1);
+  g_env = new GameEnv();
+  g_env->game_config.render = false;
+  g_env->game_config.physics_steps_per_frame = physicsStepsPerFrame;
+  g_env->start_game();
+  g_frame.assign(FRAME_HEAD + MAXP * FRAME_PER, 0.f);
+  g_pose.assign(MAXP * POSE_PER, 0.f);
+  return 1;
+}
+
+/** Un nouveau match : graine, difficultés de l'IA (1,0 = la meilleure), durée en appels à gf_step. */
+EMSCRIPTEN_KEEPALIVE int gf_reset(int seed, float leftDifficulty, float rightDifficulty, int gameDuration) {
+  if (!g_env) return 0;
+  auto sc = ScenarioConfig::make();
+  team11(sc, true, true);
+  team11(sc, false, false);
+  sc->left_agents = 0; sc->right_agents = 0;          // personne ne pilote : l'IA du jeu joue les 22
+  sc->left_team_difficulty = leftDifficulty; sc->right_team_difficulty = rightDifficulty;
+  sc->deterministic = false;
+  sc->game_engine_random_seed = seed;
+  sc->reverse_team_processing = (seed % 2) != 0;      // comme scenario_builder.py
+  sc->game_duration = gameDuration;
+  sc->offsides = true;
+  g_env->reset(*sc, true);
+  return 1;
+}
+
+/** Avancer de n appels (chacun = physicsStepsPerFrame pas de 10 ms). */
+EMSCRIPTEN_KEEPALIVE void gf_step(int n) { while (n-- > 0) g_env->step(); }
+
+/** L'état : en-tête [temps ms, en jeu, coup de pied arrêté, mode, score G, score D, ballon x y z, possession équipe, joueur, …]
+ *  puis par joueur [équipe, rôle, x, y, z, dir x, dir y, corps x, corps y, vitesse, id stable, actif]. */
+EMSCRIPTEN_KEEPALIVE float *gf_frame() {
+  Match *m = GetGameTask()->GetMatch();
+  SharedInfo info = g_env->get_info();
+  float *f = g_frame.data();
+  f[0] = (float)m->GetActualTime_ms(); f[1] = m->IsInPlay(); f[2] = m->IsInSetPiece(); f[3] = (float)info.game_mode;
+  f[4] = (float)m->GetScore(0); f[5] = (float)m->GetScore(1);
+  Vector3 b = m->GetBall()->Predict(0);
+  f[6] = b.coords[0]; f[7] = b.coords[1]; f[8] = b.coords[2];
+  f[9] = (float)info.ball_owned_team; f[10] = (float)info.ball_owned_player; f[11] = (float)info.step;
+  int k = 0;
+  for (int t = 0; t < 2; t++) {
+    std::vector<Player *> players;
+    m->GetTeam(t)->GetAllPlayers(players);
+    for (auto p : players) {
+      if (k >= MAXP) break;
+      float *q = f + FRAME_HEAD + k * FRAME_PER;
+      Vector3 pos = p->GetPosition(), dir = p->GetDirectionVec(), body = p->GetBodyDirectionVec(), mv = p->GetMovement();
+      if (t == 1) { pos.Mirror(); dir.Mirror(); body.Mirror(); mv.Mirror(); }
+      q[0] = t; q[1] = (float)p->GetFormationEntry().role; q[2] = pos.coords[0]; q[3] = pos.coords[1]; q[4] = pos.coords[2];
+      q[5] = dir.coords[0]; q[6] = dir.coords[1]; q[7] = body.coords[0]; q[8] = body.coords[1];
+      q[9] = mv.GetLength(); q[10] = (float)p->GetStableID(); q[11] = p->IsActive() ? 1.f : 0.f;
+      k++;
+    }
+  }
+  f[12] = (float)k;
+  return f;
+}
+
+/** Les poses : par joueur [racine x y z (le nœud « player » : mètres, z = hauteur portée par l'animation),
+ *  puis 13 quaternions LOCAUX (x, y, z, w) dans l'ordre de NODES]. Équipe 2 : racine niée en x, y ; corps tourné de 180°. */
+EMSCRIPTEN_KEEPALIVE float *gf_pose() {
+  Match *m = GetGameTask()->GetMatch();
+  float *f = g_pose.data();
+  int k = 0;
+  for (int t = 0; t < 2; t++) {
+    std::vector<Player *> players;
+    m->GetTeam(t)->GetAllPlayers(players);
+    for (auto p : players) {
+      if (k >= MAXP) break;
+      float *q = f + k * POSE_PER;
+      const NodeMap &nm = p->GetNodeMap();
+      Vector3 root = nm[player] ? nm[player]->GetPosition() : p->GetPosition();
+      if (t == 1) root.Mirror();
+      q[0] = root.coords[0]; q[1] = root.coords[1]; q[2] = root.coords[2];
+      for (int n = 0; n < 13; n++) {
+        Quaternion r = nm[NODES[n]] ? nm[NODES[n]]->GetRotation() : Quaternion(QUATERNION_IDENTITY);
+        if (t == 1 && n == 0) { Quaternion z180; z180.SetAngleAxis(pi, Vector3(0, 0, 1)); r = z180 * r; }
+        q[3 + n * 4 + 0] = r.elements[0]; q[3 + n * 4 + 1] = r.elements[1]; q[3 + n * 4 + 2] = r.elements[2]; q[3 + n * 4 + 3] = r.elements[3];
+      }
+      k++;
+    }
+  }
+  return f;
+}
+
+EMSCRIPTEN_KEEPALIVE int gf_frame_head() { return FRAME_HEAD; }
+EMSCRIPTEN_KEEPALIVE int gf_frame_per() { return FRAME_PER; }
+EMSCRIPTEN_KEEPALIVE int gf_pose_per() { return POSE_PER; }
+}

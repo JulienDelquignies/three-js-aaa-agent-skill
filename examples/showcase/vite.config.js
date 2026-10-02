@@ -16,6 +16,7 @@ export default defineConfig({
         carriere: page('carriere'),
         rondo: page('rondo'),
         duel: page('duel'),
+        'gpf-match': page('gpf-match'),
         match: page('match'),
         match11: page('match11'),
         stadiums: page('stadiums'),

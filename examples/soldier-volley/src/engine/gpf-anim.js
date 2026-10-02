@@ -171,7 +171,14 @@ export function restOffsets(P) {
  * d'articulation), hips = [droite, haut, avant] (m), W = la FK GPF (repère GPF) pour les mesures.
  */
 export function gpfJoints(A, f, P, C = restOffsets(P), { keepHeading = false } = {}) {
-  const S = sampleGpf(A, f), W = fkGpf(S);
+  return jointsFromSample(sampleGpf(A, f), P, C, { keepHeading });
+}
+
+/** La même conversion depuis une pose GPF déjà échantillonnée : S = { q: { nœud: quat local }, p: racine } — l'animation lue
+ *  dans un fichier (gpfJoints) ou la pose vivante du moteur compilé en WebAssembly (gpf-wasm, gf_pose). keepHeading : garder
+ *  le cap du bassin (le moteur porte le corps ; la scène pose la racine sans lacet). */
+export function jointsFromSample(S, P, C = restOffsets(P), { keepHeading = false } = {}) {
+  const W = fkGpf(S);
   const G = {}; for (const n of GPF_NODES) G[n] = gpfQuat(W[n].q);
   const H = keepHeading ? [0, 0, 0, 1] : ry(headingOf(G.body)), Hi = qinv(H);
   for (const n of GPF_NODES) G[n] = quatNormalize(quatMul(Hi, G[n]));
