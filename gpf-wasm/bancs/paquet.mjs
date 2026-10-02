@@ -8,7 +8,7 @@ const jouer = (creer) => {
   const cerveau = creer({ graine: 7 });
   for (let tick = 0; tick < 600; tick++) {
     const e = corps.etat();
-    if (e.enJeu && !e.cpa) for (const i of cerveau.decider(e)) corps.intention(i.id, i);
+    if (e.enJeu && !e.cpa) { const d = cerveau.decider(e); for (const i of d) corps.intention(i.id, i); corps.fautes(d.fautes); }
     corps.avancer(10);
     cerveau.observer(corps.journal());
   }

@@ -2,7 +2,7 @@
 // WebAssembly (`out/gpf.mjs`) : charger, lancer un 11 contre 11, poser les intentions, avancer, lire l'état et le journal.
 // Le contrat (constantes, lectures) vit dans `contrat.mjs`, sans dépendance : la page et le cerveau empaqueté le partagent.
 import GpfModule from './out/gpf.mjs';
-import { lireEtat, lireJournal, poserIntention, poserLesArrets, ARRETS_REELS, CHRONO_REEL } from './contrat.mjs';
+import { lireEtat, lireJournal, poserIntention, poserLesArrets, poserFautes, ARRETS_REELS, CHRONO_REEL } from './contrat.mjs';
 export { INTENTION, PASSE, EV, GESTE, ARRETS_REELS, CHRONO_REEL } from './contrat.mjs';
 
 
@@ -28,6 +28,8 @@ export async function chargerLeCorps(dossier = new URL('./out/', import.meta.url
     etat() { return lireEtat(M, this.HEAD, this.PER); },
     /** Poser l'intention TENUE d'un joueur (id stable). */
     intention(id, i) { poserIntention(M, id, i); },
+    /** Les fautes décidées par le cerveau (decider(...).fautes) : l'arbitre du corps les siffle ou montre le carton. */
+    fautes(liste) { poserFautes(M, liste); },
     /** Le journal depuis la dernière lecture (contrat.lireJournal). */
     journal() { return lireJournal(M); },
   };

@@ -180,4 +180,28 @@ sub('onthepitch/referee.cpp',
 sub('onthepitch/referee.cpp',
     '      buffer.desiredSetPiece = e_GameMode_Penalty;\n      buffer.stopTime = match->GetActualTime_ms();',
     "      buffer.desiredSetPiece = e_GameMode_Penalty;\n      buffer.stopTime = match->GetActualTime_ms();\n      match->BumpActualTime_ms(gf_arret_ms(e_GameMode_Penalty));  // [gf-intent] l'horloge du match")
+# 9. LES FAUTES DU CERVEAU : la Loi 12 de notre cerveau (l'accrochage du battu, le carton jugé sur la nature de la faute,
+#    l'avantage) décide ; l'arbitre du corps siffle (gf_faute → CheckFoul : arrêt, coup franc ou penalty, carton) ou montre
+#    le carton sans arrêter le jeu (gf_carton, l'avantage joué). Le corps ne sifflait que les contacts de ses tacles.
+sub('onthepitch/referee.hpp',
+    '''    bool CheckFoul();''',
+    '''    bool CheckFoul();
+    void GfFaute(Player *fautif, Player *victime, int gravite, const Vector3 &lieu);  // [gf-intent] la faute du cerveau externe''')
+sub('onthepitch/referee.cpp',
+    '''void Referee::ProcessState(EnvState *state) {''',
+    '''// [gf-intent] LA FAUTE DÉCIDÉE PAR LE CERVEAU EXTERNE (api/gf_api.cpp, gf_faute) : posée comme celles des tacles, sans
+// avantage (le cerveau l'a déjà joué) — CheckFoul l'administre au pas suivant : arrêt, coup franc ou penalty, carton. Le LIEU
+// est celui de la faute (monde) : la victime a pu courir pendant l'avantage, entrer dans la surface — ce n'est pas un penalty.
+void Referee::GfFaute(Player *fautif, Player *victime, int gravite, const Vector3 &lieu) {
+  if (buffer.active || !match->IsInPlay() || match->IsInSetPiece() || !fautif || !victime) return;
+  foul.foulType = gravite;
+  foul.advantage = false;
+  foul.foulPlayer = fautif;
+  foul.foulVictim = victime;
+  foul.foulTime = match->GetActualTime_ms();
+  foul.foulPosition = lieu;
+  foul.hasBeenProcessed = false;
+}
+
+void Referee::ProcessState(EnvState *state) {''')
 print('patch: ok')

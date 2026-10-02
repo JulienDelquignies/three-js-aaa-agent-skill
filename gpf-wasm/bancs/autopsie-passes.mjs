@@ -33,7 +33,9 @@ const t0 = performance.now();
 for (let pas = 0; pas < MIN * 6000; pas++) {
   if (pas % 10 === 0) {
     const e = corps.etat();
-    if (cerveau && e.enJeu && !e.cpa) for (const i of cerveau.decider(e)) {
+    const dec = cerveau && e.enJeu && !e.cpa ? cerveau.decider(e) : [];
+    corps.fautes(dec.fautes);
+    for (const i of dec) {
       corps.intention(i.id, i);
       // L'INSTANT DE DÉCISION : la première fois que le porteur reçoit l'ordre de passer à ce receveur
       const avant = derniereIntention.get(i.id);

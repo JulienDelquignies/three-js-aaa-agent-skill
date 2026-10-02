@@ -28,7 +28,7 @@ let utPrec = null, utApresCpa = false;
 const tirsXg = { n: 0, xg: 0, buts: 0 }; let tirOuvert = null;
 const MODES = { 1: 'engagement', 2: 'six-mètres', 3: 'coup franc', 4: 'corner', 5: 'touche', 6: 'penalty' };
 const remises = {};
-const f = { origines: {}, surPasse: 0, butsJeu: 0, csc: [0, 0], buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
+const f = { sources: {}, touchesButeur: {}, origines: {}, surPasse: 0, butsJeu: 0, csc: [0, 0], buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
 const PASSES = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE]);
 let dernier = null, passeEnCours = null;
 // LE DIAGNOSTIC DES PASSES : la dernière intention posée par joueur, et pour chaque passe ce que le cerveau voulait
@@ -48,7 +48,9 @@ for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
   if (HORLOGE && !miTemps && e.t >= FIN / 2) { corps.miTemps(); miTemps = true; }
   if (cerveau && e.enJeu && !e.cpa) {
     const a = performance.now();
-    for (const i of cerveau.decider(e)) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
+    const d = cerveau.decider(e);
+    for (const i of d) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
+    corps.fautes(d.fautes);
     tDecide += performance.now() - a; nDecide++;
   }
   corps.avancer(10);
@@ -69,6 +71,12 @@ for (let tick = 0; HORLOGE ? corps.etat().t < FIN : tick < MIN * 600; tick++) {
         let j = i; while (j >= 0 && hist[j].joueur === buteur?.joueur) j--;
         if (j >= 0 && hist[j].equipe === ev.equipe && (PASSES.has(hist[j].b) || hist[j].b === GESTE.TETE)) f.surPasse++;
         f.butsJeu++;
+        // D'OÙ VIENT LE BALLON DU BUTEUR (la touche qui précède sa série) et en combien de touches il a marqué
+        const avant = j >= 0 ? hist[j] : null;
+        const source = !avant ? '?' : avant.equipe !== ev.equipe ? 'récupéré' : PASSES.has(avant.b) || avant.b === GESTE.TETE ? 'passe' : 'coéquipier';
+        const n = i - j;
+        f.sources[source] = (f.sources[source] ?? 0) + 1;
+        f.touchesButeur[n >= 3 ? '3+' : n] = (f.touchesButeur[n >= 3 ? '3+' : n] ?? 0) + 1;
       }
     }
     else if (ev.type === EV.FAUTE) { f.fautes[ev.equipe]++; if (ev.a === 2) f.jaunes[ev.equipe]++; if (ev.a === 3) f.rouges[ev.equipe]++; }
@@ -152,7 +160,8 @@ console.log(`MATCH ${MODE === 'cerveau' ? 'NOTRE CERVEAU' : 'LEUR IA'} — ${MIN
 console.log(`  score ${f.buts[0]}-${f.buts[1]}${f.csc[0] + f.csc[1] ? ` (dont ${f.csc[0] + f.csc[1]} contre son camp)` : ''} · par 90 min : buts ${((f.buts[0] + f.buts[1]) * k).toFixed(1)} · tirs ${((f.tirs[0] + f.tirs[1]) * k).toFixed(0)}`);
 const effMin = enJeu / 600;
 console.log(`  passes ${f.passes[0]} / ${f.passes[1]} (réussite ${pc(f.reussies[0], f.passes[0])} % / ${pc(f.reussies[1], f.passes[1])} %) · par 90 min ${((f.passes[0] + f.passes[1]) * k).toFixed(0)} · temps de jeu effectif ${pc(enJeu, MIN * 600)} % → ${((f.passes[0] + f.passes[1]) / Math.max(effMin, 1e-9)).toFixed(1)} passes par minute effective (réel ≈ 17 : ≈ 1 000 en ≈ 58 min)`);
-console.log(`  buts : ${JSON.stringify(f.origines)} (geste de la dernière touche du buteur) · sur passe ${pc(f.surPasse, f.butsJeu)} % (réel ≈ 75 %)`);
+console.log(`  buts : ${JSON.stringify(f.origines)} (geste de la dernière touche du buteur) · sur passe ${pc(f.surPasse, f.butsJeu)} % (réel ≈ 75 %) · le ballon du buteur ${JSON.stringify(f.sources)} · touches du buteur ${JSON.stringify(f.touchesButeur)}`);
+if (cerveau) console.log(`  fautes décidées par la Loi 12 du cerveau (accrochages) : ${cerveau.stats().fautes}`);
 console.log(`  possession ${pc(f.poss[0], tot)} % / ${pc(f.poss[1], tot)} % · fautes ${f.fautes.join('/')} · jaunes ${f.jaunes.join('/')} · rouges ${f.rouges.join('/')} · hors-jeu ${f.horsJeu.join('/')}`);
 console.log(`  copains : ballon à > 1,5 m pendant ${pc(conduites.loin, conduites.total)} % des conduites (${conduites.total} échantillons), décalage latéral médian ${med(conduites.lateral).toFixed(2)} m ; porteur déclaré : ${pc(conduites.porteLoin, conduites.porteTotal)} % (${conduites.porteTotal})`);
 console.log(`  téléportations (> 3 m en 100 ms, jeu en cours) : ${sauts} · empreinte finale ${empreinte}`);

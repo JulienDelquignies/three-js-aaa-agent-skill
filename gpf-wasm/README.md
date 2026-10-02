@@ -201,8 +201,37 @@ Toutes les mesures L2 précédentes (et la page) voyaient donc des joueurs épui
 | téléportations | 0 | 0 ✓ |
 | décalage latéral en conduite | 0,11 m | < 0,15 m ✓ |
 
+### La Loi 12 du cerveau (2 octobre, 8 matchs de 90 min)
+
+Le corps ne sifflait que les contacts de ses tacles glissés, en retard : 7 fautes par match, mais 3,8 jaunes. Il manquait les petites fautes du vrai football. Le cerveau a la sienne, complète.
+- **L'accrochage du battu** (`duel.js`) : le défenseur dépassé retient le porteur lancé. La probabilité dépend de la composure, de l'agressivité, du rôle, du pressing et de la faute tactique.
+- **L'arbitrage** (`referee.js`, dans l'administration d'`assignMatchJobs`) : l'avantage d'abord (1,8 s), puis le coup de sifflet, avec un carton jugé sur la nature de la faute.
+
+L'adaptateur lit sa décision autour d'`assignMatchJobs` et la transmet à l'arbitre du corps :
+- le coup de sifflet, au lieu de la faute (`gf_faute` : coup franc ou penalty, carton) ;
+- le carton seul, quand l'avantage a été joué (`gf_carton`).
+
+Deux réglages calés sur le corps :
+- **La fréquence des accrochages.** Le cerveau la règle pour environ 17 par match dans son monde. L'épisode revient deux fois plus dans celui du corps : 35,9 accrochages par match à sa probabilité, d'où un facteur 17/35,9.
+- **La retenue dans sa surface**, ×0,27.
+
+Deux défauts trouvés en route :
+- **Le lieu de la faute.** C'était d'abord celui de la victime au coup de sifflet, qui avait pu entrer dans la surface pendant l'avantage : 7 penalties en 8 matchs.
+- **Les expulsés.** Un joueur expulsé par le corps n'avait pas de sortie dans le cerveau, et son administration plantait.
+
+| Par match (8 matchs de 90 min) | sans | avec | réel |
+|---|---|---|---|
+| fautes | 7 | **21,3** | 21,5 ✓ |
+| coups francs | 7 | 20,9 | ≈ 22 |
+| temps de jeu effectif | 78 % | **72 %** | ≈ 64 % |
+| buts | 2,9 | 3,3 | 2,75 |
+| penalties | — | 0,6 | ≈ 0,27 |
+| jaunes | 3,8 | 6,0 | 3,9 ✗ |
+| rouges | 0 | 0 à 0,1 | ≈ 0,1-0,2 |
+
 Restent ouverts :
-- **Les fautes.** Le corps ne siffle que les contacts des tacles, et le tacle reste un réflexe du corps. Le cerveau a un répertoire de duels (tacle glissé, charge, maillot tiré, `duel.js`) que l'adaptateur n'utilise pas encore.
+- **Les cartons.** Il y a trop de jaunes : ceux des tacles du corps s'ajoutent à ceux de la Loi 12 du cerveau.
+- **Les penalties.** 0,6 par match. Les tacles du corps dans la surface y contribuent.
 - **Les buts amenés par une passe.**
 - **La réussite des passes.**
 - **Les arrêts de jeu.** Trop peu de six-mètres et de coups francs, d'où le temps effectif.

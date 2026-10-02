@@ -14,7 +14,7 @@ let dernierToucheur = null, intentions = new Map();
 for (let pas = 0; pas < MIN * 6000; pas++) {
   if (pas % 10 === 0) {
     const e = corps.etat();
-    if (cerveau && e.enJeu && !e.cpa) for (const i of cerveau.decider(e)) { corps.intention(i.id, i); intentions.set(i.id, i); }
+    if (cerveau && e.enJeu && !e.cpa) { const d = cerveau.decider(e); for (const i of d) { corps.intention(i.id, i); intentions.set(i.id, i); } corps.fautes(d.fautes); }
   }
   corps.avancer(1);
   const ap = corps.etat();

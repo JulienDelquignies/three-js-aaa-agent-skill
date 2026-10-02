@@ -17,6 +17,7 @@
 #include "onthepitch/match.hpp"
 #include "onthepitch/team.hpp"
 #include "onthepitch/ball.hpp"
+#include "onthepitch/referee.hpp"
 #include "onthepitch/player/player.hpp"
 #include "intents.hpp"
 
@@ -206,6 +207,27 @@ EMSCRIPTEN_KEEPALIVE void gf_set_arrets(float engagement, float sixMetres, float
  *  de la seconde période à l'autre équipe (sa logique de seconde période, déclenchée par l'horloge continue du match
  *  plutôt que par la sienne, qui s'arrête quand le ballon est mort). Les équipes ne changent pas de côté. */
 EMSCRIPTEN_KEEPALIVE int gf_mi_temps() { GetScenarioConfig().second_half = 0; return 1; }
+
+/** LA FAUTE DÉCIDÉE PAR LE CERVEAU (ids stables ; gravité 1 faute, 2 jaune, 3 rouge ; le lieu de la faute, monde) : l'arbitre
+ *  du corps la siffle au pas suivant — arrêt, coup franc au lieu de la faute ou penalty s'il est dans la surface, carton.
+ *  0 si refusée (jeu déjà arrêté…). */
+EMSCRIPTEN_KEEPALIVE int gf_faute(int fautifId, int victimeId, int gravite, float x, float y) {
+  Match *m = GetGameTask()->GetMatch();
+  Player *f = joueurParId(fautifId), *v = joueurParId(victimeId);
+  if (!f || !v || f->GetTeam() == v->GetTeam() || !m->IsInPlay() || m->IsInSetPiece()) return 0;
+  m->GetReferee()->GfFaute(f, v, gravite < 1 ? 1 : gravite > 3 ? 3 : gravite, Vector3(x, y, 0));
+  return 1;
+}
+/** LE CARTON SANS ARRÊT (l'avantage joué : la Loi 12 le montre au prochain arrêt — ici, tout de suite) : 2 jaune, 3 rouge.
+ *  Le journal le note comme une faute non sifflée (c = −1). */
+EMSCRIPTEN_KEEPALIVE int gf_carton(int joueurId, int couleur) {
+  Match *m = GetGameTask()->GetMatch();
+  Player *p = joueurParId(joueurId);
+  if (!p) return 0;
+  if (couleur >= 3) p->GiveRedCard(m->GetActualTime_ms() + 6000); else p->GiveYellowCard(m->GetActualTime_ms() + 6000);
+  gf_event(GF_EV_FOUL, p->GetTeam()->GetID(), p->GetStableID(), couleur >= 3 ? 3.0f : 2.0f, -1.0f, -1.0f);
+  return 1;
+}
 
 EMSCRIPTEN_KEEPALIVE int gf_frame_head() { return FRAME_HEAD; }
 EMSCRIPTEN_KEEPALIVE int gf_frame_per() { return FRAME_PER; }

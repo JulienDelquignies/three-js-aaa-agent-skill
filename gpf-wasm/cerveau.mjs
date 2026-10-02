@@ -21,6 +21,8 @@ import { arbitre } from '../skills/threejs-aaa/assets/starter/src/engine/menace.
 import { choosePass } from '../skills/threejs-aaa/assets/starter/src/engine/rondo.js';
 import { BallBody } from '../skills/threejs-aaa/assets/starter/src/engine/ball-body.js';
 import { uneTouche } from '../skills/threejs-aaa/assets/starter/src/engine/premiere-intention.js';
+import { accrocheStep } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
+import { tac, axe } from '../skills/threejs-aaa/assets/starter/src/engine/tactics.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 
 const GPF = { hx: 55, hy: 36 };
@@ -32,7 +34,7 @@ const GPF = { hx: 55, hy: 36 };
 export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {} } = {}) {
   /** Les réglages de l'adaptateur, chacun débrayable pour la mesure A/B : `flux` (les tirages nommés du cerveau),
    *  `uneTouche` (la première intention posée avant le contact). */
-  const OPT = { flux: true, uneTouche: true, ...options };
+  const OPT = { flux: true, uneTouche: true, fautes: true, ...options };
   const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
@@ -42,6 +44,15 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   // 75 % des réceptions, et leur propre IA y joue en une touche avec 67-86 % de réussite (3 graines × 15 min). Le seuil
   // devient celui du corps : 15 m/s (au-delà, trop peu de cas pour juger).
   cfg.uneTouche = { ...cfg.uneTouche, vmax: 15 };
+  // L'ACCROCHAGE CALÉ SUR LE CORPS : le cerveau règle sa probabilité par épisode (le défenseur battu dans le dos d'un porteur
+  // lancé) pour ≈ 17 accrochages par match dans SON monde (duel.js, lot 97). Dans celui du corps l'épisode revient deux fois
+  // plus : 35,9 accrochages sifflés par match à sa probabilité (8 matchs de 90 min). Le facteur rend son intention au cerveau.
+  const ACCROCHE_CORPS = 17 / 35.9;
+  cfg.accrocheMod = (s2, c, k) => accrocheStep(s2, c, k, axe(tac(s2, 1 - c.team).pressing, 0.7, 1.3) * ACCROCHE_CORPS);
+  // …ET DANS SA SURFACE, LA RETENUE AUSSI : le cerveau y retient déjà la main (×0,15, puis retenueSurface.accro 0,4), mais
+  // les attaques du corps finissent plus souvent en dribble dans la surface que dans son monde — 1 penalty par match mesuré
+  // (8 matchs de 90 min), pour ≈ 0,27 au réel. La retenue de surface est calée sur ce taux.
+  cfg.retenueSurface = { ...cfg.retenueSurface, accro: (cfg.retenueSurface?.accro ?? 0.4) * 0.27 };
   const SX = st.pitch.hx / GPF.hx, SZ = st.pitch.hz / GPF.hy;
   const versCerveau = (x, y) => [x * SX, -y * SZ];
   const versCorps = (x, z) => [x / SX, -z / SZ];
@@ -60,7 +71,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   /** La une-touche décidée et pas encore frappée : { id (cerveau), cible (id du corps), jusqua }. */
   let uneToucheTenue = null;
   /** Les décisions de première intention (pour les bancs) : tentées, jouées, et les refus du cerveau par motif (st.deny). */
-  const stats = { utDecisions: 0, utJouees: 0 };
+  const stats = { utDecisions: 0, utJouees: 0, fautes: 0 };
   /** LE GARDIEN DU CORPS NE REÇOIT PAS LA PASSE EN RETRAIT : la règle lui interdit les mains, et le moteur ne lui a pas appris
    *  à la jouer du pied (leur propre IA ne lui passe presque jamais : 0,3 % de ses passes). Mesuré, sur 45 min × 3 graines :
    *  32 passes au gardien (4,1 %), 4 dans nos filets — la « courte » de 24 m part à 29 m/s, monte à 2 m, et passe au-dessus du
@@ -131,7 +142,13 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
       q.v = [j.v[0] * SX, -j.v[1] * SZ];
       q.speed = Math.hypot(q.v[0], q.v[1]);
       if (Math.hypot(j.dir[0], j.dir[1]) > 0.1) q.yaw = Math.atan2(-j.dir[1], j.dir[0]);
-      q.down = 0;
+      // l'expulsé (par le corps ou par le cerveau) n'existe plus pour les cerveaux : le levier natif de la skill (down géant)
+      if (!j.actif) {
+        // …et il marche vers sa sortie, la ligne de touche la plus proche (le chemin de l'expulsé de la skill, Loi 12 — sans
+        // sortie posée, son administration plantait sur un expulsé par le corps)
+        q.expulse = true; q.down = 9e9;
+        q._exit ??= [Math.max(-st.pitch.hx + 2, Math.min(st.pitch.hx - 2, x)), (z >= 0 ? 1 : -1) * (st.pitch.hz + 2.5)];
+      } else q.down = 0;
     }
     const [bx, bz] = versCerveau(etat.ballon[0], etat.ballon[1]);
     st.ball = new BallBody([bx, Math.max(0.11, etat.ballon[2]), bz], [etat.ballonV[0] * SX, etat.ballonV[2], -etat.ballonV[1] * SZ], [0, 0, 0]);
@@ -157,7 +174,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
       st.phase = 'loose'; st.hold = 0;
     }
     if (dernierToucheur === 0 || dernierToucheur === 1) st.lastTouch = dernierToucheur;
-    st.restart = null; st._whistle = null; st._faute = null;
+    st.restart = null; st._whistle = null;
+    // LA FAUTE DU CERVEAU VIT SA FENÊTRE D'AVANTAGE (Loi 5) d'un tick à l'autre — sauf ballon mort : le corps a arrêté le jeu
+    if (!etat.enJeu || etat.cpa) st._faute = null;
     st.laneVeto = vetoGardiens;
     // LES TIRAGES NOMMÉS DU CERVEAU (rng.tirage, lot 264) : son pas de simulation les arme à chaque image — le tick physique
     // (1/60 s), les compteurs remis à zéro. Sans eux, chaque tirage retombait sur un générateur séquentiel : le hasard d'une
@@ -190,7 +209,23 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     decider(etat) {
       if (!cerveauDe) apparier(etat);
       preter(etat);
+      // LA LOI 12 DU CERVEAU S'ADJUGE DANS SON ADMINISTRATION (assignMatchJobs → adjugeFaute) : l'avantage d'abord, puis le
+      // sifflet. On lit sa décision autour de l'appel — et le sifflet part au corps (gf_faute : coup franc ou penalty,
+      // carton), ou le carton seul quand l'avantage a été joué (gf_carton)
+      const F0 = OPT.fautes ? st._faute : null, n0 = st.events.length;
       matchInternals.assignMatchJobs(st, cfg);
+      const fautes = [];
+      if (F0 && !st._faute) {
+        const cartons = st.events.slice(n0).filter(e => e.type === 'carton' && e.by === F0.par);
+        const gravite = cartons.some(e => e.couleur === 'rouge') ? 3 : cartons.length ? 2 : 1;
+        const fautif = corpsDe.get(F0.par), victime = corpsDe.get(F0.sur);
+        // le lieu de la FAUTE (F0.p, là où le porteur a été retenu), pas celui de la victime au coup de sifflet : pendant
+        // l'avantage elle a pu entrer dans la surface — mesuré, 7 penalties en 8 matchs pour ≈ 2 au réel
+        const [lx, ly] = versCorps(F0.p[0], F0.p[1]);
+        if (st.restart && (st.restart.type === 'coup-franc' || st.restart.type === 'penalty')) fautes.push({ fautif, victime, gravite, x: lx, y: ly });
+        else if (gravite > 1) fautes.push({ carton: fautif, couleur: gravite });
+        stats.fautes++;
+      }
       // les couches de placement qui vivent dans le mouvement (zone-homme, occupation, compression, cible lissée…) :
       // on les laisse écrire la cible et la vitesse voulue ; le pas qu'elles font faire au monde prêté est jeté
       movePlayers(st, 0.1, cfg);
@@ -209,6 +244,14 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         const voulue = Math.hypot(q._wx ?? 0, q._wz ?? 0) / SX;
         if (q.job === 'press') out.push({ id, genre: INTENTION.PRESSER, x, y, vitesse: 8, job: q.job });
         else out.push({ id, genre: INTENTION.ALLER, x, y, vitesse: Math.max(1.5, Math.min(8, voulue || 5)), job: q.job });
+      }
+      // L'ACCROCHAGE DU BATTU (duel.js, lot 97 de la skill — le défenseur dépassé qui retient le porteur, l'axe de pressing de
+      // son équipe), une fois le tick décidé : la faute ouverte s'adjuge aux ticks suivants (ci-dessus). Le corps ne sifflait
+      // que les contacts de ses tacles : 7 fautes par match.
+      out.fautes = fautes;
+      if (OPT.fautes && cfg.loi12 && etat.enJeu && !etat.cpa) {
+        const c = st.players[st.possession.carrier];
+        if (c && st.phase === 'carry' && !st._faute && cfg.accroche !== false) (cfg.accrocheMod ?? accrocheStep)(st, c, cfg);
       }
       // LA PREMIÈRE INTENTION, une fois par passe : le monde est déjà décidé pour ce tick, on peut le salir (il est reprêté au
       // suivant) — le ballon posé au pied du receveur, à sa vitesse d'arrivée, et la fonction du cerveau tranche

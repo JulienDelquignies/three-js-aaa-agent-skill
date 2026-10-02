@@ -47,6 +47,13 @@ export function poserLesArrets(M, arrets = ARRETS_REELS) {
  *  (player.cpp : la fatigue s'accumule ÷ ce facteur ; 0,027, le réglage de GRF, l'accélère 18 fois). */
 export const CHRONO_REEL = 4.75;
 
+/** LES FAUTES DU CERVEAU (decider(...).fautes) : le sifflet part à l'arbitre du corps — { fautif, victime, gravite, x, y }
+ *  (gf_faute : coup franc ou penalty au LIEU de la faute (monde), 1 faute, 2 jaune, 3 rouge) —, ou le carton seul quand l'avantage a été joué —
+ *  { carton, couleur } (gf_carton). */
+export function poserFautes(M, fautes = []) {
+  for (const f of fautes) f.carton != null ? M._gf_carton(f.carton, f.couleur) : M._gf_faute(f.fautif, f.victime, f.gravite, f.x, f.y);
+}
+
 /** Poser l'intention TENUE d'un joueur (id stable). */
 export function poserIntention(M, id, { genre = 0, x = 0, y = 0, vitesse = 0, cible = -1, puissance = 0, drapeaux = 0 } = {}) {
   M._gf_set_intent(id, genre, x, y, vitesse, cible, puissance, drapeaux);
