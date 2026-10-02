@@ -3,6 +3,7 @@
 // Les trois lectures (A placement, B décision du porteur, C pressing) sont des MÉTHODES d'ElizaController définies ici :
 // elles appellent ses constructeurs de commandes protégés (`_AddPass`…). Les correctifs (`patch.py`) n'ajoutent dans le
 // moteur que leurs déclarations et trois appels.
+#include <algorithm>
 #include <cmath>
 #include <unordered_map>
 #include <vector>
@@ -60,6 +61,20 @@ void gf_event(int type, int team, int player, float a, float b, float c, float d
 static float g_arrets[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 unsigned long gf_arret_ms(int mode) { return mode >= 0 && mode < 8 && g_arrets[mode] > 0 ? (unsigned long)g_arrets[mode] : 0; }
 void gf_arrets_set(const float *ms, int n) { for (int i = 0; i < 8; i++) g_arrets[i] = i < n ? ms[i] : 0.0f; }
+
+static std::vector<int> g_animComptes[4];
+void gf_anim_compte(int etage, int animId) {
+  if (etage < 0 || etage > 3 || animId < 0) return;
+  auto &v = g_animComptes[etage];
+  if ((int)v.size() <= animId) v.resize(animId + 1, 0);
+  v[animId]++;
+}
+const int *gf_anim_comptes(int etage, int n) {
+  auto &v = g_animComptes[etage < 0 || etage > 3 ? 0 : etage];
+  if ((int)v.size() < n) v.resize(n, 0);
+  return v.data();
+}
+void gf_anim_comptes_raz() { for (auto &v : g_animComptes) std::fill(v.begin(), v.end(), 0); }
 
 const float *gf_events_take(int *count) {
   g_lu.swap(g_journal);

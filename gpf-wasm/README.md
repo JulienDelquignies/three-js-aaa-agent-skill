@@ -355,6 +355,16 @@ Le prix est le nombre de buts. Les tirs en une touche convertissent à 28 % (11 
 
 Le piège de construction : `build.sh` ne suit pas les en-têtes. Changer une structure du moteur (`gamedefines.hpp`) sans tout recompiler corromprait la mémoire sans erreur visible. Les correctifs passent donc par des champs que le moteur ignore déjà.
 
+### Les animations du corps et celles de notre moteur (2 octobre, nuit)
+
+`animations.md` répond à deux questions, mesurées :
+- **Les animations du corps sont-elles toutes appelées ?** Sur 284 fichiers (16 matchs de 90 min), notre cerveau en fait jouer 240, leur IA 257.
+  - 22 ne sont jouées par personne : les célébrations (l'après-but de la version Google dure 1 s, la célébration commence à 2 s), le gardien qui marche ballon en main, et des gestes toujours devancés.
+  - 22 ne sont jouées que par leur IA : les têtes (notre cerveau ne joue jamais un ballon aérien en première intention) et des parades hautes (nos tirs sont plus bas et moins nombreux).
+- **Nos gestes ont-ils leur animation dans le corps ?** Sur 142 gestes de notre moteur (`inventaire-moteur.md`) : 61 oui, 24 approchants, 57 non. Il manque surtout les dribbles et les feintes, les coups de pied arrêtés, la vie autour du jeu, les duels de corps, quelques tirs et gestes de gardien. La partie 3 dit ce qu'il faut faire côté C++.
+
+**Le relevé** (`patch.py`, étape 10) : chaque choix d'animation compte à quatre étages. Ce sont la candidate au premier tri, la gardée après les filtres de direction, la jouée par un joueur et la jouée par un officiel. C'est un compteur, la garde au bit près tient. L'API : `gf_anims_n`, `gf_anim_nom`, `gf_anim_releve`, `gf_anim_raz`. Les bancs : `bancs/animations.mjs`, `bancs/animations-bilan.mjs` ; le tableau complet est dans `animations-releve.md`.
+
 ## Licences
 
 `LICENCES.txt`, copié à côté du module, réunit les avis : l'Unlicense du moteur, la licence Apache 2.0 de ses fichiers, la police et les bibliothèques compilées dedans (SDL2, FreeType, HarfBuzz, zlib, Boost).

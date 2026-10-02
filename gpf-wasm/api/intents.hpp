@@ -69,3 +69,11 @@ const float *gf_events_take(int *count);
 // un but, 2 six-mètres, 3 coup franc et hors-jeu, 4 corner, 5 touche, 6 penalty) ; 0 par défaut : rien ne change.
 unsigned long gf_arret_ms(int mode);
 void gf_arrets_set(const float *ms, int n);
+
+// ── LE RELEVÉ DES ANIMATIONS (bancs/animations.mjs) ────────────────────────────────────────────────────────────────────
+// Chaque choix d'animation d'un corps compte, par identifiant dans la collection, à quatre étages : 0 candidate au tri
+// grossier (CrudeSelection), 1 gardée après les filtres de direction (avant le classement), 2 jouée par un joueur, 3 jouée
+// par un officiel. Un simple compteur : le match n'en dépend pas (la garde au bit près tient).
+void gf_anim_compte(int etage, int animId);
+const int *gf_anim_comptes(int etage, int n);
+void gf_anim_comptes_raz();

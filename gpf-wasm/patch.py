@@ -204,4 +204,33 @@ void Referee::GfFaute(Player *fautif, Player *victime, int gravite, const Vector
 }
 
 void Referee::ProcessState(EnvState *state) {''')
+# 10. LE RELEVÉ DES ANIMATIONS (api/intents.hpp, bancs/animations.mjs) : chaque choix d'animation compte — candidate au tri
+#     grossier, gardée après les filtres de direction, jouée (joueur ou officiel). Un compteur : le match n'en dépend pas.
+ensure_top('onthepitch/player/humanoid/humanoidbase.cpp', '#include "intents.hpp"')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''  DataSet dataSet;
+  anims->CrudeSelection(dataSet, query);
+  if (dataSet.size() == 0) {''',
+    '''  DataSet dataSet;
+  anims->CrudeSelection(dataSet, query);
+  for (int id : dataSet) gf_anim_compte(0, id);  // [gf-intent] le relevé des animations
+  if (dataSet.size() == 0) {''')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''  GetContext().tracker_disabled++;
+  std::stable_sort(dataSet.begin(), dataSet.end(), boost::bind(&Humanoid::ComparePriorityVariable, this, _1, _2));''',
+    '''  for (int id : dataSet) gf_anim_compte(1, id);  // [gf-intent] le relevé des animations
+  GetContext().tracker_disabled++;
+  std::stable_sort(dataSet.begin(), dataSet.end(), boost::bind(&Humanoid::ComparePriorityVariable, this, _1, _2));''')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''    currentAnim.anim = anims->GetAnim(selectedAnimID);
+    currentAnim.id = selectedAnimID;''',
+    '''    currentAnim.anim = anims->GetAnim(selectedAnimID);
+    currentAnim.id = selectedAnimID;
+    gf_anim_compte(2, selectedAnimID);  // [gf-intent] le relevé des animations''')
+sub('onthepitch/player/humanoid/humanoidbase.cpp',
+    '''    currentAnim.anim = anims->GetAnim(selectedAnimID);
+    currentAnim.id = selectedAnimID;''',
+    '''    currentAnim.anim = anims->GetAnim(selectedAnimID);
+    currentAnim.id = selectedAnimID;
+    gf_anim_compte(3, selectedAnimID);  // [gf-intent] le relevé des animations''')
 print('patch: ok')

@@ -19,6 +19,8 @@
 #include "onthepitch/ball.hpp"
 #include "onthepitch/referee.hpp"
 #include "onthepitch/player/player.hpp"
+#include "onthepitch/player/humanoid/animcollection.hpp"
+#include "utils/animation.hpp"
 #include "intents.hpp"
 
 static GameEnv *g_env = nullptr;
@@ -232,4 +234,19 @@ EMSCRIPTEN_KEEPALIVE int gf_carton(int joueurId, int couleur) {
 EMSCRIPTEN_KEEPALIVE int gf_frame_head() { return FRAME_HEAD; }
 EMSCRIPTEN_KEEPALIVE int gf_frame_per() { return FRAME_PER; }
 EMSCRIPTEN_KEEPALIVE int gf_pose_per() { return POSE_PER; }
+
+// ── LE RELEVÉ DES ANIMATIONS (bancs/animations.mjs) ─────────────────────────────────────────────────────────────────────
+/** Le nombre d'animations de la collection : les fichiers et leur miroir (« _mirror »), et les courses générées au
+ *  chargement depuis les modèles (« autogen […] »). */
+EMSCRIPTEN_KEEPALIVE int gf_anims_n() { return (int)GetGameTask()->GetMatch()->GetAnimCollection()->GetAnimations().size(); }
+/** Le nom d'une animation (son fichier, relatif au dossier du moteur), chaîne terminée par un zéro. */
+EMSCRIPTEN_KEEPALIVE const char *gf_anim_nom(int id) {
+  static std::string nom;
+  const auto &a = GetGameTask()->GetMatch()->GetAnimCollection()->GetAnimations();
+  nom = id >= 0 && id < (int)a.size() ? a[id]->GetName() : std::string();
+  return nom.c_str();
 }
+/** Les compteurs d'un étage (0 candidate, 1 gardée, 2 jouée par un joueur, 3 par un officiel), un entier par animation. */
+EMSCRIPTEN_KEEPALIVE const int *gf_anim_releve(int etage) { return gf_anim_comptes(etage, gf_anims_n()); }
+EMSCRIPTEN_KEEPALIVE void gf_anim_raz() { gf_anim_comptes_raz(); }
+}  // extern "C"
