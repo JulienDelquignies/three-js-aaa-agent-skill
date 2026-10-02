@@ -1,6 +1,8 @@
 # gpf-wasm — le moteur de match de Gameplay Football dans le navigateur
 
-Lot **L0** du cadrage « Football Manager ++ » (dépôt foot, `Cadrage_Moteur_Match_V1.md`, PR #42).
+Lot **L0** du cadrage « Football Manager ++ » (dépôt foot, `Cadrage_Moteur_Match_V1.md`, PR #42), puis le lot **L2** : notre cerveau aux commandes de ses corps.
+
+**La documentation de référence est dans [`docs/`](docs/README.md)** : le corps, le moteur, l'adaptateur, les attributs. Ce README garde la construction, les mesures et l'histoire de chaque correction, par date.
 
 On compile en WebAssembly, **sans son rendu**, le moteur de match de Google Research Football 2.10.2 (`third_party/gfootball_engine`, licence **Unlicense**, issu de Gameplay Football de Bastiaan Konings Schuiling). Ses 22 joueurs sont ensuite dessinés par notre three.js avec nos humains : la page `examples/showcase/gpf-match.html`.
 
