@@ -105,6 +105,20 @@ c. 0,80) — à reprendre.
   la passe, B10 « décalage temporel entre lignes 0,6-1,2 s »). Chantier à ouvrir : la cible défensive sur le ballon prédit (le point de
   chute de la passe en vol, les options du porteur) plutôt que sur le ballon présent.
 
+### Le ballon prédit — essai 389, non scellé (02/10)
+- **La loi essayée** (`ballonPredit`) : l'ancre du placement (assignMatchJobs), puis aussi la compression et la zone-homme, sur le ballon
+  PRÉDIT — en vol 75 % du chemin vers le point de chute, au pied d'un porteur lancé sa position dans 0,6 s. Jumeau au bit.
+- **Mesuré** (équilibre, 2 × 45 min) : N_def(10) des corps 2,07 → 2,12 (ancre seule) → 2,04 (ancre + compression + zone-homme) ; les
+  cibles 3,35 → 3,26 → 3,05. Sans effet. Retiré.
+- **Ce que la sonde a appris** : l'épisode « cible à moins de 10 m du ballon » dure 0,87 s en médiane (p25 0,10 s), le corps entre dans
+  les 10 m une fois sur deux ; les épisodes finissent surtout chez le PRESSEUR dont la cible quitte la zone en moins d'une seconde
+  (315 sur 1 674), et aux bascules de métier (marquage ↔ couverture ↔ pressing). Le défaut n'est pas la référence (présente ou prédite)
+  mais la STABILITÉ des métiers près du ballon : qui presse, qui couvre, qui ferme change trop vite pour qu'un corps arrive.
+- **Géométrie** : un bloc de 31 × 34 m dont le ballon est au bord avant contient ~1,5 défenseur dans le demi-disque de 10 m, plus les
+  presseurs : ~2,5 — le moteur y est. Le 4,9 du livre (dérivé) suppose le ballon DANS le bloc (le bloc coulissé jusqu'à l'envelopper).
+- **Piste** : l'élection des métiers défensifs près du ballon avec tenue (le presseur, le couvreur et le fermeur gardent leur rôle tant
+  que le ballon reste dans leur secteur) et un bloc qui enveloppe le ballon côté fort (B10 : la zone abandonnée côté faible).
+
 ## Les chantiers
 
 ### T1 — Le bloc qui se resserre vers le ballon *(en cours)*
