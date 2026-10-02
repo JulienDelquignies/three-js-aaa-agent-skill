@@ -94,7 +94,9 @@ Le moteur garde ses corps. Un cerveau externe pose, joueur par joueur, une **int
 
 Restent au moteur, en v1 : les gardiens, les coups de pied arrêtés et tout le jeu arrêté, les gestes de contact (contrôle, amorti, tacle).
 
-Le **journal** (`gf_events`) note chaque touche (dédoublonnée : le porteur « touche » le ballon à chaque pas), but (buteur, contre son camp), faute (gravité, victime, penalty), hors-jeu et coup de pied arrêté.
+Un porteur que le cerveau n'a pas encore vu (le ballon vient d'arriver, son intention est encore `ALLER` ou `PRESSER`) **garde le ballon** et le conduit vers son placement jusqu'au tick suivant (≤ 100 ms) : laisser le contrôleur décider à cet instant, c'était lui laisser la passe en une touche — 45 % des passes de nos matchs venaient de lui.
+
+Le **journal** (`gf_events`) note chaque touche (dédoublonnée : le porteur « touche » le ballon à chaque pas), but (buteur, contre son camp), faute (gravité, victime, penalty), hors-jeu, coup de pied arrêté, et chaque **passe au contact** (le destinataire que le corps vise vraiment, la force de la touche).
 
 - `corps.mjs` : la couche JavaScript du module : lancer, poser les intentions, avancer, lire l'état et le journal.
 - `cerveau.mjs` : **notre cerveau** (le moteur de match de la skill) aux commandes.
@@ -102,7 +104,8 @@ Le **journal** (`gf_events`) note chaque touche (dédoublonnée : le porteur « 
   - Il décide avec `assignMatchJobs`, les couches de `movePlayers`, `arbitre` et `choosePass`, en respectant ses portes de tenue du ballon.
   - Ses décisions repartent en intentions. Elles lui coûtent 0,9 ms par tick.
 - `bancs/obeissance.mjs` : le corps obéit-il ? Chaque intention est comparée au même match sans elle.
-- `bancs/match-cerveau.mjs` : un match, avec la feuille de match et les critères du cadrage : copains avec le ballon, téléportations.
+- `bancs/match-cerveau.mjs` : un match, avec la feuille de match et les critères du cadrage : copains avec le ballon, téléportations, temps de jeu effectif. Il se garde lui-même : le journal doit retrouver le score du moteur, et une empreinte de l'état final dit si deux bancs ont joué le même match.
+- `bancs/autopsie-passes.mjs` : chaque passe, de la frappe (au pas de 10 ms) à la touche suivante. Pour chacune, le banc mesure le dégagement de la ligne, la pression sur le passeur et sur le receveur, la vitesse du ballon, puis l'issue. Pour une passe du cerveau, il note aussi l'instant de la décision et le délai jusqu'à la frappe. Il sépare ainsi le **choix** de la passe de son **exécution**.
 
 ### Mesures du 2 octobre (graine 7 pour l'obéissance ; 3 graines × 15 min pour le match)
 
@@ -113,15 +116,27 @@ Le **journal** (`gf_events`) note chaque touche (dédoublonnée : le porteur « 
 | tirs de l'équipe | 2 | **18** |
 | défenseur le plus proche du porteur (médiane) | 3,3 m | **1,4 m** |
 
-| Match (par 90 min) | notre cerveau | leur IA | réel visé |
+| Match (par 90 min, 3 graines × 15 min) | notre cerveau | leur IA | réel visé |
 |---|---|---|---|
-| buts | 6 | 34 | 2,75 |
-| tirs | 36 | 116 | 26 ± 7 |
-| passes | 1 760 | 1 390 | ≈ 1 000 |
-| passes réussies | ≈ 71 % | ≈ 77 % | 80-85 % |
-| ballon à plus de 1,5 m pendant les conduites | 14-18 % | 4-5 % | < 10 % |
+| buts | 8 | 34 | 2,75 |
+| tirs | 20 | 116 | 26 ± 7 |
+| passes | 1 550 | 1 390 | ≈ 1 000 |
+| temps de jeu effectif | **91 %** | 85 % | ≈ 64 % (58 min) |
+| passes par minute de jeu effectif | **18,8** | 18,0 | ≈ 17 |
+| passes réussies | ≈ 75 % | ≈ 77 % | 80-85 % |
+| ballon à plus de 1,5 m pendant les conduites | 14-17 % | 4-5 % | < 10 % |
 | décalage latéral du ballon en conduite | 0,11 m | 0,08 m | < 0,15 m |
 | téléportations (> 3 m en 100 ms, jeu en cours) | 0 | 0 | 0 |
+
+Le volume de passes « par 90 min » trompe : notre ballon est en jeu 91 % du temps (le corps reprend vite les coups de pied arrêtés, il siffle peu), contre 64 % en vrai. Par minute de jeu effectif, le rythme est le bon. Les buts, non : 8 pour 20 tirs, soit 40 % de conversion, contre 11 % en vrai.
+
+**Pourquoi nos passes se perdaient** (`autopsie-passes.mjs`, 3 graines, 681 passes du cerveau, 614 de leur IA) :
+
+- **Ce n'est pas l'exécution.** À pression égale sur le passeur, la réussite est la même dans les deux modes : 63 % contre 68 % à moins d'1 m, puis 82-85 % contre 77-84 % au-delà.
+- **C'était le moment.** 57 % de nos passes partaient avec un adversaire à moins d'1 m, contre 18 % chez eux, et 161 de nos 185 passes perdues étaient de celles-là.
+- Le cerveau décidait avec l'adversaire à 1,7 m, qui arrivait à 5 m/s. Le corps met 0,4 s à armer la frappe.
+- Le cerveau de la skill juge le calme sur l'instant, à 1,8 m, réglage fait pour ses propres corps. `cerveau.mjs` le juge désormais **à la frappe** : chacun est projeté de 0,4 s.
+- Résultat : décision à 2,4 m, frappe à 1,3 m, réussite de 71 % à 75 %.
 
 ## Licences
 

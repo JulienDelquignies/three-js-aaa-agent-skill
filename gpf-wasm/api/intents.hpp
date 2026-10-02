@@ -53,6 +53,8 @@ enum GfEventType {
   GF_EV_FOUL = 3,      // équipe du fautif ; a = gravité (1 faute, 2 jaune, 3 rouge) ; b = victime ; c = 1 si penalty
   GF_EV_OFFSIDE = 4,   // équipe et joueur hors-jeu
   GF_EV_SETPIECE = 5,  // équipe qui reprend ; a = e_GameMode
+  GF_EV_PASS = 6,      // la passe au pied, au contact : a = geste (e_FunctionType), b = destinataire visé (id stable ou -1),
+                       // c = norme de la touche (m/s), d = destinataire imposé par la commande (id stable ou -1)
 };
 static const int GF_EV_SIZE = 8;
 void gf_event(int type, int team, int player, float a = 0, float b = 0, float c = 0, float d = 0);

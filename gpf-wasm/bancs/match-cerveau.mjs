@@ -17,15 +17,19 @@ const cerveau = MODE === 'cerveau' ? creerCerveau({ graine: GRAINE, tactiques: T
 const f = { buts: [0, 0], tirs: [0, 0], passes: [0, 0], reussies: [0, 0], fautes: [0, 0], jaunes: [0, 0], rouges: [0, 0], horsJeu: [0, 0], poss: [0, 0] };
 const PASSES = new Set([GESTE.PASSE_COURTE, GESTE.PASSE_LONGUE, GESTE.PASSE_HAUTE]);
 let dernier = null, passeEnCours = null;
+// LE DIAGNOSTIC DES PASSES : la dernière intention posée par joueur, et pour chaque passe ce que le cerveau voulait
+const derniereIntention = new Map();
+const diag = { voulues: 0, auDestinataire: 0, aUnAutre: 0, perdues: 0, parType: {}, parDist: {}, tenues: [] };
+let receptionA = new Map();   // joueur → instant où il a reçu le ballon
 const conduites = { loin: 0, total: 0, lateral: [], porteLoin: 0, porteTotal: 0 };
-let suivi = { id: null, depuis: 0 }, sauts = 0, prev = null, tDecide = 0, nDecide = 0;
+let suivi = { id: null, depuis: 0 }, sauts = 0, prev = null, tDecide = 0, nDecide = 0, enJeu = 0;
 const t0 = performance.now();
 
 for (let tick = 0; tick < MIN * 600; tick++) {
   const e = corps.etat();
   if (cerveau && e.enJeu && !e.cpa) {
     const a = performance.now();
-    for (const i of cerveau.decider(e, dernier?.equipe ?? null)) corps.intention(i.id, i);
+    for (const i of cerveau.decider(e, dernier?.equipe ?? null)) { corps.intention(i.id, i); derniereIntention.set(i.id, i); }
     tDecide += performance.now() - a; nDecide++;
   }
   corps.avancer(10);
@@ -38,14 +42,31 @@ for (let tick = 0; tick < MIN * 600; tick++) {
       if (ev.b === GESTE.TIR) f.tirs[ev.equipe]++;
       // une passe se juge à la touche suivante d'un AUTRE joueur : un coéquipier = réussie
       if (passeEnCours && ev.joueur !== passeEnCours.joueur) {
-        if (ev.equipe === passeEnCours.equipe) f.reussies[passeEnCours.equipe]++;
+        const ok = ev.equipe === passeEnCours.equipe;
+        if (ok) f.reussies[passeEnCours.equipe]++;
+        const T = (diag.parType[passeEnCours.b] ??= { n: 0, ok: 0 }); T.n++; if (ok) T.ok++;
+        const D = (diag.parDist[passeEnCours.bucket] ??= { n: 0, ok: 0 }); D.n++; if (ok) D.ok++;
+        if (passeEnCours.voulue != null) {
+          diag.voulues++;
+          if (ev.joueur === passeEnCours.voulue) diag.auDestinataire++; else if (ok) diag.aUnAutre++; else diag.perdues++;
+        }
         passeEnCours = null;
       }
-      if (PASSES.has(ev.b)) { f.passes[ev.equipe]++; passeEnCours = ev; }
+      if (PASSES.has(ev.b)) {
+        f.passes[ev.equipe]++;
+        const it = derniereIntention.get(ev.joueur);
+        const pp = apres.joueurs.find(j => j.id === ev.joueur), cible = it?.cible != null ? apres.joueurs.find(j => j.id === it.cible) : null;
+        const dist = pp && cible ? Math.hypot(pp.x - cible.x, pp.y - cible.y) : null;
+        const bucket = dist == null ? '?' : dist < 15 ? '<15' : dist < 30 ? '15-30' : '>30';
+        passeEnCours = { ...ev, voulue: it?.genre === 3 ? it.cible : null, bucket };
+        if (receptionA.has(ev.joueur)) diag.tenues.push((ev.t - receptionA.get(ev.joueur)) / 1000);
+      }
+      if (!dernier || dernier.joueur !== ev.joueur) receptionA.set(ev.joueur, ev.t);
       dernier = ev;
     }
   }
   if (!apres.enJeu || apres.cpa) { prev = null; suivi = { id: null, depuis: 0 }; continue; }
+  enJeu++;   // le temps de jeu EFFECTIF (ballon en jeu, hors coups de pied arrêtés) : la base honnête des volumes
   if (apres.possession.equipe === 0 || apres.possession.equipe === 1) f.poss[apres.possession.equipe]++;
   // la téléportation
   if (prev) for (const j of apres.joueurs) {
@@ -71,12 +92,24 @@ for (let tick = 0; tick < MIN * 600; tick++) {
   }
 }
 
+// LA GARDE DE L'INSTRUMENT : le journal doit retrouver le score du moteur (un déclencheur en double compterait deux buts),
+// et l'empreinte de l'état final dit si deux bancs ont joué le même match
+const fin = corps.etat();
+const empreinte = fin.joueurs.reduce((h, j) => ((h * 31 + Math.round(j.x * 1000)) * 31 + Math.round(j.y * 1000)) | 0, 0);
+if (fin.score[0] !== f.buts[0] || fin.score[1] !== f.buts[1]) console.log(`  ⚠ LE JOURNAL MENT : buts notés ${f.buts.join('-')}, score du moteur ${fin.score.join('-')}`);
 const med = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
 const k = 90 / MIN, pc = (a, b) => (b ? (100 * a / b).toFixed(0) : '—');
 const tot = f.poss[0] + f.poss[1];
 console.log(`MATCH ${MODE === 'cerveau' ? 'NOTRE CERVEAU' : 'LEUR IA'} — ${MIN} min de jeu, graine ${GRAINE}${cerveau ? `, tactiques ${TACS.join(' c. ')}` : ''} (${((performance.now() - t0) / 1000).toFixed(0)} s de calcul${cerveau ? `, cerveau ${(tDecide / Math.max(1, nDecide)).toFixed(2)} ms par décision` : ''})`);
 console.log(`  score ${f.buts[0]}-${f.buts[1]} · par 90 min : buts ${((f.buts[0] + f.buts[1]) * k).toFixed(1)} · tirs ${((f.tirs[0] + f.tirs[1]) * k).toFixed(0)}`);
-console.log(`  passes ${f.passes[0]} / ${f.passes[1]} (réussite ${pc(f.reussies[0], f.passes[0])} % / ${pc(f.reussies[1], f.passes[1])} %) · par 90 min ${((f.passes[0] + f.passes[1]) * k).toFixed(0)}`);
+const effMin = enJeu / 600;
+console.log(`  passes ${f.passes[0]} / ${f.passes[1]} (réussite ${pc(f.reussies[0], f.passes[0])} % / ${pc(f.reussies[1], f.passes[1])} %) · par 90 min ${((f.passes[0] + f.passes[1]) * k).toFixed(0)} · temps de jeu effectif ${pc(enJeu, MIN * 600)} % → ${((f.passes[0] + f.passes[1]) / Math.max(effMin, 1e-9)).toFixed(1)} passes par minute effective (réel ≈ 17 : ≈ 1 000 en ≈ 58 min)`);
 console.log(`  possession ${pc(f.poss[0], tot)} % / ${pc(f.poss[1], tot)} % · fautes ${f.fautes.join('/')} · jaunes ${f.jaunes.join('/')} · rouges ${f.rouges.join('/')} · hors-jeu ${f.horsJeu.join('/')}`);
 console.log(`  copains : ballon à > 1,5 m pendant ${pc(conduites.loin, conduites.total)} % des conduites (${conduites.total} échantillons), décalage latéral médian ${med(conduites.lateral).toFixed(2)} m ; porteur déclaré : ${pc(conduites.porteLoin, conduites.porteTotal)} % (${conduites.porteTotal})`);
-console.log(`  téléportations (> 3 m en 100 ms, jeu en cours) : ${sauts}`);
+console.log(`  téléportations (> 3 m en 100 ms, jeu en cours) : ${sauts} · empreinte finale ${empreinte}`);
+const typ = { 4: 'courte', 5: 'longue', 6: 'haute' };
+console.log(`  passes par type : ${Object.entries(diag.parType).map(([k, v]) => `${typ[k]} ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
+console.log(`  passes par distance au destinataire voulu : ${Object.entries(diag.parDist).map(([k, v]) => `${k} m ${v.n} (${pc(v.ok, v.n)} %)`).join(' · ')}`);
+if (diag.voulues) console.log(`  passes voulues par le cerveau : ${diag.voulues} — au destinataire ${pc(diag.auDestinataire, diag.voulues)} %, à un autre coéquipier ${pc(diag.aUnAutre, diag.voulues)} %, perdues ${pc(diag.perdues, diag.voulues)} %`);
+const tq = (q) => { const s = [...diag.tenues].sort((a, b) => a - b); return s.length ? s[Math.floor(q * (s.length - 1))].toFixed(2) : '—'; };
+console.log(`  tenue avant la passe (réception → passe) : p25 ${tq(0.25)} · médiane ${tq(0.5)} · p75 ${tq(0.75)} s`);

@@ -8,7 +8,7 @@ import sys, re, pathlib
 SRC = pathlib.Path(sys.argv[1])
 def sub(rel, old, new, count=1):
   p = SRC / rel; s = p.read_text()
-  if new in s and old not in s: return
+  if new in s: return  # déjà appliqué (le nouveau texte peut contenir l'ancien : un ajout après une ligne)
   if old not in s: raise SystemExit(f'patch: motif absent dans {rel}: {old[:60]!r}')
   p.write_text(s.replace(old, new, count) if count else s.replace(old, new))
 def ensure_top(rel, line):
@@ -131,4 +131,24 @@ sub('onthepitch/referee.cpp',
     '''  buffer.taker = match->GetTeam(buffer.teamID)->GetController()->GetPieceTaker();''',
     '''  buffer.taker = match->GetTeam(buffer.teamID)->GetController()->GetPieceTaker();
   gf_event(GF_EV_SETPIECE, buffer.teamID, buffer.taker ? buffer.taker->GetStableID() : -1, (float)setPiece);  // [gf-intent]''')
+# la passe au contact : le destinataire que le corps vise vraiment (il peut corriger celui de la commande de 0,15 π) et la
+# force de la touche — de quoi juger une passe perdue sans la deviner
+ensure_top('onthepitch/player/humanoid/humanoid.cpp', '#include "intents.hpp"')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''        match->GetBall()->SetRotation(xRot, yRot, zcurve, 0.9f * (1.0f - bumpyRideBias));
+
+        team->SetLastTouchPlayer(CastPlayer(), GetTouchTypeForBodyPart(currentAnim.anim->GetVariable("touch_bodypart")));
+      }
+
+      else if (currentAnim.functionType == e_FunctionType_Shot) {''',
+    '''        match->GetBall()->SetRotation(xRot, yRot, zcurve, 0.9f * (1.0f - bumpyRideBias));
+
+        gf_event(GF_EV_PASS, team->GetID(), CastPlayer()->GetStableID(), (float)currentAnim.functionType,
+                 targetPlayer ? (float)targetPlayer->GetStableID() : -1.0f, touchVec.GetLength(),
+                 currentAnim.originatingCommand.touchInfo.forcedTargetPlayer
+                     ? (float)currentAnim.originatingCommand.touchInfo.forcedTargetPlayer->GetStableID() : -1.0f);  // [gf-intent]
+        team->SetLastTouchPlayer(CastPlayer(), GetTouchTypeForBodyPart(currentAnim.anim->GetVariable("touch_bodypart")));
+      }
+
+      else if (currentAnim.functionType == e_FunctionType_Shot) {''')
 print('patch: ok')

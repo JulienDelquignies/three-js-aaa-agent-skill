@@ -40,6 +40,12 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
   let cerveauDe = null, corpsDe = null;
   /** LA POSSESSION EN COURS, côté cerveau : son début, la tenue tirée au calme, l'arbitrage mémorisé, l'intention adoptée. */
   let poss = null;
+  /** LA LATENCE DU CORPS : entre l'ordre de passer et la frappe, le corps de Gameplay Football met 0,4 s — son geste s'arme
+   *  (médiane ; p25 0,3, p75 0,5 — `bancs/autopsie-passes.mjs`, 3 graines). Le cerveau de la skill juge le calme sur l'instant
+   *  (`calmFoe`), réglé pour ses corps à lui ; ici on le juge À LA FRAPPE : où seront le ballon et l'adversaire quand le ballon
+   *  partira. Sans cela, mesuré : le porteur décidait avec l'adversaire à 1,7 m qui fonçait à 5 m/s, et 57 % de nos passes
+   *  partaient avec un adversaire à moins d'un mètre (leur IA : 18 %) — réussies à 63 %. */
+  const LATENCE = 0.4;
   /** Un tirage seedé et sans état (la graine, le porteur, l'instant) — le cerveau ne consomme pas son propre hasard. */
   const tirage = (a, b) => { let h = (graine * 2654435761 ^ a * 40503 ^ Math.round(b * 1000) * 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
@@ -116,7 +122,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         if (!equipes.includes(q.team)) continue;
         const id = corpsDe.get(q.id); if (id == null) continue;
         if (q.keeper) { out.push({ id, genre: INTENTION.IA }); continue; }
-        if (porteur && q === porteur) { out.push({ id, ...porteurDecide(q) }); continue; }
+        if (porteur && q === porteur) { out.push({ id, ...porteurDecide(q), trace: poss?.trace }); continue; }
         const t = q.target ?? q.p;
         const [x, y] = versCorps(t[0], t[2]);
         const voulue = Math.hypot(q._wx ?? 0, q._wz ?? 0) / SX;
@@ -145,13 +151,17 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1] } 
         holdMin: (cfg.holdMin ?? 0.4) * axeTempo, arb: null, intention: null };
     }
     const tenue = st.t - poss.debut;
-    const adv = Math.min(...st.players.filter(q => q.team !== c.team).map(q => Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2])));
+    // l'adversaire le plus proche du ballon À LA FRAPPE : chacun projeté de la latence du corps, à sa vitesse
+    const bx = st.ball.p[0] + (c.v?.[0] ?? 0) * LATENCE, bz = st.ball.p[2] + (c.v?.[1] ?? 0) * LATENCE;
+    const adv = Math.min(...st.players.filter(q => q.team !== c.team).map(q => Math.hypot(q.p[0] + (q.v?.[0] ?? 0) * LATENCE - bx, q.p[2] + (q.v?.[1] ?? 0) * LATENCE - bz)));
     const auCalme = adv > (cfg.calmFoe ?? 1.8);
     const porte = Math.max(0, (auCalme ? poss.calme : poss.holdMin) - (cfg.windupBudget ?? 0.55));
+    poss.trace = { tenue, porte, adv: adv / SX, auCalme };   // pour les bancs : la porte du porteur à cet instant
     if (tenue < porte) return conduite(c);
     if (poss.intention && st.t < poss.intention.jusqua) return poss.intention.i;
     if (!poss.arb || st.t - poss.arb.t > 0.25) poss.arb = { t: st.t, r: arbitre(st, c, cfg) };
     const choix = poss.arb.r?.meilleure;
+    poss.trace.choix = choix; poss.trace.arbAge = st.t - poss.arb.t;
     if (choix === 'passe' || choix === 'centre') {
       const p = choosePass(st, cfg);
       const cible = p?.to && p.to.id >= 0 ? corpsDe.get(p.to.id) : null;

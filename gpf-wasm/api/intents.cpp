@@ -124,6 +124,17 @@ bool ElizaController::_GfOnBall(std::vector<PlayerCommand> &commandQueue, Vector
     commandQueue.push_back(command);
     return true;
   }
+  if (gi->kind == GF_MOVE || gi->kind == GF_PRESS) {
+    // PAS ENCORE D'ORDRE DE PORTEUR : le ballon vient d'arriver, le cerveau tranchera à son prochain tick (≤ 100 ms). Laisser
+    // le contrôleur décider ici, c'était lui laisser la passe en une touche — mesuré : 45 % des passes de nos matchs
+    // venaient de lui, pas du cerveau. Le joueur garde le ballon et le conduit vers son placement, au pas de conduite.
+    Vector3 cible = versLeRepereDe(team, gi->x, gi->y);
+    Vector3 vers = cible - player->GetPosition();
+    vers.coords[2] = 0.0f;
+    rawInputDirection = vers.GetLength() > 1.0f ? vers.GetNormalized(player->GetDirectionVec()) : player->GetDirectionVec();
+    rawInputVelocityFloat = std::min(gi->speed, dribbleVelocity);
+    return true;
+  }
   if (gi->kind == GF_DRIBBLE) {
     Vector3 cible = versLeRepereDe(team, gi->x, gi->y);
     Vector3 vers = cible - player->GetPosition();
