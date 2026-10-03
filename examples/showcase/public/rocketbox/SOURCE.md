@@ -16,3 +16,11 @@ Conversion (2026-09-24) : FBX + TGA depuis `raw.githubusercontent.com/microsoft/
 tête 1024², ORM de tidewater : R 1, G = 0,92 − 0,6·spéculaire, B 0 ; `--ciel` : les blancs du maillot — clairs et peu saturés —
 en bleu ciel, ombrage conservé) ; puis Blender 4.2 LTS et le convertisseur de tidewater
 (`tools/characters/convert.py`, MIT) sans clips : `blender -b --python convert.py -- <avatar.fbx> <out> <préfixe> <sortie.glb>`.
+
+## Les cartes du maillot (lot L5, /match11)
+
+`maillot-zones.png` (2048², une zone par texel : 1 maillot, 2 liseré, 3 short, 4 liseré du short, 5 chaussette, 0 on garde) et
+`maillot-forme.png` (1024² : la position du texel sur le corps au repos, et le relief des plis) — produits par
+`tools/maillot-carte.py` sur les deux footballeurs (leurs dépliages diffèrent à l'ourlet du maillot ; le n° 18 fait foi). La page
+(`src/scenes/gpf-maillots.js`) repeint les tenues aux couleurs et aux motifs choisis, et pose le flocage (nom, numéros) par le shader.
+À refaire si un corps change : `python3 tools/maillot-carte.py` (vues de contrôle avec un troisième argument).

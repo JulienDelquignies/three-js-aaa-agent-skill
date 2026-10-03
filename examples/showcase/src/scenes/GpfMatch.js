@@ -10,6 +10,8 @@ import { DUEL_CAST, TENUE_GARDIEN, tenueGardien } from './duel-joueurs.js';
 import { construireStade, STADES, HEURES } from './gpf-stade.js';
 import { Magneto, IMG, interpoler } from './gpf-magneto.js';
 import { Habillage, PLANS, VITESSES } from './gpf-habillage.js';
+import { TENUES, chargerCarte, peindreTenue, creerAtlasFlocage, couleurFloquee, materiauTenue, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
+import { makeTheme } from '../engine/club-theme.js';
 
 // GpfMatch — LES LOTS L0, L2 ET L5 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense),
 // compilé en WebAssembly SANS son rendu (gpf-wasm/), joue un 11 contre 11, et notre three.js le dessine avec NOS humains (les
@@ -41,12 +43,13 @@ const ISSUES = {
 };
 // LES GESTES EN COURSE (gestes-course.mjs), en clair
 const GESTES_COURSE = { crochetCourt: 'crochet court', crochet: 'crochet', crochetChaloupe: 'crochet chaloupé', crochetExt: 'crochet de l’extérieur', croqueta: 'croqueta', feinteCorps: 'feinte de corps', passement: 'passement', grandPont: 'grand pont', petitPont: 'petit pont' };
-// LES ÉQUIPES (fictives — EX-46) : leurs couleurs sont celles des tenues Rocketbox (le n° 18 rayé noir et blanc, le n° 10 passé en bleu
-// ciel) ; l'équipe de gauche reçoit, le stade est à ses couleurs
+// LES ÉQUIPES (fictives — EX-46) : leurs couleurs sont celles de leurs MAILLOTS (gpf-maillots.js : choisis dans les réglages, par l'adresse
+// ?tenue0= / ?tenue1=, gardés par le navigateur) ; l'équipe de gauche reçoit, le stade est à ses couleurs
 const EQUIPES = [
   { nom: 'Ardoise FC', court: 'ARD', primary: 0xf2f4f7, secondary: 0x15161a },
   { nom: 'Azur SC', court: 'AZU', primary: 0x8fcbef, secondary: 0xf4f8fb },
 ];
+const CLE_TENUES = 'gpf-tenues';
 const q = new URLSearchParams(location.search);
 const CAPTURE = q.has('capture');
 // ce qui se dit dans l'adresse et se change dans les réglages
@@ -73,6 +76,10 @@ export class GpfMatch {
       radar: lit('radar', typeof window === 'undefined' || window.innerWidth >= 700), noms: lit('noms', true),
     };
     this.clips = []; this.lecture = null; this.butsEnAttente = []; this.pas = 0;
+    // LES MAILLOTS (avant le stade : ses sièges et son public sont aux couleurs des équipes)
+    this.maillots = q.get('maillots') !== '0';
+    this.tenues = this._tenuesInitiales();
+    this._couleursEquipes();
     this.ready = this._load();
   }
 
@@ -129,13 +136,13 @@ export class GpfMatch {
     this._score = [e0.score[0], e0.score[1]];
     // LA FEUILLE DE MATCH (feuille.mjs, dans le paquet du cerveau) : le journal du corps → les faits de stats.js → le rapport ; les noms
     // (fictifs) tirés par la graine ; le poste, celui du cerveau quand il pilote
+    if (this.C.nomsDesJoueurs) this.noms = this.C.nomsDesJoueurs(graine, e0);
     if (this.cerveau && this.C.creerFeuille) {
-      this.noms = this.C.nomsDesJoueurs(graine, e0);
       this.feuille = this.C.creerFeuille({ etat: e0, noms: this.noms, poste: (id) => this.cerveau.profil(id)?.poste ?? null });
     }
     // les ids stables du corps → leur place dans gf_frame/gf_pose (l'ordre des listes d'équipe ne change pas)
     this.slot = new Map(e0.joueurs.map((j, k) => [j.id, k])); this.idDe = e0.joueurs.map((j) => j.id);
-    this.gardien = e0.joueurs.map((j) => j.role === 0);
+    this.gardien = e0.joueurs.map((j) => j.role === 0); this.roles = e0.joueurs.map((j) => j.role);
 
     // NOS HUMAINS : la chaîne du duel (squad + rig-bip01 + rig canonique), une silhouette par équipe ; LES GARDIENS : le corps du n° 18,
     // ses blancs passés au jaune (gauche) ou au vert (droite) — le métier se lit avant le maillot (duel-joueurs.js tenueGardien)
@@ -146,7 +153,7 @@ export class GpfMatch {
     for (let k = 0; k < 22; k++) {
       const team = k < 11 ? 0 : 1, gk = this.gardien[k] && q.get('gardiens') !== '0', rig = gk ? 0 : team;
       const { model, groundY } = this.squad.spawn(rig);
-      if (gk) tenueGardien(model, TENUE_GARDIEN[team]);
+      if (gk && !this.maillots) tenueGardien(model, TENUE_GARDIEN[team]);
       model.rotation.y = Math.PI;
       this.scene.add(model); model.updateMatrixWorld(true);
       this.stade?.light(model);   // la nuit : sous la clé
@@ -154,8 +161,13 @@ export class GpfMatch {
       for (const [n, b] of bones) rest.set(n, { q: [b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w], p: b.position.clone() });
       // le repère du parent du bassin, vu du monde : constant (seul le modèle se déplace, sans tourner) — inversé une fois pour toutes
       const hb = bones.get('Hips'), hipsInv = hb ? new THREE.Matrix3().setFromMatrix4(hb.parent.matrixWorld).invert() : null;
-      this.players.push({ model, bones, rest, groundY, team, P: this.profiles[rig], C: this.offsets[rig], hipsInv });
+      this.players.push({ model, bones, rest, groundY, team, rig, gk, P: this.profiles[rig], C: this.offsets[rig], hipsInv });
     }
+    // LES MAILLOTS PEINTS ET FLOQUÉS (gpf-maillots.js) ; en cas d'échec (la carte introuvable), la tenue d'origine et les gardiens recolorés
+    if (this.maillots) await this._habiller(e0).catch((err) => {
+      console.warn('[maillots]', err); this.maillots = false;
+      for (const pl of this.players) if (pl.gk) tenueGardien(pl.model, TENUE_GARDIEN[pl.team]);
+    });
     // LE BALLON
     const g = new THREE.SphereGeometry(0.11, 24, 16);
     this.ball = new THREE.Mesh(g, new THREE.MeshStandardNodeMaterial({ color: 0xf4f4f4, roughness: 0.45 }));
@@ -171,13 +183,90 @@ export class GpfMatch {
     if (q.has('diag')) import('./gpf-diag.js').then((m) => m.runDiag(this));
   }
 
+  // ———————————————————————————— les maillots ————————————————————————————
+  /** Les deux tenues : l'adresse (?tenue0=, ?tenue1= — un identifiant de TENUES), sinon celles gardées par le navigateur, sinon rayé noir et
+   *  blanc contre bleu ciel. LE CONFLIT DE COULEURS (EX-27) : deux maillots qui se confondent — l'équipe de droite (qui se déplace) prend son
+   *  maillot extérieur, le premier qui tranche (sauf si l'adresse l'impose). */
+  _tenuesInitiales() {
+    let sauve = null; try { sauve = JSON.parse(localStorage.getItem(CLE_TENUES)); } catch { /* stockage indisponible */ }
+    const de = (k, defaut) => {
+      const id = q.get(`tenue${k}`); if (id && TENUES[id]) return { ...TENUES[id], id };
+      if (sauve?.[k]?.c1 != null) return sauve[k];
+      return { ...TENUES[defaut], id: defaut };
+    };
+    const T = [de(0, 'raye-noir-blanc'), de(1, 'bleu-ciel')];
+    this.exterieur = false;
+    if (conflit(T[0], T[1]) && !q.get('tenue1')) {
+      const alt = ['blanc', 'noir-or', 'rouge', 'bleu-roi', 'vert'].map((id) => ({ ...TENUES[id], id })).find((A) => !conflit(T[0], A));
+      if (alt) { T[1] = alt; this.exterieur = true; }
+    }
+    return T;
+  }
+  /** Les couleurs des équipes (tableau d'affichage, radar, statistiques, public) suivent les maillots ; les clubs (écusson, sponsor) aussi. */
+  _couleursEquipes() {
+    for (let e = 0; e < 2; e++) { EQUIPES[e].primary = this.tenues[e].c1; EQUIPES[e].secondary = this.tenues[e].c2; }
+    this.clubs = [0, 1].map((e) => makeTheme({ seed: e === 0 ? 3 : 11, name: EQUIPES[e].nom, primary: this.tenues[e].c1, secondary: this.tenues[e].c2 }));
+  }
+  /** Habiller les 22 : la carte du maillot, les numéros (la numérotation classique par rôle), un matériau par joueur (la tenue de son équipe
+   *  + son flocage : le nom et le numéro). */
+  async _habiller(e0) {
+    this.carte = await chargerCarte(new URL('./rocketbox/', location.href).href);
+    for (const pl of this.players) pl.model.traverse((o) => {
+      if (!o.isMesh || pl.corps) return;
+      const m = [].concat(o.material).find((x) => x?.name === 'body'); if (m) pl.corps = { mesh: o, origine: m };
+    });
+    this._images = [0, 1].map((rig) => this.players.find((p) => p.rig === rig && p.corps)?.corps.origine.map?.image ?? null);
+    for (let e = 0; e < 2; e++) { const n = numerosDe(this.roles.slice(e * 11, e * 11 + 11)); for (let i = 0; i < 11; i++) this.players[e * 11 + i].numero = n[i]; }
+    this._tex = {};
+    // le flocage des 22 dans un atlas commun, et UN graphe de couleur pour tous (un seul programme : gpf-maillots.js)
+    this.atlas = creerAtlasFlocage({ cellule: this.leger ? 256 : 384 });
+    this.couleurTenue = couleurFloquee(this.atlas.tex);
+    this._peindreTout();
+    for (const [k, pl] of this.players.entries()) {
+      if (pl.corps) pl.corps.mesh.material = materiauTenue(pl.corps.origine, this._texPour(pl).tex, this.atlas.decalage(k), this.couleurTenue);
+    }
+  }
+  /** Le catalogue des tenues (pour les essais : window.__gpf.catalogue). */
+  get catalogue() { return TENUES; }
+  /** La texture de tenue d'un joueur : son corps (rig) et sa tenue (son équipe, ou son gardien). */
+  _texPour(pl) { return this._tex[pl.gk ? `0:g${pl.team}` : `${pl.rig}:e${pl.team}`]; }
+  /** Peindre les quatre tenues (les deux équipes, les deux gardiens — à la couleur la plus éloignée de toutes) et les 22 flocages. Les canevas
+   *  et les textures sont réutilisés : un changement de maillot ne crée rien. */
+  _peindreTout() {
+    const taille = this.leger ? 1024 : 2048, [T0, T1] = this.tenues;
+    const G0 = gardienPour(T0, T1), G1 = gardienPour(T1, T0, G0.c1);
+    this.gardiens = [G0, G1];
+    const jeu = { e0: [0, T0, 0], e1: [1, T1, 1], g0: [0, G0, 0], g1: [0, G1, 1] };
+    for (const [quoi, [rig, kit, e]] of Object.entries(jeu)) {
+      const img = this._images[rig]; if (!img) continue;
+      const ent = (this._tex[`${rig}:${quoi}`] ??= { canevas: document.createElement('canvas') });
+      peindreTenue(img, this.carte, kit, { taille, canevas: ent.canevas, club: this.clubs[e] });
+      if (!ent.tex) ent.tex = textureDe(ent.canevas); else ent.tex.needsUpdate = true;
+    }
+    for (const [k, pl] of this.players.entries()) {
+      const kit = pl.gk ? this.gardiens[pl.team] : this.tenues[pl.team];
+      const nom = (this.noms?.[this.idDe[k]] ?? '').replace(/^[^.]*\.\s*/, '');
+      this.atlas.dessiner(k, { nom, numero: pl.numero ?? k + 1 }, kit);
+    }
+  }
+  /** Changer le maillot d'une équipe (les réglages) : la tenue, ses gardiens, les flocages, les couleurs de l'habillage ; le stade (sièges,
+   *  public) suit 1,5 s après le dernier changement. Gardé par le navigateur. */
+  regleTenue(e, kit) {
+    this.tenues[e] = { ...kit }; this.exterieur = false;
+    try { localStorage.setItem(CLE_TENUES, JSON.stringify(this.tenues)); } catch { /* stockage indisponible */ }
+    this._couleursEquipes();
+    if (this.maillots && this.carte) this._peindreTout();
+    this.habillage?.couleurs();
+    clearTimeout(this._tStade); this._tStade = setTimeout(() => this._reconstruireStade(), 1500);
+  }
+
   // ———————————————————————————— le stade ————————————————————————————
   _construireStade() {
     const R = this.reglages;
     this.stade = construireStade(this.scene, this.renderer, {
       stade: R.stade, heure: R.heure, foule: R.foule, leger: this.leger,
-      equipes: EQUIPES.map((e, i) => (i === 0 ? { primary: e.secondary, secondary: e.primary } : { primary: e.primary, secondary: e.secondary })),
-      club: { nom: EQUIPES[0].nom, primary: EQUIPES[0].secondary, secondary: EQUIPES[0].primary },
+      equipes: EQUIPES.map((e) => ({ primary: e.primary, secondary: e.secondary })),
+      club: { nom: EQUIPES[0].nom, primary: EQUIPES[0].primary, secondary: EQUIPES[0].secondary },
     });
     for (const pl of this.players) this.stade.light(pl.model);
     if (this.ball) this.stade.light(this.ball);

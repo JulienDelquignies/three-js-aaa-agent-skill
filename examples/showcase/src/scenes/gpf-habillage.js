@@ -1,3 +1,5 @@
+import { TENUES, MOTIFS, conflit } from './gpf-maillots.js';
+
 // gpf-habillage.js — L'HABILLAGE TÉLÉ DE /match11 (lot L5 « L'image » ; EX-04 la régie, EX-38/42 les statistiques en direct). Du DOM
 // par-dessus le canevas, rien dans la scène :
 //   · le TABLEAU D'AFFICHAGE (en haut à gauche) : les deux équipes à leurs couleurs, le score, l'horloge du match, la mi-temps ; dessous, les
@@ -86,6 +88,7 @@ const CSS = `
 .gh-reglages label { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
 .gh-reglages select { background: #141b2c; color: var(--texte); border: 1px solid var(--trait); border-radius: 6px; padding: 4px 6px; font: inherit; }
 .gh-reglages p { color: var(--doux); font-size: 14px; line-height: 1.4; }
+.gh-reglages input[type=color] { width: 34px; height: 26px; border: 1px solid var(--trait); border-radius: 5px; background: none; padding: 0; }
 .gh-reglages kbd { background: rgba(255,255,255,.1); border-radius: 4px; padding: 0 5px; font-family: inherit; }
 .gh-radar { position: fixed; right: 14px; bottom: 78px; z-index: 30; border-radius: 8px; background: rgba(9,13,24,.72); border: 1px solid var(--trait); padding: 5px; }
 .gh-radar canvas { display: block; width: 232px; height: 152px; }
@@ -127,9 +130,9 @@ export class Habillage {
     const racine = this.racine = document.createElement('div'); racine.className = 'gh hud'; document.body.appendChild(racine);
     const [A, B] = equipes;
     racine.innerHTML = `
-      <div class="gh-sb"><div class="eq g"><i style="background:${css(A.primary)}"></i><span>${esc(A.court)}</span></div>
+      <div class="gh-sb"><div class="eq g"><i data-pastille="0" style="background:${css(A.primary)}"></i><span>${esc(A.court)}</span></div>
         <div class="sc"><b data-s="0">0</b><span>-</span><b data-s="1">0</b></div>
-        <div class="eq d"><i style="background:${css(B.primary)}"></i><span>${esc(B.court)}</span></div><div class="tm">00:00</div></div>
+        <div class="eq d"><i data-pastille="1" style="background:${css(B.primary)}"></i><span>${esc(B.court)}</span></div><div class="tm">00:00</div></div>
       <div class="gh-etat"></div>
       <div class="gh-buteurs"></div>
       <div class="gh-info"></div>
@@ -221,6 +224,12 @@ export class Habillage {
     this.buteurs.innerHTML = [parts[0].length ? `<b>${esc(this.E[0].court)}</b> ${parts[0].join(', ')}` : '', parts[1].length ? `<b>${esc(this.E[1].court)}</b> ${parts[1].join(', ')}` : '', rouges.join(' ')].filter(Boolean).join('<br>');
   }
   _nomCourt(id) { const n = this.m.feuille?.nom(id) ?? '?'; return n.replace(/^[A-Z]\.\s*/, ''); }
+
+  /** Les couleurs des équipes ont changé (les maillots) : les pastilles du tableau, le panneau ouvert. */
+  couleurs() {
+    for (const i of this.racine.querySelectorAll('[data-pastille]')) { const E = this.E[Number(i.dataset.pastille)]; i.style.background = css(E.primary); i.style.boxShadow = `inset 0 0 0 2px ${css(E.secondary)}`; }
+    if (this.panneau === 'stats') this._rendreStats(true);
+  }
 
   /** La ligne du geste (en bas à gauche) : ce que le cerveau fait jouer au corps — vide : masquée. */
   info(texte) { if (texte === this._info) return; this._info = texte; this.infoEl.textContent = texte; this.infoEl.classList.toggle('on', !!texte); }
@@ -339,10 +348,29 @@ export class Habillage {
       ${coche('radar', m.reglages.radar, 'Le radar (les 22 vus d’en haut)')}
       ${coche('noms', m.reglages.noms, 'Le nom du porteur au-dessus de lui')}
       ${coche('technique', m.reglages.technique, 'Les infos techniques (images/s, calcul)')}
+      ${this._reglagesMaillots()}
       <p>Le stade et l’heure se changent en plein match : la partie continue. La vitesse ne change pas le match (le pas du corps est fixe) ; les ralentis et le différé le mettent en attente.</p>
       <p><kbd>Espace</kbd> pause · <kbd>1</kbd>-<kbd>5</kbd> vitesses · <kbd>N</kbd> prochain temps fort · <kbd>B</kbd> 10 s en arrière · <kbd>R</kbd> revoir le dernier but · <kbd>Échap</kbd> retour au direct · <kbd>C</kbd> caméra · <kbd>S</kbd> stats · <kbd>H</kbd> masquer l’habillage · <kbd>D</kbd> infos techniques · <kbd>M</kbd> radar · <kbd>G</kbd> prochain geste · <kbd>F</kbd> prochain face-à-face</p>
-      <p>Dans l’adresse : <code>?seed=7</code> un autre match · <code>?stade=bol|arche|nervures|1-5</code> · <code>?heure=jour|soir|nuit</code> · <code>?cam=auto|tele|rapprochee|tactique|joueur|but</code> · <code>?vitesse=2</code> · <code>?technicien=0:9</code> un technicien (Olmo) au poste 9 de l’équipe de gauche · <code>?artiste=1:7</code> une anomalie (Taarabt) · <code>?gestes=0</code> · <code>?face=0</code> · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> · <code>?public=0</code> · <code>?ralentis=0</code></p>
+      <p>Dans l’adresse : <code>?seed=7</code> un autre match · <code>?stade=bol|arche|nervures|1-5</code> · <code>?heure=jour|soir|nuit</code> · <code>?cam=auto|tele|rapprochee|tactique|joueur|but</code> · <code>?vitesse=2</code> · <code>?technicien=0:9</code> un technicien (Olmo) au poste 9 de l’équipe de gauche · <code>?artiste=1:7</code> une anomalie (Taarabt) · <code>?gestes=0</code> · <code>?face=0</code> · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> · <code>?public=0</code> · <code>?ralentis=0</code> · <code>?tenue0=rouge-blanc-raye</code> <code>?tenue1=bleu-ciel</code> les maillots (les identifiants : ${Object.keys(TENUES).join(', ')}) · <code>?maillots=0</code> les tenues d’origine</p>
     </div>`;
+  }
+
+  /** LES MAILLOTS (EX-27) : pour chaque équipe, une tenue toute faite, ou son motif et ses couleurs (maillot, second, short) ; l'alerte quand
+   *  les deux se confondent. Un changement repeint la tenue en direct (les numéros et les noms suivent). */
+  _reglagesMaillots() {
+    const m = this.m; if (!m.maillots) return '';
+    const hex = (c) => css(c);
+    const bloc = (t) => {
+      const T = m.tenues[t];
+      const options = `<option value="">— sur mesure —</option>` + Object.entries(TENUES).map(([id, X]) => `<option value="${id}" ${T.id === id ? 'selected' : ''}>${esc(X.nom)}</option>`).join('');
+      return `<div class="gh-sous"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${hex(this.E[t].primary)};margin-right:6px"></i>${esc(this.E[t].nom)}</div>
+        <label>Tenue<select data-t="${t}" data-c="id">${options}</select></label>
+        <label>Motif<select data-t="${t}" data-c="motif">${Object.entries(MOTIFS).map(([k, v]) => `<option value="${k}" ${T.motif === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+        <label>Couleurs (maillot, second, short)<span style="display:flex;gap:6px"><input type="color" data-t="${t}" data-c="c1" value="${hex(T.c1)}"><input type="color" data-t="${t}" data-c="c2" value="${hex(T.c2)}"><input type="color" data-t="${t}" data-c="short" value="${hex(T.short)}"></span></label>`;
+    };
+    const alerte = conflit(m.tenues[0], m.tenues[1]) ? '<p style="color:#ff8a80">⚠ Les deux maillots se confondent : changez l’un des deux.</p>'
+      : m.exterieur ? '<p>Les maillots se confondaient : l’équipe de droite joue avec son maillot extérieur.</p>' : '';
+    return `<div class="gh-sous">Les maillots</div>${bloc(0)}${bloc(1)}${alerte}<p>Les gardiens prennent la couleur la plus éloignée des deux équipes. Les numéros et les noms sont floqués au dos, sur la poitrine et le short.</p>`;
   }
 
   // ———————————————————————————— les commandes ————————————————————————————
@@ -366,11 +394,27 @@ export class Habillage {
   _change(e) {
     const t = e.target, m = this.m;
     if (t.dataset.a === 'plan') { m.reglePlan(t.value); t.blur(); return; }
+    if (t.dataset.t != null) {
+      const e = Number(t.dataset.t), c = t.dataset.c, T = { ...m.tenues[e] };
+      if (c === 'id') { if (!TENUES[t.value]) return; Object.assign(T, TENUES[t.value], { id: t.value }); }
+      else if (c === 'motif') { T.motif = t.value; T.id = null; }
+      else {
+        T[c] = parseInt(t.value.slice(1), 16); T.id = null;
+        // le liseré, les chaussettes, le numéro suivent les deux couleurs choisies (la règle des tenues toutes faites)
+        if (c === 'c1') { T.chaussettes = T.c1; }
+        if (c === 'c2') { T.lisere = T.c2; T.bande = T.c2; }
+        const clair = (x) => ((x >> 16) & 255) * 0.299 + ((x >> 8) & 255) * 0.587 + (x & 255) * 0.114 > 150;
+        T.num = clair(T.c1) ? 0x141414 : 0xf6f6f6; T.numBord = T.c1;
+      }
+      m.regleTenue(e, T);
+      this._rendreReglages();
+      return;
+    }
     const r = t.dataset.r; if (!r) return;
     m.regle(r, t.type === 'checkbox' ? t.checked : t.value);
   }
   _touche(e) {
-    if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;   // (les champs de couleur aussi)
     const m = this.m, k = e.key;
     if (k === ' ') { e.preventDefault(); m.basculerPause(); }
     else if (k >= '1' && k <= '5') m.regleVitesse(VITESSES[Number(k) - 1]);

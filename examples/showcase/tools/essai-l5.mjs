@@ -69,6 +69,33 @@ if (veut('stats')) {
   await photo('stats-moments');
   await pg.evaluate(() => window.__gpf.habillage.fermer());
 }
+if (veut('maillots')) {
+  // les maillots : quatre paires de tenues, de près (plan rapproché) et de dos (plan joueur)
+  for (const [a, b2] of [['raye-noir-blanc', 'bleu-ciel'], ['rouge-blanc-raye', 'vert-blanc-cercle'], ['grenat-bleu-moities', 'blanc-a-echarpe-rouge'], ['noir-or', 'blanc-a-bande-rouge']]) {
+    await pg.evaluate(([a, b2]) => { const g = window.__gpf; g.regleTenue(0, { ...g.catalogue[a], id: a }); g.regleTenue(1, { ...g.catalogue[b2], id: b2 }); g.reglePlan('rapprochee'); for (let i = 0; i < 30; i++) g.update(0.05); }, [a, b2]);
+    await photo(`maillots-${a}-${b2}`);
+    await pg.evaluate(() => { const g = window.__gpf; g.reglePlan('joueur'); for (let i = 0; i < 30; i++) g.update(0.05); });
+    await photo(`maillots-dos-${a}`);
+  }
+  await pg.evaluate(() => window.__gpf.reglePlan('auto'));
+}
+if (veut('dos')) {
+  // le flocage de près (l'adresse doit porter &orbit : la caméra est posée à la main) — au coup d'envoi, les joueurs de gauche regardent +x :
+  // la caméra 2,6 m derrière eux (−x), à hauteur d'épaule ; ceux de droite, de l'autre côté
+  for (const k of [6, 8, 17, 0]) {
+    await pg.evaluate((k) => {
+      const g = window.__gpf, m = g.players[k].model, sg = g.players[k].team === 0 ? -1 : 1, c = g.camRef, o = g.controls;
+      c.fov = 32; c.updateProjectionMatrix(); c.position.set(m.position.x + sg * 2.6, 1.45, m.position.z + 0.4); o.target.set(m.position.x, 1.15, m.position.z); o.update();
+    }, k);
+    await photo(`dos-${k}`);
+  }
+}
+if (veut('reglages')) {
+  await pg.evaluate(() => { const g = window.__gpf; g.habillage.ouvrir('reglages'); g.update(0.02); });
+  await pg.evaluate(() => { const c = document.querySelector('.gh-corps'); if (c) c.scrollTop = c.scrollHeight; });
+  await photo('reglages-maillots');
+  await pg.evaluate(() => window.__gpf.habillage.fermer());
+}
 if (veut('heures')) {
   for (const h of ['jour', 'soir']) { await pg.evaluate((h) => { const g = window.__gpf; g.regle('heure', h); for (let i = 0; i < 10; i++) g.update(0.05); }, h); await photo(`heure-${h}`); }
   await pg.evaluate(() => window.__gpf.regle('heure', 'nuit'));
