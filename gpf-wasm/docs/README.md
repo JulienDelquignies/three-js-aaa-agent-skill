@@ -36,6 +36,7 @@ Le match se joue à trois pièces :
 | [`moteur.md`](moteur.md) | le cerveau : son monde, sa configuration, son pas de match, ses décisions module par module, les joueurs (attributs, persona, tactique), le hasard, le face-à-face « Taarabt » du duel |
 | [`adaptateur.md`](adaptateur.md) | l'adaptateur : un tick dans l'ordre, les repères, le monde prêté, le journal, chaque décision, les réglages recalés sur le corps, les options, le contrat, la page, les bancs, les gardes |
 | [`attributs.md`](attributs.md) | les attributs : ceux de la carrière, du cerveau et du corps ; qui lit quoi ; les effectifs générés par poste (en attendant la carrière) ; ce qu'il faut transmettre (lot L3) |
+| [`reprise.md`](reprise.md) | **reprendre le travail sur une autre machine** : où on en est, les dépôts et leurs copies de travail, l'installation, le rapatriement, les gardes à rejouer au bit près, les commandes, les règles de la maison |
 | [`gestes-en-course.md`](gestes-en-course.md) | les gestes en course (voir un Olmo dans la 3D) : qui (les attributs, les archétypes), quand (les fenêtres du cerveau), comment (le studio qui cuit la foulée du duel pour le corps), les mesures, comment ajouter un geste ; le face-à-face réservé aux anomalies |
 | [`../animations.md`](../animations.md) | les animations : celles du corps qui sont jouées ou non, et pourquoi ; nos gestes face au corps ; comment ajouter une animation |
 | [`../inventaire-moteur.md`](../inventaire-moteur.md) | les 155 gestes du cerveau : source, ce qu'ils font, ce qui les déclenche, ce que l'adaptateur en décide |
