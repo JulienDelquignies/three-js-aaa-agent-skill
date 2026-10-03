@@ -386,6 +386,13 @@ La loi du duel (`face.js`), portée sur les corps : `face.mjs`, actif par défau
 - **Le match autour ne bouge pas.** Sur 8 × 90 min, la variante sans face-à-face retrouve la référence (3,9 buts, 21,8 fautes, 3,9 jaunes) ; avec, les écarts restent dans le bruit d'un match (3,4 buts contre 3,9 ; 24,0 fautes contre 21,8 ; 4,1 jaunes contre 3,9 ; 0,4 penalty contre 0,5 ; 79 % de passes réussies des deux côtés). Aucun face-à-face dans la surface, aucune faute liée à l'un d'eux (8 graines × 20 min).
 - **La page** : la caméra se rapproche sur le duel ; la touche F, ou `?face=saut`, avance jusqu'au prochain ; `?face=0` l'éteint. Elle joue le même match que Node au bit près, face-à-face compris (graine 11, 16 010 pas).
 
+### Les gestes à plusieurs touches (3 octobre)
+
+Le corps ne touchait le ballon qu'une fois par animation : les touches de sa ligne `football` sont des instants candidats, il en retient un. Le détail est dans `docs/corps.md` § 5.7.
+- **L'étape 14 du C++.** Un geste marqué `<gfserie>` joue ses touches l'une après l'autre, chacune envoyant le ballon là où l'animation met le pied de la suivante, à son image. La vitesse se cherche sur la prédiction du ballon par le corps lui-même. Mesuré (`bancs/serie-essai.mjs`) : 1 à 5 cm d'écart à la touche suivante. Sa racine est suivie telle quelle (le pivot, la course de sortie). La garde au bit près tient (1616609301).
+- **Les gestes** (`outils/vers-gpf.mjs`). La roulette, le râteau et la croqueta portent ce que la sim du duel écrivait pendant le geste : le cap qui tourne (330° pour la roulette), le corps qui pivote sur son appui puis part, le ballon sur son chemin. Les gestes plantés rangent le ballon (`<gfarret>`) ; les tenues (117, 118) posent la semelle sur le ballon entre deux gestes, sans le toucher.
+- **Dans le face-à-face.** 95 % des gestes demandés partent (89 % avant). La fente du défenseur gagne encore trop : c'est le chantier suivant.
+
 ## Licences
 
 `LICENCES.txt`, copié à côté du module, réunit les avis : l'Unlicense du moteur, la licence Apache 2.0 de ses fichiers, la police et les bibliothèques compilées dedans (SDL2, FreeType, HarfBuzz, zlib, Boost).

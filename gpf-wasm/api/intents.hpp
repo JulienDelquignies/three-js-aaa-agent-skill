@@ -60,8 +60,12 @@ enum GfEventType {
   GF_EV_PASS = 6,      // la passe au pied, au contact : a = geste (e_FunctionType), b = destinataire visé (id stable ou -1),
                        // c = norme de la touche (m/s), d = destinataire imposé par la commande (id stable ou -1)
   GF_EV_GESTE = 7,     // un geste de notre répertoire démarre (intention GESTE) : a = son numéro (specialvar1)
+  GF_EV_SERIE = 8,     // une touche d'un geste en série (étape 14) : a = son rang (0 la première ; la dernière entrée d'un geste planté : le ballon arrêté), b = l'image, c = l'écart du ballon à l'attendu (m), d = la vitesse posée (m/s) ; a = −1 : la série s'arrête (le ballon n'est plus là), c = l'écart
 };
 static const int GF_EV_SIZE = 8;
+// Un geste de notre répertoire EN SÉRIE (<gfserie> : plusieurs touches, la racine suivie telle quelle) — patch.py, étape 14
+namespace blunted { class Animation; }
+bool gf_serie(blunted::Animation *anim);
 void gf_event(int type, int team, int player, float a = 0, float b = 0, float c = 0, float d = 0);
 /** Le journal accumulé depuis la dernière lecture : pointeur et nombre d'événements ; la lecture le vide. */
 const float *gf_events_take(int *count);

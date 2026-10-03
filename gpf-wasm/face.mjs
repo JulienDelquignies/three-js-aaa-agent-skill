@@ -44,25 +44,31 @@ export const FACE = {
   double: 2.5, echappe: 1.3, echappeSortie: 3.0,
   pause: [0.1, 0.35], jab: { cadence: [0.45, 0.85], pas: 0.35, duree: 0.3 },
   morsure: { base: 0.15, cumul: 0.12, duree: 0.6, decale: 0.6, elan: 1.8 }, garde: 1.4, patience: [1.6, 3.2],
-  fente: { charge: 0.2, duree: 0.7, surMorsure: 0.35, glisse: 0.7, portee: 0.7, couloir: 0.35, chute: 0.3, desequilibre: 0.45, sol: 1.2 }, lecture: 0.5, lache: 4.8, max: 5.0,
+  fente: { charge: 0.2, duree: 0.7, contact: 0.28, surMorsure: 0.35, glisse: 0.7, portee: 0.7, couloir: 0.35, chute: 0.3, desequilibre: 0.45, sol: 1.2 }, lecture: 0.5, lache: 4.8, max: 5.0,
   sortie: { lat: 1.3, au: 1.0, duree: 0.8, v: 7 }, sorties: { rateau: 0.35, roulette: 0.25 },
   feintes: { corps: { p: 0.25, vente: 1.3 }, passement: { p: 0.3, vente: 1.5 }, serie: { part: 0.6, vente: 0.45, venteFin: 1.0 } },
 };
 
-/** Le répertoire (outils/vers-gpf.mjs, REPERTOIRE) : n°, durée, contact (la vente), libre (le pied libre pour la sortie). */
+/** Le répertoire (outils/vers-gpf.mjs, REPERTOIRE) : n°, durée, contact (la vente ; la touche), touche1 (la première touche d'un geste en
+ *  série, si ce n'est pas le contact), libre (le pied libre pour la sortie), vSortie (la vitesse demandée : la classe où le geste finit —
+ *  les sorties en série partent lancées). */
 export const GESTES = {
   arretSemelle: { n: 101, duree: 0.85, contact: 0.24, libre: 0.62 }, semelleRoule: { n: 102, duree: 0.5, contact: 0.04, libre: 0.4 },
   semelleRouleOut: { n: 103, duree: 0.5, contact: 0.04, libre: 0.4 }, feinteSemelle: { n: 104, duree: 0.6, contact: 0.24, libre: 0.34 },
   feinteSemelleIn: { n: 105, duree: 0.6, contact: 0.24, libre: 0.34 }, passementFace: { n: 106, duree: 0.66, contact: 0.3, libre: 0.5, sansTouche: true },
   passementSerie2: { n: 107, duree: 1.08, contact: 0.04, serie: 2, sansTouche: true }, passementSerie3: { n: 108, duree: 1.38, contact: 0.04, serie: 3, sansTouche: true },
   passementSerie4: { n: 109, duree: 1.68, contact: 0.04, serie: 4, sansTouche: true }, tireSemelle: { n: 110, duree: 0.6, contact: 0.04, libre: 0.3 },
-  tireSemelleIn: { n: 111, duree: 0.6, contact: 0.04, libre: 0.3 }, rateauFace: { n: 112, duree: 0.5, contact: 0.04, libre: 0.24 },
-  rateauFaceIn: { n: 113, duree: 0.5, contact: 0.04, libre: 0.24 }, rouletteFace: { n: 114, duree: 0.78, contact: 0.04, libre: 0.6 },
-  doubleContact: { n: 115, duree: 0.36, contact: 0.18, libre: 0.36 }, rateau: { n: 116, duree: 0.7, contact: 0.22, libre: 0.5 },
+  tireSemelleIn: { n: 111, duree: 0.6, contact: 0.04, libre: 0.3 }, rateauFace: { n: 112, duree: 0.5, contact: 0.04, libre: 0.24, vSortie: 3.5 },
+  rateauFaceIn: { n: 113, duree: 0.5, contact: 0.04, libre: 0.24, vSortie: 3.5 }, rouletteFace: { n: 114, duree: 0.78, contact: 0.04, libre: 0.6, vSortie: 3.5 },
+  doubleContact: { n: 115, duree: 0.36, contact: 0.18, touche1: 0.06, libre: 0.36 }, rateau: { n: 116, duree: 0.7, contact: 0.22, libre: 0.5 },
+  tenueSemelle: { n: 117, duree: 0.3, sansTouche: true, tenue: true }, tenueSemelleIn: { n: 118, duree: 0.3, sansTouche: true, tenue: true },
 };
 const PAR_NUMERO = Object.fromEntries(Object.entries(GESTES).map(([k, g]) => [g.n, k]));
 const SERIE = { entree: 0.22, tour: 0.30 };   // la série : l'entrée (le roulé au milieu), un passage toutes les 0,30 s
-const ARRIVEE = 0.5, PAS = 2.0, PLANTE = 0.45, TICK = 0.1, ATTENTE = 0.6;   // le corps : la bande morte de son placement (m), son plus petit pas (m/s, au-dessus de idleDribbleSwitch 1,8) ; l'écart à sa place sous lequel le défenseur reste planté (m) ; le tick de l'adaptateur (s)
+const ARRIVEE = 0.5, PAS = 2.0, PLANTE = 0.45, TICK = 0.1, ATTENTE = 0.6, REFLEXE = 0.16;
+/** LA SEMELLE SUR LE BALLON (le répertoire, motion-skill : ball) : [droite, devant] du ballon sous elle, côté extérieur et côté croisé ; à
+ *  plus de SOUS m de là, le ballon n'y est plus — l'arrêt de semelle le reprend avant la feinte suivante (sa touche tardive le peut). */
+const SEMELLE = { dehors: [0.10, 0.28], croise: [-0.14, 0.28] }, SOUS = 0.1;   // le corps : la bande morte de son placement (m), son plus petit pas (m/s, au-dessus de idleDribbleSwitch 1,8) ; l'écart à sa place sous lequel le défenseur reste planté (m) ; le tick de l'adaptateur (s) ; le délai de sa touche réflexe (s, mesuré : 0,11-0,21)
 const NOM_GESTE = Object.fromEntries(Object.entries(GESTE).map(([k, v]) => [v, k]));
 
 const hyp = Math.hypot;
@@ -146,16 +152,31 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
     }
   }
 
-  /** La sortie vers le côté ouvert du défenseur (cote : +1 sa droite vue du porteur, −1 sa gauche) — la croqueta, le râteau ou la roulette. */
+  /** La sortie vers le côté ouvert du défenseur (cote : +1 sa droite vue du porteur — la gauche du porteur —, −1 sa gauche) — la
+   *  croqueta, le râteau ou la roulette, des gestes EN SÉRIE (plusieurs touches, le corps qui tourne et part : gestes/, <gfserie>). */
   function sortir(t, c, q, cote, issue, geste = null) {
     const g = unite(butAttaque(c.equipe) - q.x, -q.y), n = [-F.u[1], F.u[0]];
     const ax = q.x + n[0] * cote * K.sortie.lat + g[0] * K.sortie.au, ay = q.y + n[1] * cote * K.sortie.lat + g[1] * K.sortie.au;
-    if (!geste) geste = rnd(c.id, t) < K.sorties.rateau ? 'rateau' : 'croqueta';
-    const lat = ballonLateral(c);
-    const nom = geste === 'roulette' ? 'rouletteFace' : geste === 'rateau' ? (lat >= -0.02 ? 'rateauFace' : 'rateauFaceIn') : 'doubleContact';
+    // LE RÂTEAU RATISSE LE BALLON À TRAVERS LE CORPS : ballon à droite, il sort à gauche (cote +1) ; ballon à gauche, à droite (cote −1) —
+    // le duel ne le tire que du côté où il va (face.js, coteRateau) ; sinon la croqueta
+    const lat = ballonLateral(c), dehors = lat >= -0.02;
+    if (!geste) geste = (dehors ? cote === 1 : cote === -1) && rnd(c.id, t) < K.sorties.rateau ? 'rateau' : 'croqueta';
+    const nom = geste === 'roulette' ? 'rouletteFace' : geste === 'rateau' ? (dehors ? 'rateauFace' : 'rateauFaceIn') : 'doubleContact';
     F.sortie = { nom, cible: [ax, ay], t, issue, lance: null };
     trace?.(t, 'sortie', { nom, issue });
-    demander(t, nom, [ax, ay], 0);
+    // la vitesse demandée : la classe de vitesse où le geste finit (la roulette et le râteau partent lancés, la croqueta reste sur ses appuis)
+    demander(t, nom, [ax, ay], GESTES[nom].vSortie ?? 0);
+  }
+
+  /** Le ballon dans le repère du porteur : [droite, devant] (m). */
+  function ballonPerso(c) {
+    const f = unite(c.dir[0], c.dir[1]), b = F._ballon ?? etatRef.ballon, x = b[0] - c.x, y = b[1] - c.y;
+    return [x * f[1] - y * f[0], x * f[0] + y * f[1]];
+  }
+  /** Le ballon sous la semelle (l'un ou l'autre côté) ? */
+  function sousLaSemelle(c) {
+    const [dr, dv] = ballonPerso(c);
+    return Object.values(SEMELLE).some(([sx, sz]) => Math.hypot(dr - sx, dv - sz) <= SOUS);
   }
 
   /** Le ballon dans le repère du porteur : sa position latérale (m, + = sa droite). */
@@ -178,19 +199,29 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
   function poserTout(t, c, q, n, Aq) {
     if (!F) return;
     const S = F.sortie;
+    const tenu = F.geste && t < F.geste.tenir;   // le geste lancé, pas encore à sa touche : tenu (sinon le corps le coupe)
+    if (tenu) {
+      poser(F.c, { genre: INTENTION.GESTE, x: F.geste.cible[0], y: F.geste.cible[1], vitesse: F.geste.vitesse, cible: GESTES[F.geste.nom].n, drapeaux: GESTES[F.geste.nom].sansTouche ? 1 : 0 });
+      gardeDuDefenseur(t, c, q, n, Aq, !!S);
+      return;
+    }
     if (S) {
-      // LE CORPS NE COUPE JAMAIS UNE ANIMATION (humanoidbase : la suivante se choisit à sa dernière image, avec l'intention posée à cet
-      // instant ; la remise en file est éteinte dans GRF) : le geste lancé, la conduite lancée est posée tout de suite — il la prend en
-      // finissant le geste. Laissé en GESTE jusqu'à sa fin, le corps le rejouait (mesuré : six croquetas d'affilée).
+      // LA SUITE APRÈS LA TOUCHE : le contrôle touché ne se coupe plus, il va au bout ; la conduite lancée posée maintenant, il la prend
+      // en le finissant. Laissé en GESTE jusqu'à sa fin, le corps le rejouait (mesuré : six croquetas d'affilée).
       if (S.lance != null)
         poser(F.c, { genre: INTENTION.CONDUIRE, x: S.cible[0] + (S.cible[0] - c.x), y: S.cible[1] + (S.cible[1] - c.y), vitesse: K.sortie.v });
       else if (S.lance == null && (t - S.t > 0.6 || c.vitesse > 1.8))   // le corps n'a pas pu lancer le geste, ou le porteur court déjà (nos gestes partent de l'arrêt) : la conduite lancée seule
         poser(F.c, { genre: INTENTION.CONDUIRE, x: S.cible[0], y: S.cible[1], vitesse: K.sortie.v });
-      else poser(F.c, { genre: INTENTION.GESTE, x: S.cible[0], y: S.cible[1], vitesse: 0, cible: GESTES[S.nom].n, drapeaux: 0 });
+      else poser(F.c, { genre: INTENTION.GESTE, x: S.cible[0], y: S.cible[1], vitesse: GESTES[S.nom].vSortie ?? 0, cible: GESTES[S.nom].n, drapeaux: 0 });
     } else if (F.demande) {
       const G = GESTES[F.demande.nom];
       poser(F.c, { genre: INTENTION.GESTE, x: F.demande.cible[0], y: F.demande.cible[1], vitesse: F.demande.vitesse, cible: G.n, drapeaux: G.sansTouche ? 1 : 0 });
-    } else poser(F.c, { genre: INTENTION.CONDUIRE, x: q.x, y: q.y, vitesse: 0 });   // planté : conduire à l'arrêt, la semelle reste
+    } else {
+      // PLANTÉ : LA TENUE, la semelle posée sur le ballon, sans le toucher — du côté où il est. (Conduire à l'arrêt laissait le contrôle
+      // du corps le replacer à sa distance à lui, 0,36-0,40 m devant : nos gestes touchent tôt, sous la semelle, et le manquaient.)
+      const T = ballonLateral(c) >= -0.02 ? GESTES.tenueSemelle : GESTES.tenueSemelleIn;
+      poser(F.c, { genre: INTENTION.GESTE, x: q.x, y: q.y, vitesse: 0, cible: T.n, drapeaux: 1 });
+    }
     gardeDuDefenseur(t, c, q, n, Aq, !!S);
   }
 
@@ -234,7 +265,7 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
       const A = attributs(c.id);
       if (rnd(c.id, t) > E.envie[0] + E.envie[1] * A.flair) { recharge.set(c.id, t + E.cd); stats.refus++; return; }
       const Aq = attributs(D.q.id);
-      F = { c: c.id, q: D.q.id, t0: t, u, feintes: 0, mords: 0, mordu: null, vente: null, fente: null, sortie: null, geste: null, demande: null,
+      F = { c: c.id, q: D.q.id, t0: t, u, feintes: 0, mords: 0, mordu: null, vente: null, fente: null, sortie: null, geste: null, demande: null, reprises: 0,
         prochain: t + GESTES.arretSemelle.libre, jab: t + tir(K.jab.cadence, rnd(D.q.id, t)), patience: t + tir(K.patience, rnd(D.q.id, t)) * (2 - Aq.aggrF), _ballon: b };
       stats.entrees++; equipeDe.set(c.id, c.equipe); equipeDe.set(D.q.id, D.q.equipe);
       trace?.(t, 'entrée', { c: c.id, q: D.q.id, d: +D.d.toFixed(2), v: +c.vitesse.toFixed(1) });
@@ -279,9 +310,14 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
 
     // les gestes du porteur que le corps a lancés : le geste en cours, la vente à juger
     for (const L of lances) if (L.joueur === F.c) {
-      const nom = PAR_NUMERO[L.n]; if (!nom) continue;
+      const nom = PAR_NUMERO[L.n]; if (!nom || GESTES[nom].tenue) continue;   // (la tenue : l'attente entre deux gestes, pas un geste)
       const G = GESTES[nom];
-      F.geste = { nom, t: L.t, fin: L.t + G.duree, libre: L.t + (G.libre ?? G.duree) };
+      // LE GESTE EST TENU JUSQU'À SA TOUCHE : le joueur du corps peut remettre en file un contrôle tant que sa touche n'a pas eu lieu
+      // (humanoid.cpp, allowReQueue : toutes les 20 à 80 ms), un déplacement à tout moment — l'intention qui change avant, et le geste
+      // était coupé (mesuré : la conduite lancée posée au départ de la croqueta la coupait avant sa première touche)
+      const src = F.sortie?.nom === nom ? F.sortie : F.demande?.nom === nom ? F.demande : null;
+      F.geste = { nom, t: L.t, fin: L.t + G.duree, libre: L.t + (G.libre ?? G.duree), tenir: L.t + (G.sansTouche ? G.duree - TICK : (G.touche1 ?? G.contact) + 0.01),
+        cible: src?.cible ?? [q.x, q.y], vitesse: src === F.sortie ? (G.vSortie ?? 0) : (src?.vitesse ?? 0) };
       trace?.(L.t, 'joué', nom);
       if (F.demande?.nom === nom) { F.demande = null; stats.joues++; stats.parGeste[nom].joues++; }
       if (F.vente && F.vente.nom === nom && F.vente.t0 == null) F.vente.t0 = L.t;
@@ -349,7 +385,9 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
 
     // LA FEINTE SUIVANTE, planté — demandée un tick avant son heure : le corps la prend à la dernière image du geste en cours (ou de
     // l'appui planté), sans le trou d'un tick
-    if (!F.fente && !F.demande && (!enGeste || t >= F.geste.fin - TICK) && t >= F.prochain - TICK) {
+    if (!F.fente && !F.demande && (!enGeste || t >= F.geste.fin - TICK) && t >= F.prochain - TICK && !sousLaSemelle(c) && F.reprises < 2) {
+      F.reprises++; demander(t, 'arretSemelle', [q.x, q.y], 0);   // le ballon a quitté la semelle : l'arrêt de semelle le reprend
+    } else if (!F.fente && !F.demande && (!enGeste || t >= F.geste.fin - TICK) && t >= F.prochain - TICK) {
       const lat = ballonLateral(c), dehors = lat >= -0.02, FK = K.feintes, u = rnd(c.id, t);
       const pP = dehors ? FK.passement.p * (0.6 + 0.8 * A.flair) : 0, pC = FK.corps.p;
       let nom, cote, vente = 1;
@@ -380,7 +418,9 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
   function lancerFente(t, c, q, A, Aq, mordue) {
     const pLu = mordue ? 0 : Math.min(0.9, K.lecture * A.anticipF * (2 - Aq.tacleTempoF));
     const b = etatRef.ballon;
-    F.fente = { t, part: t + K.fente.charge, mordue, lu: rnd(c.id, t + 0.04) < pLu ? t + A.reaction * 0.7 : null, cible: [b[0] + c.v[0] * 0.3, b[1] + c.v[1] * 0.3] };
+    // la lecture au temps de réaction du duel (× 0,7) — moins le demi-tick que la loi attend en moyenne pour la voir (elle tourne tous
+    // les 100 ms, le duel à chaque image) : sinon la réponse partait en moyenne 0,05 s plus tard que dans le duel, contre une fente à l'heure
+    F.fente = { t, part: t + K.fente.charge, mordue, lu: rnd(c.id, t + 0.04) < pLu ? t + Math.max(0, A.reaction * 0.7 - TICK / 2) : null, cible: [b[0] + c.v[0] * 0.3, b[1] + c.v[1] * 0.3] };
     trace?.(t, 'fente', { mordue, pLu: +pLu.toFixed(2), lu: F.fente.lu != null });
     stats.fentes++;
   }
@@ -406,7 +446,11 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
       const L = Fn.ligne, b = etatRef.ballon, bx = b[0] - L.o[0], by = b[1] - L.o[1];
       const lat = Math.abs(bx * L.u[1] - by * L.u[0]), le = bx * L.u[0] + by * L.u[1];
       const dansSaLigne = lat <= K.fente.couloir && le >= -0.2 && le <= L.porte + 0.2;
-      poser(F.q, { genre: INTENTION.ALLER, x: L.bout[0] + L.u[0] * ARRIVEE, y: L.bout[1] + L.u[1] * ARRIVEE, vitesse: 8, drapeaux: dansSaLigne ? 0 : 1 });
+      // …ET LA JAMBE ARRIVE À SON INSTANT : le tacle debout du duel touche 0,28 s après la charge (fente.contact) ; le réflexe du corps
+      // touche 0,11-0,21 s après qu'on le lui ouvre (REFLEXE, mesuré) — ouvert dès la charge, il touchait 0,2 s trop tôt, avant toute
+      // réponse du porteur qui l'avait lue (mesuré : les deux roulettes contre la fente lue coupées avant leur première touche)
+      const aSonInstant = t >= Fn.part + K.fente.contact - REFLEXE;
+      poser(F.q, { genre: INTENTION.ALLER, x: L.bout[0] + L.u[0] * ARRIVEE, y: L.bout[1] + L.u[1] * ARRIVEE, vitesse: 8, drapeaux: dansSaLigne && aSonInstant ? 0 : 1 });
       return;
     }
     // DÉSÉQUILIBRÉ (la fente dans le vide) ou AU SOL : planté, sans réflexes, le temps de se remettre

@@ -38,7 +38,7 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 - Il nous rend l'état (`gf_frame`), la pose de 13 articulations par joueur pour nos humains three.js (`gf_pose`) et un journal d'événements (`gf_events`).
 - Notre cerveau pose une intention par joueur ; le contrôleur du corps la lit à trois endroits : le placement, la décision du porteur, le pressing.
 - Sans intention posée, le match est celui de Google, au bit près.
-- Nous avons ajouté (`patch.py`, 13 étapes) ce que le navigateur n'a pas, le chrono réglable, les intentions, le journal, les attributs réglables, l'horloge du match, les fautes du cerveau, le relevé des animations, nos gestes sur demande (la touche à l'arrêt, leur départ au journal) et la garde du face-à-face.
+- Nous avons ajouté (`patch.py`, 14 étapes) ce que le navigateur n'a pas, le chrono réglable, les intentions, le journal, les attributs réglables, l'horloge du match, les fautes du cerveau, le relevé des animations, nos gestes sur demande (la touche à l'arrêt, leur départ au journal), la garde du face-à-face et les gestes à plusieurs touches.
 - Mesuré (`README.md`, « Mesures ») : 0,63-0,66 ms par pas dans Node (p95 1,2 ms) ; 354 s pour 90 vraies minutes ; le même match au bit près dans Node et dans Chromium.
 - Restent au corps : les gardiens, les coups de pied arrêtés, les gestes de contact (contrôle, amorti, tacle) et l'arbitrage de ses propres contacts.
 
@@ -213,6 +213,8 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | `_GfPressMode` (C) | `elizacontroller.cpp:444, 446` | PRESSER, ALLER | 2 chasse forcée ; 1 jamais de chasse ; 0 la chasse du corps (171-178) |
 | `_GfPress` (C) | `elizacontroller.cpp:445` | — | vers le désigné adverse anticipé de 0,3 s, au sprint, aimant et hâte (183-192) |
 | `_GfGarde` (D) | `elizacontroller.cpp:401`, devant les réflexes | ALLER drapeau 1 | vrai : ni contrôle, ni amorti, ni intervention, ni tacle glissé ne sont mis en file — la garde du face-à-face (`patch.py`, étape 13) |
+| `_GfToucheEnSerie` (F) | `humanoid.cpp:624`, après la touche du corps, à chaque image | un geste `<gfserie>` en cours | joue ses touches suivantes à leur image, puis arrête le ballon (`<gfarret>`) — § 5.7 (`patch.py`, étape 14) |
+| `gf_serie` (F) | `GetBestCheatableAnimID` (`humanoid.cpp:1862`), `CalculatePhysicsVector` (`humanoidbase.cpp:1676`) | l'animation | un geste en série : sa première touche seule est candidate ; sa racine est suivie telle quelle, sans la physique des déplacements |
 
 ### 4.6 Ce que change chaque intention
 
@@ -311,13 +313,35 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 - Pendant les secondes gelées d'un arrêt (§ 7.4), la pose ne change pas.
 - Le relevé (`patch.py`, étape 10) compte chaque choix aux quatre étages. Résultats et causes : `animations.md` (240 fichiers sur 284 joués avec notre cerveau) et `animations-releve.md`.
 - **Nos gestes** (`gestes/*.anim`, n° 101 à 116, convertis du duel par `outils/vers-gpf.mjs`) portent `specialvar1` = leur n° : seule l'intention GESTE les demande. À l'arrêt, `NeedTouch` refusait leur touche (« when idle, don't want to touch the ball every frame ») ; l'étape 11 la rend à toute commande `specialVar1 ≥ 100`. Le journal note le départ de chacun (`GF_EV_GESTE`, étape 12) : le cerveau juge la morsure au contact de la feinte vraiment jouée.
-- Leur racine est immobile : leur classe de vitesse est l'arrêt, à l'entrée comme à la sortie (`incomingVelocity_Strict`). Ils ne partent que d'un porteur sous 1,8 m/s ; demandés plus vite, le contrôle réflexe freine d'abord (à la vitesse demandée, 0).
+- Ils partent de l'arrêt : leur classe de vitesse d'entrée est l'arrêt (`incomingVelocity_Strict`). Ils ne partent que d'un porteur sous 1,8 m/s ; demandés plus vite, le contrôle réflexe freine d'abord (à la vitesse demandée). Les gestes plantés ont une racine immobile ; les sorties en série (la roulette, le râteau) finissent lancées, à 2,2-2,4 m/s (§ 5.7).
 
-### 5.6 Une animation va toujours au bout
+### 5.6 Quand une animation peut être coupée : la remise en file
 
-- `HumanoidBase::Process` (`humanoidbase.cpp:625-715`) ne choisit la suivante qu'à la dernière image de la courante (`interruptAnim = Switch`), ou sur un croche-pied ; la remise en file (`mayReQueue`) est éteinte dans GRF. Une commande ne coupe jamais un geste : elle attend sa fin, et c'est l'intention posée à cet instant qui choisit la suite.
-- Pour le cerveau : la suite d'un geste se pose dès qu'il est lancé (laissé en GESTE jusqu'à sa fin, le corps le rejoue — mesuré : six croquetas d'affilée) ; le geste suivant se pose un tick avant la fin du courant, et le corps l'enchaîne sans trou.
-- Un pas est une animation de sa classe de vitesse. Sous 1,8 m/s (`idleDribbleSwitch`), le joueur pivote sur place ; au-dessus, une foulée de la classe « conduite » (≈ 3,5 m/s) couvre près d'un mètre avant de rendre la main. Un défenseur ne fait donc pas un pas de 0,35 m : un jab devenait un aller-retour d'un mètre (mesuré : de 1,2 à 2,45 m du porteur). La garde du face-à-face reste plantée sous 0,45 m d'écart ; elle bouge pour la morsure et quand le ballon bouge.
+- **Le joueur remet en file** (`Humanoid::Process`, `humanoid.cpp:100-216`, `allowReQueue = true`) : à certaines images seulement — toutes les 20 ms pour le désigné du match près du ballon, jusqu'à 80 ms pour un joueur loin —, il réévalue sa file de commandes et peut couper :
+  - un **déplacement**, à tout moment ;
+  - un **contrôle ou un amorti**, tant que sa touche n'a pas eu lieu (`TouchPending`).
+
+  Après sa touche, un contrôle va au bout ; la suivante se choisit à sa dernière image, avec l'intention posée à cet instant. La remise en file ne repart pas vers une animation du même quadrant : la même commande ne coupe pas le geste qu'elle a lancé. (`HumanoidBase::Process`, `humanoidbase.cpp:625-715`, n'a pas de remise en file : `mayReQueue` y est éteint. La première version de cette page l'avait prise pour la règle du joueur.)
+- Pour le cerveau :
+  - **tenir l'intention d'un geste jusqu'à sa touche** (jusqu'à sa fin pour un déplacement) : l'intention qui change avant, et le corps le coupe (mesuré : la conduite lancée posée au départ de la croqueta la coupait avant sa première touche) ;
+  - **poser la suite après la touche** : il la prend en finissant le geste ; laissé en GESTE jusqu'à sa fin, le corps le rejoue (mesuré : six croquetas d'affilée) ;
+  - le geste suivant se pose un tick avant la fin du courant : le corps l'enchaîne sans trou.
+- Un pas est une animation de sa classe de vitesse. Sous 1,8 m/s (`idleDribbleSwitch`), le joueur pivote sur place ; au-dessus, c'est une foulée de la classe « conduite » (≈ 3,5 m/s), avec l'inertie de la physique des déplacements (`CalculatePhysicsVector` : bornes d'accélération, résistance de l'air). Un défenseur ne fait donc pas un pas de 0,35 m : un jab devenait un aller-retour d'un mètre (mesuré : de 1,2 à 2,45 m du porteur). La garde du face-à-face reste plantée sous 0,45 m d'écart ; elle bouge pour la morsure et quand le ballon bouge.
+
+### 5.7 Plusieurs touches dans un geste (`patch.py`, étape 14)
+
+- **Ce que le corps savait.** Les touches d'une animation (sa ligne `football`, des groupes image-x-y-z) sont des instants **candidats** : `GetBestCheatableAnimID` les essaie (le milieu d'abord) et en retient un, la touche du geste. Une animation ne touchait donc le ballon qu'une fois.
+- **Un geste en série** (`<gfserie>`, `specialvar1 ≥ 100`) porte toutes ses touches dans sa ligne `football`, puis la **destination** du ballon (sa dernière entrée : pas une touche). Les transformations du corps les suivent sans rien coder : le miroir (`Mirror`), la remise face à l'avant d'une animation qui part de l'arrêt (`Rotate2D`).
+  - **Le tri** ne considère que la première touche (le patch de `GetBestCheatableAnimID`) : c'est la touche du corps, triche comprise.
+  - **Les suivantes** sont jouées par `_GfToucheEnSerie` (`api/intents.cpp`, F) à leur image. La touche k envoie le ballon là où l'animation met le pied de la touche k + 1, à son image. Le point se calcule comme le corps calcule une touche : sa racine au monde (`startPos + positions[f]`, décalages de la triche compris), tournée du cap de départ et de la rotation ajoutée. La vitesse se trouve par dichotomie sur la prédiction du ballon par le corps lui-même (`SetMomentum`, `Predict`) : exacte, frottements de l'herbe compris. Mesuré : le ballon arrive à 1-5 cm de l'attendu (`bancs/serie-essai.mjs`).
+  - Le ballon à plus de 0,4 m de l'attendu (pris, dévié) : la série s'arrête, le corps reprend la main.
+  - **Un geste planté** (`<gfarret>`) range le ballon : à sa destination, la semelle l'arrête (vitesse nulle). Le geste suivant l'y trouve.
+  - **Sa racine est suivie telle quelle** (le patch de `CalculatePhysicsVector`) : le pivot sur l'appui de la roulette, la course de sortie. La physique des déplacements l'aurait lissée (bornes d'accélération, résistance de l'air), et l'appui aurait glissé.
+- **Le journal** note chaque touche d'une série (`GF_EV_SERIE`, 8 : son rang, son image, l'écart du ballon à l'attendu, la vitesse posée ; −1 si la série s'arrête). Le journal des touches, lui, ne répète pas le même toucheur au même geste (`gf_event`) : les touches d'une série n'y apparaissent qu'une fois.
+- **Les gestes** (`gestes/`, `outils/vers-gpf.mjs`) :
+  - la roulette (114 : quatre touches, deux semelles, le tour de 330° et le pivot sur chaque appui), le râteau (112, 113 : la semelle prend le ballon puis le lâche au bout du ratissage), la croqueta (115 : l'intérieur du pied droit, puis le gauche) ;
+  - les gestes plantés (101-105, 110, 111) : la touche, puis le ballon rangé (sous la semelle, au bout du roulé, du tiré) ;
+  - les **tenues** (117, 118) : la semelle posée sur le ballon, sans touche (un déplacement) — jouées entre deux gestes du face-à-face. Le contrôle du corps au repos, lui, replaçait le ballon à sa distance à lui (0,36-0,40 m devant, centré), et nos touches précoces le manquaient : 95 % des gestes demandés joués au lieu de 89 %.
 
 ## 6. Les touches et le ballon
 
@@ -598,7 +622,7 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 | 9 | `referee.hpp`, `referee.cpp` | `Referee::GfFaute` | la Loi 12 du cerveau |
 | 10 | `humanoid.cpp`, `humanoidbase.cpp` | `gf_anim_compte` aux 4 étages | le relevé des animations |
 
-- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 13 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine (11 ne joue que pour `specialVar1 ≥ 100`, que seule l'intention GESTE pose ; 13 que pour ALLER au drapeau 1). Leurs ajouts aux en-têtes (6, 7, 9, 13) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
+- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 14 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine (11 ne joue que pour `specialVar1 ≥ 100`, que seule l'intention GESTE pose ; 13 que pour ALLER au drapeau 1 ; 14 que pour nos gestes `<gfserie>`). Leurs ajouts aux en-têtes (6, 7, 9, 13, 14) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
 
 ### 10.3 Les fonctions (`api/gf_api.cpp`, toutes dans `extern "C"`)
 

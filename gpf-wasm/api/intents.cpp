@@ -15,6 +15,10 @@
 #include "onthepitch/team.hpp"
 #include "onthepitch/player/player.hpp"
 #include "onthepitch/player/controller/elizacontroller.hpp"
+#include "onthepitch/player/humanoid/humanoid.hpp"
+#include "onthepitch/player/humanoid/humanoid_utils.hpp"
+#include "onthepitch/ball.hpp"
+#include "utils/animationextensions/footballanimationextension.hpp"
 
 static bool g_actif = false;
 static std::unordered_map<int, GfIntent> g_intentions;
@@ -220,4 +224,106 @@ void ElizaController::_GfPress(bool &forceMagnet, bool &extraHaste) {
   inputVelocityFloat = sprintVelocity;
   forceMagnet = true;
   extraHaste = true;
+}
+
+// ── F. LES TOUCHES EN SÉRIE (le face-à-face : la roulette, la croqueta, le râteau — patch.py, étape 14) ───────────────────────
+// Un geste de notre répertoire marqué <gfserie> porte toutes ses touches dans sa ligne football, puis la destination du ballon (sa
+// dernière entrée : pas une touche). Le corps n'en connaissait qu'une par animation — des instants CANDIDATS, il en retient un — :
+// la première reste la sienne (le tri, la triche, la touche : seule candidate) ; les suivantes sont jouées ici, à leur image.
+// Chaque touche envoie le ballon là où l'animation met le pied de la suivante, à son image : la vitesse se cherche sur la
+// prédiction du ballon par le corps lui-même (SetMomentum, Predict, par dichotomie) — exacte, frottements de l'herbe compris.
+// Le ballon pris ou dévié entre deux touches (à plus de 0,4 m de l'attendu) : la série s'arrête, le corps reprend la main. Un geste
+// planté (<gfarret>) range le ballon : sa dernière entrée l'arrête là, sous la semelle ou au bout du tirage.
+bool gf_serie(blunted::Animation *anim) {
+  return anim->GetVariableCache().specialvar1() >= 100 && !anim->GetVariable("gfserie").empty();
+}
+
+// Où l'animation met le ballon à cette image, au monde : le corps (sa racine, décalages de la triche compris), tourné du cap de
+// départ et de la rotation ajoutée par le corps (la formule de Process, la rotation avant la touche interdite)
+Vector3 Humanoid::_GfBallonAttendu(int frame, const Vector3 &animBall) const {
+  Quaternion orientation;
+  Vector3 racine;
+  currentAnim.anim->GetKeyFrame(BodyPart::player, frame, orientation, racine);
+  const int nf = currentAnim.anim->GetEffectiveFrameCount(), tf = currentAnim.touchFrame;
+  float debut = std::min(1.0f, (frame + 1) / (float)std::min(16, nf + 1)), fin = debut;
+  if (tf != -1) {
+    debut = std::min(1.0f, (frame + 1) / (float)std::min(16, tf + 1));
+    fin = frame > tf ? (frame - tf) / (float)(nf - tf) : 0.0f;
+  }
+  const radian rotation = startAngle + currentAnim.rotationSmuggle.begin * (1.0f - debut) + currentAnim.rotationSmuggle.end * fin;
+  const int i = std::max(0, std::min(frame, (int)currentAnim.positions.size() - 1));
+  const Vector3 corps = startPos + currentAnim.positions.at(i) + currentAnim.actionSmuggleOffset + currentAnim.actionSmuggleSustainOffset + currentAnim.movementSmuggleOffset;
+  Vector3 rel = animBall - racine;
+  rel.coords[2] = 0.0f;
+  Vector3 p = corps + rel.GetRotated2D(rotation);
+  p.coords[2] = animBall.coords[2];
+  return p;
+}
+
+// La vitesse qui mène le ballon, au sol et sans effet, de là où il est à `cible` en `dt_ms` : la dichotomie sur la prédiction du
+// corps (Ball::Predict suit sa propre physique : l'air, l'herbe, ses frottements quadratique et linéaire)
+Vector3 Humanoid::_GfVitessePour(const Vector3 &cible, int dt_ms) {
+  Ball *ballon = match->GetBall();
+  const Vector3 depart = ballon->Predict(0);
+  const Vector3 vers = (cible - depart).Get2D();
+  const float distance = vers.GetLength();
+  if (distance < 0.005f || dt_ms <= 0) return Vector3(0);
+  const Vector3 u = vers * (1.0f / distance);
+  ballon->SetRotation(0, 0, 0, 1.0f);
+  float bas = 0.0f, haut = 25.0f;
+  for (int k = 0; k < 22; k++) {
+    const float s = 0.5f * (bas + haut);
+    ballon->SetMomentum(u * s);
+    if ((ballon->Predict(dt_ms) - depart).Get2D().GetDotProduct(u) < distance) bas = s; else haut = s;
+  }
+  return u * (0.5f * (bas + haut));
+}
+
+void Humanoid::_GfToucheEnSerie() {
+  if (currentAnim.touchFrame < 0 || currentAnim.frameNum < currentAnim.touchFrame || !gf_serie(currentAnim.anim)) return;
+  boost::shared_ptr<FootballAnimationExtension> touches = boost::static_pointer_cast<FootballAnimationExtension>(currentAnim.anim->GetExtension("football"));
+  const int n = touches->GetTouchCount();
+  if (n < 2) return;
+  int k = -1;
+  Vector3 ici;
+  for (int i = 0; i < n - 1 && k < 0; i++) {   // les touches : toutes les entrées sauf la dernière (la destination du ballon)
+    Vector3 b;
+    int f;
+    touches->GetTouch(i, b, f);
+    if (f == currentAnim.frameNum) { k = i; ici = b; }
+  }
+  Ball *ballon = match->GetBall();
+  if (k < 0) {
+    // LE BALLON RANGÉ (<gfarret> : un geste planté) : à sa dernière entrée, la semelle l'arrête là où le geste le laisse — le geste
+    // suivant l'y attend (sinon le contrôle du corps le replaçait à sa distance à lui, et nos touches précoces le manquaient)
+    Vector3 b;
+    int f;
+    touches->GetTouch(n - 1, b, f);
+    if (f != currentAnim.frameNum || currentAnim.anim->GetVariable("gfarret").empty() || match->GetLastTouchPlayer() != CastPlayer()) return;
+    const float ecart = (ballon->Predict(0) - _GfBallonAttendu(f, b)).Get2D().GetLength();
+    if (ecart > 0.2f) { gf_event(GF_EV_SERIE, team->GetID(), CastPlayer()->GetStableID(), -1.0f, (float)f, ecart, 0.0f); return; }
+    ballon->SetRotation(0, 0, 0, 1.0f);
+    ballon->Touch(Vector3(0));
+    gf_event(GF_EV_SERIE, team->GetID(), CastPlayer()->GetStableID(), (float)(n - 1), (float)f, ecart, 0.0f);
+    return;
+  }
+  const float ecart = (ballon->Predict(0) - _GfBallonAttendu(currentAnim.frameNum, ici)).Get2D().GetLength();
+  if (k == 0) {
+    // la première touche est celle du corps : elle vient d'avoir lieu, par lui — sinon le ballon n'était pas à sa portée
+    if (CastPlayer()->GetLastTouchTime_ms() != match->GetActualTime_ms() || match->GetLastTouchPlayer() != CastPlayer()) {
+      gf_event(GF_EV_SERIE, team->GetID(), CastPlayer()->GetStableID(), -1.0f, (float)currentAnim.frameNum, ecart, 0.0f);
+      return;
+    }
+  } else if (ecart > 0.4f) {
+    gf_event(GF_EV_SERIE, team->GetID(), CastPlayer()->GetStableID(), -1.0f, (float)currentAnim.frameNum, ecart, 0.0f);
+    return;   // le ballon n'est plus là où le pied l'attend : pris, dévié — la série s'arrête
+  }
+  Vector3 suivant;
+  int fs;
+  touches->GetTouch(k + 1, suivant, fs);
+  const Vector3 v = _GfVitessePour(_GfBallonAttendu(fs, suivant), (fs - currentAnim.frameNum) * 10);
+  ballon->SetRotation(0, 0, 0, 1.0f);
+  ballon->Touch(v);
+  if (k > 0) team->SetLastTouchPlayer(CastPlayer(), GetTouchTypeForBodyPart(currentAnim.anim->GetVariable("touch_bodypart")));
+  gf_event(GF_EV_SERIE, team->GetID(), CastPlayer()->GetStableID(), (float)k, (float)currentAnim.frameNum, ecart, v.GetLength());
 }

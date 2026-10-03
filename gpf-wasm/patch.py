@@ -268,4 +268,45 @@ sub('onthepitch/player/controller/elizacontroller.cpp',
 
     // ball control?
     _BallControlCommand(commandQueue, false, false, false); // last param true == enable sticky run direction.''')
+# 14. LES TOUCHES EN SÉRIE D'UN GESTE DE NOTRE RÉPERTOIRE (<gfserie> : la roulette, la croqueta, le râteau — api/intents.cpp) : le corps
+#     ne connaît qu'une touche par animation (ses touches sont des instants CANDIDATS, il en retient un). Un geste en série porte
+#     toutes les siennes dans sa ligne football, puis la destination du ballon : la première seule est candidate (le tri, la triche),
+#     les suivantes sont jouées à leur image ; et sa racine est suivie telle quelle — le pivot sur l'appui, la course de sortie —,
+#     sans la physique des déplacements (qui l'aurait lissée : l'appui glissait). Sans <gfserie> (specialvar1 ≥ 100), rien ne change.
+sub('onthepitch/player/humanoid/humanoid.hpp',
+    '''    Vector3 GetBestPossibleTouch(const Vector3 &desiredTouch, e_FunctionType functionType);''',
+    '''    Vector3 GetBestPossibleTouch(const Vector3 &desiredTouch, e_FunctionType functionType);
+    // [gf-intent] les touches en série d'un geste de notre répertoire (api/intents.cpp, étape 14)
+    void _GfToucheEnSerie();
+    Vector3 _GfBallonAttendu(int frame, const Vector3 &animBall) const;
+    Vector3 _GfVitessePour(const Vector3 &cible, int dt_ms);''')
+ensure_top('onthepitch/player/humanoid/humanoid.cpp', '#include "intents.hpp"')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''  if (match->GetBallRetainer() == player) {
+    DO_VALIDATION;
+    if ((currentAnim.touchFrame <= currentAnim.frameNum &&''',
+    '''  _GfToucheEnSerie();  // [gf-intent] étape 14 : les touches suivantes d'un geste en série
+
+  if (match->GetBallRetainer() == player) {
+    DO_VALIDATION;
+    if ((currentAnim.touchFrame <= currentAnim.frameNum &&''')
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''    int totalTouches = footballExtension->GetTouchCount();''',
+    '''    int totalTouches = footballExtension->GetTouchCount();
+    if (gf_serie(anim)) totalTouches = 1;  // [gf-intent] étape 14 : un geste en série se choisit sur sa première touche''')
+ensure_top('onthepitch/player/humanoid/humanoidbase.cpp', '#include "intents.hpp"')
+sub('onthepitch/player/humanoid/humanoidbase.cpp',
+    '''Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMovement, const Vector3 &desiredMovement, bool useDesiredBodyDirection, const Vector3 &desiredBodyDirectionRel, std::vector<Vector3> &positions_ret, radian &rotationOffset_ret) const {
+
+  positions_ret.clear();''',
+    '''Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMovement, const Vector3 &desiredMovement, bool useDesiredBodyDirection, const Vector3 &desiredBodyDirectionRel, std::vector<Vector3> &positions_ret, radian &rotationOffset_ret) const {
+
+  positions_ret.clear();
+  // [gf-intent] étape 14 : un geste en série suit sa racine telle quelle — le pivot sur l'appui, la course de sortie
+  if (gf_serie(anim)) {
+    const std::vector<Vector3> &racine = match->GetAnimPositionCache(anim);
+    for (unsigned int f = 0; f < racine.size(); f++) positions_ret.push_back((racine[f] - racine[0]).GetRotated2D(spatialState.angle));
+    rotationOffset_ret = 0;
+    return anim->GetOutgoingMovement().GetRotated2D(spatialState.angle);
+  }''')
 print('patch: ok')

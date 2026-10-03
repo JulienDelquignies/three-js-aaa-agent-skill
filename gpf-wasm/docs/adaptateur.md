@@ -206,10 +206,10 @@ Ils reçoivent l'intention IA : le gardien du corps décide seul (placement, arr
 | Phase | Le porteur | Le défenseur |
 |---|---|---|
 | Entrée | Le cerveau a choisi CONDUIRE ; il conduit (pas de passe ni de tir en cours) et a touché le ballon le dernier. Un défenseur est devant, à 1-2,6 m freinage compris, face à lui, hors de la zone de tir. Personne d'autre ne peut arriver à 2,5 m avant 2 s. Au tirage de l'envie (0,7 + 0,3 × flair). | — |
-| Tenue | l'arrêt de semelle (GESTE 101), puis planté (CONDUIRE à 0 m/s) | la garde (ALLER au drapeau 1 : ni contrôle, ni intervention, ni tacle glissé de lui-même), à 1,1-1,8 m du ballon sur la ligne ballon → son but |
+| Tenue | l'arrêt de semelle (GESTE 101), puis la tenue : la semelle posée sur le ballon, sans le toucher (GESTE 117 ou 118, du côté où il est). Le ballon a quitté la semelle : l'arrêt de semelle le reprend (deux fois au plus). | la garde (ALLER au drapeau 1 : ni contrôle, ni intervention, ni tacle glissé de lui-même), à 1,1-1,8 m du ballon sur la ligne ballon → son but |
 | Feintes | Une feinte au tirage : le passement (parfois une série de 2 à 4), la feinte de corps semelle dessus, ou le roulé de semelle (GESTE 102-109). Demandée un tick avant la fin du geste en cours. | Au contact de la feinte vraiment jouée (`GF_EV_GESTE`), il mord avec p = (0,15 + 0,12 × feintes vues) × vente × gesteF × (2 − anticipF). Mordu, il glisse de 0,6 m du côté vendu, sans réflexes. |
-| Fente | Il la lit avec p = 0,5 × anticipF × (2 − tempo du tacleur) : le tiré de semelle, la roulette ou le râteau (GESTE 110-114). | À bout de patience (1,6-3,2 s), ou mordu (35 %) : la charge (0,2 s). Puis la jambe part sur sa ligne, vers le ballon d'alors anticipé de 0,3 s ; le corps glisse jusqu'à 0,7 m, au sprint. Ses réflexes ne s'ouvrent que si le ballon est resté dans son couloir (0,35 m) et à sa portée (0,7 m). Manquée : déséquilibré 0,45 s, ou au sol 1,2 s (au tirage : 0,3, × 1,5 mordu). |
-| Sortie | Le mordu décalé, la fente passée, ou au bout de 5 s : la croqueta, le râteau ou la roulette vers le côté ouvert (GESTE 112-116), puis CONDUIRE lancé à 7 m/s pendant 0,8 s. Déjà lancé, la conduite tout de suite. | Ses réflexes lui reviennent, sauf mordu, déséquilibré ou au sol. |
+| Fente | Il la lit avec p = 0,5 × anticipF × (2 − tempo du tacleur), au temps de réaction du duel : le tiré de semelle, la roulette ou le râteau (GESTE 110-114). | À bout de patience (1,6-3,2 s), ou mordu (35 %) : la charge (0,2 s). Puis la jambe part sur sa ligne, vers le ballon d'alors anticipé de 0,3 s ; le corps glisse jusqu'à 0,7 m, au sprint. Ses réflexes ne s'ouvrent qu'à l'instant de la jambe du duel (0,28 s après la charge), si le ballon est resté dans son couloir (0,35 m) et à sa portée (0,7 m). Manquée : déséquilibré 0,45 s, ou au sol 1,2 s (au tirage : 0,3, × 1,5 mordu). |
+| Sortie | Le mordu décalé, la fente passée, ou au bout de 5 s : la croqueta, le râteau (seulement du côté où il ratisse) ou la roulette vers le côté ouvert (GESTE 112-115). Ce sont des gestes **en série** : plusieurs touches, le corps qui tourne et part (`corps.md` § 5.7). Puis CONDUIRE lancé à 7 m/s pendant 0,8 s. Déjà lancé, la conduite tout de suite. | Ses réflexes lui reviennent, sauf mordu, déséquilibré ou au sol. |
 
 **La fin** se lit au journal, pas à la possession que déclare le corps (elle clignote). Le face-à-face finit :
 - sur une passe ou un tir du porteur ;
@@ -226,22 +226,27 @@ Un ballon disputé rend la main au cerveau tout de suite. L'issue, elle, se lit 
 - **La fin à la touche du défenseur.** Après sa touche, le corps ne tient plus le porteur pour possesseur : notre « conduire à l'arrêt » n'est plus lu, et leur IA le fait courir après le ballon. La loi qui continuait demandait alors un râteau à l'arrêt à un porteur lancé à 6 m/s.
 - **L'issue à la touche suivante.** Sur 9 fentes « gagnées » à la touche, le porteur avait encore le ballon 2 s plus tard 8 fois.
 - **Les deux intentions à chaque tick.** Un geste raté, ou une sortie décidée, sautaient la pose. Le porteur reprenait alors pour un tick l'intention du cerveau, parfois une passe, et la jouait.
-- **Le geste va au bout.** Le corps ne coupe jamais une animation (`corps.md` § 5.6). La suite d'un geste se pose dès qu'il est lancé, sinon le corps le rejoue : six croquetas d'affilée.
+- **Le geste tenu jusqu'à sa touche.** Le joueur du corps remet en file un contrôle tant que sa touche n'a pas eu lieu, un déplacement à tout moment (`corps.md` § 5.6). L'intention d'un geste est donc tenue jusqu'à sa première touche (jusqu'à sa fin s'il n'en a pas) : la conduite lancée posée au départ de la croqueta la coupait. La suite se pose après la touche, sinon le corps le rejoue : six croquetas d'affilée.
+- **Le ballon sous la semelle.** Entre deux gestes, « conduire à l'arrêt » laissait le contrôle du corps replacer le ballon à sa distance à lui (0,36-0,40 m devant, centré). Nos gestes semelle touchent tôt (0,04 s) et l'attendent sous la semelle (0,28 m) : le corps refusait de les lancer, faute de pouvoir rattraper l'écart à la première touche. D'où la tenue, la semelle posée sans toucher, et le ballon rangé par chaque geste planté (`corps.md` § 5.7). Les gestes demandés joués passent de 89 à 95 % ; la roulette, de 0 à 4 sur 8 contre une fente lue.
+- **La jambe à son instant.** Ouverts dès la charge, les réflexes du défenseur touchaient le ballon 0,11-0,21 s plus tard, avant la jambe du duel (0,28 s) et avant toute réponse du porteur. Ils s'ouvrent 0,16 s avant l'instant du duel (leur délai mesuré).
+- **La lecture au rythme du duel.** La loi tourne tous les 100 ms, le duel à chaque image : la lecture attendait en moyenne un demi-tick de plus. Elle part au temps de réaction du duel, moins ce demi-tick.
+- **Le râteau de son côté.** Il ratisse le ballon à travers le corps (ballon à droite, sortie à gauche) ; le duel ne le tire que si le côté ouvert est le sien. Le portage le tirait de n'importe quel côté.
 - **Le pas du corps.** Sous 1,8 m/s, il pivote ; au-dessus, une foulée couvre près d'un mètre. Le jab de 0,35 m devenait un aller-retour de 1,2 à 2,45 m du porteur. La garde reste donc plantée sous 0,45 m d'écart. Elle vise au-delà de la bande morte du placement (0,5 m), à 2 m/s au moins. Le jab, lui, ne se voit pas.
 - **Le vrai un-contre-un.** Avec la seule règle « personne à moins de 4 m », un face-à-face sur quatre finissait en 1,2-1,6 s, à l'arrivée du second presseur.
 - **Ni fautes, ni surface.** 22 face-à-face sur 8 graines × 20 min : aucun dans la surface, aucune faute liée à l'un d'eux. Les écarts de fautes entre séries viennent de la divergence des trajectoires.
 
-**Mesuré** (`bancs/face-match.mjs`, loi finale, graines 3, 7, 11 et 13, 20 min chacune) :
+**Mesuré** (`bancs/face-match.mjs`, loi finale, 8 graines × 20 min) :
 
 | | Mesure | Référence |
 |---|---|---|
-| Face-à-face | 14 en 80 min, ≈ 16 par 90 min (15,0 par match sur 8 × 90 min) | — |
-| Durée moyenne | 2,8 s | 3,3-5 s |
-| Feintes | 1,8 par face-à-face | 2-4 |
-| Gestes demandés, joués | 89 % (le râteau et la roulette ratent le plus) | — |
-| Morsures, fentes | 2 morsures ; 12 fentes, dont 4 lues | — |
-| Issues | fente gagnée 10, fente contrée 2, sortie sur la morsure 1, second défenseur 1 | — |
-| 2 s après | ballon à l'équipe du porteur 10 fois sur 14, défenseur battu 5 fois | dribbles réussis ≈ 45-55 % (élite) |
+| Face-à-face | 20 en 160 min, ≈ 11 par 90 min (16,4 par match sur 8 × 90 min) | — |
+| Durée moyenne | 2,9 s | 3,3-5 s |
+| Feintes | 1,4 par face-à-face | 2-4 |
+| Gestes demandés, joués | 95 % (54 sur 57) | — |
+| Issues | fente contrée 9, fente gagnée 6, sortie coupée 2, sortie sur la fente mordue 1, second défenseur 1, piqué puis repris 1 | — |
+| 2 s après | ballon à l'équipe du porteur 12 fois sur 20, défenseur battu 2 fois | dribbles réussis ≈ 45-55 % (élite) |
+
+**Ce qui reste : l'équilibre du duel.** La fente touche le ballon dans 15 face-à-face sur 20, et le défenseur n'est battu que 2 fois. Les sorties lues partent, mais la jambe les rattrape encore : le ratissage, la roulette quittent le couloir de la fente plus lentement que dans le duel. Avec une configuration de mesure (toutes les fentes lues, sorties forcées : `CERVEAU_OPTIONS='{"faceK":{"lecture":2,"sorties":{"rateau":0.5,"roulette":0.5}}}'`), 29 face-à-face : la croqueta part 5 fois sur 5, la roulette 4 sur 10, et la fente touche le ballon 22 fois.
 
 ## 8. Les réglages recalés sur le corps
 
@@ -300,7 +305,7 @@ Chaque réglage de l'adaptateur se débraye, pour la mesure A/B : `creerCerveau(
 | ALLER (1), drapeau 1 | x, y, vitesse | la garde du face-à-face : va au point, sans réflexes de duel |
 | GESTE (6) | cible (le n° du geste, 101-116), x, y (le regard), vitesse ; drapeau 0 avec touche, 1 sans | le geste de notre répertoire, au porteur ; s'il ne peut pas partir, le corps freine (son contrôle réflexe) |
 
-**Le journal** ajoute `GESTE` (7) : un geste de notre répertoire démarre, `a` = son numéro.
+**Le journal** ajoute `GESTE` (7) : un geste de notre répertoire démarre, `a` = son numéro ; et `SERIE` (8) : une touche d'un geste en série, `a` = son rang, `b` = son image, `c` = l'écart du ballon à l'attendu, `d` = la vitesse posée (`a` = −1 : la série s'arrête).
 
 **Une faute** : `{ fautif, victime, gravite, x, y }` pour le sifflet (1 faute, 2 jaune, 3 rouge), ou `{ carton, couleur }` pour le carton seul (`poserFautes`).
 
@@ -363,10 +368,10 @@ Le cockpit la sert sur /match11.
 - **Ses joueurs voient tout.** La perception de chacun (`croyanceStep`, le bruit d'observation du moteur) n'est jamais calculée : marqueurs et passeurs du cerveau lisent la vérité (`moteur.md`, §9).
 - **Il ne transmet ni le regard voulu, ni le nom du geste**, hors face-à-face : le corps choisit son animation seul. Les 16 gestes du face-à-face passent par l'intention GESTE (§ 7.10).
 - **Le face-à-face n'est pas encore tout à fait celui du duel.**
-  - La croqueta et la roulette n'ont qu'une touche : plusieurs touches dans un geste demandent du C++.
+  - La fente gagne trop : elle touche le ballon dans 3 face-à-face sur 4, le défenseur n'est battu qu'une fois sur 10 (§ 7.10).
   - Le jab ne se voit pas : le corps n'a pas de pas plus court qu'un mètre.
-  - Un geste demandé sur dix ne part pas ; la cause est à mesurer dans `Humanoid::SelectAnim`.
-  - Les face-à-face durent 2,8 s, pour 3,3 à 5 au réel : la fente vient tôt.
+  - Un geste demandé sur vingt ne part pas encore.
+  - Les face-à-face durent 2,9 s, pour 3,3 à 5 au réel : la fente vient tôt.
 - **Il ne transmet pas les attributs des joueurs**, ni au cerveau ni au corps : `attributs.md`.
 - **Il ne reçoit pas d'ordres en cours de match** : ni remplacement, ni correctif tactique (les Ordres v1 du cadrage).
 - **Il ferme la ligne vers les gardiens.** Le gardien du corps ne sait pas jouer une passe en retrait au pied : 4 buts contre son camp sur 32 passes au gardien, mesuré avant le veto.
