@@ -367,6 +367,25 @@ Le piège de construction : `build.sh` ne suit pas les en-têtes. Changer une st
 
 **Le relevé** (`patch.py`, étape 10) : chaque choix d'animation compte à quatre étages. Ce sont la candidate au premier tri, la gardée après les filtres de direction, la jouée par un joueur et la jouée par un officiel. C'est un compteur, la garde au bit près tient. L'API : `gf_anims_n`, `gf_anim_nom`, `gf_anim_releve`, `gf_anim_raz`. Les bancs : `bancs/animations.mjs`, `bancs/animations-bilan.mjs` ; le tableau complet est dans `animations-releve.md`.
 
+### Le face-à-face « Taarabt » dans le 11 contre 11 (3 octobre)
+
+La loi du duel (`face.js`), portée sur les corps : `face.mjs`, actif par défaut (option `face`). Le détail est dans `docs/adaptateur.md` § 7.10.
+- **Les gestes.** Les 16 gestes du face-à-face du duel sont convertis pour le corps (`outils/vers-gpf.mjs`, `gestes/*.anim`, n° 101 à 116). Ce sont l'arrêt et les roulés de semelle, la feinte de corps, le passement et ses séries, le tiré de semelle, le râteau, la roulette et la croqueta. L'intention GESTE les demande (`specialVar1`) ; le journal dit quand chacun démarre (`GF_EV_GESTE`).
+- **Le C++** (`patch.py`) :
+  - étape 11 : la touche à l'arrêt, que `NeedTouch` refusait ;
+  - étape 12 : le départ du geste au journal ;
+  - étape 13 : la garde du défenseur (ALLER au drapeau 1, sans réflexes de duel).
+
+  Chacune n'est armée que par l'intention : la garde au bit près tient (1616609301).
+- **Ce que le corps a imposé**, chaque point mesuré : la garde muette (le défenseur piquait le ballon au premier pas, 14 fois sur 27) ; la fente engagée sur sa ligne (sous PRESSER il n'était jamais battu, 0 sur 14) ; la fin lue au journal et l'issue à la touche suivante ; les deux intentions posées à chaque tick ; le geste qui va au bout ; la garde plantée (un pas du corps couvre un mètre) ; le vrai un-contre-un, mesuré en temps.
+- **Mesuré** (loi finale, graines 3, 7, 11 et 13 × 20 min, `bancs/face-match.mjs`) :
+  - 14 face-à-face, ≈ 16 par 90 min (15,0 par match sur 8 × 90 min) ;
+  - 2,8 s et 1,8 feinte par face-à-face (réel : 3,3-5 s, 2-4 feintes) ;
+  - 89 % des gestes demandés joués ;
+  - 2 s après : ballon gardé 10 fois sur 14, défenseur battu 5 fois.
+- **Le match autour ne bouge pas.** Sur 8 × 90 min, la variante sans face-à-face retrouve la référence (3,9 buts, 21,8 fautes, 3,9 jaunes) ; avec, les écarts restent dans le bruit d'un match (3,4 buts contre 3,9 ; 24,0 fautes contre 21,8 ; 4,1 jaunes contre 3,9 ; 0,4 penalty contre 0,5 ; 79 % de passes réussies des deux côtés). Aucun face-à-face dans la surface, aucune faute liée à l'un d'eux (8 graines × 20 min).
+- **La page** : la caméra se rapproche sur le duel ; la touche F, ou `?face=saut`, avance jusqu'au prochain ; `?face=0` l'éteint. Elle joue le même match que Node au bit près, face-à-face compris (graine 11, 16 010 pas).
+
 ## Licences
 
 `LICENCES.txt`, copié à côté du module, réunit les avis : l'Unlicense du moteur, la licence Apache 2.0 de ses fichiers, la police et les bibliothèques compilées dedans (SDL2, FreeType, HarfBuzz, zlib, Boost).

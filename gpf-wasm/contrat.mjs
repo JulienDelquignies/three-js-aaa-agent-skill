@@ -5,7 +5,7 @@
 
 export const INTENTION = { IA: 0, ALLER: 1, PRESSER: 2, PASSER: 3, TIRER: 4, CONDUIRE: 5, GESTE: 6 };
 export const PASSE = { COURTE: 0, LONGUE: 1, HAUTE: 2 };
-export const EV = { TOUCHE: 1, BUT: 2, FAUTE: 3, HORS_JEU: 4, CPA: 5, PASSE: 6 };
+export const EV = { TOUCHE: 1, BUT: 2, FAUTE: 3, HORS_JEU: 4, CPA: 5, PASSE: 6, GESTE: 7 };
 /** e_FunctionType du moteur — le geste d'une touche. */
 export const GESTE = { MOUVEMENT: 1, CONTROLE: 2, AMORTI: 3, PASSE_COURTE: 4, PASSE_LONGUE: 5, PASSE_HAUTE: 6, TETE: 7, TIR: 8, DEVIATION: 9, PRISE: 10, INTERVENTION: 11, CROCHE_PIED: 12, TACLE: 13, SPECIAL: 14 };
 

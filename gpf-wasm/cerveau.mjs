@@ -33,6 +33,7 @@ import { balPrenable } from '../skills/threejs-aaa/assets/starter/src/engine/dri
 import { ecartCorps, talonPermis } from '../skills/threejs-aaa/assets/starter/src/engine/passe-faisable.js';
 import { butDansCorps } from '../skills/threejs-aaa/assets/starter/src/engine/reprise-physique.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
+import { creerFace, FACE } from './face.mjs';
 
 const GPF = { hx: 55, hy: 36 };
 
@@ -45,8 +46,9 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
    *  `uneTouche` (la première intention posée avant le contact), `talon` (la passe hors du corps : 'tourne' — se tourner
    *  d'abord —, 'autre' — une autre passe —, null — telle quelle), `pTalon` (la part des talonnades permises jouées),
    *  `seuilCorps` (l'écart au regard, en degrés, au-delà duquel la passe est hors du corps ; null : celui du cerveau, 100°),
-   *  `reprise` (la reprise au but en première intention). */
-  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, ...options };
+   *  `reprise` (la reprise au but en première intention), `face` (le face-à-face « Taarabt », face.mjs ; `faceK` : sa
+   *  configuration à l'essai, `faceTrace(t, quoi, détail)` : sa chronique, pour les bancs). */
+  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, face: true, ...options };
   const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
@@ -118,6 +120,13 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   const AVANCE_UNE_TOUCHE = LATENCE + 0.1;
   /** Un tirage seedé et sans état (la graine, le porteur, l'instant) — le cerveau ne consomme pas son propre hasard. */
   const tirage = (a, b) => { let h = (graine * 2654435761 ^ a * 40503 ^ Math.round(b * 1000) * 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  /** LE FACE-À-FACE « TAARABT » (face.mjs) : le porteur et son défenseur pris en main dans un vrai un-contre-un — les gestes de notre
+   *  répertoire (intention GESTE), la garde, la morsure, la fente, la sortie. Les attributs viennent du cerveau. */
+  const face = OPT.face ? creerFace({ tirage, equipes, attributs: (id) => {
+    const q = cerveauDe?.get(id);
+    return { flair: q?.persona?.flair ?? 0.5, gesteF: q?.skill?.gesteF ?? 1, anticipF: q?.skill?.anticipF ?? 1, aggrF: q?.skill?.aggrF ?? 1,
+      tacleTempoF: q?.skill?.tacleTempoF ?? 1, reaction: q?.skill?.reaction ?? q?.persona?.reaction ?? 0.18 };
+  }, ...(OPT.faceK ? { K: { ...FACE, ...OPT.faceK } } : {}), trace: OPT.faceTrace ?? null }) : null;
 
   /** L'APPARIEMENT, une fois, au coup d'envoi : les gardiens ensemble, puis chaque joueur de champ au poste du cerveau le
    *  plus proche (les deux moteurs posent un 4-3-3 dans leur moitié). */
@@ -217,6 +226,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     st,
     /** Le journal du corps (`corps.journal()`), à chaque lecture : touches, passes, arrêts de jeu. */
     observer(evenements) {
+      face?.observer(evenements, EV);
       for (const ev of evenements) {
         if (ev.type === EV.TOUCHE) {
           dernierToucheur = ev.equipe;
@@ -320,10 +330,15 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
           }
         }
       }
+      face?.tick(etat, out, EV);
       return out;
     },
+    /** Le face-à-face en cours (porteur, défenseur, depuis, feintes), pour la page. */
+    get face() { return face?.actif ?? null; },
+    /** Le dernier face-à-face fini { issue, t (s), feintes, porteur, defenseur }, pour la page. */
+    get faceDerniere() { return face?.derniere ?? null; },
     /** Les compteurs de la première intention et les refus nommés du cerveau (st.deny), pour les bancs. */
-    stats() { return { ...stats, refus: { ...(st.deny ?? {}) } }; },
+    stats() { return { ...stats, refus: { ...(st.deny ?? {}) }, face: face?.stats() ?? null }; },
   };
 
   /**

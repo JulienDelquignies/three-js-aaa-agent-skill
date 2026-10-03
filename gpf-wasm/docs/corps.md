@@ -38,7 +38,7 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 - Il nous rend l'état (`gf_frame`), la pose de 13 articulations par joueur pour nos humains three.js (`gf_pose`) et un journal d'événements (`gf_events`).
 - Notre cerveau pose une intention par joueur ; le contrôleur du corps la lit à trois endroits : le placement, la décision du porteur, le pressing.
 - Sans intention posée, le match est celui de Google, au bit près.
-- Nous avons ajouté (`patch.py`, 10 étapes) ce que le navigateur n'a pas, le chrono réglable, les intentions, le journal, les attributs réglables, l'horloge du match, les fautes du cerveau, le relevé des animations.
+- Nous avons ajouté (`patch.py`, 13 étapes) ce que le navigateur n'a pas, le chrono réglable, les intentions, le journal, les attributs réglables, l'horloge du match, les fautes du cerveau, le relevé des animations, nos gestes sur demande (la touche à l'arrêt, leur départ au journal) et la garde du face-à-face.
 - Mesuré (`README.md`, « Mesures ») : 0,63-0,66 ms par pas dans Node (p95 1,2 ms) ; 354 s pour 90 vraies minutes ; le même match au bit près dans Node et dans Chromium.
 - Restent au corps : les gardiens, les coups de pied arrêtés, les gestes de contact (contrôle, amorti, tacle) et l'arbitrage de ses propres contacts.
 
@@ -212,6 +212,7 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | `_GfOnBall` (B) | `elizacontroller.cpp:348`, à la place de leur décision | PASSER, TIRER, CONDUIRE, ALLER, PRESSER | rend « décidé », sinon leur IA décide (117-166) |
 | `_GfPressMode` (C) | `elizacontroller.cpp:444, 446` | PRESSER, ALLER | 2 chasse forcée ; 1 jamais de chasse ; 0 la chasse du corps (171-178) |
 | `_GfPress` (C) | `elizacontroller.cpp:445` | — | vers le désigné adverse anticipé de 0,3 s, au sprint, aimant et hâte (183-192) |
+| `_GfGarde` (D) | `elizacontroller.cpp:401`, devant les réflexes | ALLER drapeau 1 | vrai : ni contrôle, ni amorti, ni intervention, ni tacle glissé ne sont mis en file — la garde du face-à-face (`patch.py`, étape 13) |
 
 ### 4.6 Ce que change chaque intention
 
@@ -224,11 +225,13 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | PASSER (3) | cible (id stable), drapeau 0 courte, 1 longue, 2 haute | leur IA (A et C ne lisent pas PASSER) | `_AddPass`, destinataire imposé ; cible hors de son équipe ou soi-même : leur IA |
 | TIRER (4) | x, y (point visé), puissance | leur IA | tir vers (x, y), puissance bornée à 0,3-1 |
 | CONDUIRE (5) | x, y, vitesse | leur IA | conduite vers (x, y), 0 à 8 m/s |
+| ALLER (1), drapeau 1 | x, y, vitesse | comme ALLER, sans ses réflexes de duel (D) : la garde du face-à-face | comme ALLER |
+| GESTE (6) | cible (le n° du geste), x, y, vitesse ; drapeau 0 avec touche (contrôle), 1 sans (déplacement) | leur IA | le geste de notre répertoire (`specialvar1` = son n°), tourné vers (x, y) ; s'il ne peut pas partir, le reste de la file (le contrôle réflexe, à la vitesse demandée) |
 
 - B n'est atteint que pour le désigné du match, à moins d'1 s du ballon (`elizacontroller.cpp:346`). Ni le gardien, ni le tireur d'un CPA, ni le joueur ballon en main n'y passent (139-304, 354-379) ; l'engagement fait exception, il se joue en jeu courant (§ 7.4).
 - Ballon mort ou CPA : aucune lecture ; les intentions restent posées et reprennent au coup de sifflet.
 - Pendant PASSER ou TIRER, la course demandée est l'arrêt : le contrôle freine le porteur en attendant le geste (`carte-cpp.md` § 3).
-- Les réflexes restent dans la file : nos intentions n'empêchent ni les contrôles ni les tacles du corps (401-416). L'aimant reste actif pour le désigné du match et pour qui vient de toucher le ballon (`playercontroller.cpp:587-664`).
+- Les réflexes restent dans la file : nos intentions n'empêchent ni les contrôles ni les tacles du corps (401-416) — sauf la garde (ALLER drapeau 1). Ils jugent un duel sur la seule géométrie (`CouldWinABallDuelLikeliness`, `playercontroller.cpp:262-291` : l'adversaire est-il entre le ballon et moi ?) : face à un porteur planté, le ballon devant lui, toujours gagnable — sans la garde, le défenseur d'un face-à-face piquait le ballon au premier pas (mesuré : 14 face-à-face sur 27). L'aimant reste actif pour le désigné du match et pour qui vient de toucher le ballon (`playercontroller.cpp:587-664`).
 - Mesuré (`README.md`, « Obéissance ») : placement à 0,3 m de la cible ; 64 % des passes reçues par le destinataire imposé.
 
 ## 5. Les animations
@@ -307,6 +310,14 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 - `gf_pose` lit les nœuds après l'animation et ses couches procédurales (`humanoid.cpp:787-1056`) : jambes accordées à la vraie vitesse, buste et tête tournés vers le ballon, un bras levé contre un adversaire à moins de 1,4 m, un « maillot tiré » s'il est devant. Ces bras sont décoratifs : ils ne changent rien au jeu.
 - Pendant les secondes gelées d'un arrêt (§ 7.4), la pose ne change pas.
 - Le relevé (`patch.py`, étape 10) compte chaque choix aux quatre étages. Résultats et causes : `animations.md` (240 fichiers sur 284 joués avec notre cerveau) et `animations-releve.md`.
+- **Nos gestes** (`gestes/*.anim`, n° 101 à 116, convertis du duel par `outils/vers-gpf.mjs`) portent `specialvar1` = leur n° : seule l'intention GESTE les demande. À l'arrêt, `NeedTouch` refusait leur touche (« when idle, don't want to touch the ball every frame ») ; l'étape 11 la rend à toute commande `specialVar1 ≥ 100`. Le journal note le départ de chacun (`GF_EV_GESTE`, étape 12) : le cerveau juge la morsure au contact de la feinte vraiment jouée.
+- Leur racine est immobile : leur classe de vitesse est l'arrêt, à l'entrée comme à la sortie (`incomingVelocity_Strict`). Ils ne partent que d'un porteur sous 1,8 m/s ; demandés plus vite, le contrôle réflexe freine d'abord (à la vitesse demandée, 0).
+
+### 5.6 Une animation va toujours au bout
+
+- `HumanoidBase::Process` (`humanoidbase.cpp:625-715`) ne choisit la suivante qu'à la dernière image de la courante (`interruptAnim = Switch`), ou sur un croche-pied ; la remise en file (`mayReQueue`) est éteinte dans GRF. Une commande ne coupe jamais un geste : elle attend sa fin, et c'est l'intention posée à cet instant qui choisit la suite.
+- Pour le cerveau : la suite d'un geste se pose dès qu'il est lancé (laissé en GESTE jusqu'à sa fin, le corps le rejoue — mesuré : six croquetas d'affilée) ; le geste suivant se pose un tick avant la fin du courant, et le corps l'enchaîne sans trou.
+- Un pas est une animation de sa classe de vitesse. Sous 1,8 m/s (`idleDribbleSwitch`), le joueur pivote sur place ; au-dessus, une foulée de la classe « conduite » (≈ 3,5 m/s) couvre près d'un mètre avant de rendre la main. Un défenseur ne fait donc pas un pas de 0,35 m : un jab devenait un aller-retour d'un mètre (mesuré : de 1,2 à 2,45 m du porteur). La garde du face-à-face reste plantée sous 0,45 m d'écart ; elle bouge pour la morsure et quand le ballon bouge.
 
 ## 6. Les touches et le ballon
 
@@ -587,7 +598,7 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 | 9 | `referee.hpp`, `referee.cpp` | `Referee::GfFaute` | la Loi 12 du cerveau |
 | 10 | `humanoid.cpp`, `humanoidbase.cpp` | `gf_anim_compte` aux 4 étages | le relevé des animations |
 
-- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 10 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine. Leurs ajouts aux en-têtes (6, 7, 9) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
+- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 13 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine (11 ne joue que pour `specialVar1 ≥ 100`, que seule l'intention GESTE pose ; 13 que pour ALLER au drapeau 1). Leurs ajouts aux en-têtes (6, 7, 9, 13) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
 
 ### 10.3 Les fonctions (`api/gf_api.cpp`, toutes dans `extern "C"`)
 

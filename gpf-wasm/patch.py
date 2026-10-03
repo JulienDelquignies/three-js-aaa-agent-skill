@@ -243,4 +243,29 @@ sub('onthepitch/player/humanoid/humanoid.cpp',
     '''bool Humanoid::NeedTouch(int animID, const PlayerCommand &command) {
   DO_VALIDATION;
   if (command.useSpecialVar1 && command.specialVar1 >= 100) return true;  // [gf-intent] un geste de notre répertoire''')
+# 12. LE JOURNAL DIT QUAND UN GESTE DE NOTRE RÉPERTOIRE DÉMARRE (GF_EV_GESTE) : le face-à-face du cerveau juge la morsure au contact
+#     de la feinte — il lui faut l'instant où le corps l'a vraiment lancée. Noté au relevé des animations (étape 10).
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''    gf_anim_compte(2, selectedAnimID);  // [gf-intent] le relevé des animations''',
+    '''    gf_anim_compte(2, selectedAnimID);  // [gf-intent] le relevé des animations
+    { const int sv = currentAnim.anim->GetVariableCache().specialvar1(); if (sv >= 100) gf_event(GF_EV_GESTE, team->GetID(), CastPlayer()->GetStableID(), (float)sv); }  // [gf-intent] le geste''')
+# 13. LA GARDE DU FACE-À-FACE (intention ALLER drapeau 1, api/intents.cpp) : le défenseur tient sa distance face au porteur planté.
+#     Ses réflexes de duel (contrôle, amorti, intervention, tacle glissé) jugent le ballon gagnable sur la seule géométrie
+#     (« l'adversaire est-il entre le ballon et moi ? ») : face à un porteur planté, ballon devant lui, toujours — il le piquait au
+#     premier pas. Ils se taisent pendant la garde ; la fente du cerveau (PRESSER) et la sortie du porteur les lui rendent.
+sub('onthepitch/player/controller/elizacontroller.hpp',
+    '''    void _GfPress(bool &forceMagnet, bool &extraHaste);''',
+    '''    void _GfPress(bool &forceMagnet, bool &extraHaste);
+    bool _GfGarde();''')
+sub('onthepitch/player/controller/elizacontroller.cpp',
+    '''  if (match->IsInPlay() && !match->IsInSetPiece()) {
+    DO_VALIDATION;
+
+    // ball control?
+    _BallControlCommand(commandQueue, false, false, false); // last param true == enable sticky run direction.''',
+    '''  if (match->IsInPlay() && !match->IsInSetPiece() && !_GfGarde()) {  // [gf-intent] D : la garde du face-à-face
+    DO_VALIDATION;
+
+    // ball control?
+    _BallControlCommand(commandQueue, false, false, false); // last param true == enable sticky run direction.''')
 print('patch: ok')

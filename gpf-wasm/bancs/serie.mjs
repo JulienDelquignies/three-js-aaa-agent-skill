@@ -27,7 +27,7 @@ mkdirSync(DOSSIER, { recursive: true });
 
 // l'empreinte du code : tout ce qui change un match
 const empreinte = createHash('sha1');
-for (const f of ['cerveau.mjs', 'contrat.mjs', 'corps.mjs', 'out/gpf.wasm', 'bancs/match-cerveau.mjs']) empreinte.update(readFileSync(join(RACINE, f)));
+for (const f of ['cerveau.mjs', 'face.mjs', 'contrat.mjs', 'corps.mjs', 'out/gpf.wasm', 'bancs/match-cerveau.mjs']) empreinte.update(readFileSync(join(RACINE, f)));
 const CODE = empreinte.digest('hex').slice(0, 10);
 
 const travaux = [];
@@ -59,7 +59,7 @@ const num = (re, s, k = 1) => { const m = s.match(re); return m ? +m[k] : NaN; }
 const lignes = [];
 for (const nom of Object.keys(VARIANTES)) {
   const M = travaux.filter(t => t.nom === nom).map(t => readFileSync(t.fichier, 'utf8')).filter(s => s.includes('tenue avant la passe'));
-  const a = { n: M.length, buts: 0, nuls: 0, tirs: 0, xg: 0, butsTir: 0, jaunes: 0, fautes: 0, csc: 0, penalties: 0, eff: 0, passes: 0, reuss: 0, une: 0, surPasse: 0, butsJeu: 0, tele: 0, talon: 0, passesT: 0, tirsUne: 0, tirsT: 0, tetes: 0, butsTete: 0 };
+  const a = { n: M.length, buts: 0, nuls: 0, tirs: 0, xg: 0, butsTir: 0, jaunes: 0, fautes: 0, csc: 0, penalties: 0, eff: 0, passes: 0, reuss: 0, une: 0, surPasse: 0, butsJeu: 0, tele: 0, talon: 0, passesT: 0, tirsUne: 0, tirsT: 0, tetes: 0, butsTete: 0, faces: 0 };
   for (const s of M) {
     const sc = s.match(/score (\d+)-(\d+)/); a.buts += +sc[1] + +sc[2]; if (sc[1] === sc[2]) a.nuls++;
     a.csc += num(/dont (\d+) contre son camp/, s) || 0;
@@ -77,13 +77,14 @@ for (const nom of Object.keys(VARIANTES)) {
     const ta = s.match(/talonnades : (\d+)\/(\d+)/); if (ta) { a.talon += +ta[1]; a.passesT += +ta[2]; }
     const tu = s.match(/· tirs (\d+)\/(\d+) · têtes (\d+)/); if (tu) { a.tirsUne += +tu[1]; a.tirsT += +tu[2]; a.tetes += +tu[3]; }
     if (bj) a.butsTete += JSON.parse(bj[1])['tête'] ?? 0;
+    a.faces += num(/face-à-face : (\d+) ·/, s) || 0;
   }
   const k = 90 / MIN, m = (x) => ((x / Math.max(1, a.n)) * k).toFixed(1);
   lignes.push({ nom, a, k, m });
 }
 const pc = (x, y) => (y ? (100 * x / y).toFixed(0) + ' %' : '—');
-console.log(`\n${'variante'.padEnd(12)} matchs  buts   csc  b/xG  tirs  fautes jaunes pén.  passes  réussite  1-touche  sur-passe  talon.  tirs 1T  têtes  b.tête  eff.   nuls  télép.`);
+console.log(`\n${'variante'.padEnd(12)} matchs  buts   csc  b/xG  tirs  fautes jaunes pén.  passes  réussite  1-touche  sur-passe  talon.  tirs 1T  têtes  b.tête  eff.   nuls  télép.  f-à-f`);
 for (const { nom, a, m } of lignes) {
-  console.log(`${nom.padEnd(12)} ${String(a.n).padStart(5)}  ${m(a.buts).padStart(4)}  ${m(a.csc).padStart(4)}  ${(a.butsTir / Math.max(1e-9, a.xg)).toFixed(2).padStart(4)}  ${m(a.tirs).padStart(4)}  ${m(a.fautes).padStart(5)}  ${m(a.jaunes).padStart(5)}  ${m(a.penalties).padStart(4)}  ${m(a.passes).padStart(6)}  ${pc(a.reuss, a.passes).padStart(8)}  ${(a.une / Math.max(1, a.n)).toFixed(0).padStart(6)} %  ${pc(a.surPasse, a.butsJeu).padStart(9)}  ${pc(a.talon, a.passesT).padStart(6)}  ${pc(a.tirsUne, a.tirsT).padStart(7)}  ${m(a.tetes).padStart(5)}  ${pc(a.butsTete, a.butsJeu).padStart(6)}  ${(a.eff / Math.max(1, a.n)).toFixed(0).padStart(3)} %  ${String(a.nuls).padStart(2)}/${a.n}  ${a.tele}`);
+  console.log(`${nom.padEnd(12)} ${String(a.n).padStart(5)}  ${m(a.buts).padStart(4)}  ${m(a.csc).padStart(4)}  ${(a.butsTir / Math.max(1e-9, a.xg)).toFixed(2).padStart(4)}  ${m(a.tirs).padStart(4)}  ${m(a.fautes).padStart(5)}  ${m(a.jaunes).padStart(5)}  ${m(a.penalties).padStart(4)}  ${m(a.passes).padStart(6)}  ${pc(a.reuss, a.passes).padStart(8)}  ${(a.une / Math.max(1, a.n)).toFixed(0).padStart(6)} %  ${pc(a.surPasse, a.butsJeu).padStart(9)}  ${pc(a.talon, a.passesT).padStart(6)}  ${pc(a.tirsUne, a.tirsT).padStart(7)}  ${m(a.tetes).padStart(5)}  ${pc(a.butsTete, a.butsJeu).padStart(6)}  ${(a.eff / Math.max(1, a.n)).toFixed(0).padStart(3)} %  ${String(a.nuls).padStart(2)}/${a.n}  ${String(a.tele).padStart(5)}  ${m(a.faces).padStart(5)}`);
 }
 console.log(`réel visé : buts 2,75 · b/xG ≈ 1 · tirs 26 ± 7 · fautes 21,5 · jaunes 3,9 · pén. ≈ 0,3 · passes ≈ 1 000 (≈ 17 par minute effective) à 80-85 % · une touche 15-25 % · sur passe ≈ 75 % · talonnades < 1 % · tirs en une touche ≈ 30 % (ordre de grandeur) · buts de la tête ≈ 15-20 % · effectif ≈ 64 % · nuls ≈ 25 % · ${Math.round((Date.now() - t0) / 1000)} s`);

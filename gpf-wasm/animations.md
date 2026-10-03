@@ -159,6 +159,12 @@ Côté C++, environ 15 lignes dans `api/intents.cpp` :
 
 Le numéro passe dans les bits hauts du champ `flags` de l'intention. On ne touche pas à la structure : c'est le piège des en-têtes (`carte-cpp.md`).
 
+**Fait le 3 octobre, pour le face-à-face** (`docs/adaptateur.md` § 7.10). C'est l'intention GESTE (6) : le numéro passe dans le champ `target`, la famille (contrôle ou déplacement) dans `flags`. Deux surprises, corrigées en C++ :
+- à l'arrêt, `NeedTouch` refusait la touche (étape 11) ;
+- le cerveau doit savoir quand le geste part vraiment : c'est le journal, `GF_EV_GESTE` (étape 12).
+
+Ces gestes ont une racine immobile : ils ne partent que d'un porteur sous 1,8 m/s. Une animation ne se coupe jamais : la suite se pose dès que le geste est lancé (`docs/corps.md` § 5.6).
+
 Cela suffit pour les gestes à **une seule touche de balle ou sans touche** :
 - les crochets ;
 - le râteau ;
@@ -187,7 +193,9 @@ Cela suffit pour les gestes à **une seule touche de balle ou sans touche** :
 
 ### Fabriquer l'animation à partir de nos gestes
 
-Nos gestes vivent sur notre squelette de 22 os. Le portage du lot L0 (`gpf-anim.js`) traduit une animation du corps vers nos humains. Il faut l'outil inverse, qui :
+**L'outil existe depuis le 3 octobre** : `outils/vers-gpf.mjs`, prouvé exact à l'aller-retour (0,0000°, 0,00 mm). Il a produit les 16 gestes du face-à-face (`gestes/*.anim`, n° 101 à 116, cheville à 24-25 cm du ballon au contact). En match, 89 % des gestes demandés partent (4 graines × 20 min) ; le râteau et la roulette ratent le plus, et la cause est à mesurer.
+
+Nos gestes vivent sur notre squelette de 22 os. Le portage du lot L0 (`gpf-anim.js`) traduit une animation du corps vers nos humains. L'outil inverse :
 - échantillonne notre geste à 100 Hz ;
 - ramène chaque rotation dans le repère des 14 articulations du corps ;
 - donne la trajectoire de la racine en mètres ;

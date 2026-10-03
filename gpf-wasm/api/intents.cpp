@@ -197,6 +197,17 @@ int ElizaController::_GfPressMode() {
   return gi->kind == GF_MOVE ? 1 : 0;
 }
 
+// ── D. LA GARDE (le face-à-face du cerveau, face.mjs) ──────────────────────────────────────────────────────────────────────────
+// ALLER drapeau 1 : le défenseur tient sa garde face au porteur planté et ne va pas au ballon de lui-même — ni contrôle, ni amorti,
+// ni intervention, ni tacle glissé. Ses réflexes jugent le duel sur la seule géométrie (CouldWinABallDuelLikeliness : l'adversaire
+// est-il entre le ballon et moi ?) ; face à un porteur planté, le ballon devant lui, ils le voient toujours gagnable et le défenseur
+// le piquait au premier pas — mesuré : 14 face-à-face sur 27 finis ainsi, pendant la garde. C'est la loi du face-à-face qui décide
+// quand il se jette (la fente : PRESSER, les réflexes reviennent) ; la sortie du porteur les lui rend aussi.
+bool ElizaController::_GfGarde() {
+  const GfIntent *gi = gf_intent(CastPlayer());
+  return gi && gi->kind == GF_MOVE && (gi->flags & 1);
+}
+
 // Le presseur élu fond sur le porteur adverse : vers sa position anticipée (0,3 s), au sprint, avec l'aimant au ballon et la
 // hâte du contrôleur — ce qu'Eliza fait pour son joueur désigné quand il « n'abandonne pas un duel ». Le tacle reste à ses
 // réflexes (`_InterfereCommand`, `_SlidingCommand`), dosés par la probabilité de gagner le duel.

@@ -19,6 +19,7 @@ class Team;
 enum GfIntentKind {
   GF_AI = 0,       // le contrôleur du moteur décide (Eliza)
   GF_MOVE = 1,     // aller en (x, y) à `speed` m/s — placement, appel, repli ; pas de chasse du porteur
+                   // drapeau 1 : la garde du face-à-face — ni contrôle, ni intervention, ni tacle glissé de lui-même
   GF_PRESS = 2,    // presser le porteur adverse, en partant vers (x, y) — drapeau 0 : la chasse forcée (fondre, aimanté) ;
                    // drapeau 1 : la chasse du corps (sa logique de pressing : position de défense côté but, aimant à portée)
   GF_PASS = 3,     // porteur : passer à `target` (id stable) — flags 0 courte, 1 longue, 2 haute
@@ -58,6 +59,7 @@ enum GfEventType {
   GF_EV_SETPIECE = 5,  // équipe qui reprend ; a = e_GameMode
   GF_EV_PASS = 6,      // la passe au pied, au contact : a = geste (e_FunctionType), b = destinataire visé (id stable ou -1),
                        // c = norme de la touche (m/s), d = destinataire imposé par la commande (id stable ou -1)
+  GF_EV_GESTE = 7,     // un geste de notre répertoire démarre (intention GESTE) : a = son numéro (specialvar1)
 };
 static const int GF_EV_SIZE = 8;
 void gf_event(int type, int team, int player, float a = 0, float b = 0, float c = 0, float d = 0);
