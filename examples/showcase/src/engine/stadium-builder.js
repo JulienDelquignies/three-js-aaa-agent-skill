@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { texture, uv, vec2 } from 'three/tsl';
 import { drawCrest, drawSponsorStrip } from './club-theme.js';
 import { buildFurnitureItem } from './furniture-kit.js';
 import { sweep } from './meshkit.js';
@@ -40,10 +41,19 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
   // in texture space, leaving the goals ~2 m behind the drawn line.)
   const { L, W } = model.pitch;
   const MARGIN = 3, PW2 = L + 2 * MARGIN, PH2 = W + 2 * MARGIN;
-  const pc = document.createElement('canvas'); pc.width = 1110; pc.height = 740; const pg = pc.getContext('2d');
+  const pc = document.createElement('canvas'); pc.width = 2048; pc.height = Math.round(2048 * PH2 / PW2); const pg = pc.getContext('2d');
   const kx = pc.width / PW2, kz = pc.height / PH2;
   const X = (xm) => (xm + PW2 / 2) * kx, Z = (zm) => (zm + PH2 / 2) * kz;
-  for (let i = 0; i < 18; i++) { pg.fillStyle = i % 2 ? '#3f9a3f' : '#368636'; pg.fillRect(i / 18 * pc.width, 0, pc.width / 18 + 1, pc.height); }
+  // LA PELOUSE (26/09 : « la pelouse ») — la tonte en DAMIER des grands stades (bandes en travers, croisées d'un passage plus léger en
+  // long), le grain de l'herbe (touffes claires/sombres), l'usure devant les buts et au rond central ; le détail de près vit dans le
+  // shader (grain tuilé ×). Graine fixe : la même pelouse à chaque chargement.
+  let gs = 12345; const gr = () => ((gs = (gs * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 18; i++) { pg.fillStyle = i % 2 ? '#3d933b' : '#347f33'; pg.fillRect(i / 18 * pc.width, 0, pc.width / 18 + 1, pc.height); }
+  for (let j = 0; j < 8; j++) if (j % 2) { pg.fillStyle = 'rgba(255,255,255,0.035)'; pg.fillRect(0, j / 8 * pc.height, pc.width, pc.height / 8 + 1); }
+  for (let i = 0; i < 90000; i++) { const l = gr(); pg.fillStyle = l < 0.5 ? `rgba(20,45,15,${0.06 + gr() * 0.1})` : `rgba(150,200,110,${0.04 + gr() * 0.07})`; pg.fillRect(gr() * pc.width, gr() * pc.height, 1 + gr() * 2.5, 1 + gr() * 2.5); }
+  const usure = (xm, zm, rx, rz, a) => { const g = pg.createRadialGradient(X(xm), Z(zm), 0, X(xm), Z(zm), rx * kx); g.addColorStop(0, `rgba(120,105,60,${a})`); g.addColorStop(1, 'rgba(120,105,60,0)'); pg.save(); pg.translate(X(xm), Z(zm)); pg.scale(1, rz / rx); pg.translate(-X(xm), -Z(zm)); pg.fillStyle = g; pg.fillRect(X(xm) - rx * kx, Z(zm) - rx * kx, 2 * rx * kx, 2 * rx * kx); pg.restore(); };
+  for (const sd of [-1, 1]) { usure(sd * (L / 2 - 2.5), 0, 5, 3, 0.28); usure(sd * (L / 2 - (model.pitch.spot ?? 11)), 0, 3, 3, 0.12); usure(sd * (L / 2 - 0.3), 0, 1.6, 2.6, 0.3); }
+  usure(0, 0, 4, 4, 0.1);
   pg.strokeStyle = '#eef4ee'; pg.lineWidth = Math.max(2, 0.12 * kx);
   pg.strokeRect(X(-L / 2), Z(-W / 2), L * kx, W * kz);                                   // lignes de touche + de but
   pg.beginPath(); pg.moveTo(X(0), Z(-W / 2)); pg.lineTo(X(0), Z(W / 2)); pg.stroke();    // médiane
@@ -70,9 +80,15 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
   for (const cx of [-L / 2, L / 2]) for (const cz of [-W / 2, W / 2]) {                   // arcs de corner (1 m)
     pg.beginPath(); pg.arc(X(cx), Z(cz), 1 * kx, 0, 7); pg.stroke();
   }
-  const ptex = new THREE.CanvasTexture(pc); ptex.colorSpace = THREE.SRGBColorSpace; disposables.push(ptex);
+  const ptex = new THREE.CanvasTexture(pc); ptex.colorSpace = THREE.SRGBColorSpace; ptex.anisotropy = 8; disposables.push(ptex);
+  // le GRAIN de près : un bruit 256² tuilé tous les 1,6 m module la couleur (±12 %) — à 20 m la grue lit des brins, pas un aplat
+  const dc = document.createElement('canvas'); dc.width = dc.height = 256; const dg = dc.getContext('2d'); dg.fillStyle = '#808080'; dg.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 9000; i++) { const v = Math.floor(90 + gr() * 90); dg.fillStyle = `rgb(${v},${v},${v})`; dg.fillRect(gr() * 256, gr() * 256, 1, 2 + gr() * 4); }
+  const dtex = new THREE.CanvasTexture(dc); dtex.wrapS = dtex.wrapT = THREE.RepeatWrapping; dtex.anisotropy = 8; disposables.push(dtex);
   const pgeo = new THREE.PlaneGeometry(PW2, PH2); pgeo.rotateX(-Math.PI / 2); disposables.push(pgeo);
-  const pitch = new THREE.Mesh(pgeo, mat({ map: ptex, roughness: 0.95 })); pitch.receiveShadow = true;
+  const pmat = mat({ map: ptex, roughness: 0.95 });
+  pmat.colorNode = texture(ptex).mul(texture(dtex, uv().mul(vec2(PW2 / 1.6, PH2 / 1.6))).r.mul(0.24).add(0.88));
+  const pitch = new THREE.Mesh(pgeo, pmat); pitch.receiveShadow = true;
   pitch.name = 'pelouse';                                            // NAMED: stadium-night finds it to aim the key light at the pitch alone
   group.add(pitch);
   const agеo = new THREE.PlaneGeometry(L + 2 * (model.apron + model.stands[0].rows * model.rowD + 8), W + 2 * (model.apron + model.stands[0].rows * model.rowD + 8));
@@ -117,13 +133,13 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
       }
     }
     seats.count = n; seats.instanceMatrix.needsUpdate = true; seats.instanceColor.needsUpdate = true;
-    seats.castShadow = archCast; group.add(seats); disposables.push(seats);
+    seats.castShadow = archCast; seats.name = 'sieges'; group.add(seats); disposables.push(seats);   // NOMMÉ : crowd.js y assoit le public
     if (s.roof) {                                                                              // roof slab on back columns
       const top = ((s.deck2 ? s.rows + 2 + s.deck2 : s.rows) + 1) * model.rowH + 3;
       const back = inner + (s.deck2 ? s.rows + 2 + s.deck2 : s.rows) * model.rowD + 0.6;
       const c = s.along === 'x' ? [0, top, s.sign * (inner + back) / 2] : [s.sign * (inner + back) / 2, top, 0];
       const h = s.along === 'x' ? [s.len / 2 + 1, 0.12, (back - inner) / 2 + 1] : [(back - inner) / 2 + 1, 0.12, s.len / 2 + 1];
-      box(c, h, mat({ color: 0x9aa1a8, roughness: 0.8, metalness: 0.15 }));   // mid-tone: light metal blows white in aerials
+      box(c, h, mat({ color: 0x9aa1a8, roughness: 0.8, metalness: 0.15 })).name = 'toit';   // mid-tone: light metal blows white in aerials — NOMMÉ : une caméra au-dessus le masque (il boucherait le cadre)
       for (const e of [-1, 1]) { const cc = s.along === 'x' ? [e * (s.len / 2 - 1), top / 2, s.sign * back] : [s.sign * back, top / 2, e * (s.len / 2 - 1)]; box(cc, [0.15, top / 2, 0.15], concrete); }
     }
   }
@@ -341,7 +357,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
             sim.setMatrixAt(n2++, m4);
           }
         }
-        sim.count = n2; sim.instanceMatrix.needsUpdate = true;
+        sim.count = n2; sim.instanceMatrix.needsUpdate = true; sim.name = 'sieges';
         group.add(sim); disposables.push(sim);
       }
     }

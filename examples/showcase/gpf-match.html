@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Match 11c11 — notre cerveau, leurs corps</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <style>
       :root { color-scheme: dark; } * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0c; }
@@ -14,22 +16,15 @@
       .titre { position: fixed; right: 12px; top: 12px; z-index: 20; font: 600 12px/1.35 system-ui; color: #e8ebf2; padding: 8px 12px; border-radius: 10px;
         background: rgba(12,16,24,.6); border: 1px solid rgba(255,255,255,.1); max-width: 60vw; text-align: right; }
       .titre span { color: #9aa2b1; font-weight: 400; }
-      #faceSaut { position: fixed; right: 12px; bottom: 12px; z-index: 20; font: 600 12px/1 system-ui; color: #e8ebf2; padding: 10px 14px; border-radius: 10px;
-        background: rgba(12,16,24,.72); border: 1px solid rgba(255,255,255,.18); cursor: pointer; display: none; }
-      #faceSaut:hover { background: rgba(40,52,72,.85); }
-      #gesteSaut { position: fixed; right: 12px; bottom: 54px; z-index: 20; font: 600 12px/1 system-ui; color: #e8ebf2; padding: 10px 14px; border-radius: 10px;
-        background: rgba(12,16,24,.72); border: 1px solid rgba(255,255,255,.18); cursor: pointer; display: none; }
-      #gesteSaut:hover { background: rgba(40,52,72,.85); }
       /* téléphone : le titre sans la liste des paramètres, des encarts plus petits — le terrain d'abord */
-      @media (max-width: 640px) { .titre { font-size: 11px; padding: 6px 10px; } .titre span { display: none; } #gpfHud { font-size: 11px; padding: 6px 10px; left: 8px; bottom: 8px; max-width: calc(100vw - 150px); } #faceSaut { right: 8px; bottom: 8px; padding: 8px 10px; font-size: 11px; } #gesteSaut { right: 8px; bottom: 44px; padding: 8px 10px; font-size: 11px; } }
+      @media (max-width: 900px) { .titre { display: none; } }
+      @media (max-width: 640px) { #gpfHud { font-size: 11px; padding: 6px 10px; left: 8px; bottom: 8px; max-width: calc(100vw - 16px); } }
     </style>
   </head>
   <body>
     <div id="app"></div>
-    <div class="titre hud">Notre cerveau, les corps de Gameplay Football, nos humains<br><span>le moteur de match de la skill décide (lot L2), leur moteur compilé en WebAssembly exécute · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> notre cerveau contre leur IA · <code>?gestes=saut</code> ou la touche G : jusqu’au prochain geste en course (croqueta, crochet, feinte de corps, passement) · <code>?gestes=0</code> sans eux · <code>?technicien=0:9</code> un technicien (Olmo) au poste 9 de l’équipe de gauche · <code>?artiste=1:7</code> une anomalie (Taarabt) · <code>?face=0</code> sans le face-à-face des anomalies · <code>?face=saut</code> ou la touche F : jusqu’au prochain · <code>?arrets=0</code> remises sans temps mort · <code>?seed=7</code> · <code>?cam=pres|tele</code> · <code>?vitesse=2</code> · <code>?ombres=0</code> · <code>?bloom=0</code> · <code>?dpr=1</code> · <code>?gpu=perf</code> · <code>?diag</code> · <code>?orbit</code> · <code>?webgl</code></span></div>
+    <div class="titre hud">Notre cerveau, les corps de Gameplay Football, nos humains<br><span>lot L2 (le cerveau) et L5 (l’image) · ⚙ pour les réglages et les raccourcis</span></div>
     <div id="gpfHud">chargement du moteur…</div>
-    <button id="faceSaut" class="hud" type="button" title="Avance le match à toute vitesse jusqu'au prochain face-à-face (touche F)">Prochain face-à-face ⏭</button>
-    <button id="gesteSaut" class="hud" type="button" title="Avance le match à toute vitesse jusqu'au prochain geste en course (touche G)">Prochain geste ⏭</button>
     <div id="loading">COUP D’ENVOI…</div>
     <script type="module" src="./src/entry-gpf-match.js"></script>
   </body>

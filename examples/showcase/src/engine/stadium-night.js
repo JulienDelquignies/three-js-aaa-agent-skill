@@ -88,7 +88,7 @@ function mastPositions(model, L, W) {
  * AABB into LIGHT VIEW SPACE and bound it there. Local coordinates are exact here because the group
  * is a pure translation — rotations, and every extent measured off the light, are translation-invariant.
  */
-function fitShadowToPitch(sun, L, W) {
+export function fitShadowToPitch(sun, L, W) {
   const view = new THREE.Matrix4().lookAt(sun.position, sun.target.position, UP)
     .setPosition(sun.position).invert();
   const hx = L / 2 + PITCH_PAD, hz = W / 2 + PITCH_PAD, p = new THREE.Vector3();
