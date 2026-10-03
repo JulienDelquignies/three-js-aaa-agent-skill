@@ -487,7 +487,7 @@ export function mettreEnPage(texte, alphabet, max = 16) {
 // LES OPTIONS D'UN JOUEUR, regroupées par quatre dans des vec4 du matériau (o0-o4) : three range chaque NOMBRE d'un matériau dans la clé de
 // son programme (0 ou « non nul » : RenderObject.getMaterialCacheKey) — dix-neuf options à 0 ou 1, c'étaient autant de programmes que de
 // combinaisons portées (mesuré le 3 octobre : 110 programmes au lieu de 70) ; un objet, lui, compte pour « {} » quelles que soient ses valeurs
-const OPTIONS = ['rentre', 'longues', 'garder', 'cuissard', 'hautes', 'basses', 'antider', 'strapC', 'bandageG', 'bandageD', 'gants', 'brassard', 'poignetG', 'poignetD', 'bottesClaires', 'motifShort', 'motifChaussettes', 'nomL', 'chifL', 'gantsGardien'];
+const OPTIONS = ['rentre', 'longues', 'garder', 'cuissard', 'hautes', 'basses', 'antider', 'strapC', 'bandageG', 'bandageD', 'gants', 'brassard', 'poignetG', 'poignetD', 'bottesClaires', 'motifShort', 'motifChaussettes', 'nomL', 'chifL', 'gantsGardien', 'Lpeau'];
 const OPT = Object.fromEntries(OPTIONS.map((n, i) => [n, [`o${i >> 2}`, 'xyzw'[i & 3]]]));
 const N_OPT = Math.ceil(OPTIONS.length / 4);
 const sous = (a, b, x) => float(1).sub(smoothstep(a, b, x));   // 1 sous a, 0 au-dessus de b
@@ -516,6 +516,10 @@ export function couleurTenue({ masques, alphabet, desc, mains }) {
   const surBras = step(0.215, abs(P.x)).mul(sous(0.09, 0.1, dBras));   // sur le bras (pas le flanc du torse, sous l'aisselle)
   const coteJ = (g, d) => g.mul(gauche).add(d.mul(un(gauche)));         // l'option du côté de ce texel
   let col = base;
+  // 0. LA PEAU (l'apparence, gpf-apparence.js) : la teinte du joueur sur la peau du corps (bras, mains, jambes), portée par le détail de la
+  //    texture d'origine (sa luminance rapportée à celle de sa peau, `Lpeau`) — la tête reçoit la même
+  const Lp = f('Lpeau'), zonePeau = clamp(mA.r.add(mA.g).add(mA.b), 0, 1).mul(step(0.0001, Lp));
+  col = mix(col, c('cPeau').mul(clamp(luminance(base).div(max(Lp, 0.0001)), 0.4, 1.6)), zonePeau);
   // 1. LE MAILLOT RENTRÉ : le bas du maillot, sous la ceinture du short (0,953 m), prend le short — et son motif
   const ms = f('motifShort');
   const shortB = est(ms, 1).mul(dans(abs(P.x), 0.135, 0.165)).add(est(ms, 2).mul(step(P.y, 0.635))).add(est(ms, 3).mul(step(P.x, 0)));
@@ -643,12 +647,12 @@ const teinte = (t, equipe) => (typeof t === 'number' ? t : TEINTES[t]?.hex ?? eq
  * POSER UN JOUEUR sur son matériau : sa tenue d'équipe (texture, couleurs), son corps (peau, chaussures claires ou sombres), son équipement,
  * son nom et son numéro (mis en page sur l'alphabet). Rien n'est recompilé : des valeurs.
  */
-export function poserJoueur(m, { tenueTex, forme, T0, peau, bottesClaires, equip: q, nom, numero, alphabet }) {
+export function poserJoueur(m, { tenueTex, forme, T0, peau, luminancePeau = 0, bottesClaires, equip: q, nom, numero, alphabet }) {
   const T = completer(T0), set = (k, hex) => m[k].setHex(hex, THREE.SRGBColorSpace), o = (n, v) => { const [k, c] = OPT[n]; m[k][c] = +v; };
   m.tenue = tenueTex; m.forme = forme;
   set('cShort', T.short); set('cShortB', T.shortB); set('cChaussette', T.chaussettes); set('cBande', T.bande); set('cNum', T.num); set('cNumBord', T.numBord);
   o('motifShort', CODE_SHORT[T.motifShort] ?? 0); o('motifChaussettes', CODE_CHAUSSETTES[T.motifChaussettes] ?? 0);
-  m.cPeau.copy(peau); o('bottesClaires', bottesClaires ? 1 : 0);
+  m.cPeau.copy(peau); o('Lpeau', luminancePeau); o('bottesClaires', bottesClaires ? 1 : 0);
   // les manches : la longue prend la couleur de la manche courte, de son côté (les moitiés, les quartiers, le raglan) ; le sous-maillot la sienne
   const sousM = q.manches === 'sous-maillot', manche = (x) => (T.motif === 'cerceaux' || T.motif === 'damier' ? T.c1 : motif(T.motif, x, 1.25, 0) ? T.c2 : T.c1);
   const cs = teinte(q.couleurSous ?? 'noir', T.c1);

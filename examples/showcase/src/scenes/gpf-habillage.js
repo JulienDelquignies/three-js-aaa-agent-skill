@@ -1,5 +1,6 @@
 import { TENUES, MOTIFS, MOTIFS_SHORT, MOTIFS_CHAUSSETTES, CHAUSSURES, EQUIPEMENT, TEINTES, GANTS_GARDIEN, conflit } from './gpf-maillots.js';
 import { CARRURES, carrureDe } from './gpf-morphologie.js';
+import { TEINTS, COULEURS_CHEVEUX, NOMS_COUPES, NOMS_PILOSITES, NOMS_ORIGINES } from './gpf-apparence.js';
 
 // gpf-habillage.js — L'HABILLAGE TÉLÉ DE /match11 (lot L5 « L'image » ; EX-04 la régie, EX-38/42 les statistiques en direct). Du DOM
 // par-dessus le canevas, rien dans la scène :
@@ -399,6 +400,20 @@ export class Habillage {
         return `<label>Taille (cm)${num('taille', M.taille, 150, 210)}</label><label>Poids (kg)${num('poids', M.poids, 45, 130)}</label>
         <label>Carrure<select data-morpho="carrure">${Object.entries(CARRURES).map(([c, x]) => `<option value="${c}" ${carrureDe(M.taille, M.poids) === c ? 'selected' : ''}>${x.nom}</option>`).join('')}</select></label>
         <p style="margin:2px 0 6px">${esc(m.morphologieTexte(k))}. La taille compte aussi pour le corps (la hauteur de ses touches de balle).</p>`; })()}
+      ${(() => { const A = m.tetes && m.apparenceJoueur?.(k); if (!A) return ''; const V = A.visage;
+        const opt = (o, v) => Object.entries(o).map(([c, x]) => `<option value="${c}" ${String(v) === c ? 'selected' : ''}>${esc(x)}</option>`).join('');
+        const teintes = Object.fromEntries(TEINTS.map((t, i) => [t, `Teinte ${i + 1}${i === 0 ? ' (la plus claire)' : i === 9 ? ' (la plus foncée)' : ''}`]));
+        const pastille = (h) => `<i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${h};vertical-align:middle;margin-right:6px;border:1px solid rgba(255,255,255,.25)"></i>`;
+        return `<div class="gh-sous" style="font-size:12px;opacity:.85">Son apparence (le visage de la carrière)</div>
+        <label>Origine<select data-app="origine">${opt(NOMS_ORIGINES, A.origine)}</select></label>
+        <label>Âge<input type="number" data-app="age" value="${A.age}" min="16" max="42" step="1" style="width:64px;background:#141b2c;color:var(--texte);border:1px solid var(--trait);border-radius:6px;padding:4px 6px;font:inherit"></label>
+        <label><span>${pastille(V.peau)}Peau</span><select data-app="peau">${opt(teintes, V.peau)}</select></label>
+        <label><span>${pastille(V.cheveux)}Cheveux</span><select data-app="cheveux">${opt(COULEURS_CHEVEUX, V.cheveux)}</select></label>
+        <label>Coupe<select data-app="coupe">${opt(NOMS_COUPES, V.coupe)}</select></label>
+        <label>Barbe<select data-app="pilosite">${opt(NOMS_PILOSITES, V.pilosite)}</select></label>
+        <label>Calvitie (%)<input type="number" data-app="calvitie" value="${Math.round(V.calvitie * 100)}" min="0" max="100" step="5" style="width:64px;background:#141b2c;color:var(--texte);border:1px solid var(--trait);border-radius:6px;padding:4px 6px;font:inherit"></label>
+        <label>Le visage de la carrière<button data-a="tirage" style="width:auto">Le reprendre</button></label>
+        <p style="margin:2px 0 6px">Le visage suit la loi de la carrière (foot, visage.ts : l’origine de son nom, son âge). Tête ${A.tete === 'B' ? 'B (le volume de cheveux)' : 'A (cheveux peints)'} : les coupes mi-longue, chignon et bouclée y restent courtes, faute de volume.</p>`; })()}
       ${sel('manches', 'Manches', EQUIPEMENT.manches)}${Q.manches === 'sous-maillot' ? sel('couleurSous', 'Couleur du sous-maillot', TEINTES) : ''}
       ${sel('maillot', 'Maillot', EQUIPEMENT.maillot)}
       ${sel('chaussettes', 'Chaussettes', EQUIPEMENT.chaussettes)}
@@ -431,6 +446,7 @@ export class Habillage {
       case 'reglages': return this.ouvrir('reglages');
       case 'portrait': m.portrait = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1; m.reglePlan('portrait'); if (innerWidth < 640) this.fermer(); return;
       case 'tirer': m.tirerEquipement(Number(t.dataset.e)); return this._rendreReglages();
+      case 'tirage': m.regleApparence(this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1, 'tirage'); return this._rendreReglages();
       case 'fermer': return this.fermer();
     }
   }
@@ -440,6 +456,7 @@ export class Habillage {
     // l'équipement : une règle d'équipe, un joueur choisi, un détail de son équipement
     if (t.dataset.q != null) { m.regleEquipe(Number(t.dataset.q), t.dataset.c, t.value || null); return this._rendreReglages(); }
     if (t.dataset.joueur != null) { this.joueur = Number(t.value); if (m.plan === 'portrait') m.portrait = this.joueur; return this._rendreReglages(); }
+    if (t.dataset.app != null) { m.regleApparence(this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1, t.dataset.app, t.value); return this._rendreReglages(); }
     if (t.dataset.morpho != null) { m.regleMorphologie(this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1, t.dataset.morpho, t.value); return this._rendreReglages(); }
     if (t.dataset.j != null) {
       const k = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1;
