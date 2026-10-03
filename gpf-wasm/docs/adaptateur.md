@@ -355,6 +355,14 @@ Chaque réglage de l'adaptateur se débraye, pour la mesure A/B : `creerCerveau(
 - la mi-temps à 45:00 (`gf_mi_temps`), la fin à 90:00, jugées au début du tick comme dans les bancs ;
 - le face-à-face (`?face=0` l'éteint) : la caméra se rapproche sur le duel (9 m, 3,8 m de haut) et y reste 1,5 s après sa fin ; l'état dit son issue en clair ; la touche F, ou `?face=saut`, avance le match à toute vitesse jusqu'au prochain.
 
+**L'image (lot L5, depuis le 3 octobre)**, quatre modules à côté de `GpfMatch.js` :
+- `gpf-stade.js` : le stade paramétrique de la skill **autour du terrain du corps** (110 × 72 m, pas 105 × 68) — huit stades (`?stade=bol|arche|nervures|1-5`, `0` la pelouse seule d'avant), trois heures (`?heure=jour|soir|nuit`), le public (un spectateur par siège, animé dans le shader : il se lève sur les buts, se soulève quand une attaque approche ; `?public=0`) ; changeables en plein match ;
+- `gpf-habillage.js` : le tableau d'affichage, les bandeaux (but, cartons, penalty, mi-temps, fin), la régie (pause, ×½ à ×8, le prochain temps fort, 10 s en arrière, la caméra, les stats, les réglages), le panneau des statistiques (la feuille, `feuille.md`) ;
+- `gpf-magneto.js` : le magnétoscope — la page enregistre ce qu'elle dessine toutes les 20 ms de jeu (anneau de 30 s) ; les ralentis des buts (derrière le but ×0,5, au ras de la pelouse ×0,3), le différé, le prochain temps fort. **Pendant une lecture, le corps attend** : le match joué ne change pas ;
+- les plans de caméra (dans `GpfMatch.js`) : auto (la télé et les plans serrés des gestes), télé, rapprochée, tactique, joueur, derrière le but (`?cam=`).
+- Le pas reste découpé sur le tick du cerveau ; il est en plus coupé en tranches de 2 pour le magnétoscope (le corps joue le même match par tranches).
+- Les gardiens portent le corps du n° 18, blancs passés au jaune (gauche) ou au vert (droite).
+
 Le cockpit la sert sur /match11.
 
 **Les bancs** (`bancs/`) :
@@ -370,6 +378,7 @@ Le cockpit la sert sur /match11.
 | `animations.mjs`, `animations-bilan.mjs` | le relevé des animations du corps (`animations.md`) |
 | `paquet.mjs` | la garde du paquet : il joue le même match que les sources |
 | `face-match.mjs` | le face-à-face : combien, sa durée, ses feintes, ses morsures et ses fentes, les gestes joués, ses issues, la suite à 2 s |
+| `feuille.mjs` | la feuille de match : ses comptes contre le journal brut, sa lecture seule (deux parties, une empreinte), son coût (`feuille.md`) |
 
 **Les gardes** :
 - intentions actives mais aucune posée : le match du corps est identique au bit (empreinte 1616609301, graine 7, 2 000 pas) ;

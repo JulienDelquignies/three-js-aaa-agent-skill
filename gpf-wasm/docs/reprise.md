@@ -10,7 +10,13 @@
   - le cerveau décide ses gestes dans ses fenêtres (croqueta, crochets, feinte de corps, passement, ponts…), le corps joue 27 animations en course cuites depuis la foulée du duel (`outils/foulee-gpf.mjs`) ; le défenseur franchi au contact mord (le noyau du cerveau) ;
   - le face-à-face planté (Taarabt) n'est plus que celui des anomalies (flair ≥ 0,9) ;
   - mesuré : 72-81 % des gestes demandés partent, le ballon gardé 62 % (52 sans la morsure), les centraux à 0-1 geste par demi-heure.
-- **Ce qui reste** (les options proposées le 3 octobre au soir, dans l'ordre) :
+- **Le chantier en cours** (3 octobre au soir) : **le lot L5, l'image** — l'utilisateur : « avancer sur le rendu, on reviendra au jeu plus tard ; les stades, les joueurs, les terrains, les stats, les caméras, les paramètres de visualisation, un scoreboard réaliste, pour rendre mon expérience de test plus intéressante ». Fait sur /match11 (page `feat/l2-regardable`, `src/scenes/gpf-stade.js`, `gpf-habillage.js`, `gpf-magneto.js`, `GpfMatch.js`) :
+  - le stade de la skill autour du terrain du corps (huit modèles, jour/soir/nuit, le public), changeable en plein match ;
+  - l'habillage télé et la régie (pause, ×½ à ×8, prochain temps fort, 10 s en arrière, six caméras, réglages) ;
+  - la feuille de match (`feuille.mjs`, `docs/feuille.md`, garde `bancs/feuille.mjs`) : le rapport de `stats.js`, les notes ;
+  - le magnétoscope : les ralentis des buts sous deux angles, le différé ; le corps attend pendant la lecture (le match ne change pas).
+  L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs`. L'état et ce qui reste : le cadrage § 14 (les maillots, l'apparence par joueur, le réalisateur complet, les résumés).
+- **Ce qui reste du jeu** (les options proposées le 3 octobre, avant L5, dans l'ordre) :
   1. le râteau et la roulette **en course** (les demi-tours d'Olmo sous pression : décidés 2 à 7 fois par demi-heure, joués seulement à l'arrêt) — des clips du duel (`rouletteCourse`, `rateau`) à fondre dans la foulée ;
   2. les **attributs dans le corps** (`gf_set_stat` : agilité, dribble, contrôle…, `docs/attributs.md` § 4.2) ;
   3. une **vitrine** : chaque geste joué seul, au ralenti ;
