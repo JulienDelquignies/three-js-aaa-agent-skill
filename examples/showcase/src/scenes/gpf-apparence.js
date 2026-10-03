@@ -213,16 +213,20 @@ export function morphSansMeches(geo) {
 }
 // ———————————————————————————— les traits du visage : des cibles de morphing ————————————————————————————
 /**
- * LES TRAITS DU VISAGE de la carrière (visage.ts : la largeur du visage 0,9-1,1, la mâchoire 0,9-1,1, l'écart des yeux 0,92-1,08 — la carte
- * en 2D les dessine) EN VOLUME : trois cibles de morphing, des champs de déplacement définis dans l'espace du maillage au repos (mètres, y en
- * haut, le visage vers +z : celui des deux têtes, de leurs cartes et des coupes en volume). Chaque pièce de la tête reçoit les mêmes champs :
- * la coiffure suit la largeur du crâne, la mèche du mi-long celle de la mâchoire. Le trait t donne l'influence (t − 1) / amplitude, de −1 à 1.
- *   largeur  : x × (1 ± 0,1) au-dessus de la mâchoire, fondu de 1,55 à 1,62 m (le cou, que le corps rejoint sous 1,546 m, ne bouge pas) ;
- *   mâchoire : x × (1 ± 0,1) du menton aux angles de la mâchoire (1,55-1,57 à 1,60-1,63 m), devant la nuque ;
+ * LES TRAITS DU VISAGE de la carrière (visage.ts : la largeur du visage 0,9-1,1, la hauteur de la mâchoire 0,9 ronde à 1,1 allongée, l'écart
+ * des yeux 0,92-1,08) EN VOLUME, comme la carte 2D les dessine (Visage.tsx : la demi-largeur du visage × largeur, le menton qui descend de
+ * (mâchoire − 1) × 22 sur un visage de 56 — ± 3,9 % —, les yeux à 12 × écart de l'axe) : trois cibles de morphing, des champs de déplacement
+ * définis dans l'espace du maillage au repos (mètres, y en haut, le visage vers +z : celui des deux têtes, de leurs cartes et des coupes en
+ * volume). Chaque pièce de la tête reçoit les mêmes champs : la coiffure suit la largeur du crâne. Le trait t donne l'influence
+ * (t − 1) / amplitude, de −1 à 1.
+ *   largeur  : x × (1 ± 0,1), plein au-dessus de 1,60 m, fondu jusqu'à 1,53 m (le cou, que le corps rejoint sous 1,546 m, ne bouge pas) ;
+ *   mâchoire : le menton descend (ou remonte) de 8 mm — ± 3,9 % des 18 cm du front au menton —, le bas du visage s'allonge : plein sous
+ *              1,585 m, rien au-dessus du nez (1,635 m), fondu sur la nuque et vers le cou (rien sous 1,50 m) ;
  *   yeux     : chaque œil (le globe, les paupières, l'orbite) glisse de ± 8 % de son écart à l'axe, en bloc jusqu'à 1,6 cm de son centre,
  *              fondu à 3,4 cm.
  */
 export const TRAITS = { largeur: 0.1, machoire: 0.1, ecartYeux: 0.08 };
+const MENTON = 0.008;   // la descente du menton à l'influence 1 (une mâchoire de 1,1), en mètres
 /** Les bornes des traits dans la carrière (visage.ts) : celles des réglages. */
 export const BORNES_TRAITS = { largeur: [0.9, 1.1], machoire: [0.9, 1.1], ecartYeux: [0.92, 1.08] };
 const lisse = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -236,12 +240,12 @@ export function yeuxDe(geo) {
   }
   return S.map(([x, y, z, n]) => (n ? new THREE.Vector3(x / n, y / n, z / n) : null));
 }
-/** Le déplacement (en x) d'un trait à l'influence 1, au point (x, y, z) de l'espace du maillage. */
+/** Le déplacement [dx, dy] d'un trait à l'influence 1, au point (x, y, z) de l'espace du maillage. */
 function champTrait(t, x, y, z, yeux) {
-  if (t === 'largeur') return x * TRAITS.largeur * lisse(1.55, 1.62, y);
-  if (t === 'machoire') return x * TRAITS.machoire * lisse(1.548, 1.572, y) * (1 - lisse(1.598, 1.632, y)) * lisse(-0.03, 0, z);
-  const E = yeux?.[x > 0 ? 0 : 1]; if (!E) return 0;
-  return E.x * TRAITS.ecartYeux * (1 - lisse(0.016, 0.034, Math.hypot(x - E.x, y - E.y, z - E.z)));
+  if (t === 'largeur') return [x * TRAITS.largeur * lisse(1.53, 1.6, y), 0];
+  if (t === 'machoire') return [0, -MENTON * lisse(1.635, 1.585, y) * lisse(1.5, 1.545, y) * lisse(-0.02, 0.03, z)];
+  const E = yeux?.[x > 0 ? 0 : 1]; if (!E) return [0, 0];
+  return [E.x * TRAITS.ecartYeux * (1 - lisse(0.016, 0.034, Math.hypot(x - E.x, y - E.y, z - E.z))), 0];
 }
 /** Les normales d'une forme déplacée, moins celles d'origine (la même façon de les calculer : les coutures restent cohérentes). */
 function normalesDelta(geo, d) {
@@ -258,7 +262,7 @@ export function morphTraits(geo, yeux, traits = Object.keys(TRAITS)) {
   const pos = geo.attributes.position, n = pos.count, indices = {};
   for (const t of traits) {
     const d = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) d[i * 3] = champTrait(t, pos.getX(i), pos.getY(i), pos.getZ(i), yeux);
+    for (let i = 0; i < n; i++) { const [dx, dy] = champTrait(t, pos.getX(i), pos.getY(i), pos.getZ(i), yeux); d[i * 3] = dx; d[i * 3 + 1] = dy; }
     (geo.morphAttributes.position ??= []).push(new THREE.Float32BufferAttribute(d, 3));
     (geo.morphAttributes.normal ??= []).push(new THREE.Float32BufferAttribute(normalesDelta(geo, d), 3));
     indices[t] = geo.morphAttributes.position.length - 1;
