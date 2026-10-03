@@ -5,8 +5,8 @@
 ## En bref
 
 - **Aujourd'hui, ni le corps ni le cerveau ne voient les joueurs de la carrière.**
-- **Le corps** joue avec les 22 profils par poste de la version Google. Les deux équipes sont identiques : leurs deux gardiens ont exactement les mêmes chiffres.
-- **Le cerveau** joue avec ses attributs par défaut : `creerCerveau` ne reçoit pas d'effectif.
+- **Le corps** joue avec les 11 profils fixes de la version Google, donnés par rang dans l'équipe et non par poste : leur avant-centre a 1,0 en tacle (`corps.md`, § 9). Les deux équipes sont identiques : leurs deux gardiens ont exactement les mêmes chiffres.
+- **Le cerveau** joue avec ses attributs par défaut : l'adaptateur ne lui passe pas d'effectif. Seule sa persona varie d'un joueur à l'autre (flair, calme, vivacité), tirée de la graine.
 - **Il faut donc les transmettre aux deux.**
   - Le cerveau décide : tenter un dribble, voir une passe, garder son sang-froid.
   - Le corps exécute : courir vite, accélérer, toucher juste, frapper fort.
@@ -52,19 +52,19 @@ Le cerveau en a une poignée que la carrière n'a pas (`shotPower`, `teamwork`, 
 
 ## 3. Le corps : 22 attributs, de 0 à 1
 
-Le corps lit 19 de ses 22 attributs (`utils.hpp`, `PlayerStat`). Ses valeurs par défaut, dans nos matchs, vont de 0,2 à 1.
+Le corps lit 19 de ses 22 attributs (`utils.hpp`, `PlayerStat`). Ses valeurs par défaut, dans nos matchs, vont de 0,2 à 1. Il les lit modulées par la difficulté du match (1 chez nous) et par la fraîcheur du joueur : `base × (0,3 + 0,7 × difficulté) × (0,7 + 0,3 × fraîcheur)` (`player.cpp:452-457`) ; l'endurance et la vitesse sont lues brutes. Le détail, attribut par attribut, est dans `corps.md`, § 9.
 
 | Attribut du corps | Ce qu'il change dans le corps | Où |
 |---|---|---|
 | `physical_velocity` | la vitesse de pointe (facteur 0,9 + 0,1 × l'attribut) | `playerbase.cpp:135` |
 | `physical_acceleration` | l'accélération (× 0,7 + 0,3 × l'attribut) ; avec l'agilité, la pénalité des gestes difficiles | `humanoidbase.cpp:2144, 1743` |
 | `physical_agility` | la vivacité : il freine et relance plus vite, tourne plus sec, et les gestes difficiles lui coûtent moins | `humanoidbase.cpp:1743, 1863, 1898, 2040` |
-| `physical_balance` | qui l'emporte dans une bousculade, et qui tombe | `match.cpp:1303-1345` |
-| `physical_reaction` | le retard de perception (80 − 40 × l'attribut, en ms) ; le temps pour réagir à une touche adverse | `icontroller.cpp:32`, `humanoid.cpp:581`, `humanoid_utils.cpp:199` |
+| `physical_balance` | qui l'emporte dans une bousculade, qui tombe, qui perd moins d'élan ; le ballon gardé près sous pression | `match.cpp:1303-1435`, `humanoidbase.cpp:1749`, `humanoid_utils.cpp:272` |
+| `physical_reaction` | le retard de perception (80 − 40 × l'attribut, en ms, arrondi à 100 ms : au-dessus de 0,75 le joueur voit 100 ms plus tôt) ; le temps pour réagir à une touche adverse | `icontroller.cpp:32`, `humanoid.cpp:581`, `humanoid_utils.cpp:199` |
 | `physical_stamina` | la fatigue | `player.cpp:449` |
 | `physical_shotpower` | la puissance maximale d'une frappe (32 + 13 × l'attribut m/s) | `humanoid_utils.cpp:435` |
 | `technical_ballcontrol` | la précision des touches et des contrôles, et l'angle qu'une touche peut corriger | `humanoid_utils.cpp:210, 327`, `humanoidbase.cpp:1778` |
-| `technical_dribble` | le ballon tenu près du pied en conduite, la difficulté d'une touche, la relance après une touche | `humanoid_utils.cpp:312`, `humanoidbase.cpp:1748, 2008` |
+| `technical_dribble` | le ballon poussé moins loin en conduite ; la liberté d'accélérer et de tourner juste après une touche | `humanoid_utils.cpp:312`, `humanoidbase.cpp:1748` |
 | `technical_shortpass`, `technical_highpass` | la difficulté (l'erreur) de la passe courte, de la passe haute | `humanoid.cpp:2270-2271` |
 | `technical_shot` | l'erreur de la frappe : le « pire cas » pèse moins | `humanoid_utils.cpp:499` |
 | `technical_volley` | la volée : la frappe d'un ballon qui arrive vite | `humanoid_utils.cpp:455` |
@@ -76,7 +76,7 @@ Le corps lit 19 de ses 22 attributs (`utils.hpp`, `PlayerStat`). Ses valeurs par
 
 ## 4. Ce qu'il faut faire (lot L3)
 
-1. **Transmettre l'effectif au cerveau.** `creerCerveau` doit recevoir les deux effectifs et poser les attributs bruts de chaque joueur dans le monde du cerveau. La carrière et le cerveau parlent presque la même langue : il suffit d'une table de noms (`firstTouch` → `control`, `reflexes` → `reactions`, …) et de valeurs pour ses attributs propres.
+1. **Transmettre l'effectif au cerveau.** Le moteur sait déjà le recevoir : `makeMatch({ squads })` change les notes de chaque joueur en facteurs (`makeProfile`, `match-sim.js:38-55`), et une note `flair` remplace le flair de la persona. L'adaptateur appelle `makeMatch` sans `squads` : il suffit de les lui passer. La carrière et le cerveau parlent presque la même langue : il faut une table de noms (`firstTouch` → `control`, `reflexes` → `reactions`, …) et des valeurs pour ses attributs propres.
 2. **Transmettre au corps ce qu'il exécute.** Au coup d'envoi, `gf_set_stat` pour chaque joueur, avec une table carrière → corps :
 
    | Corps | Depuis la carrière |

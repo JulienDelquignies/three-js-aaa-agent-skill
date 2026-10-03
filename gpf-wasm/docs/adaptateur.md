@@ -298,6 +298,12 @@ Le cockpit la sert sur /match11.
   - les coups de pied arrêtés ;
   - les gestes de l'arbitre ;
   - les célébrations.
+- **Il ne joue pas le porteur tout à fait comme le moteur.**
+  - Dans la boucle du moteur (`rondo-sim.js:885-971`), l'arbitrage ne décide lui-même que le tir et le centre.
+  - Une passe n'y est adoptée que si son score dépasse une barre : haute au calme, réglée par le tempo ; basse sous pression.
+  - Des appels l'abaissent : le coureur lancé, l'homme libre dans l'espace, le défenseur qui se jette, le presseur qui arrive.
+  - L'adaptateur, lui, suit l'arbitrage tel quel : « passe » donne une passe dès la tenue passée, sans barre ; « conduite » donne une conduite (`porteurDecide`, § 7.4). C'est un écart de structure, relevé par la documentation du moteur (`moteur.md`, § 4.5 et § 9).
+- **Ses joueurs voient tout.** La perception de chacun (`croyanceStep`, le bruit d'observation du moteur) n'est jamais calculée : marqueurs et passeurs du cerveau lisent la vérité (`moteur.md`, §9).
 - **Il ne transmet ni le regard voulu, ni le nom du geste.** Le corps choisit son animation seul. Le mécanisme pour lui demander un geste précis existe déjà (`animations.md`, partie 3).
 - **Il ne transmet pas les attributs des joueurs**, ni au cerveau ni au corps : `attributs.md`.
 - **Il ne reçoit pas d'ordres en cours de match** : ni remplacement, ni correctif tactique (les Ordres v1 du cadrage).
