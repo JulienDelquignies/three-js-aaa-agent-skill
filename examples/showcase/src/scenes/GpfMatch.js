@@ -32,6 +32,8 @@ const ISSUES = {
   double: 'un second défenseur arrive', depasse: 'le défenseur dépassé', relache: 'le défenseur décroche', passe: 'le porteur passe', relais: 'un partenaire prend le ballon',
   tiers: 'un autre défenseur prend le ballon', arret: 'le jeu est arrêté', perdu: 'le ballon perdu',
 };
+// LES GESTES EN COURSE (gestes-course.mjs), en clair
+const GESTES_COURSE = { crochetCourt: 'crochet court', crochet: 'crochet', crochetChaloupe: 'crochet chaloupé', crochetExt: 'crochet de l’extérieur', croqueta: 'croqueta', feinteCorps: 'feinte de corps', passement: 'passement' };
 const q = new URLSearchParams(location.search);
 
 export class GpfMatch {
@@ -73,16 +75,28 @@ export class GpfMatch {
     // LE FACE-À-FACE « TAARABT » (face.mjs) en est : planté face au défenseur, la semelle sur le ballon, les feintes, la morsure, la
     // fente, la sortie — ?face=0 l'éteint ; ?face=saut (ou la touche F) avance le match à toute vitesse jusqu'au prochain
     this.mode = q.has('ia') ? 'ia' : q.get('contre') === 'ia' ? 'contre' : 'cerveau';
+    // LES GESTES EN COURSE (gestes-course.mjs) : le cerveau décide (ses fenêtres, ses attributs), le corps joue la croqueta, le crochet, la
+    // feinte de corps, le passement en pleine course — ?gestes=0 les éteint ; ?gestes=saut (ou la touche G) avance jusqu'au prochain.
+    // LES EFFECTIFS sont notés par poste (le générateur du moteur) ; ?artiste=0:7 pose une anomalie (Taarabt) sur le joueur 7 de
+    // l'équipe 0, ?technicien=1:9 un technicien (Olmo) — les postes de la formation (0-3 la défense, 4-6 le milieu, 7 et 9 les côtés,
+    // 8 l'avant-centre)
     if (this.mode !== 'ia') {
-      const face = q.get('face') !== '0';
-      this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1], options: { face } });
+      const face = q.get('face') !== '0', gestes = q.get('gestes') !== '0', archetypes = [];
+      for (const type of ['artiste', 'technicien']) for (const v of q.getAll(type)) { const [e, p] = v.split(':').map(Number); if (e >= 0 && e <= 1 && p >= 0 && p <= 9) archetypes.push({ equipe: e, poste: p, type }); }
+      this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1], options: { face, gestes, ...(archetypes.length ? { archetypes } : {}) } });
       this.M._gf_intents(1);
       this.pas = 0; this.cerveauMs = 0; this.cerveauN = 0;
       this.saut = face && q.get('face') === 'saut';
+      this.sautGeste = gestes && q.get('gestes') === 'saut';
       if (face) {
         addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') this.sauter(); });
         const b = document.getElementById('faceSaut');   // le bouton, pour les écrans sans clavier
         if (b && !q.has('capture')) { b.style.display = 'block'; b.addEventListener('click', () => this.sauter()); }
+      }
+      if (gestes) {
+        addEventListener('keydown', (e) => { if (e.key === 'g' || e.key === 'G') this.sauterGeste(); });
+        const b = document.getElementById('gesteSaut');
+        if (b && !q.has('capture')) { b.style.display = 'block'; b.addEventListener('click', () => this.sauterGeste()); }
       }
     }
     this.zf = 0;   // le rapprochement de la caméra sur le face-à-face (0 : la caméra du jeu, 1 : le plan serré)
@@ -164,7 +178,7 @@ export class GpfMatch {
     this.acc = Math.min(this.acc + dt * (Number(q.get('vitesse')) || 1), 0.1);
     let n = 0; while (this.acc >= 0.01) { this.acc -= 0.01; n++; }
     // l'avance rapide jusqu'au prochain face-à-face : 3 s de jeu par image, le rendu suit
-    if (this.saut) { n = 300; this.acc = 0; }
+    if (this.saut || this.sautGeste) { n = 300; this.acc = 0; }
     if (this.periode === 3) n = 0;   // le coup de sifflet final : le match est figé sur son score
     if (n) {
       const t0 = performance.now();
@@ -177,6 +191,7 @@ export class GpfMatch {
             if (this._periodes()) break;
             this._decider();
             if (this.saut && this.cerveau.face) { this.saut = false; reste = Math.min(reste, 10); }   // le face-à-face est là : le temps réel
+            if (this.sautGeste && this.cerveau.geste) { this.sautGeste = false; reste = Math.min(reste, 10); }   // un geste demandé : le temps réel (il part dans les 0,7 s)
           }
           const k = Math.min(reste, 10 - (this.pas % 10));
           this.M._gf_step(k); this.pas += k; reste -= k;
@@ -206,9 +221,17 @@ export class GpfMatch {
         : fa ? ` · FACE-À-FACE, ${fa.feintes} feinte${fa.feintes > 1 ? 's' : ''}`
         : der && F[0] / 1000 - der.t < 8 ? ` · face-à-face : ${ISSUES[der.issue] ?? der.issue}`
         : this.cerveau && q.get('face') !== '0' ? ` · ${n} face-à-face · F : le prochain` : '';
+      // le geste en course : qui (son poste, son profil), lequel ; le dernier joué quelques secondes ; sinon le compte et la touche G
+      const ge = this.cerveau?.geste, gd = this.cerveau?.gesteDernier, nG = this.cerveau?.stats?.().course?.partis ?? 0;
+      const quiG = (id) => { const P = this.cerveau.profil(id); return P ? `${P.equipe === 0 ? 'gauche' : 'droite'} ${P.poste}${P.archetype ? `, ${P.archetype}` : ''}` : ''; };
+      const geste = !this.cerveau || q.get('gestes') === '0' ? ''
+        : this.sautGeste ? ' · avance rapide jusqu’au prochain geste…'
+        : ge ? ` · ${(GESTES_COURSE[ge.nom] ?? ge.nom).toUpperCase()} (${quiG(ge.porteur)})`
+        : gd && F[0] / 1000 - gd.t < 3 && gd.issue !== 'pas-parti' ? ` · ${GESTES_COURSE[gd.nom] ?? gd.nom} (${quiG(gd.porteur)})`
+        : ` · ${nG} geste${nG > 1 ? 's' : ''} en course · G : le prochain`;
       // en capture (?capture : images calculées une à une, rendu logiciel), les mesures de vitesse ne disent rien : le score et le temps seuls
-      if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}${face}`
-        : `${F[4]}-${F[5]} · ${horloge} · ${qui}${face} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
+      if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}${face}${geste}`
+        : `${F[4]}-${F[5]} · ${horloge} · ${qui}${face}${geste} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
       this.cerveauMs = 0; this.cerveauN = 0;
       this._fpsN = 0; this._fpsT0 = now; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0; this._cpuMs = 0; this._cpuN = 0;
     }
@@ -216,6 +239,8 @@ export class GpfMatch {
 
   // L'AVANCE RAPIDE jusqu'au prochain face-à-face, depuis la caméra du jeu
   sauter() { if (!this.cerveau || this.periode === 3) return; this.saut = true; this._faceJusqua = -1; this._faceVu = null; this.zf = 0; }
+  // L'AVANCE RAPIDE jusqu'au prochain geste en course
+  sauterGeste() { if (!this.cerveau || this.periode === 3) return; this.sautGeste = true; this._faceJusqua = -1; this._faceVu = null; this.zf = 0; }
 
   // LA MI-TEMPS ET LA FIN, à l'horloge du match ; vrai : le coup de sifflet final
   _periodes() {
@@ -273,15 +298,27 @@ export class GpfMatch {
     // LE PLAN SERRÉ DU FACE-À-FACE (sauf ?cam=tele) : la caméra descend à 9 m du duel, 3,8 m de haut, le milieu du porteur et de son
     // défenseur au centre, suivi de près (0,3 s) ; le duel fini, elle suit le ballon 1,5 s encore — la sortie part, souvent vers
     // elle : figée sur le lieu du duel, elle laissait les joueurs lui passer dessous
-    const fa = this.cerveau?.face;
+    // …ET SUR UN GESTE EN COURSE : le porteur au centre, de sa demande à 1,5 s après sa fin (le ballon suivi ensuite)
+    const fa = this.cerveau?.face, ge = !fa && q.get('gestes') !== '0' ? this.cerveau?.geste : null;
     let vise = null;
     if (fa && q.get('cam') !== 'tele') {
       const c = this._joueur(fa.porteur), d = this._joueur(fa.defenseur);
       if (c && d) { vise = [(c.position.x + d.position.x) / 2, (c.position.z + d.position.z) / 2]; this._faceJusqua = this.t + 1.5; }
+    } else if (ge && q.get('cam') !== 'tele') {
+      const c = this._joueur(ge.porteur);
+      if (c) {
+        vise = [(c.position.x * 2 + b.x) / 3, (c.position.z * 2 + b.z) / 3]; this._faceJusqua = this.t + 1.5;
+        // LE FLANC DU PORTEUR : sa direction de course (lissée 0,25 s) — la caméra se met sur son côté, on voit ses appuis
+        const pp = this._gePrev, k = 1 - Math.exp(-dt / 0.25);
+        if (pp && pp.id === ge.porteur) { const dx = c.position.x - pp.x, dz = c.position.z - pp.z, l = Math.hypot(dx, dz); if (l > 0.004) { const u = this._geDir ?? [dx / l, dz / l]; this._geDir = [u[0] + (dx / l - u[0]) * k, u[1] + (dz / l - u[1]) * k]; } }
+        else this._geDir = null;
+        this._gePrev = { id: ge.porteur, x: c.position.x, z: c.position.z };
+      }
     } else if (this.t < (this._faceJusqua ?? -1)) vise = [b.x, b.z];
     if (vise) {
       // un nouveau face-à-face : le point visé y saute (le plan de coupe) — glissé depuis le précédent, il laissait la caméra devant les joueurs
-      if (!this._faceVu || (fa && this._faceVu.de !== fa.depuis)) this._faceVu = { x: vise[0], z: vise[1], de: fa?.depuis };
+      const de = fa?.depuis ?? (ge ? `g${ge.depuis}` : undefined);
+      if (!this._faceVu || ((fa || ge) && this._faceVu.de !== de)) this._faceVu = { x: vise[0], z: vise[1], de };
       const kf = 1 - Math.exp(-dt / 0.3);
       this._faceVu.x += (vise[0] - this._faceVu.x) * kf; this._faceVu.z += (vise[1] - this._faceVu.z) * kf;
     }
@@ -289,10 +326,32 @@ export class GpfMatch {
     this.zf += (viser - this.zf) * (1 - Math.exp(-dt / 0.6));
     if (vu && this.zf < 0.01 && !viser) this._faceVu = null;
     if (vu) {
-      const w = this.zf * this.zf * (3 - 2 * this.zf), mix = (a, b) => a + (b - a) * w;
-      P[0] = mix(P[0], vu.x); P[1] = mix(P[1], 3.8); P[2] = mix(P[2], vu.z + 9);
-      L[0] = mix(L[0], vu.x); L[1] = mix(L[1], 0.9); L[2] = mix(L[2], vu.z);
-    }
+      // le face-à-face à 9 m (deux joueurs plantés, de la tribune) ; le geste en course DE CÔTÉ — sur le flanc du porteur, à 6 m, 2,2 m de
+      // haut, perpendiculaire à sa course (du côté de la tribune) : on juge les appuis, le ballon entre les pieds
+      const w = this.zf * this.zf * (3 - 2 * this.zf), mix = (a, b) => a + (b - a) * w, enCourse = typeof vu.de === 'string';
+      let off = [0, 9], h = 3.8;
+      if (enCourse) {
+        // le flanc DÉGAGÉ : des deux côtés de sa course, celui où aucun corps ne passe entre la caméra et lui (à 0,7 m du segment) ; à égalité,
+        // le côté de la tribune (+z) ; on ne change de côté que si l'autre est meilleur depuis 0,4 s (la caméra ne bascule pas à chaque pas)
+        const u = this._geDir ?? [1, 0], l0 = Math.hypot(u[0], u[1]) || 1, perp = [-u[1] / l0, u[0] / l0];
+        const c = this._joueur(this.cerveau?.geste?.porteur ?? -1);
+        const gene = (sg) => { if (!c) return 0; const cx = c.position.x + perp[0] * 6 * sg, cz = c.position.z + perp[1] * 6 * sg; let n = 0;
+          for (const pl of this.players) { const m = pl.model; if (m === c) continue; const ax = m.position.x - cx, az = m.position.z - cz, bx = c.position.x - cx, bz = c.position.z - cz, t = Math.max(0, Math.min(1, (ax * bx + az * bz) / (bx * bx + bz * bz))); if (Math.hypot(ax - bx * t, az - bz * t) < 0.7) n++; }
+          return n; };
+        // (le côté se choisit UNE fois, au départ du geste : changer de flanc en plein geste faisait passer la caméra au-dessus du porteur)
+        const tribune = perp[1] >= 0 ? 1 : -1;
+        if (this._geCote == null) this._geCote = gene(tribune) <= gene(-tribune) ? tribune : -tribune;
+        off = [perp[0] * 6 * this._geCote, perp[1] * 6 * this._geCote]; h = 2.2;
+      } else this._geCote = null;
+      // LA CAMÉRA TOURNE AUTOUR DU POINT VISÉ (son azimut lissé, au plus court ; la distance aussi) — un décalage interpolé en ligne droite
+      // passait par le point visé lui-même quand le porteur coupait
+      const ko = 1 - Math.exp(-dt / 0.4), aV = Math.atan2(off[1], off[0]), rV = Math.hypot(off[0], off[1]);
+      if (!this._camOff) this._camOff = { a: aV, r: rV };
+      else { const da = Math.atan2(Math.sin(aV - this._camOff.a), Math.cos(aV - this._camOff.a)); this._camOff = { a: this._camOff.a + da * ko, r: this._camOff.r + (rV - this._camOff.r) * ko }; }
+      const camOff = [Math.cos(this._camOff.a) * this._camOff.r, Math.sin(this._camOff.a) * this._camOff.r];
+      P[0] = mix(P[0], vu.x + camOff[0]); P[1] = mix(P[1], h); P[2] = mix(P[2], vu.z + camOff[1]);
+      L[0] = mix(L[0], vu.x); L[1] = mix(L[1], enCourse ? 0.7 : 0.9); L[2] = mix(L[2], vu.z);
+    } else this._camOff = null;
     this.camRef.position.set(P[0], P[1], P[2]);
     this.camRef.lookAt(L[0], L[1], L[2]);
     // la cible des OrbitControls suit le même point : le runner les met à jour avant chaque image capturée (__seekFrame), et leur
