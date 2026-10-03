@@ -71,7 +71,8 @@ rsync -a $ANCIEN:.ssh/ ~/.ssh/                        # si les mêmes clés serv
 ```sh
 cd ~/DelkIT/skill-l2/gpf-wasm
 node bancs/garde-corps.mjs        # le corps seul : h = 1616609301 → « LA GARDE TIENT »
-node bancs/paquet.mjs             # le cerveau empaqueté contre les sources : « paquet IDENTIQUE aux sources » (-1573909388 à la graine 7)
+node bancs/paquet.mjs             # le cerveau empaqueté contre les sources : « paquet IDENTIQUE aux sources » (-511194404 à la graine 7 ;
+                                  # -1573909388 avec les tailles d'origine — corps.lancer({ morphologies: null }))
 
 # la page contre les bancs : la construire avec le paquet, la servir, comparer
 cd ~/DelkIT/skill-l2page/examples/showcase
@@ -80,7 +81,8 @@ SORTIE=/tmp/l2/l2page-dist npx vite build --config vite.gpf-match.config.mjs
 (cd /tmp/l2 && python3 -m http.server 8792 --bind 127.0.0.1 &)
 cd ~/DelkIT/skill-l2/gpf-wasm
 node bancs/page-determinisme.mjs 'http://127.0.0.1:8792/l2page-dist/gpf-match.html?capture&webgl&seed=11' '' 3200
-#   → graine 11, 15 999 pas, h = −1908051876, « MÊME MATCH AU BIT »
+#   → graine 11, 15 999 pas, h = 1866588517, « MÊME MATCH AU BIT » (depuis le 3 octobre au soir : les tailles de la loi de la carrière
+#     entrent au corps — avant, h = −1908051876 ; ?tailles=0 rend les profils d'origine)
 ```
 - Le module WebAssembly est déterministe d'une machine à l'autre ; **le recompiler avec une autre version d'Emscripten peut changer les flottants** (et donc les empreintes). Garder `out/gpf.wasm` tant qu'aucun correctif C++ n'est nécessaire ; après une recompilation, refaire les trois gardes et noter les nouvelles valeurs de référence (et la raison).
 - Pour arrêter le serveur : `pkill -f '[h]ttp.server 8792'` (le motif entre crochets : un `pkill -f` dont le motif apparaît dans sa propre ligne de commande tue le shell qui le lance).

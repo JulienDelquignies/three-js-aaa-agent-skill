@@ -49,6 +49,7 @@ S'y ajoute `api/SDL2/SDL2_rotozoom.h`, un remplaçant de SDL2_gfx : seul `zoomSu
 | `gf_step(n)` | avance de n appels (1 appel = 10 ms si `pasPhysiquesParAppel` = 1) |
 | `gf_frame()` → `Float32Array` | en-tête (temps, en jeu, mode, score, ballon, possession) puis, par joueur : équipe, rôle, position, directions, vitesse, id, actif |
 | `gf_pose()` → `Float32Array` | par joueur : la racine (nœud `player`) et les **13 quaternions locaux** dans l'ordre des fichiers .anim — ce que `gpf-anim.jointsFromSample` porte sur le rig canonique. L'équipe 2, traitée en miroir par le moteur, est rétablie (racine niée en x, y ; corps tourné de 180°) |
+| `gf_set_hauteur(id, m)` · `gf_get_hauteur(id)` | la taille d'un joueur (id stable, en mètres ; `patch.py` étape 15). Le corps n'en tire que la hauteur de ses touches de balle (× taille / 1,92 m) ; sans appel, chacun garde celle de son profil (1,69-1,93 m). `contrat.morphologiesDe` tire tailles et poids par la loi de la carrière ; `corps.lancer()` et la page les posent pareil (`morphologies: null` / `?tailles=0` : les profils d'origine) |
 
 ## La page
 

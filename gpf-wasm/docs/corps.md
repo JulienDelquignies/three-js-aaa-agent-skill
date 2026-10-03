@@ -343,6 +343,12 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
   - les gestes plantés (101-105, 110, 111) : la touche, puis le ballon rangé (sous la semelle, au bout du roulé, du tiré) ;
   - les **tenues** (117, 118) : la semelle posée sur le ballon, sans touche (un déplacement) — jouées entre deux gestes du face-à-face. Le contrôle du corps au repos, lui, replaçait le ballon à sa distance à lui (0,36-0,40 m devant, centré), et nos touches précoces le manquaient : 95 % des gestes demandés joués au lieu de 89 %.
 
+
+### 5.8 La taille des joueurs (`patch.py`, étape 15)
+
+Le corps connaît la taille de chaque joueur (`PlayerData::height` : les 11 profils de la version Google, de 1,69 à 1,93 m, les mêmes pour les deux équipes, sans rapport avec le poste — un latéral à 1,93 m, des centraux à 1,71-1,72 m). Il ne s'en sert qu'à un endroit : la hauteur du ballon au moment de la touche d'une animation (`Humanoid::CalculateTouch…` : × taille / 1,92 m, `humanoid.cpp:1818-1929`) — une tête, un contrôle haut. Le reste (`zMultiplier`) n'étire que son propre maillage, que nous ne dessinons pas.
+
+L'étape 15 ajoute `PlayerData::SetHeight` et deux exports, `gf_set_hauteur(id, m)` et `gf_get_hauteur(id)`. Le contrat (`contrat.mjs morphologiesDe`) tire tailles et poids par la loi de la carrière (foot, `gabarit.ts`) ; `corps.lancer()` et la page les posent (`poserLesTailles`), la page dessine les deux. Sans appel, rien ne change : la garde du corps seul tient (h = 1616609301).
 ### 5.8 Un geste en course (`gestes/course/`, `outils/foulee-gpf.mjs`)
 
 Nos gestes en course (les crochets, la croqueta, la feinte de corps, le passement, les ponts, joués par un porteur lancé : `docs/gestes-en-course.md`) ont dû se plier aux conventions du corps — chacune lue dans son code, puis mesurée :

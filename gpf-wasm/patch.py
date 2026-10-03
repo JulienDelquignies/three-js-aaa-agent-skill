@@ -309,4 +309,11 @@ sub('onthepitch/player/humanoid/humanoidbase.cpp',
     rotationOffset_ret = 0;
     return anim->GetOutgoingMovement().GetRotated2D(spatialState.angle);
   }''')
+# 15. LA TAILLE DES JOUEURS, réglable et lisible de l'extérieur (gf_set_hauteur, gf_get_hauteur) : la porte de la morphologie (lot L3, EX-26).
+#     Le corps ne s'en sert que pour hausser ses touches de balle (Humanoid : la hauteur du ballon des animations × taille / 1,92 m) ;
+#     la page dessine chaque joueur à sa taille. Sans appel, rien ne change (les 11 profils de la version Google : 1,69 à 1,93 m).
+sub('data/playerdata.hpp',
+    '''    float GetHeight() const { return height; }''',
+    '''    float GetHeight() const { return height; }
+    void SetHeight(float h) { height = h; }  // [gf-intent] étape 15 : la taille, réglable''')
 print('patch: ok')

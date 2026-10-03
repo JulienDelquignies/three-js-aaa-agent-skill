@@ -199,6 +199,19 @@ EMSCRIPTEN_KEEPALIVE float gf_get_stat(int stableId, int stat) {
   return p->GetPlayerData()->GetStat((PlayerStat)stat);
 }
 
+/** LA TAILLE D'UN JOUEUR (id stable, en mètres) : la porte de la morphologie (patch.py étape 15). Le corps n'en tire que la hauteur de ses
+ *  touches de balle (Humanoid : × taille / 1,92 m) ; sans appel, chacun garde celle de son profil (1,69 à 1,93 m). */
+EMSCRIPTEN_KEEPALIVE int gf_set_hauteur(int stableId, float metres) {
+  Player *p = joueurParId(stableId);
+  if (!p || !(metres > 1.0f && metres < 2.5f)) return 0;
+  const_cast<PlayerData *>(p->GetPlayerData())->SetHeight(metres);
+  return 1;
+}
+EMSCRIPTEN_KEEPALIVE float gf_get_hauteur(int stableId) {
+  Player *p = joueurParId(stableId);
+  return p ? p->GetPlayerData()->GetHeight() : -1.0f;
+}
+
 /** L'HORLOGE DU MATCH : les suppléments (ms) de chaque remise en jeu, au-delà des ≈ 4 s que le corps simule — engagement
  *  après un but, six-mètres, coup franc (faute ou hors-jeu), corner, touche, penalty (voir intents.hpp). */
 EMSCRIPTEN_KEEPALIVE void gf_set_arrets(float engagement, float sixMetres, float coupFranc, float corner, float touche, float penalty) {

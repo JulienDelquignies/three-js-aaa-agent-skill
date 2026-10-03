@@ -54,6 +54,34 @@ export function poserFautes(M, fautes = []) {
   for (const f of fautes) f.carton != null ? M._gf_carton(f.carton, f.couleur) : M._gf_faute(f.fautif, f.victime, f.gravite, f.x, f.y);
 }
 
+/**
+ * LA MORPHOLOGIE (lot L3, EX-26) : la taille (cm) et le poids (kg) de chaque joueur du corps, selon la LOI DE LA CARRIÈRE (foot :
+ * src/data/gabarit.ts et players.ts) en attendant ses fiches — la taille en cloche autour de la moyenne du poste (quatre tirages uniformes
+ * sommés, bornée à 1,58-2,05 m ; l'écart-type du poste : le gardien et le central choisis pour leur taille), le poids qui suit la taille
+ * (0,75 kg par cm au-delà de la moyenne du poste, ± 5 kg de corpulence). Tirée par la graine et l'id stable : le même match, les mêmes corps.
+ * Le corps n'en prend que la TAILLE (gf_set_hauteur : la hauteur de ses touches de balle) ; la page dessine les deux.
+ */
+export const GABARIT_PAR_POSTE = { GK: { cm: 188, kg: 83 }, CB: { cm: 186, kg: 81 }, LB: { cm: 178, kg: 73 }, RB: { cm: 178, kg: 73 }, CM: { cm: 179, kg: 74 }, LW: { cm: 175, kg: 70 }, RW: { cm: 175, kg: 70 }, ST: { cm: 183, kg: 78 } };
+export const ECART_TYPE_DE_TAILLE = { GK: 4, CB: 4.5, LB: 5.5, RB: 5.5, CM: 6, LW: 6, RW: 6, ST: 6 };
+/** Le poste de la carrière d'un rôle du corps (e_PlayerRole : 0 G, 1 DC, 2 DG, 3 DD, 4 MDC, 5 MC, 6 MG, 7 MD, 8 MOC, 9 BU). */
+export const POSTE_DU_ROLE = ['GK', 'CB', 'LB', 'RB', 'CM', 'CM', 'LW', 'RW', 'CM', 'ST'];
+export function morphologiesDe(graine, etat) {
+  return etat.joueurs.map((j) => {
+    const poste = POSTE_DU_ROLE[j.role] ?? 'CM', G = GABARIT_PAR_POSTE[poste];
+    let s = ((graine * 15485863 + (j.id + 1) * 2027 + 11) >>> 0) || 1; const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+    r(); r();
+    const z = (r() + r() + r() + r() - 2) / Math.sqrt(4 / 12);
+    const taille = Math.max(158, Math.min(205, Math.round(G.cm + ECART_TYPE_DE_TAILLE[poste] * z)));
+    return { id: j.id, poste, taille, poids: Math.round(G.kg + (taille - G.cm) * 0.75 + (r() - 0.5) * 10) };
+  });
+}
+/** Poser les tailles dans le corps (gf_set_hauteur, en mètres) ; un module d'avant la porte (étape 15) les ignore. Rend le nombre posé. */
+export function poserLesTailles(M, morphologies = []) {
+  if (!M._gf_set_hauteur) return 0;
+  let n = 0; for (const m of morphologies) n += M._gf_set_hauteur(m.id, m.taille / 100);
+  return n;
+}
+
 /** Poser l'intention TENUE d'un joueur (id stable). */
 export function poserIntention(M, id, { genre = 0, x = 0, y = 0, vitesse = 0, cible = -1, puissance = 0, drapeaux = 0 } = {}) {
   M._gf_set_intent(id, genre, x, y, vitesse, cible, puissance, drapeaux);
