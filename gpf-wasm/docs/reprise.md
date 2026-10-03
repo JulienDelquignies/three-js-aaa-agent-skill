@@ -15,8 +15,9 @@
   - l'habillage télé et la régie (pause, ×½ à ×8, prochain temps fort, 10 s en arrière, six caméras, réglages) ;
   - la feuille de match (`feuille.mjs`, `docs/feuille.md`, garde `bancs/feuille.mjs`) : le rapport de `stats.js`, les notes ;
   - le magnétoscope : les ralentis des buts sous deux angles, le différé ; le corps attend pendant la lecture (le match ne change pas).
-  - **les maillots** (3 octobre au soir, `gpf-maillots.js`, `tools/maillot-carte.py`, page cd064a2) : motifs et couleurs au choix, noms et numéros floqués, écusson et sponsor, gardiens, conflits de couleurs.
-  L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs` (étapes : jeu, tempsfort, recul, plans, but, stats, maillots, dos — avec `&orbit` —, reglages, heures, stades). L'état et ce qui reste : le cadrage § 14 (l'apparence par joueur, le réalisateur complet, les résumés, les programmes de shader sous 60).
+  - **les maillots** (3 octobre au soir, `gpf-maillots.js`, `tools/maillot-carte.py`, page cd064a2) : motifs et couleurs au choix, noms et numéros floqués, écusson et sponsor, gardiens, conflits de couleurs ;
+  - **les tenues complètes** (la suite, même soir — « plusieurs motifs de maillots, shorts, chaussettes, chaussures ; manches courtes ou longues suivant les joueurs ; bandage à la Benzema ; maillot dans le short ou hors du short ; chaussettes basses à la Hamšík, moyennes ou hautes ; le nom et le numéro doivent être légers ») : l'équipement de chaque joueur dans un shader commun, le flocage par un alphabet SDF à taille réelle, la forme des corps tirée de leur maillage, le plan « portrait » ; `adaptateur.md` § 11.
+  L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs` (étapes : jeu, tempsfort, recul, plans, but, stats, maillots, dos — avec `&orbit` —, equipement — `VUES=5:0,5:180 DISTANCE=3.2` —, reglages, heures, stades). L'état et ce qui reste : le cadrage § 14 (l'apparence par joueur, le réalisateur complet, les résumés, les programmes de shader sous 60).
 - **Ce qui reste du jeu** (les options proposées le 3 octobre, avant L5, dans l'ordre) :
   1. le râteau et la roulette **en course** (les demi-tours d'Olmo sous pression : décidés 2 à 7 fois par demi-heure, joués seulement à l'arrêt) — des clips du duel (`rouletteCourse`, `rateau`) à fondre dans la foulée ;
   2. les **attributs dans le corps** (`gf_set_stat` : agilité, dribble, contrôle…, `docs/attributs.md` § 4.2) ;
@@ -31,11 +32,11 @@ Les chemins sont ceux de l'ancienne machine (`/home/delkit/DelkIT`). **Garder le
 | Copie | Dépôt | Branche (dernier commit) | Rôle | À nous ? |
 |---|---|---|---|---|
 | `~/DelkIT/skill-l2` | `JulienDelquignies/three-js-aaa-agent-skill` | `feat/l2-cerveau-corps` (le cerveau 4b3eea2, la doc après) | `gpf-wasm/` : le corps (C++ patché, WebAssembly), l'adaptateur (`cerveau.mjs`, `face.mjs`, `gestes-course.mjs`), les outils, les bancs, la doc | **oui** |
-| `~/DelkIT/skill-l2page` | même dépôt | `feat/l2-regardable` (6bd5e2f, puis les outils de reprise) | la page /match11 (`examples/showcase/gpf-match.html`, `src/scenes/GpfMatch.js`) | **oui** |
+| `~/DelkIT/skill-l2page` | même dépôt | `feat/l2-regardable` (3e07df0 : les tenues complètes) | la page /match11 (`examples/showcase/gpf-match.html`, `src/scenes/GpfMatch.js`) | **oui** |
 | `~/DelkIT/skill-1v1` | même dépôt | `feat/1v1-maquette` (4687c01) | le duel 1 contre 1 — **en lecture seule** : le studio et le convertisseur y lisent les modules de mouvement (`STARTER`) | non (lecture) |
 | `~/DelkIT/skill-gpf` | même dépôt | `feat/gpf-anims` | le portage de trois gestes GPF dans le duel (antérieur) | à ne pas toucher sans raison |
 | `~/DelkIT/three-js-aaa-agent-skill` | même dépôt | `pause/basket-2026-09-04` | la copie principale, d'une autre session | **non** |
-| `~/DelkIT/cockpit` | `JulienDelquignies/cockpit` | `main` (a8c7e96) | le cockpit (Next.js) ; /match11 sert `public/duel-1v1/gpf-match.html`, `assets/`, `gpf/` ; déploiement `./scripts/deploy.sh` | **oui** |
+| `~/DelkIT/cockpit` | `JulienDelquignies/cockpit` | `main` (8bfa2a0) | le cockpit (Next.js) ; /match11 sert `public/duel-1v1/gpf-match.html`, `assets/`, `gpf/` ; déploiement `./scripts/deploy.sh` | **oui** |
 | (à recréer) | `JulienDelquignies/foot` | `docs/cadrage-moteur-match` (68766131) | le cadrage, PR #42 — sur l'ancienne machine, une copie de travail temporaire dans `/tmp` | **oui** |
 | `~/DelkIT/FootballEcosystemLifeSim-l1` | foot | `feat/l1-contrats-arbitre` | le lot L1, PR #43 (empilée sur la #41) | oui (fait) |
 | `~/DelkIT/FootballEcosystemLifeSim` | foot | `3d/personnages` | la copie principale du dépôt foot, **d'une autre session** | **non** |
