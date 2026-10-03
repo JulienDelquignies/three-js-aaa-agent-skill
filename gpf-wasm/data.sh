@@ -6,6 +6,9 @@ set -e
 cd "$(dirname "$0")"
 D=build/data; rm -rf $D; mkdir -p $D
 mkdir -p $D/media && cp -r upstream/data/media/animations $D/media/
+# NOTRE RÉPERTOIRE : les gestes de notre moteur convertis au format du corps (outils/vers-gpf.mjs), marqués specialvar1 — le
+# corps charge tout fichier .anim de ce dossier, et ne les joue que sur demande (intention GESTE)
+mkdir -p $D/media/animations/gestes && cp gestes/*.anim $D/media/animations/gestes/ 2>/dev/null || true
 python3 - <<'PY'
 import os, shutil, struct
 D = 'build/data'; U = 'upstream/data'

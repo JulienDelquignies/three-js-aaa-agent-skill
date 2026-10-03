@@ -24,6 +24,8 @@ enum GfIntentKind {
   GF_PASS = 3,     // porteur : passer à `target` (id stable) — flags 0 courte, 1 longue, 2 haute
   GF_SHOOT = 4,    // porteur : tirer vers (x, y) (un point de la ligne de but), `power` 0..1
   GF_DRIBBLE = 5,  // porteur : conduire vers (x, y) à `speed` m/s
+  GF_GESTE = 6,    // porteur : jouer le geste n° `target` de notre répertoire (gestes/*.anim, marqués specialvar1 = n°), en
+                   // sortant vers (x, y) à `speed` m/s — flags 0 : avec touche de balle (ballcontrol), 1 : sans (déplacement)
 };
 
 struct GfIntent {

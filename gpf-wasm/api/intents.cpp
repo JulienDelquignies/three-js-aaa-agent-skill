@@ -154,6 +154,26 @@ bool ElizaController::_GfOnBall(std::vector<PlayerCommand> &commandQueue, Vector
     rawInputVelocityFloat = std::min(gi->speed, dribbleVelocity);
     return true;
   }
+  if (gi->kind == GF_GESTE) {
+    // UN GESTE DE NOTRE RÉPERTOIRE : l'animation porte specialvar1 = son numéro, et le premier tri (CrudeSelection) ne garde
+    // que les animations dont specialvar1 égale celui de la commande — le mécanisme des célébrations et du carton. Le corps
+    // ne la joue donc jamais de lui-même. Si elle ne peut pas partir maintenant (vitesse, angle, ballon hors d'atteinte), la
+    // commande suivante de la file reprend : la conduite d'avant.
+    PlayerCommand command;
+    command.desiredFunctionType = gi->flags == 1 ? e_FunctionType_Movement : e_FunctionType_BallControl;
+    command.useSpecialVar1 = true;
+    command.specialVar1 = gi->target;
+    Vector3 vers = versLeRepereDe(team, gi->x, gi->y) - player->GetPosition();
+    vers.coords[2] = 0.0f;
+    command.useDesiredMovement = true;
+    command.desiredDirection = vers.GetLength() > 0.1f ? vers.GetNormalized(player->GetDirectionVec()) : player->GetDirectionVec();
+    command.desiredVelocityFloat = clamp(gi->speed, idleVelocity, sprintVelocity);
+    command.useDesiredLookAt = false;
+    commandQueue.push_back(command);
+    rawInputDirection = command.desiredDirection;
+    rawInputVelocityFloat = command.desiredVelocityFloat;
+    return true;
+  }
   if (gi->kind == GF_DRIBBLE) {
     Vector3 cible = versLeRepereDe(team, gi->x, gi->y);
     Vector3 vers = cible - player->GetPosition();

@@ -3,7 +3,7 @@
 // cerveau empaqueté (`out/cerveau.mjs`) et la page l'importent sans tirer le module WebAssembly.
 // Coordonnées du MONDE (x le long du terrain ±55 m, y en travers ±36 m) ; l'équipe 0 défend le but x = −55 et attaque +x.
 
-export const INTENTION = { IA: 0, ALLER: 1, PRESSER: 2, PASSER: 3, TIRER: 4, CONDUIRE: 5 };
+export const INTENTION = { IA: 0, ALLER: 1, PRESSER: 2, PASSER: 3, TIRER: 4, CONDUIRE: 5, GESTE: 6 };
 export const PASSE = { COURTE: 0, LONGUE: 1, HAUTE: 2 };
 export const EV = { TOUCHE: 1, BUT: 2, FAUTE: 3, HORS_JEU: 4, CPA: 5, PASSE: 6 };
 /** e_FunctionType du moteur — le geste d'une touche. */
