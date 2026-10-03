@@ -183,7 +183,7 @@ Dans le monde du cerveau, une feinte réussie fait mordre le défenseur : il s'e
 - **Le râteau et la roulette lancés** : décidés 2 à 7 fois par demi-heure (le râteau surtout : son poids × 8 chez le cerveau), joués seulement à l'arrêt. Ce ne sont pas des temps de foulée : il faudra fondre les clips du duel (`rouletteCourse`, `rateau`) dans la course.
 - **Le sprint** (≥ 6 m/s) : aucune variante — le corps n'aurait pas de candidate.
 - **Le pied** : chaque côté se joue d'un seul fichier (ou de son miroir) ; à contre-pied du porteur, le corps fond le départ. Les crochets de l'intérieur et de l'extérieur pourraient partager leur n° pour que le corps prenne celui du bon pied (son tri par pied courant).
-- **Les ponts** : ils partent, ils ne gardaient pas le ballon — à remesurer avec la poussée élargie.
+- **Les ponts** : ils partent, ils ne gardaient pas le ballon. Poussée élargie (24°), le grand pont demandé au hasard part 26 fois sur 90 et le ballon est touché par un autre 11 fois sur 26 (19 sur 34 avant) ; mais 1,5 s après, le ballon est encore à 3 m devant le porteur lancé à 6,8 m/s — la mesure « gardé » (la possession du corps à 1,5 s) ne convient pas à ce geste : il faut juger qui le touche ensuite.
 - **Les attributs du corps** (`gf_set_stat` : agilité, dribble, contrôle) : le technicien a encore le corps de tout le monde (`attributs.md` § 4.2).
 - **Les effectifs de la carrière** (lot L3) remplaceront les générés.
 - **Une vitrine** : chaque geste joué seul, au ralenti, pour le juger hors du match.
