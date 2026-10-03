@@ -14,14 +14,18 @@
       .titre { position: fixed; right: 12px; top: 12px; z-index: 20; font: 600 12px/1.35 system-ui; color: #e8ebf2; padding: 8px 12px; border-radius: 10px;
         background: rgba(12,16,24,.6); border: 1px solid rgba(255,255,255,.1); max-width: 60vw; text-align: right; }
       .titre span { color: #9aa2b1; font-weight: 400; }
+      #faceSaut { position: fixed; right: 12px; bottom: 12px; z-index: 20; font: 600 12px/1 system-ui; color: #e8ebf2; padding: 10px 14px; border-radius: 10px;
+        background: rgba(12,16,24,.72); border: 1px solid rgba(255,255,255,.18); cursor: pointer; display: none; }
+      #faceSaut:hover { background: rgba(40,52,72,.85); }
       /* téléphone : le titre sans la liste des paramètres, des encarts plus petits — le terrain d'abord */
-      @media (max-width: 640px) { .titre { font-size: 11px; padding: 6px 10px; } .titre span { display: none; } #gpfHud { font-size: 11px; padding: 6px 10px; left: 8px; bottom: 8px; } }
+      @media (max-width: 640px) { .titre { font-size: 11px; padding: 6px 10px; } .titre span { display: none; } #gpfHud { font-size: 11px; padding: 6px 10px; left: 8px; bottom: 8px; max-width: calc(100vw - 150px); } #faceSaut { right: 8px; bottom: 8px; padding: 8px 10px; font-size: 11px; } }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div class="titre hud">Notre cerveau, les corps de Gameplay Football, nos humains<br><span>le moteur de match de la skill décide (lot L2), leur moteur compilé en WebAssembly exécute · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> notre cerveau contre leur IA · <code>?face=0</code> sans le face-à-face Taarabt · <code>?face=saut</code> ou la touche F : jusqu’au prochain · <code>?arrets=0</code> remises sans temps mort · <code>?seed=7</code> · <code>?cam=pres|tele</code> · <code>?vitesse=2</code> · <code>?ombres=0</code> · <code>?bloom=0</code> · <code>?dpr=1</code> · <code>?gpu=perf</code> · <code>?diag</code> · <code>?orbit</code> · <code>?webgl</code></span></div>
     <div id="gpfHud">chargement du moteur…</div>
+    <button id="faceSaut" class="hud" type="button" title="Avance le match à toute vitesse jusqu'au prochain face-à-face (touche F)">Prochain face-à-face ⏭</button>
     <div id="loading">COUP D’ENVOI…</div>
     <script type="module" src="./src/entry-gpf-match.js"></script>
   </body>

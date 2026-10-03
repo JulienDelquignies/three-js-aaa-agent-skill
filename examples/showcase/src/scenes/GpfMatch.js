@@ -79,7 +79,11 @@ export class GpfMatch {
       this.M._gf_intents(1);
       this.pas = 0; this.cerveauMs = 0; this.cerveauN = 0;
       this.saut = face && q.get('face') === 'saut';
-      if (face) addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') this.sauter(); });
+      if (face) {
+        addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') this.sauter(); });
+        const b = document.getElementById('faceSaut');   // le bouton, pour les écrans sans clavier
+        if (b && !q.has('capture')) { b.style.display = 'block'; b.addEventListener('click', () => this.sauter()); }
+      }
     }
     this.zf = 0;   // le rapprochement de la caméra sur le face-à-face (0 : la caméra du jeu, 1 : le plan serré)
     this.bootMs = performance.now() - t0;
