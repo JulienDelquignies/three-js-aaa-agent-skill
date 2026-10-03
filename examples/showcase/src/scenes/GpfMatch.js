@@ -10,8 +10,9 @@ import { DUEL_CAST, TENUE_GARDIEN, tenueGardien } from './duel-joueurs.js';
 import { construireStade, STADES, HEURES } from './gpf-stade.js';
 import { Magneto, IMG, interpoler } from './gpf-magneto.js';
 import { Habillage, PLANS, VITESSES } from './gpf-habillage.js';
-import { TENUES, EQUIPEMENT, chargerCarte, formeDuCorps, morphChaussetteBasse, peindreTenue, masquesDe, textureForme, peauDe, alphabetSDF, couleurTenue, materiauTenue, poserJoueur, equipementDe, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
+import { TENUES, EQUIPEMENT, chargerCarte, formeDuCorps, morphChaussetteBasse, mainsDe, peindreTenue, masquesDe, textureForme, peauDe, alphabetSDF, couleurTenue, materiauTenue, poserJoueur, equipementDe, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
 import { makeTheme } from '../engine/club-theme.js';
+import { physique, corpulence, imc, CARRURES, poidsPour, carrureDe, morphCarrure, AMPLITUDE_CARRURE } from './gpf-morphologie.js';
 
 // GpfMatch — LES LOTS L0, L2 ET L5 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense),
 // compilé en WebAssembly SANS son rendu (gpf-wasm/), joue un 11 contre 11, et notre three.js le dessine avec NOS humains (les
@@ -139,6 +140,10 @@ export class GpfMatch {
     this.HEAD = this.M._gf_frame_head(); this.PER = this.M._gf_frame_per(); this.POSE = this.M._gf_pose_per();
     const e0 = this.C.lireEtat(this.M, this.HEAD, this.PER);
     this._score = [e0.score[0], e0.score[1]];
+    // LA MORPHOLOGIE (contrat.morphologiesDe : la loi de la carrière — foot, gabarit.ts —, la même que les bancs) : le corps prend les
+    // tailles (la hauteur de ses touches de balle), la page dessine tailles et poids ; ?tailles=0 : les 11 profils de la version Google
+    this.morphoCorps = q.get('tailles') !== '0' && this.C.morphologiesDe ? this.C.morphologiesDe(graine, e0) : null;
+    if (this.morphoCorps) this.C.poserLesTailles(this.M, this.morphoCorps);
     // LA FEUILLE DE MATCH (feuille.mjs, dans le paquet du cerveau) : le journal du corps → les faits de stats.js → le rapport ; les noms
     // (fictifs) tirés par la graine ; le poste, celui du cerveau quand il pilote
     if (this.C.nomsDesJoueurs) this.noms = this.C.nomsDesJoueurs(graine, e0);
@@ -166,9 +171,11 @@ export class GpfMatch {
       for (const [n, b] of bones) rest.set(n, { q: [b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w], p: b.position.clone() });
       // le repère du parent du bassin, vu du monde : constant (seul le modèle se déplace, sans tourner) — inversé une fois pour toutes
       const hb = bones.get('Hips'), hipsInv = hb ? new THREE.Matrix3().setFromMatrix4(hb.parent.matrixWorld).invert() : null;
-      this.players.push({ model, bones, rest, groundY, team, rig, gk, P: this.profiles[rig], C: this.offsets[rig], hipsInv });
+      let corpsMesh = null; model.traverse((o) => { if (!corpsMesh && o.isSkinnedMesh && [].concat(o.material).some((m) => m?.name === 'body')) corpsMesh = o; });
+      this.players.push({ model, bones, rest, groundY, team, rig, gk, P: this.profiles[rig], C: this.offsets[rig], hipsInv, echelle0: model.scale.x, groundY0: groundY, corpsMesh });
     }
     // LES MAILLOTS PEINTS ET FLOQUÉS (gpf-maillots.js) ; en cas d'échec (la carte introuvable), la tenue d'origine et les gardiens recolorés
+    this._initMorphologie();
     if (this.maillots) await this._habiller(e0).catch((err) => {
       console.warn('[maillots]', err); this.maillots = false;
       for (const pl of this.players) if (pl.gk) tenueGardien(pl.model, TENUE_GARDIEN[pl.team]);
@@ -229,12 +236,15 @@ export class GpfMatch {
     this._formes = this._formesCPU.map((f) => (f ? textureForme(f) : null));
     this._peaux = this._images.map((im, rig) => (im && this._formesCPU[rig] ? peauDe(im, carte, this._formesCPU[rig]) : new THREE.Color(0.8, 0.6, 0.48)));
     // la chaussette basse en volume : une cible de morphing par corps (la géométrie est partagée par les clones), réglée par joueur
-    this.bordChaussette = corps.map((c) => (c ? morphChaussetteBasse(c.mesh.geometry, carte).fBord : null));
+    const basses = corps.map((c) => (c ? morphChaussetteBasse(c.mesh.geometry, carte) : null));
+    this.bordChaussette = basses.map((b) => b?.fBord ?? null); this._iBasses = basses.map((b) => b?.indice ?? null);
     for (const pl of this.players) pl.corps?.mesh.updateMorphTargets();
+    for (let k = 0; k < this.players.length; k++) this._morphologie(k);   // (les influences viennent d'être remises à zéro)
     for (let e = 0; e < 2; e++) { const n = numerosDe(this.roles.slice(e * 11, e * 11 + 11)); for (let i = 0; i < 11; i++) this.players[e * 11 + i].numero = n[i]; }
     this._equipementInitial();
     this._tex = {};
-    this.graphe = couleurTenue({ masques: masquesDe(carte), alphabet, desc: carte.desc });
+    this.mains = this._formesCPU[0] ? mainsDe(this._formesCPU[0], carte) : null;   // la paume, pour les gants du gardien
+    this.graphe = couleurTenue({ masques: masquesDe(carte), alphabet, desc: carte.desc, mains: this.mains });
     for (const pl of this.players) if (pl.corps) pl.corps.mesh.material = pl.mat = materiauTenue(pl.corps.origine, this.graphe);
     this._peindreTout();
     this.habillageMs = performance.now() - t0;   // (le coût de l'habillage au chargement, lu par les essais)
@@ -261,9 +271,13 @@ export class GpfMatch {
   /** Poser un joueur sur son matériau : sa tenue, sa peau, ses chaussures, son équipement, son nom et son numéro — des valeurs, rien ne se
    *  recompile. */
   _poser(k) {
+    this._morphologie(k);
     const pl = this.players[k]; if (!pl?.mat) return;
     const kit = pl.gk ? this.gardiens[pl.team] : this.tenues[pl.team], Q = this.equipementJoueur(k), mi = pl.corps.mesh.morphTargetInfluences;
-    if (mi) mi[0] = Q.chaussettes === 'basses' ? 1 : 0;
+    if (mi && this._iBasses?.[pl.rig] != null) mi[this._iBasses[pl.rig]] = Q.chaussettes === 'basses' ? 1 : 0;
+    // LES GANTS DU GARDIEN : la main et les doigts grossis de 22 % (l'échelle des os de la main : la pose ne pose que des rotations), le
+    // gant rembourré qui dépasse les doigts ; la manchette et les couleurs sont dans le shader
+    for (const m of ['LeftHand', 'RightHand']) pl.bones.get(m)?.scale.setScalar(Q.gantsGardien ? 1.22 : 1);
     poserJoueur(pl.mat, {
       tenueTex: this._texPour(pl)?.tex ?? null, forme: this._formes[pl.rig], T0: kit, peau: this._peaux[pl.rig], bottesClaires: pl.rig === 0,   // le n° 18 a des chaussures claires
       equip: Q, nom: this.nomFloque(k), numero: pl.numero ?? k + 1, alphabet: this.alphabet,
@@ -282,6 +296,8 @@ export class GpfMatch {
     this.reglesAdresse = {}; for (const c of REGLES) { const v = q.get(c); if (v && EQUIPEMENT[c][v]) this.reglesAdresse[c] = v; }
     this.reglesEquipe = [0, 1].map((e) => { const R = {}; for (const c of REGLES) { const v = sauve?.equipes?.[e]?.[c]; if (EQUIPEMENT[c][v]) R[c] = v; } return R; });
     this.choixJoueurs = sauve?.joueurs && typeof sauve.joueurs === 'object' ? sauve.joueurs : {};
+    // une taille choisie (gardée par le navigateur) entre au corps dès le chargement
+    for (const [k, C] of Object.entries(this.choixJoueurs)) if (C?.taille && this.idDe[k] != null) this.M._gf_set_hauteur?.(this.idDe[k], C.taille / 100);
     this.capitaines = [0, 1].map((e) => { const c = sauve?.capitaines?.[e]; return c === null || (Number.isInteger(c) && c >= e * 11 && c < e * 11 + 11) ? c : this._capitaineParDefaut(e); });
   }
   _capitaineParDefaut(e) {
@@ -313,6 +329,45 @@ export class GpfMatch {
     this.capitaines[e] = this._capitaineParDefaut(e);
     this._apresEquipement(e);
   }
+  // ———————————————————————————— la morphologie ————————————————————————————
+  /** LA CARRURE EN VOLUME : une cible de morphing par corps (n° 18, n° 10 : la géométrie est partagée par les clones), puis chaque joueur à sa
+   *  taille et à sa carrure. */
+  _initMorphologie() {
+    this._iCarrure = [0, 1].map((rig) => { const pl = this.players.find((p) => p.rig === rig && p.corpsMesh); return pl ? morphCarrure(pl.corpsMesh) : null; });
+    for (const pl of this.players) pl.corpsMesh?.updateMorphTargets();
+    for (let k = 0; k < this.players.length; k++) this._morphologie(k);
+  }
+  /** La morphologie d'un joueur : la loi (le corps), puis ses choix (réglages) — { taille, poids }. */
+  morphologieJoueur(k) {
+    const id = this.idDe[k], D = this.morphoCorps?.find((m) => m.id === id), C = this.choixJoueurs?.[k] ?? {};
+    const taille = C.taille ?? D?.taille ?? Math.round((this.M._gf_get_hauteur?.(id) ?? 1.8) * 100);
+    return { taille, poids: C.poids ?? D?.poids ?? poidsPour(taille, 'normal'), poste: D?.poste ?? null };
+  }
+  /** Dessiner un joueur à sa morphologie : la hauteur par l'échelle du modèle (le sol suit : le bassin, posé dans le repère de son parent
+   *  par un inverse pris à l'échelle d'origine, monte d'autant), la carrure par la cible de morphing. */
+  _morphologie(k) {
+    const pl = this.players[k]; if (!pl) return;
+    const M = this.morphologieJoueur(k), { hauteur, carrure } = physique(M.taille, M.poids);
+    pl.model.scale.setScalar(pl.echelle0 * hauteur); pl.groundY = pl.groundY0 * hauteur;
+    const mi = pl.corpsMesh?.morphTargetInfluences, ic = this._iCarrure?.[pl.rig];
+    if (mi && ic != null) mi[ic] = (carrure - 1) / AMPLITUDE_CARRURE;
+  }
+  /** Changer la morphologie d'un joueur (réglages) : la taille (cm), le poids (kg), ou une carrure (fin, normal, costaud : le poids suit). La
+   *  TAILLE entre aussi au corps (gf_set_hauteur : la hauteur de ses touches) — le match change à partir de là. */
+  regleMorphologie(k, champ, v) {
+    const C = (this.choixJoueurs[k] ??= {}), M = this.morphologieJoueur(k);
+    if (champ === 'taille') { C.taille = Math.max(150, Math.min(210, Math.round(Number(v) || M.taille))); this.M._gf_set_hauteur?.(this.idDe[k], C.taille / 100); }
+    else if (champ === 'poids') C.poids = Math.max(45, Math.min(130, Math.round(Number(v) || M.poids)));
+    else if (champ === 'carrure' && CARRURES[v]) C.poids = poidsPour(C.taille ?? M.taille, v);
+    this._morphologie(k);
+    this._apresEquipement(this.players[k].team);
+  }
+  /** Ce que la feuille d'un joueur montre de son corps. */
+  morphologieTexte(k) {
+    const M = this.morphologieJoueur(k);
+    return `${(M.taille / 100).toFixed(2).replace('.', ',')} m, ${M.poids} kg — IMC ${imc(M.taille, M.poids).toFixed(1).replace('.', ',')}, ${corpulence(M.taille, M.poids)}`;
+  }
+
   _apresEquipement(e) {
     try { localStorage.setItem(CLE_EQUIPEMENT, JSON.stringify({ equipes: this.reglesEquipe, joueurs: this.choixJoueurs, capitaines: this.capitaines })); } catch { /* stockage indisponible */ }
     for (let i = 0; i < 11; i++) this._poser(e * 11 + i);

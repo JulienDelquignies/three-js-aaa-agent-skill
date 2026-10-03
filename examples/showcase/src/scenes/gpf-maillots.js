@@ -63,6 +63,19 @@ export const CHAUSSURES = {
   rouge: { nom: 'rouges', c1: 0xd81e2c, c2: 0xf2f2f2 }, 'noire-or': { nom: 'noir et or', c1: 0x161616, c2: 0xd4a017 },
   cyan: { nom: 'cyan', c1: 0x18d4e8, c2: 0x161616 }, violette: { nom: 'violettes', c1: 0x7a3cff, c2: 0xf2f2f2 },
 };
+/** LES GANTS DU GARDIEN : le dos, la sangle de la manchette (la paume : un latex clair). */
+export const GANTS_GARDIEN = {
+  'blanc-noir': { nom: 'blancs, sangle noire', dos: 0xf0f0ee, bande: 0x161616 }, 'jaune-fluo': { nom: 'jaune fluo', dos: 0xe6f018, bande: 0x161616 },
+  orange: { nom: 'orange', dos: 0xff6a13, bande: 0x161616 }, 'noir-vert': { nom: 'noirs, sangle verte', dos: 0x161616, bande: 0x3cf26a, paume: 0xc8c8c0 },
+  bleu: { nom: 'bleus', dos: 0x1e6bff, bande: 0xf0f0ee }, rose: { nom: 'roses', dos: 0xff4fa3, bande: 0x161616 },
+  rouge: { nom: 'rouges', dos: 0xd81e2c, bande: 0xf0f0ee }, cyan: { nom: 'cyan', dos: 0x18d4e8, bande: 0x161616 },
+};
+/** Les gants d'un gardien laissés au choix : le premier modèle (à partir d'un rang tiré par le numéro) qui tranche sur son maillot. */
+export function gantsPour(T, numero = 1) {
+  const cles = Object.keys(GANTS_GARDIEN), d = (Number(numero) * 3) % cles.length;
+  for (let i = 0; i < cles.length; i++) { const c = cles[(d + i) % cles.length]; if (ecart(GANTS_GARDIEN[c].dos, T.c1) > 160) return c; }
+  return cles[d];
+}
 /** L'ÉQUIPEMENT D'UN JOUEUR : les options à plusieurs choix et leurs libellés (les autres sont des cases : antidérapantes, strap des
  *  chaussettes, cuissard, gants, brassard). */
 export const EQUIPEMENT = {
@@ -314,7 +327,7 @@ export function peauDe(image, carte, forme) {
 
 /**
  * LA CHAUSSETTE BASSE EN VOLUME : une cible de morphing du corps (dans la pose de repos, avant le skinning — les ombres suivent), réglée par
- * joueur (`mesh.morphTargetInfluences[0]`). La chaussette moyenne du maillage, protège-tibia compris, est un fourreau plus gros que la jambe,
+ * joueur (`mesh.morphTargetInfluences[indice]`, l'indice rendu). La chaussette moyenne du maillage, protège-tibia compris, est un fourreau plus gros que la jambe,
  * fermé en haut par un bord : peinte en peau, elle faisait un mollet gonflé sous une marche (vu de près le 3 octobre). Chaque sommet de la
  * chaussette (zone 5, par ses UV) s'écarte de l'axe cheville-genou de sa jambe (le squelette au repos, maillot-carte.json) ; son rayon est mis
  * à l'échelle selon sa hauteur — × 1,06 sur la chaussette roulée (0,13-0,18 m), × 0,9 sur le mollet, et le bord (0,42-0,47 m) jusqu'au
@@ -352,10 +365,41 @@ export function morphChaussetteBasse(geometrie, carte) {
   const P0 = new Float32Array(n * 3); for (let i = 0; i < n; i++) { P0[i * 3] = pos.getX(i); P0[i * 3 + 1] = pos.getY(i); P0[i * 3 + 2] = pos.getZ(i); }
   const P1 = P0.map((v, i) => v + d[i]), N0 = normalesDe(P0), N1 = normalesDe(P1), dn = new Float32Array(n * 3);
   for (let i = 0; i < n * 3; i++) dn[i] = N1[i] - N0[i];
-  geometrie.morphAttributes.position = [new THREE.Float32BufferAttribute(d, 3)];
-  geometrie.morphAttributes.normal = [new THREE.Float32BufferAttribute(dn, 3)];
+  (geometrie.morphAttributes.position ??= []).push(new THREE.Float32BufferAttribute(d, 3));
+  (geometrie.morphAttributes.normal ??= []).push(new THREE.Float32BufferAttribute(dn, 3));
   geometrie.morphTargetsRelative = true;
-  return { fBord };
+  return { fBord, indice: geometrie.morphAttributes.position.length - 1 };
+}
+
+/**
+ * LA PAUME, mesurée sur la forme d'un corps (pour les gants du gardien) : les texels de la main gauche (zone 7, x > 0,3 m) au repos — leur
+ * centre, et l'axe où la main est la plus mince (la plus petite valeur propre de leur covariance : la normale de la paume), tourné vers le
+ * corps (la paume d'une main pendante regarde la cuisse). La main droite s'en déduit en miroir (|x|).
+ */
+export function mainsDe(forme, carte) {
+  const { N, zones } = carte, NF = forme.NF, k = N / NF, c = [0, 0, 0], pts = [];
+  for (let y = 0; y < NF; y++) for (let x = 0; x < NF; x++) {
+    if (zones[y * k * N + x * k] !== 7) continue;
+    const o = (y * NF + x) * 4; if (forme[o] < 0.3) continue;
+    pts.push(forme[o], forme[o + 1], forme[o + 2]); c[0] += forme[o]; c[1] += forme[o + 1]; c[2] += forme[o + 2];
+  }
+  const n = pts.length / 3; if (n < 50) return null;
+  for (let i = 0; i < 3; i++) c[i] /= n;
+  const A = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for (let j = 0; j < n; j++) for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) A[a][b] += (pts[j * 3 + a] - c[a]) * (pts[j * 3 + b] - c[b]) / n;
+  // la plus petite valeur propre : Jacobi sur la matrice symétrique 3 × 3
+  const V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+  for (let it = 0; it < 50; it++) {
+    let p = 0, q = 1; for (const [i, j] of [[0, 2], [1, 2]]) if (Math.abs(A[i][j]) > Math.abs(A[p][q])) { p = i; q = j; }
+    if (Math.abs(A[p][q]) < 1e-12) break;
+    const th = 0.5 * Math.atan2(2 * A[p][q], A[q][q] - A[p][p]), cs = Math.cos(th), sn = Math.sin(th);
+    for (let r = 0; r < 3; r++) { const ap = A[r][p], aq = A[r][q]; A[r][p] = cs * ap - sn * aq; A[r][q] = sn * ap + cs * aq; }
+    for (let r = 0; r < 3; r++) { const ap = A[p][r], aq = A[q][r]; A[p][r] = cs * ap - sn * aq; A[q][r] = sn * ap + cs * aq; }
+    for (let r = 0; r < 3; r++) { const vp = V[r][p], vq = V[r][q]; V[r][p] = cs * vp - sn * vq; V[r][q] = sn * vp + cs * vq; }
+  }
+  const m = [0, 1, 2].reduce((b, i) => (A[i][i] < A[b][b] ? i : b), 0);
+  let nm = [V[0][m], V[1][m], V[2][m]]; if (nm[0] > 0) nm = nm.map((v) => -v);   // vers le corps : −x pour la main gauche
+  return { centre: c, normale: nm, epaisseur: Math.sqrt(Math.max(0, A[m][m])) };
 }
 
 // ———————————————————————————— le flocage : un alphabet en champ de distance ————————————————————————————
@@ -443,7 +487,7 @@ export function mettreEnPage(texte, alphabet, max = 16) {
 // LES OPTIONS D'UN JOUEUR, regroupées par quatre dans des vec4 du matériau (o0-o4) : three range chaque NOMBRE d'un matériau dans la clé de
 // son programme (0 ou « non nul » : RenderObject.getMaterialCacheKey) — dix-neuf options à 0 ou 1, c'étaient autant de programmes que de
 // combinaisons portées (mesuré le 3 octobre : 110 programmes au lieu de 70) ; un objet, lui, compte pour « {} » quelles que soient ses valeurs
-const OPTIONS = ['rentre', 'longues', 'garder', 'cuissard', 'hautes', 'basses', 'antider', 'strapC', 'bandageG', 'bandageD', 'gants', 'brassard', 'poignetG', 'poignetD', 'bottesClaires', 'motifShort', 'motifChaussettes', 'nomL', 'chifL'];
+const OPTIONS = ['rentre', 'longues', 'garder', 'cuissard', 'hautes', 'basses', 'antider', 'strapC', 'bandageG', 'bandageD', 'gants', 'brassard', 'poignetG', 'poignetD', 'bottesClaires', 'motifShort', 'motifChaussettes', 'nomL', 'chifL', 'gantsGardien'];
 const OPT = Object.fromEntries(OPTIONS.map((n, i) => [n, [`o${i >> 2}`, 'xyzw'[i & 3]]]));
 const N_OPT = Math.ceil(OPTIONS.length / 4);
 const sous = (a, b, x) => float(1).sub(smoothstep(a, b, x));   // 1 sous a, 0 au-dessus de b
@@ -452,7 +496,7 @@ const est = (v, k) => step(abs(v.sub(k)), 0.5);
 /** LE GRAPHE DE COULEUR, construit une fois pour les 22 (voir l'en-tête) : la tenue d'équipe (`tenue`), puis l'équipement du joueur, puis son
  *  flocage. Les entrées partagées : les masques, l'alphabet, la description de la carte ; du matériau : la tenue, la forme de son corps
  *  (`forme` : position au repos, relief), les options (o0-o4), les couleurs, le nom et le numéro. */
-export function couleurTenue({ masques, alphabet, desc }) {
+export function couleurTenue({ masques, alphabet, desc, mains }) {
   const U = uv(), O = Array.from({ length: N_OPT }, (_, i) => materialReference(`o${i}`, 'vec4'));
   const f = (n) => O[Number(OPT[n][0].slice(1))][OPT[n][1]], c = (n) => materialReference(n, 'color'), un = (x) => float(1).sub(x);
   const base = materialReference('tenue', 'texture').rgb;
@@ -514,6 +558,13 @@ export function couleurTenue({ masques, alphabet, desc }) {
   // 7. LE STRAP DES POIGNETS (sur la peau, sous une manche longue il ne se voit pas) et LE BRASSARD du capitaine (le haut du bras gauche)
   col = mix(col, blancBande.mul(ao), mA.r.mul(un(longues)).mul(coteJ(f('poignetG'), f('poignetD'))).mul(smoothstep(0.497, 0.503, tBras)).mul(sous(0.54, 0.546, tBras)));
   col = mix(col, c('cBrassard').mul(ao), max(mB.r, mA.r).mul(surBras).mul(f('brassard')).mul(gauche).mul(smoothstep(0.085, 0.091, tBras)).mul(sous(0.144, 0.15, tBras)));
+  // 7 bis. LES GANTS DU GARDIEN (la main est aussi grossie, par l'échelle de ses os : GpfMatch) — le dos à la couleur du gant, la paume en latex
+  //    clair (le côté de la main tourné vers le corps au repos : mainsDe), la manchette sur le poignet avec sa sangle, par-dessus la manche
+  const gardien = f('gantsGardien'), M = mains ?? { centre: [0.62, 0.97, 0.08], normale: [-1, 0, 0] };
+  const paume = smoothstep(-0.003, 0.003, dot(vec3(abs(P.x), P.y, P.z).sub(vec3(...M.centre)), vec3(...M.normale)));
+  col = mix(col, mix(c('cGantsDos'), c('cGantsPaume'), paume).mul(ao.mul(0.5).add(0.5)), mA.g.mul(gardien));
+  const manchette = max(mA.r, mB.r).mul(surBras).mul(gardien).mul(smoothstep(0.462, 0.47, tBras));
+  col = mix(col, mix(c('cGantsDos'), c('cGantsBande'), dans(tBras, 0.488, 0.512)).mul(ao), manchette);
   // 8. LE FLOCAGE
   col = flocage(col, U, alphabet.tex, desc, f);
   // LA NORMALE : celle de la carte du corps, sauf sur la jambe nue d'une chaussette basse (le tricot de la chaussette n'est pas de la peau)
@@ -566,7 +617,7 @@ function flocage(col, U, alphabetTex, desc, f) {
  *  son rendu principal (setupDiffuseColor), absente sinon : la passe d'ombre ne voit ni `map` ni `colorNode` et garde son matériau commun (un
  *  `positionNode` y serait repris, lui aussi : la silhouette passe donc par une cible de morphing). La clé de programme porte le graphe. Les
  *  réglages du joueur sont des propriétés du matériau, lues par référence. */
-const COULEURS = ['cShort', 'cShortB', 'cMancheG', 'cMancheD', 'cRevers', 'cCuissard', 'cChaussette', 'cBande', 'cPeau', 'cAntider', 'cChaussure', 'cChaussure2', 'cGants', 'cBrassard', 'cNum', 'cNumBord'];
+const COULEURS = ['cShort', 'cShortB', 'cMancheG', 'cMancheD', 'cRevers', 'cCuissard', 'cChaussette', 'cBande', 'cPeau', 'cAntider', 'cChaussure', 'cChaussure2', 'cGants', 'cGantsDos', 'cGantsPaume', 'cGantsBande', 'cBrassard', 'cNum', 'cNumBord'];
 const VECTEURS = ['nom0', 'nom1', 'nom2', 'nom3', 'nomC0', 'nomC1', 'nomC2', 'nomC3', 'nomB0', 'nomB1', 'nomB2', 'nomB3', 'chif', 'chifC', 'chifB'];
 class MateriauTenue extends THREE.MeshStandardNodeMaterial {
   static get type() { return 'MateriauTenue'; }
@@ -611,6 +662,8 @@ export function poserJoueur(m, { tenueTex, forme, T0, peau, bottesClaires, equip
   o('bandageG', q.bandage === 'gauche' || q.bandage === 'deux' ? 1 : 0); o('bandageD', q.bandage === 'droite' || q.bandage === 'deux' ? 1 : 0);
   o('poignetG', q.poignets === 'gauche' || q.poignets === 'deux' ? 1 : 0); o('poignetD', q.poignets === 'droit' || q.poignets === 'deux' ? 1 : 0);
   o('gants', q.gants ? 1 : 0); set('cGants', teinte(q.couleurGants ?? 'noir', T.c1));
+  const G = GANTS_GARDIEN[q.gantsGardien === 'auto' ? gantsPour(T, numero) : q.gantsGardien] ?? GANTS_GARDIEN['blanc-noir'];
+  o('gantsGardien', q.gantsGardien ? 1 : 0); set('cGantsDos', G.dos); set('cGantsBande', G.bande); set('cGantsPaume', G.paume ?? 0xd6d6cf);
   o('brassard', q.brassard ? 1 : 0); set('cBrassard', q.couleurBrassard ?? 0xffc81e);
   // le nom (16 glyphes au plus) et le numéro (2 chiffres), mis en page
   const poser = (P, gs, cs2, bs, n) => {
@@ -623,8 +676,8 @@ export function poserJoueur(m, { tenueTex, forme, T0, peau, bottesClaires, equip
 
 /** L'ÉQUIPEMENT PAR DÉFAUT d'un joueur, tiré par une graine (le même à chaque chargement). Des fréquences d'observateur, pas des statistiques :
  *  manches longues 12 % (le gardien 60 %), sous-maillot 5 % ; chaussettes au-dessus du genou 12 %, basses 6 % ; antidérapantes visibles 30 %,
- *  strap des chaussettes 20 % ; maillot rentré 55 % ; cuissard visible 12 % ; bandage de la main 4 %, strap des poignets 12 %, gants 6 % (le
- *  gardien en porte toujours) ; les chaussures au hasard. */
+ *  strap des chaussettes 20 % ; maillot rentré 55 % ; cuissard visible 12 % ; bandage de la main 4 %, strap des poignets 12 %, gants 6 % ; le
+ *  gardien porte toujours ses gants de gardien (un modèle qui tranche sur son maillot : gantsPour) ; les chaussures au hasard. */
 export function equipementDe(graine, id, { gardien = false } = {}) {
   let s = ((graine * 7919 + id * 104729 + 13) >>> 0) || 1; const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
   r(); r();
@@ -639,7 +692,7 @@ export function equipementDe(graine, id, { gardien = false } = {}) {
     chaussures: pick(chs),
     bandage: b < 0.03 ? 'droite' : b < 0.04 ? 'gauche' : 'aucun',
     poignets: p < 0.05 ? 'deux' : p < 0.09 ? 'droit' : p < 0.12 ? 'gauche' : 'aucun',
-    gants: gardien || r() < 0.06, couleurGants: gardien ? 'blanc' : 'noir',
+    gants: !gardien && r() < 0.06, couleurGants: 'noir', gantsGardien: gardien ? 'auto' : null,
     brassard: false,
   };
 }

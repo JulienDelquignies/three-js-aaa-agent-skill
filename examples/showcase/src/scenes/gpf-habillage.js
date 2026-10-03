@@ -1,4 +1,5 @@
-import { TENUES, MOTIFS, MOTIFS_SHORT, MOTIFS_CHAUSSETTES, CHAUSSURES, EQUIPEMENT, TEINTES, conflit } from './gpf-maillots.js';
+import { TENUES, MOTIFS, MOTIFS_SHORT, MOTIFS_CHAUSSETTES, CHAUSSURES, EQUIPEMENT, TEINTES, GANTS_GARDIEN, conflit } from './gpf-maillots.js';
+import { CARRURES, carrureDe } from './gpf-morphologie.js';
 
 // gpf-habillage.js — L'HABILLAGE TÉLÉ DE /match11 (lot L5 « L'image » ; EX-04 la régie, EX-38/42 les statistiques en direct). Du DOM
 // par-dessus le canevas, rien dans la scène :
@@ -394,6 +395,10 @@ export class Habillage {
       <div class="gh-sous" style="font-size:12px;opacity:.85">Un joueur</div>
       <label>Joueur<select data-joueur>${joueurs}</select></label>
       <label>Le regarder de près<button data-a="portrait" style="width:auto">Portrait 🎥</button></label>
+      ${(() => { const M = m.morphologieJoueur?.(k); if (!M) return ''; const num = (c, v, a, b) => `<input type="number" data-morpho="${c}" value="${v}" min="${a}" max="${b}" step="1" style="width:72px;background:#141b2c;color:var(--texte);border:1px solid var(--trait);border-radius:6px;padding:4px 6px;font:inherit">`;
+        return `<label>Taille (cm)${num('taille', M.taille, 150, 210)}</label><label>Poids (kg)${num('poids', M.poids, 45, 130)}</label>
+        <label>Carrure<select data-morpho="carrure">${Object.entries(CARRURES).map(([c, x]) => `<option value="${c}" ${carrureDe(M.taille, M.poids) === c ? 'selected' : ''}>${x.nom}</option>`).join('')}</select></label>
+        <p style="margin:2px 0 6px">${esc(m.morphologieTexte(k))}. La taille compte aussi pour le corps (la hauteur de ses touches de balle).</p>`; })()}
       ${sel('manches', 'Manches', EQUIPEMENT.manches)}${Q.manches === 'sous-maillot' ? sel('couleurSous', 'Couleur du sous-maillot', TEINTES) : ''}
       ${sel('maillot', 'Maillot', EQUIPEMENT.maillot)}
       ${sel('chaussettes', 'Chaussettes', EQUIPEMENT.chaussettes)}
@@ -403,7 +408,8 @@ export class Habillage {
       ${sel('chaussures', 'Chaussures', CHAUSSURES)}
       ${sel('bandage', 'Bandage de la main', EQUIPEMENT.bandage)}
       ${sel('poignets', 'Strap des poignets', EQUIPEMENT.poignets)}
-      ${coche('gants', 'Gants')}${Q.gants ? sel('couleurGants', 'Couleur des gants', TEINTES) : ''}
+      ${pl?.gk ? sel('gantsGardien', 'Gants du gardien', { auto: 'Au choix (ils tranchent sur le maillot)', ...GANTS_GARDIEN })
+    : `${coche('gants', 'Gants')}${Q.gants ? sel('couleurGants', 'Couleur des gants', TEINTES) : ''}`}
       ${coche('brassard', 'Capitaine (le brassard)')}
       <p>${esc(m.nomFloque(k) || 'Ce joueur')} porte le n° ${pl?.numero ?? k + 1}. Les règles d’équipe passent avant le tirage au sort, les choix d’un joueur avant les règles.</p>`;
   }
@@ -434,6 +440,7 @@ export class Habillage {
     // l'équipement : une règle d'équipe, un joueur choisi, un détail de son équipement
     if (t.dataset.q != null) { m.regleEquipe(Number(t.dataset.q), t.dataset.c, t.value || null); return this._rendreReglages(); }
     if (t.dataset.joueur != null) { this.joueur = Number(t.value); if (m.plan === 'portrait') m.portrait = this.joueur; return this._rendreReglages(); }
+    if (t.dataset.morpho != null) { m.regleMorphologie(this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1, t.dataset.morpho, t.value); return this._rendreReglages(); }
     if (t.dataset.j != null) {
       const k = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1;
       m.regleJoueur(k, t.dataset.j, t.type === 'checkbox' ? t.checked : t.value);
