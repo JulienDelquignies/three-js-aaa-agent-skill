@@ -15,7 +15,8 @@
   - l'habillage télé et la régie (pause, ×½ à ×8, prochain temps fort, 10 s en arrière, six caméras, réglages) ;
   - la feuille de match (`feuille.mjs`, `docs/feuille.md`, garde `bancs/feuille.mjs`) : le rapport de `stats.js`, les notes ;
   - le magnétoscope : les ralentis des buts sous deux angles, le différé ; le corps attend pendant la lecture (le match ne change pas).
-  L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs`. L'état et ce qui reste : le cadrage § 14 (les maillots, l'apparence par joueur, le réalisateur complet, les résumés).
+  - **les maillots** (3 octobre au soir, `gpf-maillots.js`, `tools/maillot-carte.py`, page cd064a2) : motifs et couleurs au choix, noms et numéros floqués, écusson et sponsor, gardiens, conflits de couleurs.
+  L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs` (étapes : jeu, tempsfort, recul, plans, but, stats, maillots, dos — avec `&orbit` —, reglages, heures, stades). L'état et ce qui reste : le cadrage § 14 (l'apparence par joueur, le réalisateur complet, les résumés, les programmes de shader sous 60).
 - **Ce qui reste du jeu** (les options proposées le 3 octobre, avant L5, dans l'ordre) :
   1. le râteau et la roulette **en course** (les demi-tours d'Olmo sous pression : décidés 2 à 7 fois par demi-heure, joués seulement à l'arrêt) — des clips du duel (`rouletteCourse`, `rateau`) à fondre dans la foulée ;
   2. les **attributs dans le corps** (`gf_set_stat` : agilité, dribble, contrôle…, `docs/attributs.md` § 4.2) ;
