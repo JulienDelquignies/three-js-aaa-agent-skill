@@ -151,6 +151,12 @@ function allerRetour(fichiers) {
 }
 
 // ── un geste de notre moteur → un fichier .anim du corps ───────────────────────────────────────────────────────────────
+/** Les gestes sans touche de balle : les passements (le pied passe au-dessus du ballon immobile) et la feinte d'appel. */
+const SANS_TOUCHE = /^passement|^feinteAppel/;
+/** LE RÉPERTOIRE DU FACE-À-FACE (face.js, branche duel) et son numéro dans le corps (specialvar1). */
+export const REPERTOIRE = { arretSemelle: 101, semelleRoule: 102, semelleRouleOut: 103, feinteSemelle: 104, feinteSemelleIn: 105, passementFace: 106,
+  passementSerie2: 107, passementSerie3: 108, passementSerie4: 109, tireSemelle: 110, tireSemelleIn: 111, rateauFace: 112, rateauFaceIn: 113,
+  rouletteFace: 114, doubleContact: 115, rateau: 116 };
 async function geste(nom, numero, sortie) {
   const S_ = await import(join(STARTER, 'motion-skill.js'));
   const P = profilReference(), C = restOffsets(P);
@@ -173,8 +179,9 @@ async function geste(nom, numero, sortie) {
   const fmt = (v) => v.toFixed(6);
   const lignes = [`player,${poses.map((p) => `${p.f},${p.S.p.map(fmt).join(',')}`).join(',')}`];
   for (const n of GPF_NODES) lignes.push(`${n},${poses.map((p) => `${p.f},${p.S.q[n].map(fmt).join(',')}`).join(',')}`);
-  lignes.push(`extension,football,${fTouche},${ballon.map(fmt).join(',')}`);
-  lignes.push(`<type>\n\t${K.sole || K.contact != null ? 'ballcontrol' : 'movement'}\n</type>`);
+  const touche = !SANS_TOUCHE.test(nom);
+  if (touche) lignes.push(`extension,football,${fTouche},${ballon.map(fmt).join(',')}`);   // (une animation de déplacement n'a pas de touche)
+  lignes.push(`<type>\n\t${touche ? 'ballcontrol' : 'movement'}\n</type>`);
   lignes.push(`<specialvar1>\n\t${numero}\n</specialvar1>`);
   const texte = lignes.join('\n') + '\n';
   if (sortie) writeFileSync(sortie, texte);
@@ -187,5 +194,6 @@ const [mode, ...args] = direct ? process.argv.slice(2) : [];
 if (!direct) { /* importé : les fonctions seules */ }
 else if (mode === 'aller-retour') allerRetour(args.length ? args : ['ballcontrol/idle/000.anim', 'pass/idle/180.anim', 'trap/idle/000_IB000.anim', 'shot/sprint/000_headerdive.anim', 'sliding/walk/000.anim']);
 else if (mode === 'geste') await geste(args[0], +args[1], args[2]);
+else if (mode === 'tous') for (const [nom, n] of Object.entries(REPERTOIRE)) await geste(nom, n, new URL(`../gestes/${nom}.anim`, import.meta.url).pathname);
 else console.log('usage : node outils/vers-gpf.mjs aller-retour [fichiers…] | geste <nom> <numéro> [sortie.anim]');
 export { GPF_PARENT, GPF_OFFSET, gpfVec, gpfQuat };

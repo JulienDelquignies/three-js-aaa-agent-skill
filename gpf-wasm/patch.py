@@ -233,4 +233,14 @@ sub('onthepitch/player/humanoid/humanoidbase.cpp',
     '''    currentAnim.anim = anims->GetAnim(selectedAnimID);
     currentAnim.id = selectedAnimID;
     gf_anim_compte(3, selectedAnimID);  // [gf-intent] le relevé des animations''')
+# 11. LE GESTE VOULU TOUCHE LE BALLON (intention GESTE, api/intents.cpp) : à l'arrêt, ballon arrêté au pied, le corps juge qu'une touche
+#     est inutile (NeedTouch : « when idle, don't want to touch the ball every frame ») — or le face-à-face n'est fait que de touches
+#     à l'arrêt (semelle, roulé, tiré, croqueta). Une commande de notre répertoire (specialVar1 ≥ 100, posé par la seule intention
+#     GESTE) veut sa touche. Sans elle, rien ne change.
+sub('onthepitch/player/humanoid/humanoid.cpp',
+    '''bool Humanoid::NeedTouch(int animID, const PlayerCommand &command) {
+  DO_VALIDATION;''',
+    '''bool Humanoid::NeedTouch(int animID, const PlayerCommand &command) {
+  DO_VALIDATION;
+  if (command.useSpecialVar1 && command.specialVar1 >= 100) return true;  // [gf-intent] un geste de notre répertoire''')
 print('patch: ok')
