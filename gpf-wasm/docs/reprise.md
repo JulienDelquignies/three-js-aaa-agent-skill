@@ -46,11 +46,13 @@ Recréer la copie du cadrage : `git -C ~/DelkIT/FootballEcosystemLifeSim-l1 work
 
 ## 4. Rapatrier depuis l'ancienne machine (elle reste joignable en SSH)
 
+L'ancienne machine : **`delkit@192.168.1.5`** sur le réseau local (SSH sur les ports 22 et 2222 ; aussi `100.103.7.118`, son adresse Tailscale). Poser d'abord la clé de la nouvelle machine : `ssh-copy-id delkit@192.168.1.5` (le mot de passe une fois).
+
 ```sh
-# ANCIEN = l'alias SSH de l'ancienne machine
-rsync -a ANCIEN:DelkIT/ ~/DelkIT/                     # les dépôts et leurs copies de travail (chemins identiques : les worktrees restent valides)
-rsync -a ANCIEN:.claude/ ~/.claude/ --exclude 'projects/*/*.jsonl'   # instructions, réglages, crochets, skills, mémoire
-rsync -a ANCIEN:.ssh/ ~/.ssh/                         # si les mêmes clés servent (vps, GitHub)
+ANCIEN=delkit@192.168.1.5
+rsync -a $ANCIEN:DelkIT/ ~/DelkIT/                    # les dépôts et leurs copies de travail (chemins identiques : les worktrees restent valides)
+rsync -a $ANCIEN:.claude/ ~/.claude/ --exclude 'projects/*/*.jsonl'   # instructions, réglages, crochets, skills, mémoire
+rsync -a $ANCIEN:.ssh/ ~/.ssh/                        # si les mêmes clés servent (vps, GitHub)
 ```
 - Si les chemins changent : `git worktree repair` dans chaque copie, et recopier la mémoire sous la nouvelle clé du dossier de travail.
 - `gpf-wasm/upstream/` (les sources GRF téléchargées et patchées, 278 Mo) et `gpf-wasm/build/` viennent avec le rsync ; sinon `./fetch.sh` les recrée. `gpf-wasm/out/` (le module, ses données, le cerveau empaqueté) est dans git.
