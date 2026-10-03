@@ -10,6 +10,7 @@
   - **Quand** : le cerveau décide les gestes en course dans ses propres fenêtres — le défenseur qui se jette, la course fermée, le jockey posté, le poursuivant… —, avec ses attributs.
   - **Comment** : le corps joue neuf gestes en pleine course (crochet court, crochet, crochet chaloupé, crochet de l'extérieur, croqueta, feinte de corps, passement, grand pont, petit pont), cuits depuis la foulée du duel, et le passement, la croqueta et le râteau à l'arrêt.
   - **Le face-à-face planté** devient l'affaire des seules anomalies.
+- **La morsure** : au contact, le défenseur franchi (le noyau de duel du cerveau) mord, le temps que le geste lui coûte.
 - **Le partage des fichiers** :
 
 | Fichier | Rôle |
@@ -134,6 +135,14 @@ Le studio mesure chaque geste sur notre squelette : le cou-de-pied rejoint le ba
 3. **La sortie** : la conduite vers la sortie du geste, à son allure, jusqu'à sa fin (+ 0,2 s).
 4. **La fin** : un autre joueur touche le ballon, le porteur passe, ou le geste est fini ; la suite (le ballon gardé) se juge 1,5 s plus tard.
 
+### 4.5 La morsure du défenseur
+
+Dans le monde du cerveau, une feinte réussie fait mordre le défenseur : il s'engage du côté vendu, le temps que le geste lui coûte. Sans cela, le défenseur du corps suivait son placement et ses réflexes, et une feinte ne valait que par sa géométrie.
+- **Le contact se juge par le noyau de duel du cerveau** (`noyau.js`, `noyauAuContact`), à la première touche du geste (le journal : `GF_EV_SERIE` de rang 0), sur le monde prêté : les attributs du porteur (le dribble, l'agilité, le flair…) contre ceux du défenseur visé, la géométrie ; huit issues, « franchi » dans 59 % des cas pour deux joueurs moyens (le book du moteur). Les gestes qu'il ne connaît pas (la feinte de corps, le grand pont) sont jugés comme un passement.
+- **Franchi, le défenseur mord** le temps que le cerveau donne au geste (`skillContactNow`) : la croqueta 0,55 s, le passement et le crochet 0,6 s au moins, le petit pont 0,7, le grand pont 0,55, la roulette 0,3, la feinte de corps 0,5 (la loi du duel) — × la technique du porteur. Il part sur la ligne que le porteur a quittée (3 m devant, sur sa course d'entrée), sans réflexes de duel (ALLER au drapeau 1, la garde du face-à-face).
+- **Les autres issues** (la dépossession, la faute) restent au corps : c'est lui qui joue les contacts.
+- **Mesuré** (3 graines × 30 min, A/B) : 23 défenseurs franchis sur 30 contacts ; le ballon gardé 1,5 s après le geste 25 fois sur 40 avec la morsure, 21 sur 40 sans ; les touches adverses pendant le geste, 17 contre 21. L'option `gestesMorsure: false` l'éteint.
+
 ## 5. Mesures
 
 ### 5.1 Qui dribble (`bancs/gestes-match.mjs`, 30 min, graines 7 et 11, effectifs générés)
@@ -152,7 +161,7 @@ Le studio mesure chaque geste sur notre squelette : le cou-de-pied rejoint le ba
 ### 5.2 Le corps les joue (en match, les décisions du cerveau ; 4 × 30 min)
 
 - **Partis** : 72-81 % des gestes demandés (57 sur 76), dans les 0,7 s — une demande tenue 1,1 s n'en fait pas partir plus (74 % contre 76 %).
-- **Le ballon gardé** 1,5 s après : 34 sur 57 (60 %), l'ordre d'un dribble réussi au réel (45-55 % pour l'élite).
+- **Le ballon gardé** 1,5 s après : 34 sur 57 (60 %), l'ordre d'un dribble réussi au réel (45-55 % pour l'élite) — mesuré avant la morsure ; avec elle, 62 % contre 52 % sur les mêmes graines (§ 4.5).
 - **Par geste** (4 matchs) : le passement part 18 fois sur 18, ballon gardé 14 fois ; la croqueta 5 sur 6, gardé 5 ; le crochet chaloupé 9 sur 12, gardé 5 ; le crochet court 4 sur 6, gardé 3 ; la feinte de corps 4 sur 5, gardé 2. Les ponts partent (grand pont 4 sur 5, petit pont 4 sur 8) mais ne gardaient pas le ballon (0 sur 8) : la poussée du grand pont frôlait le défenseur (14° : 0,6 m de lui à 2,5 m devant) — ouverte à 24° depuis, à remesurer.
 - **Demandés au hasard** à des porteurs lancés (`bancs/course-essai.mjs`, hors des fenêtres du cerveau) : 50-60 % partent ; après un contrôle ou un amorti, 66-95 % ; pendant une passe ou une intervention, aucun. La seconde touche de la croqueta tombe à 3-4 cm de l'attendu.
 
@@ -170,7 +179,7 @@ Le studio mesure chaque geste sur notre squelette : le cou-de-pied rejoint le ba
 
 ## 6. Ce qui manque
 
-- **Le défenseur ne mord pas encore à nos feintes en course.** Dans le monde du cerveau, une feinte réussie fait MORDRE le défenseur (il s'engage du côté vendu, `foe._bite`, × la technique du porteur) ; le face-à-face l'applique au corps (le mordu glisse de 0,6 m, sans réflexes). Les gestes en course ne le font pas : le défenseur du corps suit son placement et ses réflexes, et une feinte ne vaut que par sa géométrie. C'est le chantier suivant : la morsure au contact du geste, à la loi du cerveau.
+- **La morsure** (§ 4.5) n'envoie le mordu que sur la ligne quittée par le porteur ; le côté vendu d'une feinte de corps (la jambe posée large) mériterait sa propre direction, et la dépossession ou la faute du noyau pourraient être rendues au corps.
 - **Le râteau et la roulette lancés** : décidés 2 à 7 fois par demi-heure (le râteau surtout : son poids × 8 chez le cerveau), joués seulement à l'arrêt. Ce ne sont pas des temps de foulée : il faudra fondre les clips du duel (`rouletteCourse`, `rateau`) dans la course.
 - **Le sprint** (≥ 6 m/s) : aucune variante — le corps n'aurait pas de candidate.
 - **Le pied** : chaque côté se joue d'un seul fichier (ou de son miroir) ; à contre-pied du porteur, le corps fond le départ. Les crochets de l'intérieur et de l'extérieur pourraient partager leur n° pour que le corps prenne celui du bon pied (son tri par pied courant).

@@ -42,6 +42,7 @@ console.log(`  par poste : ${Object.entries(F).map(([f, v]) => `${f} ${v.n} (${v
 const C = S.course;
 if (C) {
   console.log(`  joués par le corps : ${C.demandes} demandés, ${C.partis} partis, ${C.touches} touches · ballon gardé à +1,5 s ${C.gardes}/${C.juges} · issues ${Object.entries(C.issues).map(([n, v]) => `${n} ${v}`).join(', ')}`);
+  console.log(`    au contact (le noyau du cerveau) : ${C.contacts} jugés, ${G.franchis ?? 0} franchis — ${C.morsures} morsures`);
   console.log(`    par geste : ${Object.entries(C.parGeste).map(([n, g]) => `${n} ${g.partis}/${g.demandes} (gardé ${g.gardes}/${g.juges})`).join(' · ')}`);
   console.log(`    pas encore dans le corps : ${Object.entries(C.sansAnimation).map(([n, v]) => `${n} ${v}`).join(' · ') || 'rien'}`);
 }

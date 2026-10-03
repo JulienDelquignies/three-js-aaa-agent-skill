@@ -258,6 +258,7 @@ Le détail, la référence (Dani Olmo) et le studio : `docs/gestes-en-course.md`
 - **Le cerveau décide** (`gesteDuCerveau`, à chaque tick du porteur, avant l'arbitrage) : ses « niches du 1c1 » dans l'ordre de son pas — la croqueta contre le défenseur qui se jette, le petit et le grand pont, la roulette contre le poursuivant, le râteau contre la charge, le passement contre le jockey posté, la feinte de corps (portée du duel), le crochet contre la course fermée. Son monde est prêté : on lit le geste qu'il lance (`c.act`), puis on l'efface.
 - **Qui les tente** : dribM (le rôle, le lieu, la cadence, la nature, la lucidité) × le flair × la technique — les centraux presque jamais, les ailiers et le 10 souvent, les anomalies le plus.
 - **Le corps les joue** : l'animation du répertoire en course de l'espèce, à la variante de l'allure du porteur (2,5 m/s sous 3, 3,5 sous 4,2, 5 au-delà ; le passement, la croqueta et le râteau plantés sous 1,8 m/s) ; l'intention GESTE tenue jusqu'à sa première touche (0,7 s au plus pour partir), puis la conduite de sortie. Le côté, le corps le prend (le fichier ou son miroir, au plus près de la sortie demandée).
+- **La morsure** (`jugerContact`) : à la première touche du geste, le noyau de duel du cerveau (`noyauAuContact`) juge le take-on contre le défenseur visé ; franchi, il mord le temps que le cerveau donne au geste — il part sur la ligne que le porteur a quittée, sans réflexes de duel (ALLER au drapeau 1). Mesuré : le ballon gardé 1,5 s après le geste dans 62 % des cas, 52 % sans (3 × 30 min).
 - **Pas encore dans le corps** (comptés, le porteur conduit) : le râteau et la roulette lancés ; tout geste au sprint (≥ 6 m/s).
 - **Mesuré** (4 × 30 min) : 72-81 % des gestes demandés partent, le ballon gardé 1,5 s après dans 60 % des cas ; les centraux font 0 ou 1 geste par demi-heure, les ailiers et le 10 3 à 6 par minute de ballon. Le détail : `docs/gestes-en-course.md` § 5.
 
@@ -309,6 +310,8 @@ Chaque réglage de l'adaptateur se débraye, pour la mesure A/B : `creerCerveau(
 | `gestesTrace` | aucun | `(t, quoi, détail)` : la chronique des gestes en course |
 | `volumeGestes` | 0,4 | × le volume des gestes du cerveau (`dribble.volume`) ; `null` : le sien |
 | `penteNature` | 2,2 | la pente de la nature du spécialiste (`nature.specialiste.k`) ; `null` : la sienne (1,6) |
+| `gestesAttente` | 0,7 s | la vie d'une demande de geste avant qu'elle tombe (1,1 s n'en fait pas partir plus) |
+| `gestesMorsure` | oui | la morsure du défenseur franchi au contact d'un geste en course (le noyau du cerveau) |
 | `effectifs` | (générés) | `false` : aucun effectif (tous notés 50, le flair au hasard) — aussi le paramètre `effectifs` de `creerCerveau` : les deux effectifs notés de la carrière |
 | `niveau` | 60 | la note moyenne des effectifs générés |
 | `archetypes` | aucun | `[{ equipe, poste, type }]` : un profil (`ARCHETYPES` : `artiste`, `technicien`) posé sur un joueur généré |
@@ -390,7 +393,7 @@ Le cockpit la sert sur /match11.
   - L'adaptateur, lui, suit l'arbitrage tel quel : « passe » donne une passe dès la tenue passée, sans barre ; « conduite » donne une conduite (`porteurDecide`, § 7.4). C'est un écart de structure, relevé par la documentation du moteur (`moteur.md`, § 4.5 et § 9).
 - **Ses joueurs voient tout.** La perception de chacun (`croyanceStep`, le bruit d'observation du moteur) n'est jamais calculée : marqueurs et passeurs du cerveau lisent la vérité (`moteur.md`, §9).
 - **Il ne transmet ni le regard voulu, ni le nom du geste**, hors face-à-face et gestes en course : le corps choisit son animation seul. Les 18 gestes du face-à-face et les 27 gestes en course passent par l'intention GESTE (§ 7.10, § 7.11).
-- **Les gestes en course ne sont pas tous dans le corps** (§ 7.11, `docs/gestes-en-course.md`) : le râteau et la roulette lancés, et tout geste au sprint, sont décidés et comptés, pas joués. Un geste demandé sur quatre ne part pas dans les 0,7 s (le porteur pris dans un autre geste, ou le ballon hors de portée). Le défenseur ne mord pas encore à nos feintes en course.
+- **Les gestes en course ne sont pas tous dans le corps** (§ 7.11, `docs/gestes-en-course.md`) : le râteau et la roulette lancés, et tout geste au sprint, sont décidés et comptés, pas joués. Un geste demandé sur quatre ne part pas dans les 0,7 s (le porteur pris dans un autre geste, ou le ballon hors de portée).
 - **Le face-à-face n'est pas encore tout à fait celui du duel.**
   - La fente gagne trop : elle touche le ballon dans 3 face-à-face sur 4, le défenseur n'est battu qu'une fois sur 10 (§ 7.10).
   - Le jab ne se voit pas : le corps n'a pas de pas plus court qu'un mètre.

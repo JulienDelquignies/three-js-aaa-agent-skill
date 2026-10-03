@@ -29,6 +29,7 @@ import { tac, axe } from '../skills/threejs-aaa/assets/starter/src/engine/tactic
 import { pressionDe } from '../skills/threejs-aaa/assets/starter/src/engine/reception.js';
 import { pressPredicate, maybeCrochet, maybeDoubleContact, maybePassement, maybeRateau, maybeRoulette, maybePetitPont, maybeGrandPontSk, dribM } from '../skills/threejs-aaa/assets/starter/src/engine/skills-sim.js';
 import { situation } from '../skills/threejs-aaa/assets/starter/src/engine/technique.js';
+import { noyauAuContact } from '../skills/threejs-aaa/assets/starter/src/engine/noyau.js';
 import { tackleWindow } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
 import { balPrenable } from '../skills/threejs-aaa/assets/starter/src/engine/dribble.js';
 import { ecartCorps, talonPermis } from '../skills/threejs-aaa/assets/starter/src/engine/passe-faisable.js';
@@ -98,7 +99,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
    *  décide, gestes-course.mjs : true, le corps les joue ; 'mesure', ils sont comptés sans rien changer au match ; false, ils se
    *  taisent ; `gestesTrace(t, quoi, détail)` : leur chronique, pour les bancs), `volumeGestes` et `penteNature` (le volume des gestes et
    *  la pente de la nature du spécialiste, calés sur le réel par poste ; null : ceux du cerveau), `gestesAttente` (s : la vie d'une
-   *  demande de geste avant qu'elle tombe, 0,7). */
+   *  demande de geste avant qu'elle tombe, 0,7), `gestesMorsure` (false : le défenseur ne mord pas aux gestes en course). */
   const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, face: true, gestes: true, volumeGestes: 0.4, penteNature: 2.2, niveau: 60, archetypes: null, ...options };
   // LES EFFECTIFS NOTÉS (docs/attributs.md). Sans eux, le cerveau jouait 22 joueurs notés 50 partout, et seul le flair de la persona
   // variait — tiré au hasard, sans regard au poste : un défenseur central à 0,97 de flair entrait dans le face-à-face planté (retour du
@@ -338,6 +339,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     decider(etat) {
       if (!cerveauDe) apparier(etat);
       preter(etat); etatCourant = etat;
+      if (course && OPT.gestesMorsure !== false) jugerContact(etat);
       // LA LOI 12 DU CERVEAU S'ADJUGE DANS SON ADMINISTRATION (assignMatchJobs → adjugeFaute) : l'avantage d'abord, puis le
       // sifflet. On lit sa décision autour de l'appel — et le sifflet part au corps (gf_faute : coup franc ou penalty,
       // carton), ou le carton seul quand l'avantage a été joué (gf_carton)
@@ -577,6 +579,28 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     }
     c.act = act0; c.intent = intent0; st.events.length = n0; if (st.gestures) st.gestures.length = g0;
     return r;
+  }
+
+  /**
+   * LA MORSURE AU CONTACT D'UN GESTE EN COURSE (gestes-course.mjs) — la loi du cerveau : son NOYAU DE DUEL (noyau.js, noyauAuContact) juge
+   * le take-on une fois, au contact, sur le monde prêté — les attributs du porteur (le dribble, l'agilité, le flair…) contre ceux du
+   * défenseur, la géométrie ; huit issues, « franchi » dans 59 % des cas pour deux joueurs moyens (le book). Franchi, le défenseur MORD
+   * le temps que le cerveau donne à ce geste (skills-sim.js, skillContactNow : la croqueta 0,55 s, le passement et le crochet 0,6 s au
+   * moins, le petit pont 0,7, la roulette 0,3 ; × la technique du porteur). Les gestes que le noyau ne juge pas : la feinte de corps (la
+   * loi du duel : 0,5 s × gesteF, au tirage du noyau d'un passement), le grand pont (cfg.grandPont.bite). Les autres issues (la
+   * dépossession, la faute) restent au corps : c'est lui qui joue les contacts.
+   */
+  function jugerContact(etat) {
+    const J = course.aJuger(); if (!J) return;
+    const p = cerveauDe.get(J.porteur), q = cerveauDe.get(J.foe); if (!p || !q || !cfg.noyau) return;
+    const skillNoyau = ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(J.skill) ? J.skill : 'passement';
+    const N = noyauAuContact(st, p, { skill: skillNoyau, foeId: q.id }, cfg); if (!N) return;
+    const g = p.skill?.gesteF ?? 1, K = cfg.skill ?? {}, plancher = cfg.decalage?.sortie?.bite ?? 0.6;
+    const duree = J.skill === 'doubleContact' ? (K.doubleBite ?? 0.55) * g : J.skill === 'petitPont' ? (K.pontBite ?? 0.7) * g
+      : J.skill === 'roulette' ? (K.rouletteBite ?? 0.3) * g : J.skill === 'grandPont' ? (cfg.grandPont?.bite ?? 0.55) * g
+      : J.skill === 'feinteCorps' ? 0.5 * g : Math.max((J.skill === 'crochet' ? 0.35 : K.passementBite ?? 0.4) * g, plancher);
+    stats.gestes.contacts = (stats.gestes.contacts ?? 0) + 1; if (N.franchi) stats.gestes.franchis = (stats.gestes.franchis ?? 0) + 1;
+    course.morsure(st.t, J, N.franchi, duree, etat);
   }
 
   function porteurDecide(c) {

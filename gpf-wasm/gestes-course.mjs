@@ -20,6 +20,9 @@
 //            lieu est coupé par une intention qui change (corps.md § 5.6) ;
 //   SORTIE   la conduite vers la sortie du geste, à son allure, jusqu'à sa fin (+ 0,2 s) — le corps finit le geste, puis court ;
 //   FIN      un autre joueur touche le ballon, le porteur le passe, ou le geste est fini.
+// LA MORSURE : au contact (la première touche), le défenseur visé est jugé par le NOYAU DE DUEL du cerveau (noyau.js, noyauAuContact :
+// les attributs du porteur contre ceux du défenseur, la géométrie, huit issues) — franchi, il MORD : le temps de sa morsure (la loi du
+// cerveau par geste, × la technique du porteur), il part sur la ligne que le porteur a quittée, sans réflexes de duel.
 import { INTENTION } from './contrat.mjs';
 
 /** LE RÉPERTOIRE EN COURSE (outils/foulee-gpf.mjs, NUMEROS : la même numérotation) : pour chaque geste du cerveau, l'animation du corps —
@@ -67,10 +70,12 @@ const APRES = 0.2, SUITE = 1.5;
  *  après la demande ; un contrôle déjà touché va au bout, et le corps ne relit sa file qu'à sa fin). */
 export function creerGestesCourse({ equipes = [0, 1], trace = null, attente = 0.7 } = {}) {
   const ATTENTE = attente;
-  let G = null;                 // le geste en cours : { id, nom, n, sortie [x, y] (point visé), v, t (demande), t0 (départ), touche1, fin }
+  let G = null;                 // le geste en cours : { id, nom, skill, foe, u0, n, cible [x, y] (point visé), v, t (demande), t0 (départ), touche1 }
+  const mordus = [];            // LA MORSURE : les défenseurs qui ont mordu — { id, jusqua (s), cible [x, y] (la ligne quittée par le porteur) }
+  let aJuger = null;            // le contact d'un geste à juger par le noyau du cerveau (la première touche vient d'avoir lieu)
   let derniere = null;          // le dernier geste fini : { nom, issue, t }
   const suites = [];            // les gestes finis dont on juge la suite (le ballon gardé à +SUITE s)
-  const stats = { decides: 0, sansAnimation: {}, demandes: 0, partis: 0, touches: 0, pasPartis: 0, issues: {}, parGeste: {}, gardes: 0, juges: 0 };
+  const stats = { decides: 0, sansAnimation: {}, demandes: 0, partis: 0, touches: 0, pasPartis: 0, issues: {}, parGeste: {}, gardes: 0, juges: 0, contacts: 0, morsures: 0 };
   const parGeste = (nom) => (stats.parGeste[nom] ??= { demandes: 0, partis: 0, touches: 0, gardes: 0, juges: 0 });
   const unite = (x, y) => { const l = Math.hypot(x, y) || 1; return [x / l, y / l]; };
   function fin(t, issue) {
@@ -94,7 +99,8 @@ export function creerGestesCourse({ equipes = [0, 1], trace = null, attente = 0.
       // (la variante la plus proche de son allure : 2,5 sous 3 m/s — le porteur qui ralentit devant un défenseur —, 3,5 sous 4,2, 5 au-delà)
       const v = A.n[0] != null ? (c.vitesse < 1.8 ? 0 : null) : c.vitesse < 1.8 || c.vitesse >= 6 ? null : c.vitesse < 3 ? 2.5 : c.vitesse < 4.2 ? 3.5 : 5;
       if (v == null || A.n[v] == null) { const cle = `${nom}@${c.vitesse < 1.8 ? 'arret' : c.vitesse >= 6 ? 'sprint' : 'course'}`; stats.sansAnimation[cle] = (stats.sansAnimation[cle] ?? 0) + 1; return false; }
-      G = { id: c.id, equipe: c.equipe, nom, n: A.n[v], v, duree: A.duree[v], sansTouche: !!A.sansTouche, t, t0: null, touche1: null, cible: [c.x + dir[0] * 6, c.y + dir[1] * 6] };
+      const u0 = c.vitesse > 0.3 ? [c.v[0] / c.vitesse, c.v[1] / c.vitesse] : c.dir;
+      G = { id: c.id, equipe: c.equipe, nom, skill: g.nom, foe: g.foe ?? null, u0, n: A.n[v], v, duree: A.duree[v], sansTouche: !!A.sansTouche, t, t0: null, touche1: null, cible: [c.x + dir[0] * 6, c.y + dir[1] * 6] };
       stats.demandes++; parGeste(nom).demandes++;
       trace?.(t, 'demande', { id: c.id, nom, v, n: G.n });
       return true;
@@ -107,7 +113,7 @@ export function creerGestesCourse({ equipes = [0, 1], trace = null, attente = 0.
         if (!G) continue;
         if (ev.type === EV.GESTE && ev.joueur === G.id && ev.a === G.n && G.t0 == null) { G.t0 = t; stats.partis++; parGeste(G.nom).partis++; trace?.(t, 'départ', { nom: G.nom }); }
         else if (ev.type === EV.SERIE && ev.joueur === G.id && G.t0 != null) {
-          if (ev.a === 0 && G.touche1 == null) { G.touche1 = t; stats.touches++; parGeste(G.nom).touches++; }
+          if (ev.a === 0 && G.touche1 == null) { G.touche1 = t; stats.touches++; parGeste(G.nom).touches++; if (G.foe != null) aJuger = { porteur: G.id, foe: G.foe, skill: G.skill, u0: G.u0, t }; }
           if (ev.a < 0 && G.t0 != null) G.arrete = true;
         } else if (ev.type === EV.TOUCHE && ev.joueur !== G.id && G.t0 != null) G.autre = t;
         else if (ev.type === EV.PASSE && ev.joueur === G.id) G.passe = t;
@@ -116,6 +122,14 @@ export function creerGestesCourse({ equipes = [0, 1], trace = null, attente = 0.
     /** Chaque tick : la fin, puis l'intention du porteur (remplace celle du cerveau dans `out`). */
     tick(etat, out) {
       const t = etat.t / 1000;
+      // LE MORDU (la loi du cerveau, jugée au contact par cerveau.mjs) : il part sur la ligne que le porteur a quittée, sans réflexes de duel
+      // (ALLER au drapeau 1, la garde du face-à-face) — le temps de sa morsure ; puis le cerveau le reprend
+      for (let k = mordus.length - 1; k >= 0; k--) {
+        const m = mordus[k]; if (t >= m.jusqua || !etat.enJeu || etat.cpa) { mordus.splice(k, 1); continue; }
+        const o = out.find((x) => x.id === m.id); if (!o) continue;
+        for (const cle of Object.keys(o)) if (cle !== 'id') delete o[cle];
+        Object.assign(o, { genre: INTENTION.ALLER, x: m.cible[0], y: m.cible[1], vitesse: 5, drapeaux: 1, job: 'mordu' });
+      }
       for (const s of suites) if (!s.fait && t >= s.juge) { s.fait = true; stats.juges++; parGeste(s.nom).juges++; if (s.dernier === s.eq || (s.dernier == null && etat.possession.equipe === s.eq)) { stats.gardes++; parGeste(s.nom).gardes++; } }
       while (suites.length && suites[0].fait) suites.shift();
       if (!G) return;
@@ -133,6 +147,17 @@ export function creerGestesCourse({ equipes = [0, 1], trace = null, attente = 0.
       const tenu = G.sansTouche ? G.t0 == null || t < G.t0 + G.duree - 0.1 : G.touche1 == null;
       if (tenu) Object.assign(o, { genre: INTENTION.GESTE, x: G.cible[0], y: G.cible[1], vitesse: G.v, cible: G.n, drapeaux: G.sansTouche ? 1 : 0, job: 'geste' });
       else Object.assign(o, { genre: INTENTION.CONDUIRE, x: G.cible[0], y: G.cible[1], vitesse: Math.max(4, G.v), job: 'geste-sortie' });
+    },
+    /** Le contact d'un geste à juger (sa première touche vient d'avoir lieu, un défenseur était visé) : { porteur, foe, skill, u0, t } —
+     *  une fois ; cerveau.mjs le juge avec le noyau du cerveau, puis appelle `morsure`. */
+    aJuger() { const J = aJuger; aJuger = null; if (J) stats.contacts++; return J; },
+    /** Le verdict du contact : `mord` (le défenseur franchi mord), `duree` (s), et la ligne quittée par le porteur — le point à 3 m
+     *  devant lui sur sa course d'entrée, où le défenseur s'engage. */
+    morsure(t, J, mord, duree, etat) {
+      if (!mord) return;
+      const c = etat.joueurs.find((j) => j.id === J.porteur); if (!c) return;
+      mordus.push({ id: J.foe, jusqua: t + duree, cible: [c.x + J.u0[0] * 3, c.y + J.u0[1] * 3] });
+      stats.morsures++; trace?.(t, 'morsure', { foe: J.foe, duree });
     },
     /** Le geste en cours (porteur, nom, depuis), pour la page. */
     get actif() { return G ? { porteur: G.id, nom: G.nom, depuis: G.t0 ?? G.t, parti: G.t0 != null } : null; },
