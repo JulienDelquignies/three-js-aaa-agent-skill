@@ -22,6 +22,16 @@ import { DUEL_CAST } from './duel-joueurs.js';
 // repère personnage de gpf-anim (droite +X, haut +Y, avant −Z) est cette scène tournée de 180° autour de Y : les modèles sont donc
 // posés avec rotation.y = π. Les mesures (ms par pas de simulation, images par seconde) s'affichent et sont lues par window.__gpf.
 const PITCH = { hx: 55, hz: 36, goalHalf: 3.66, goalH: 2.44 };
+// L'ISSUE D'UN FACE-À-FACE (face.mjs), en clair
+const ISSUES = {
+  'sortie-mordu': 'le défenseur mord, la sortie de l’autre côté', 'sortie-fente-mordue': 'mordu, il se jette — la sortie de l’autre côté',
+  'sortie-fente-lue': 'la fente lue, la sortie', 'sortie-fente-manquee': 'la fente dans le vide, la sortie', 'fente-contree': 'la fente touche le ballon, le porteur le garde',
+  'chipe-repris': 'le ballon piqué, repris', 'echappe-repris': 'le ballon échappé, repris',
+  'sortie-roulette-fente': 'la roulette contre la fente', 'sortie-rateau-fente': 'le râteau contre la fente', 'sortie-expire': 'la sortie, faute de morsure',
+  'fente-gagnee': 'la fente gagne le ballon', 'sortie-coupee': 'la sortie coupée par le défenseur', chipe: 'le ballon piqué', echappe: 'le ballon échappé',
+  double: 'un second défenseur arrive', depasse: 'le défenseur dépassé', relache: 'le défenseur décroche', passe: 'le porteur passe', relais: 'un partenaire prend le ballon',
+  tiers: 'un autre défenseur prend le ballon', arret: 'le jeu est arrêté', perdu: 'le ballon perdu',
+};
 const q = new URLSearchParams(location.search);
 
 export class GpfMatch {
@@ -59,13 +69,19 @@ export class GpfMatch {
     this.C = await import(/* @vite-ignore */ base + 'cerveau.mjs');
     if (q.get('arrets') !== '0') this.C.poserLesArrets(this.M);
     this.periode = 1;
-    // NOTRE CERVEAU : le paquet (cerveau + contrat du corps), les intentions ouvertes, un tick de décision tous les 10 pas
+    // NOTRE CERVEAU : le paquet (cerveau + contrat du corps), les intentions ouvertes, un tick de décision tous les 10 pas.
+    // LE FACE-À-FACE « TAARABT » (face.mjs) en est : planté face au défenseur, la semelle sur le ballon, les feintes, la morsure, la
+    // fente, la sortie — ?face=0 l'éteint ; ?face=saut (ou la touche F) avance le match à toute vitesse jusqu'au prochain
     this.mode = q.has('ia') ? 'ia' : q.get('contre') === 'ia' ? 'contre' : 'cerveau';
     if (this.mode !== 'ia') {
-      this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1] });
+      const face = q.get('face') !== '0';
+      this.cerveau = this.C.creerCerveau({ graine, equipes: this.mode === 'contre' ? [0] : [0, 1], options: { face } });
       this.M._gf_intents(1);
       this.pas = 0; this.cerveauMs = 0; this.cerveauN = 0;
+      this.saut = face && q.get('face') === 'saut';
+      if (face) addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') this.sauter(); });
     }
+    this.zf = 0;   // le rapprochement de la caméra sur le face-à-face (0 : la caméra du jeu, 1 : le plan serré)
     this.bootMs = performance.now() - t0;
     this.HEAD = this.M._gf_frame_head(); this.PER = this.M._gf_frame_per(); this.POSE = this.M._gf_pose_per();
 
@@ -143,24 +159,27 @@ export class GpfMatch {
     // LE PAS FIXE : 10 ms de jeu par pas, autant de pas que le temps réel écoulé (plafonné : un onglet en pause ne rattrape pas)
     this.acc = Math.min(this.acc + dt * (Number(q.get('vitesse')) || 1), 0.1);
     let n = 0; while (this.acc >= 0.01) { this.acc -= 0.01; n++; }
+    // l'avance rapide jusqu'au prochain face-à-face : 3 s de jeu par image, le rendu suit
+    if (this.saut) { n = 300; this.acc = 0; }
     if (this.periode === 3) n = 0;   // le coup de sifflet final : le match est figé sur son score
     if (n) {
       const t0 = performance.now();
       if (this.cerveau) {
         // le pas fixe découpé sur le tick du cerveau : il décide au début de chaque centaine de millisecondes, lit le journal
-        // après chaque avance (la passe en vol, la tenue du porteur)
+        // après chaque avance (la passe en vol, la tenue du porteur). La mi-temps et la fin se jugent au début du tick, avant la
+        // décision — là où les bancs Node les sifflent : la page joue leur match au bit près, après la pause aussi
         for (let reste = n; reste > 0;) {
-          if (this.pas % 10 === 0) this._decider();
+          if (this.pas % 10 === 0) {
+            if (this._periodes()) break;
+            this._decider();
+            if (this.saut && this.cerveau.face) { this.saut = false; reste = Math.min(reste, 10); }   // le face-à-face est là : le temps réel
+          }
           const k = Math.min(reste, 10 - (this.pas % 10));
           this.M._gf_step(k); this.pas += k; reste -= k;
           this.cerveau.observer(this.C.lireJournal(this.M));
         }
-      } else this.M._gf_step(n);
+      } else { this.M._gf_step(n); this._periodes(); }
       const d = performance.now() - t0; this.simMs += d; this.simSteps += n; this.tot.simMs += d; this.tot.simSteps += n;
-      // la mi-temps et la fin, à l'horloge du match
-      const tMatch = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), 1)[0];
-      if (this.periode === 1 && tMatch >= 45 * 60000) { this.M._gf_mi_temps(); this.periode = 2; }
-      if (this.periode === 2 && tMatch >= 90 * 60000) this.periode = 3;
     }
     const tp = performance.now();
     const F = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), this.HEAD + 22 * this.PER);
@@ -178,12 +197,28 @@ export class GpfMatch {
       this.stats = { fps, cpu, msPas, msPose, msCerveau, boot: this.bootMs, score: [F[4], F[5]], tMs: F[0] };
       const qui = this.mode === 'ia' ? 'leur IA des deux côtés' : this.mode === 'contre' ? 'notre cerveau (gauche) contre leur IA' : 'notre cerveau, leurs corps';
       const horloge = this.periode === 3 ? 'fin du match' : `${Math.floor(F[0] / 60000)}:${String(Math.floor(F[0] / 1000) % 60).padStart(2, '0')}${this.periode === 2 ? ' (2e mi-temps)' : ''}`;
+      const fa = this.cerveau?.face, der = this.cerveau?.faceDerniere, n = this.cerveau?.stats?.().face?.entrees ?? 0;
+      const face = this.saut ? ' · avance rapide jusqu’au prochain face-à-face…'
+        : fa ? ` · FACE-À-FACE, ${fa.feintes} feinte${fa.feintes > 1 ? 's' : ''}`
+        : der && F[0] / 1000 - der.t < 8 ? ` · face-à-face : ${ISSUES[der.issue] ?? der.issue}`
+        : this.cerveau && q.get('face') !== '0' ? ` · ${n} face-à-face · F : le prochain` : '';
       // en capture (?capture : images calculées une à une, rendu logiciel), les mesures de vitesse ne disent rien : le score et le temps seuls
-      if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}`
-        : `${F[4]}-${F[5]} · ${horloge} · ${qui} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
+      if (this._hud) this._hud.textContent = q.has('capture') ? `${F[4]}-${F[5]} · ${horloge} · ${qui}${face}`
+        : `${F[4]}-${F[5]} · ${horloge} · ${qui}${face} · ${fps.toFixed(0)} images/s · calcul ${cpu.toFixed(1)} ms par image (simulation ${msPas.toFixed(2)} ms par pas${this.cerveau ? `, cerveau ${msCerveau.toFixed(1)} ms par décision` : ''}, poses ${msPose.toFixed(2)} ms) · ${this.api} ${cv.width}×${cv.height} · démarrage ${this.bootMs.toFixed(0)} ms`;
       this.cerveauMs = 0; this.cerveauN = 0;
       this._fpsN = 0; this._fpsT0 = now; this.simMs = 0; this.simSteps = 0; this.poseMs = 0; this.poseN = 0; this._cpuMs = 0; this._cpuN = 0;
     }
+  }
+
+  // L'AVANCE RAPIDE jusqu'au prochain face-à-face, depuis la caméra du jeu
+  sauter() { if (!this.cerveau || this.periode === 3) return; this.saut = true; this._faceJusqua = -1; this._faceVu = null; this.zf = 0; }
+
+  // LA MI-TEMPS ET LA FIN, à l'horloge du match ; vrai : le coup de sifflet final
+  _periodes() {
+    const tMatch = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), 1)[0];
+    if (this.periode === 1 && tMatch >= 45 * 60000) { this.M._gf_mi_temps(); this.periode = 2; }
+    if (this.periode === 2 && tMatch >= 90 * 60000) { this.periode = 3; this.saut = false; }
+    return this.periode === 3;
   }
 
   // un tick de NOTRE CERVEAU : l'état du corps prêté, une intention par joueur piloté (hors jeu arrêté : le corps les mène)
@@ -228,14 +263,43 @@ export class GpfMatch {
     const k = 1 - Math.exp(-dt / (pres ? 0.5 : 0.8)), b = this.ball.position;
     this.cam.x += ((pres ? b.x : THREE.MathUtils.clamp(b.x, -42, 42)) - this.cam.x) * k;
     this.cam.z += (b.z * (pres ? 1 : 0.85) - this.cam.z) * k;
-    if (pres) {   // la caméra RAPPROCHÉE : 15 m du ballon, 7 m de haut — on juge les corps et la complicité avec le ballon
-      this.camRef.position.set(this.cam.x, 7, this.cam.z + 14);
-    } else {      // la caméra TÉLÉ : une tribune latérale, 17 m de haut, qui suit le ballon (lissée) — le cadre d'une retransmission
-      this.camRef.position.set(this.cam.x * 0.9, 17, 40 + this.cam.z * 0.4);
+    const P = pres ? [this.cam.x, 7, this.cam.z + 14]   // la caméra RAPPROCHÉE : 15 m du ballon, 7 m de haut — on juge les corps et la complicité avec le ballon
+      : [this.cam.x * 0.9, 17, 40 + this.cam.z * 0.4];   // la caméra TÉLÉ : une tribune latérale, 17 m de haut, qui suit le ballon (lissée) — le cadre d'une retransmission
+    const L = [this.cam.x, 0, this.cam.z];
+    // LE PLAN SERRÉ DU FACE-À-FACE (sauf ?cam=tele) : la caméra descend à 9 m du duel, 3,8 m de haut, le milieu du porteur et de son
+    // défenseur au centre, suivi de près (0,3 s) ; le duel fini, elle suit le ballon 1,5 s encore — la sortie part, souvent vers
+    // elle : figée sur le lieu du duel, elle laissait les joueurs lui passer dessous
+    const fa = this.cerveau?.face;
+    let vise = null;
+    if (fa && q.get('cam') !== 'tele') {
+      const c = this._joueur(fa.porteur), d = this._joueur(fa.defenseur);
+      if (c && d) { vise = [(c.position.x + d.position.x) / 2, (c.position.z + d.position.z) / 2]; this._faceJusqua = this.t + 1.5; }
+    } else if (this.t < (this._faceJusqua ?? -1)) vise = [b.x, b.z];
+    if (vise) {
+      // un nouveau face-à-face : le point visé y saute (le plan de coupe) — glissé depuis le précédent, il laissait la caméra devant les joueurs
+      if (!this._faceVu || (fa && this._faceVu.de !== fa.depuis)) this._faceVu = { x: vise[0], z: vise[1], de: fa?.depuis };
+      const kf = 1 - Math.exp(-dt / 0.3);
+      this._faceVu.x += (vise[0] - this._faceVu.x) * kf; this._faceVu.z += (vise[1] - this._faceVu.z) * kf;
     }
-    this.camRef.lookAt(this.cam.x, 0, this.cam.z);
+    const vu = this._faceVu, viser = vise ? 1 : 0;
+    this.zf += (viser - this.zf) * (1 - Math.exp(-dt / 0.6));
+    if (vu && this.zf < 0.01 && !viser) this._faceVu = null;
+    if (vu) {
+      const w = this.zf * this.zf * (3 - 2 * this.zf), mix = (a, b) => a + (b - a) * w;
+      P[0] = mix(P[0], vu.x); P[1] = mix(P[1], 3.8); P[2] = mix(P[2], vu.z + 9);
+      L[0] = mix(L[0], vu.x); L[1] = mix(L[1], 0.9); L[2] = mix(L[2], vu.z);
+    }
+    this.camRef.position.set(P[0], P[1], P[2]);
+    this.camRef.lookAt(L[0], L[1], L[2]);
     // la cible des OrbitControls suit le même point : le runner les met à jour avant chaque image capturée (__seekFrame), et leur
     // lookAt(target) écrasait celui-ci — les captures regardaient le centre du terrain au lieu du ballon
-    if (this.controls) this.controls.target.set(this.cam.x, 0, this.cam.z);
+    if (this.controls) this.controls.target.set(L[0], L[1], L[2]);
+  }
+
+  // le modèle d'un joueur par son id stable (celui du corps)
+  _joueur(id) {
+    const F = new Float32Array(this.M.HEAPF32.buffer, this.M._gf_frame(), this.HEAD + 22 * this.PER);
+    for (let k = 0; k < 22; k++) if (F[this.HEAD + k * this.PER + 10] === id) return this.players[k].model;
+    return null;
   }
 }
