@@ -23,7 +23,8 @@ Produites par `tools/maillot-carte.py` sur les deux footballeurs (leurs dépliag
 
 - `maillot-zones.png` (2048², une zone par texel) : 0 on garde (le fond), 1 maillot, 2 liseré, 3 short, 4 liseré du short, 5 chaussette,
   6 peau du bras, 7 main, 8 peau de la jambe, 9 chaussure ;
-- `maillot-forme.png` (1024²) : la position du texel sur le corps au repos (RVB dans la boîte du JSON), et le relief des plis (A) ;
+- (la position de chaque texel sur le corps au repos et le relief des plis ne sont plus une image : la page les tire du maillage au
+  chargement, en flottants — `formeDuCorps`) ;
 - `maillot-carte.json` : la boîte, les articulations au repos (épaule, coude, poignet, hanche, genou, cheville : le même squelette pour
   les deux corps), les zones d'impression (le dos tête-bêche, centré sur la colonne vertébrale ; la poitrine ; le short) et leur taille
   réelle en mètres (`mesures`), l'écusson, le sponsor.
@@ -33,3 +34,18 @@ La page (`src/scenes/gpf-maillots.js`) repeint la tenue de chaque équipe (zones
 sous-maillot, maillot rentré, chaussettes hautes ou basses, antidérapantes, strap, cuissard, chaussures, bandage, gants, brassard) et
 son flocage (un alphabet en champ de distance, à taille réelle). À refaire si un corps change : `python3 tools/maillot-carte.py`
 (vues de contrôle avec un troisième argument).
+
+## Les coupes en volume (lot L5, /match11)
+
+`coiffures.glb` : le mi-long, le chignon, les boucles et l'iroquois, modélisés par script sur le crâne de la tête du n° 18 par
+`tools/coiffures-rocketbox.py` (Blender 4.2 LTS, sans écran) — la méthode et les outils de la carrière (dépôt foot,
+`scripts/blender/coiffures.py`) : une coque qui s'amincit jusqu'à la peau à la lisière, remaillée en voxels, retranchée sous la lisière,
+les volumes du style fondus (rideaux, chignon), les mèches creusées dans le sens des cheveux, leur ombre en couleur de sommet (les creux
+des boucles aussi), 3 000 triangles par coupe. Les pièces sont dans l'espace du maillage au repos (mètres, y en haut, le visage vers +z) :
+la page les accroche à l'os de la tête par son inverse de liaison. `coiffures.json` : les mesures (triangles, sommets devant les yeux,
+le bas et le haut de chaque pièce par rapport aux yeux).
+
+    ~/opt/blender-4.2.23-linux-x64/blender -b --factory-startup -P tools/coiffures-rocketbox.py -- public/rocketbox/foot-18.glb public/rocketbox [mi_long,chignon,...]
+
+(compter 6 minutes pour les quatre ; deux lots en parallèle, chacun dans son dossier, se fusionnent ensuite :
+`… -P tools/coiffures-rocketbox.py -- --fusion public/rocketbox <lotA> <lotB>`.)

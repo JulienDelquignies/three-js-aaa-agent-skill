@@ -13,7 +13,7 @@ import { Habillage, PLANS, VITESSES } from './gpf-habillage.js';
 import { TENUES, EQUIPEMENT, chargerCarte, formeDuCorps, morphChaussetteBasse, mainsDe, peindreTenue, masquesDe, textureForme, peauDe, alphabetSDF, couleurTenue, materiauTenue, poserJoueur, equipementDe, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { physique, corpulence, imc, CARRURES, poidsPour, carrureDe, morphCarrure, AMPLITUDE_CARRURE } from './gpf-morphologie.js';
-import { analyserTete, grapheTete, grapheCartes, materiauTete, poserApparence, refsCartesDe, morphSansMeches, visageDuJoueur, apparenceDe, origineDuNom, ageDe, assombrir } from './gpf-apparence.js';
+import { analyserTete, grapheTete, grapheCartes, materiauTete, poserApparence, refsCartesDe, morphSansMeches, visageDeLaPage, apparenceDe, origineDuNom, ageDe, assombrir, yeuxDe, morphTraits, poserTraits, BORNES_TRAITS, chargerCoiffures, grapheCoiffure, materiauCoiffure } from './gpf-apparence.js';
 
 // GpfMatch — LES LOTS L0, L2 ET L5 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense),
 // compilé en WebAssembly SANS son rendu (gpf-wasm/), joue un 11 contre 11, et notre three.js le dessine avec NOS humains (les
@@ -224,8 +224,9 @@ export class GpfMatch {
    *  un matériau par joueur sur UN graphe de couleur commun (un seul programme pour les 22 : gpf-maillots.js). */
   async _habiller(e0) {
     const t0 = performance.now();
-    const [carte, alphabet] = await Promise.all([chargerCarte(new URL('./rocketbox/', location.href).href), alphabetSDF()]);
-    this.carte = carte; this.alphabet = alphabet;
+    const [carte, alphabet, coiffures] = await Promise.all([chargerCarte(new URL('./rocketbox/', location.href).href), alphabetSDF(),
+      chargerCoiffures(new URL('./rocketbox/coiffures.glb', location.href).href).catch((err) => { console.warn('[coiffures]', err); return null; })]);
+    this.carte = carte; this.alphabet = alphabet; this.coiffures = coiffures;
     for (const pl of this.players) pl.model.traverse((o) => {
       if (!o.isMesh || pl.corps) return;
       const m = [].concat(o.material).find((x) => x?.name === 'body'); if (m) pl.corps = { mesh: o, origine: m };
@@ -336,7 +337,10 @@ export class GpfMatch {
   // ———————————————————————————— l'apparence ————————————————————————————
   /** LES TÊTES (gpf-apparence.js) : chaque joueur reçoit les deux têtes — la A (le n° 18, ses cheveux peints) et la B (le n° 10, son volume de
    *  cheveux, ses dreadlocks en cartes) —, la sienne et une copie de l'autre liée à son squelette (les deux corps ont les mêmes os, les mêmes
-   *  matrices de liaison) ; son apparence choisit laquelle se voit. Un matériau par tête et par joueur, sur un graphe partagé. */
+   *  matrices de liaison) ; son apparence choisit laquelle se voit. Un matériau par tête et par joueur, sur un graphe partagé. LA COUPE EN
+   *  VOLUME (coiffures.glb) : une par joueur, accrochée à l'os de sa tête — l'espace du maillage porté dans le repère de l'os par l'inverse de
+   *  liaison de l'os (× la matrice de liaison), comme le skinning y porte la tête —, sa géométrie changée selon la coupe. LES TRAITS : les
+   *  cibles de morphing des têtes, des cartes et des coupes (les mêmes champs). */
   _habillerTetes() {
     const teteDe = (model) => { const r = {}; model.traverse((o) => { if (!o.isSkinnedMesh) return; const n = [].concat(o.material)[0]?.name; if (n === 'head') r.tete = o; else if (n === 'opacity') r.cartes = o; }); return r; };
     const src = [0, 1].map((rig) => { const pl = this.players.find((p) => p.rig === rig); return pl ? teteDe(pl.model) : {}; });
@@ -345,7 +349,15 @@ export class GpfMatch {
     this.tetes = { A: analyserTete(src[0].tete), B: { ...analyserTete(src[1].tete), estB: true } };
     this._iMeches = morphSansMeches(src[1].tete.geometry);
     this._refsCartes = src[1].cartes ? refsCartesDe([].concat(src[1].cartes.material)[0].map.image) : null;
-    const gT = grapheTete(), gC = grapheCartes();
+    // les traits du visage : chaque géométrie (partagée par les clones) reçoit ses cibles, AVANT que les maillages en prennent la liste
+    const yeuxA = yeuxDe(src[0].tete.geometry);
+    this._iTraits = {
+      A: morphTraits(src[0].tete.geometry, yeuxA), B: morphTraits(src[1].tete.geometry, yeuxDe(src[1].tete.geometry)),
+      C: src[1].cartes ? morphTraits(src[1].cartes.geometry, null, ['largeur']) : null, H: null,
+    };
+    if (this.coiffures) for (const geo of Object.values(this.coiffures)) this._iTraits.H = morphTraits(geo, yeuxA);   // (les mêmes indices)
+    this.yeux = yeuxA;
+    const gT = grapheTete(), gC = grapheCartes(), gH = this.coiffures ? grapheCoiffure() : null;
     // (les matériaux d'origine, pris AVANT la boucle : la tête source d'un corps reçoit elle aussi le sien, et la copie suivante lirait le nôtre)
     const origA = [].concat(src[0].tete.material)[0], origB = [].concat(src[1].tete.material)[0], origC = src[1].cartes ? [].concat(src[1].cartes.material)[0] : null;
     for (const pl of this.players) {
@@ -354,23 +366,30 @@ export class GpfMatch {
       pl.teteA = pl.rig === 0 ? propres.tete : copie(src[0].tete);
       pl.teteB = pl.rig === 1 ? propres.tete : copie(src[1].tete);
       pl.cartes = pl.rig === 1 ? propres.cartes : src[1].cartes ? copie(src[1].cartes) : null;
-      pl.teteB.updateMorphTargets();
+      for (const o of [pl.teteA, pl.teteB, pl.cartes]) o?.updateMorphTargets();
       pl.matA = pl.teteA.material = materiauTete(origA, gT);
       pl.matB = pl.teteB.material = materiauTete(origB, gT);
       if (pl.cartes && origC) { pl.matC = pl.cartes.material = materiauTete(origC, gC, { cartes: true }); pl.cartes.castShadow = false; }
-      for (const o of [pl.teteA, pl.teteB, pl.cartes]) if (o) this.stade?.light(o);
+      const os = pl.bones?.get('Head'), io = sk && os ? sk.bones.indexOf(os) : -1;
+      if (gH && io >= 0) {
+        const c = (pl.coiffure = new THREE.Mesh(Object.values(this.coiffures)[0], (pl.matH = materiauCoiffure(gH))));
+        c.name = 'coiffure'; c.matrixAutoUpdate = false; c.matrix.multiplyMatrices(sk.boneInverses[io], bm ?? new THREE.Matrix4());
+        c.castShadow = true; c.visible = false; os.add(c); c.updateMorphTargets();
+      }
+      for (const o of [pl.teteA, pl.teteB, pl.cartes, pl.coiffure]) if (o) this.stade?.light(o);
     }
   }
   /** L'APPARENCE d'un joueur : son visage de la carrière (visage.ts : son id, l'origine de son nom, son âge), puis ses choix (réglages). */
   apparenceJoueur(k) {
     const id = this.idDe[k], cle = this.graine * 1000 + id, C = this.choixJoueurs?.[k]?.apparence ?? {};
     const origine = C.origine ?? origineDuNom(this.noms?.[id]), age = C.age ?? ageDe(cle);
-    const V = { ...visageDuJoueur(cle, origine, age) };
+    const V = { ...visageDeLaPage(cle, origine, age) };
     if (C.peau) V.peau = C.peau;
     if (C.cheveux) { V.cheveux = C.cheveux; V.poil = assombrir(C.cheveux, 0.74); }
     if (C.coupe) V.coupe = C.coupe;
     if (C.pilosite) V.pilosite = C.pilosite;
     if (C.calvitie != null) V.calvitie = C.calvitie;
+    for (const t of ['largeur', 'machoire', 'ecartYeux']) if (C[t] != null) V[t] = C[t];
     return { ...apparenceDe(V), origine, age, visage: V };
   }
   /** La peau du corps d'un joueur pour son matériau de tenue : la teinte visée, la luminance de la peau de la texture de son corps. */
@@ -380,7 +399,8 @@ export class GpfMatch {
     const A = this.apparenceJoueur(k);
     return { peau: new THREE.Color().setHex(A.peau, THREE.SRGBColorSpace), luminancePeau: 0.2126 * ref.r + 0.7152 * ref.g + 0.0722 * ref.b };
   }
-  /** Poser l'apparence d'un joueur : la tête qui se voit, les cartes des dreadlocks, les mèches de l'afro, les couleurs et la coupe. */
+  /** Poser l'apparence d'un joueur : la tête qui se voit, les cartes des dreadlocks, les mèches de l'afro, la coupe en volume, les couleurs et
+   *  la coupe, les traits du visage. */
   _apparence(k) {
     const pl = this.players[k]; if (!this.tetes || !pl?.teteA) return;
     const A = this.apparenceJoueur(k);
@@ -389,6 +409,14 @@ export class GpfMatch {
     const mi = pl.teteB.morphTargetInfluences; if (mi && this._iMeches != null) mi[this._iMeches] = A.coupe === 'afro' ? 1 : 0;
     poserApparence(pl.matA, A, { tete: this.tetes.A }); poserApparence(pl.matB, A, { tete: this.tetes.B });
     if (pl.matC) poserApparence(pl.matC, A, { cartes: this._refsCartes });
+    const piece = A.tete === 'A' && A.volume ? this.coiffures?.[A.volume] : null;
+    if (pl.coiffure) {
+      pl.coiffure.visible = !!piece;
+      if (piece && pl.coiffure.geometry !== piece) pl.coiffure.geometry = piece;
+      pl.matH.cCheveux.setHex(A.cheveux, THREE.SRGBColorSpace);
+    }
+    poserTraits(pl.teteA, this._iTraits?.A, A.traits); poserTraits(pl.teteB, this._iTraits?.B, A.traits);
+    poserTraits(pl.cartes, this._iTraits?.C, A.traits); poserTraits(pl.coiffure, this._iTraits?.H, A.traits);
   }
   /** Changer l'apparence d'un joueur (réglages) : l'origine, l'âge (le visage se retire de la carrière), ou un trait — la peau, les cheveux,
    *  la coupe, la barbe, la calvitie ; « tirage » rend celui de la carrière. */
@@ -399,6 +427,7 @@ export class GpfMatch {
       const A = (C.apparence ??= {});
       if (champ === 'age') A.age = Math.max(16, Math.min(42, Math.round(Number(v) || 25)));
       else if (champ === 'calvitie') A.calvitie = Math.max(0, Math.min(1, (Number(v) || 0) / 100));
+      else if (champ in BORNES_TRAITS) { const [a, b] = BORNES_TRAITS[champ]; A[champ] = Math.max(a, Math.min(b, (Number(v) || 100) / 100)); }
       else if (v === '' || v == null) delete A[champ];
       else A[champ] = v;
       if (champ === 'origine' || champ === 'age') for (const t of ['peau', 'cheveux', 'coupe', 'pilosite', 'calvitie']) delete A[t];   // un autre visage de la carrière

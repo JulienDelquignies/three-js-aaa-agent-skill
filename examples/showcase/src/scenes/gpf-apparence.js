@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { texture, uv, vec3, vec4, float, step, smoothstep, mix, clamp, dot, abs, max, min, fract, sin, length, fwidth, materialReference, luminance } from 'three/tsl';
+import { texture, uv, vec3, vec4, float, step, smoothstep, mix, clamp, dot, abs, max, min, fract, floor, sin, length, fwidth, attribute, materialReference, luminance } from 'three/tsl';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { formeDuCorps } from './gpf-maillots.js';
 
 // gpf-apparence.js — L'APPARENCE DES JOUEURS de /match11 (lot L5, EX-26 « apparence pilotée par les données : peau, cheveux, visage ») : la
@@ -8,7 +9,10 @@ import { formeDuCorps } from './gpf-maillots.js';
 //
 // LES DEUX TÊTES (le même squelette, les mêmes matrices de liaison : chacune se pose sur n'importe quel corps) :
 //   A — le n° 18 : une tête complète, les cheveux courts PEINTS sur le crâne ; toutes les coupes peintes (courte, rasée, chauve, dégarnie) ;
+//       les COUPES EN VOLUME par-dessus (mi-long, chignon, boucles, iroquois : des pièces modélisées dans Blender sur son crâne —
+//       tools/coiffures-rocketbox.py —, accrochées à l'os de la tête) ;
 //   B — le n° 10 : un volume de cheveux à part (deux calottes, des mèches derrière) et des dreadlocks en cartes transparentes : les dreadlocks.
+// LES TRAITS DU VISAGE (largeur, mâchoire, écart des yeux) : des cibles de morphing, les mêmes champs sur les têtes, les cartes, les coupes.
 // LA PEAU : la couleur visée, portée par le DÉTAIL de la texture d'origine (sa luminance rapportée à celle de sa peau : pores, ombres, rides
 // restent) ; LES CHEVEUX : de même, sur les texels sombres (cheveux, sourcils, barbe peinte) ; LA BARBE : peinte par régions du visage
 // mesurées sur la tête au repos (moustache, bouc, barbe pleine, barbe naissante), les poils en bruit fin qui se fond au loin.
@@ -77,12 +81,24 @@ export const origineDuNom = (nom) => ORIGINE_DU_NOM[String(nom ?? '').replace(/^
 export const ageDe = (id) => 18 + Math.round(((unite(id, 'age1') + unite(id, 'age2')) / 2) * 17);
 /**
  * LES COUPES de la carrière sur nos deux têtes : la tête A (cheveux courts peints) les prend presque toutes — rase (rasée ; chauve quand la
- * calvitie passe 0,9), court, brosse, raie, mi-long, chignon, boucles (courtes, faute de volume) ; la tête B (son volume de cheveux) l'afro
- * (sans ses mèches) et les tresses (ses dreadlocks). Le volume d'un mi-long, d'un chignon, de boucles demande un maillage (la carrière les a
- * en Blender : scripts/blender/coiffures.py).
+ * calvitie passe 0,9), court, brosse, raie ; le mi-long, le chignon, les boucles et l'iroquois en VOLUME (une pièce par-dessus ses cheveux
+ * peints ; l'iroquois rase les côtés) ; la tête B (son volume de cheveux) l'afro (sans ses mèches) et les tresses (ses dreadlocks).
  */
-export const COUPE_3D = { rase: 'rasee', court: 'courte', brosse: 'courte', raie: 'courte', mi_long: 'courte', chignon: 'courte', boucles: 'courte', afro: 'afro', tresses: 'dreadlocks' };
-export const NOMS_COUPES = { rase: 'Rasée', court: 'Courte', brosse: 'En brosse', raie: 'Avec une raie', mi_long: 'Mi-longue', chignon: 'Chignon', boucles: 'Bouclée', afro: 'Afro', tresses: 'Tresses (dreadlocks)' };
+export const COUPE_3D = { rase: 'rasee', court: 'courte', brosse: 'courte', raie: 'courte', mi_long: 'mi_long', chignon: 'chignon', boucles: 'boucles', iroquois: 'iroquois', afro: 'afro', tresses: 'dreadlocks' };
+export const NOMS_COUPES = { rase: 'Rasée', court: 'Courte', brosse: 'En brosse', raie: 'Avec une raie', mi_long: 'Mi-longue', chignon: 'Chignon', boucles: 'Bouclée', iroquois: 'Iroquois', afro: 'Afro', tresses: 'Tresses (dreadlocks)' };
+/** LES COUPES EN VOLUME : les pièces de coiffures.glb (tools/coiffures-rocketbox.py), posées sur la tête A. */
+export const VOLUMES = ['mi_long', 'chignon', 'boucles', 'iroquois'];
+/** LA CALVITIE SOUS UN VOLUME : au-delà de la moitié, la coupe en volume cède à la courte peinte (la pièce cacherait le front dégarni). */
+const CALVITIE_SOUS_VOLUME = 0.5;
+/** L'IROQUOIS n'est pas (encore) une coupe de la carrière : la page en tire un sur cinq des « en brosse » de moins de 30 ans — à rendre à la
+ *  carrière (le contrat du match porte la coupe : lot L3). */
+const PART_IROQUOIS = 0.2;
+/** Le visage de la carrière, plus ce que la page y ajoute (l'iroquois). */
+export function visageDeLaPage(id, origine, age) {
+  const V = visageDuJoueur(id, origine, age);
+  if (V.coupe === 'brosse' && age < 30 && unite(id, 'iroquois') < PART_IROQUOIS) V.coupe = 'iroquois';
+  return V;
+}
 export const NOMS_PILOSITES = { glabre: 'Glabre', barbe_naissante: 'Barbe naissante', bouc: 'Bouc', barbe: 'Barbe', moustache: 'Moustache' };
 const PILOSITE_3D = { glabre: 'glabre', barbe_naissante: 'naissante', bouc: 'bouc', barbe: 'barbe', moustache: 'moustache' };
 /**
@@ -100,11 +116,17 @@ export function peau3D(hex) {
   const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], k = L > 0 ? (0.42 * L ** 0.62) / L : 1, L3 = L * k;
   return c.map((v) => Math.round(Math.max(0, Math.min(1, versSrgb(L3 + (v * k - L3) * 1.6))) * 255)).reduce((h, v) => (h << 8) | v, 0);
 }
-/** L'APPARENCE 3D d'un visage de la carrière : la tête (A, B), la coupe dessinée, les couleurs (peau, cheveux, poils), la calvitie, la barbe. */
+/** L'APPARENCE 3D d'un visage de la carrière : la tête (A, B), la coupe dessinée, sa pièce en volume, les couleurs (peau, cheveux, poils), la
+ *  calvitie, la barbe, les traits (largeur, mâchoire, écart des yeux). */
 export function apparenceDe(V) {
-  const c3 = V.calvitie >= 0.9 && V.coupe === 'rase' ? 'chauve' : COUPE_3D[V.coupe] ?? 'courte';
+  let c3 = V.calvitie >= 0.9 && V.coupe === 'rase' ? 'chauve' : COUPE_3D[V.coupe] ?? 'courte';
+  if (VOLUMES.includes(c3) && V.calvitie > CALVITIE_SOUS_VOLUME) c3 = 'courte';
   const hex = (h) => Number.parseInt(String(h).slice(1), 16);
-  return { tete: c3 === 'afro' || c3 === 'dreadlocks' ? 'B' : 'A', coupe: c3, peau: peau3D(V.peau), cheveux: hex(V.cheveux), barbe: hex(V.poil), calvitie: V.calvitie, pilosite: PILOSITE_3D[V.pilosite] ?? 'glabre' };
+  return {
+    tete: c3 === 'afro' || c3 === 'dreadlocks' ? 'B' : 'A', coupe: c3, volume: VOLUMES.includes(c3) ? c3 : null,
+    peau: peau3D(V.peau), cheveux: hex(V.cheveux), barbe: hex(V.poil), calvitie: V.calvitie, pilosite: PILOSITE_3D[V.pilosite] ?? 'glabre',
+    traits: { largeur: V.largeur ?? 1, machoire: V.machoire ?? 1, ecartYeux: V.ecartYeux ?? 1 },
+  };
 }
 
 // ———————————————————————————— l'analyse d'une tête (au chargement) ————————————————————————————
@@ -189,6 +211,67 @@ export function morphSansMeches(geo) {
   geo.morphTargetsRelative = true;
   return geo.morphAttributes.position.length - 1;
 }
+// ———————————————————————————— les traits du visage : des cibles de morphing ————————————————————————————
+/**
+ * LES TRAITS DU VISAGE de la carrière (visage.ts : la largeur du visage 0,9-1,1, la mâchoire 0,9-1,1, l'écart des yeux 0,92-1,08 — la carte
+ * en 2D les dessine) EN VOLUME : trois cibles de morphing, des champs de déplacement définis dans l'espace du maillage au repos (mètres, y en
+ * haut, le visage vers +z : celui des deux têtes, de leurs cartes et des coupes en volume). Chaque pièce de la tête reçoit les mêmes champs :
+ * la coiffure suit la largeur du crâne, la mèche du mi-long celle de la mâchoire. Le trait t donne l'influence (t − 1) / amplitude, de −1 à 1.
+ *   largeur  : x × (1 ± 0,1) au-dessus de la mâchoire, fondu de 1,55 à 1,62 m (le cou, que le corps rejoint sous 1,546 m, ne bouge pas) ;
+ *   mâchoire : x × (1 ± 0,1) du menton aux angles de la mâchoire (1,55-1,57 à 1,60-1,63 m), devant la nuque ;
+ *   yeux     : chaque œil (le globe, les paupières, l'orbite) glisse de ± 8 % de son écart à l'axe, en bloc jusqu'à 1,6 cm de son centre,
+ *              fondu à 3,4 cm.
+ */
+export const TRAITS = { largeur: 0.1, machoire: 0.1, ecartYeux: 0.08 };
+/** Les bornes des traits dans la carrière (visage.ts) : celles des réglages. */
+export const BORNES_TRAITS = { largeur: [0.9, 1.1], machoire: [0.9, 1.1], ecartYeux: [0.92, 1.08] };
+const lisse = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+/** Les centres des deux yeux d'une tête : la moyenne des îlots intérieurs à leur hauteur (1,665 à 1,71 m), de chaque côté ([gauche +x, droit −x]). */
+export function yeuxDe(geo) {
+  const pos = geo.attributes.position, { rac, dedans } = ilotsInterieurs(geo), S = [[0, 0, 0, 0], [0, 0, 0, 0]];
+  for (let i = 0; i < pos.count; i++) {
+    if (!dedans.has(rac(i))) continue;
+    const x = pos.getX(i), y = pos.getY(i); if (y < 1.665 || y > 1.71 || Math.abs(x) < 0.01) continue;
+    const s = S[x > 0 ? 0 : 1]; s[0] += x; s[1] += y; s[2] += pos.getZ(i); s[3]++;
+  }
+  return S.map(([x, y, z, n]) => (n ? new THREE.Vector3(x / n, y / n, z / n) : null));
+}
+/** Le déplacement (en x) d'un trait à l'influence 1, au point (x, y, z) de l'espace du maillage. */
+function champTrait(t, x, y, z, yeux) {
+  if (t === 'largeur') return x * TRAITS.largeur * lisse(1.55, 1.62, y);
+  if (t === 'machoire') return x * TRAITS.machoire * lisse(1.548, 1.572, y) * (1 - lisse(1.598, 1.632, y)) * lisse(-0.03, 0, z);
+  const E = yeux?.[x > 0 ? 0 : 1]; if (!E) return 0;
+  return E.x * TRAITS.ecartYeux * (1 - lisse(0.016, 0.034, Math.hypot(x - E.x, y - E.y, z - E.z)));
+}
+/** Les normales d'une forme déplacée, moins celles d'origine (la même façon de les calculer : les coutures restent cohérentes). */
+function normalesDelta(geo, d) {
+  const pos = geo.attributes.position, n = pos.count, P0 = new Float32Array(n * 3);
+  for (let v = 0; v < n; v++) { P0[v * 3] = pos.getX(v); P0[v * 3 + 1] = pos.getY(v); P0[v * 3 + 2] = pos.getZ(v); }
+  const N = (A) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(A, 3)); if (geo.index) g.setIndex(geo.index); g.computeVertexNormals(); return g.attributes.normal.array; };
+  const N0 = N(P0), N1 = N(P0.map((x, i) => x + d[i])), dn = new Float32Array(n * 3);
+  for (let i = 0; i < n * 3; i++) dn[i] = N1[i] - N0[i];
+  return dn;
+}
+/** Poser les cibles des traits sur une géométrie (partagée par les clones) : rend { trait: indice }. `yeux` : les centres des yeux de la tête
+ *  (ceux de la tête A pour les pièces qui n'en ont pas). */
+export function morphTraits(geo, yeux, traits = Object.keys(TRAITS)) {
+  const pos = geo.attributes.position, n = pos.count, indices = {};
+  for (const t of traits) {
+    const d = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) d[i * 3] = champTrait(t, pos.getX(i), pos.getY(i), pos.getZ(i), yeux);
+    (geo.morphAttributes.position ??= []).push(new THREE.Float32BufferAttribute(d, 3));
+    (geo.morphAttributes.normal ??= []).push(new THREE.Float32BufferAttribute(normalesDelta(geo, d), 3));
+    indices[t] = geo.morphAttributes.position.length - 1;
+  }
+  geo.morphTargetsRelative = true;
+  return indices;
+}
+/** Régler les traits d'un maillage (ses influences) : les traits du joueur, les indices de sa géométrie. */
+export function poserTraits(mesh, indices, traits) {
+  const mi = mesh?.morphTargetInfluences; if (!mi || !indices) return;
+  for (const [t, i] of Object.entries(indices)) mi[i] = ((traits?.[t] ?? 1) - 1) / TRAITS[t];
+}
+
 /** Un masque (un octet par texel) en RGBA (le masque dans le rouge). */
 function etaler(M, NF) { const d = new Uint8Array(NF * NF * 4); for (let i = 0; i < NF * NF; i++) { d[i * 4] = M[i]; d[i * 4 + 3] = 255; } return d; }
 function texDonnees(data, NF, flottant) {
@@ -200,7 +283,7 @@ function texDonnees(data, NF, flottant) {
 }
 
 // ———————————————————————————— le shader de la tête ————————————————————————————
-const CODE_COUPE = { courte: 0, rasee: 1, chauve: 2, afro: 0, dreadlocks: 0 }, CODE_BARBE = { glabre: 0, naissante: 1, moustache: 2, bouc: 3, barbe: 4 };
+const CODE_COUPE = { courte: 0, rasee: 1, chauve: 2, iroquois: 3, afro: 0, dreadlocks: 0, mi_long: 0, chignon: 0, boucles: 0 }, CODE_BARBE = { glabre: 0, naissante: 1, moustache: 2, bouc: 3, barbe: 4 };
 const sous = (a, b, x) => float(1).sub(smoothstep(a, b, x));
 const est = (v, k) => step(abs(v.sub(k)), 0.5);
 /**
@@ -236,7 +319,8 @@ export function grapheTete() {
   const dessusChauve = smoothstep(0.86, 0.92, calv).mul(smoothstep(1.735, 1.75, y));
   const chauve = crane.mul(chev).mul(max(max(est(coupe, 2), max(recul, couronne)), dessusChauve)).mul(un(teteB));
   col = mix(col, cPeau.mul(lisse).mul(1.03), chauve);                                           // la peau du crâne, un peu plus brillante
-  const ras = crane.mul(chev).mul(est(coupe, 1)).mul(un(chauve));
+  //    rasée (1), et les côtés de l'iroquois (3 : hors de la bande de 2 à 3 cm que couvre sa crête)
+  const ras = crane.mul(chev).mul(max(est(coupe, 1), est(coupe, 3).mul(smoothstep(0.02, 0.03, ax)))).mul(un(chauve));
   col = mix(col, mix(cPeau.mul(lisse), cChev.mul(0.85), mix(bruit(2400).mul(0.5).add(0.3), float(0.55), loin)), ras);
   // 3. LA BARBE (visage.ts, Visage.tsx : la barbe = le bandeau de la mâchoire + la moustache ; le bouc = sous la bouche ; la naissante = le
   //    bandeau, à 42 %) — des formes douces sur la tête au repos : les lèvres (une ellipse autour de la bouche), la moustache (sous le nez, ses
@@ -293,6 +377,28 @@ export function poserApparence(m, A, { tete, cartes = null }) {
   if (cartes) m.refsCartes.copy(cartes);
   m.optsTete.set(CODE_COUPE[A.coupe] ?? 0, A.calvitie ?? 0, CODE_BARBE[A.pilosite] ?? 0, tete?.estB ? 1 : 0);   // (w : la tête B)
 }
+// ———————————————————————————— les coupes en volume ————————————————————————————
+/** LES COUPES EN VOLUME (coiffures.glb : tools/coiffures-rocketbox.py, Blender) : une géométrie par coupe (« A__mi_long »…), dans l'espace du
+ *  maillage de la tête A au repos — la page la porte dans le repère de l'os de la tête (son inverse de liaison). */
+export async function chargerCoiffures(url) {
+  const gltf = await new GLTFLoader().loadAsync(url), pieces = {};
+  gltf.scene.traverse((o) => { const s = o.isMesh ? o.name.split('__')[1] : null; if (s && VOLUMES.includes(s)) pieces[s] = o.geometry; });
+  return Object.keys(pieces).length ? pieces : null;
+}
+/** LE GRAPHE D'UNE COUPE EN VOLUME, partagé : la couleur des cheveux du joueur, des brins le long des méridiens (le tour du crâne en u — une
+ *  bande de 2 mm par brin, chacun sa clarté, fondus au loin), l'ombre des mèches creusées (la couleur de sommet). */
+export function grapheCoiffure() {
+  const cChev = materialReference('cCheveux', 'color'), U = uv(), ombre = attribute('color', 'vec3').x;
+  const brin = fract(sin(floor(U.x.mul(650)).mul(78.233)).mul(43758.5453));
+  const fil = mix(brin.mul(0.45).add(0.75), float(0.97), smoothstep(0.0006, 0.0025, fwidth(U.x)));
+  return cChev.mul(fil).mul(ombre);
+}
+/** Un matériau de coupe pour un joueur (le graphe commun, sa couleur en objet). */
+export function materiauCoiffure(graphe) {
+  const m = new MateriauTete(graphe); m.name = 'coiffure'; m.roughness = 0.6; m.metalness = 0;
+  return m;
+}
+
 /** La luminance linéaire moyenne des cartes de cheveux (texels opaques). */
 export function refsCartesDe(image) {
   const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(image, 0, 0, 256, 256);

@@ -412,8 +412,9 @@ export class Habillage {
         <label>Coupe<select data-app="coupe">${opt(NOMS_COUPES, V.coupe)}</select></label>
         <label>Barbe<select data-app="pilosite">${opt(NOMS_PILOSITES, V.pilosite)}</select></label>
         <label>Calvitie (%)<input type="number" data-app="calvitie" value="${Math.round(V.calvitie * 100)}" min="0" max="100" step="5" style="width:64px;background:#141b2c;color:var(--texte);border:1px solid var(--trait);border-radius:6px;padding:4px 6px;font:inherit"></label>
+        ${[['largeur', 'Largeur du visage (%)', 90, 110], ['machoire', 'Mâchoire (%)', 90, 110], ['ecartYeux', 'Écart des yeux (%)', 92, 108]].map(([c, nom, lo, hi]) => `<label>${nom}<input type="number" data-app="${c}" value="${Math.round((V[c] ?? 1) * 100)}" min="${lo}" max="${hi}" step="1" style="width:64px;background:#141b2c;color:var(--texte);border:1px solid var(--trait);border-radius:6px;padding:4px 6px;font:inherit"></label>`).join('')}
         <label>Le visage de la carrière<button data-a="tirage" style="width:auto">Le reprendre</button></label>
-        <p style="margin:2px 0 6px">Le visage suit la loi de la carrière (foot, visage.ts : l’origine de son nom, son âge). Tête ${A.tete === 'B' ? 'B (le volume de cheveux)' : 'A (cheveux peints)'} : les coupes mi-longue, chignon et bouclée y restent courtes, faute de volume.</p>`; })()}
+        <p style="margin:2px 0 6px">Le visage suit la loi de la carrière (foot, visage.ts : l’origine de son nom, son âge). Tête ${A.tete === 'B' ? 'B (le volume de cheveux)' : `A (cheveux peints${A.volume ? ', la coupe en volume par-dessus' : ''})`} ; les traits (largeur, mâchoire, yeux) déforment la tête et sa coiffure.</p>`; })()}
       ${sel('manches', 'Manches', EQUIPEMENT.manches)}${Q.manches === 'sous-maillot' ? sel('couleurSous', 'Couleur du sous-maillot', TEINTES) : ''}
       ${sel('maillot', 'Maillot', EQUIPEMENT.maillot)}
       ${sel('chaussettes', 'Chaussettes', EQUIPEMENT.chaussettes)}

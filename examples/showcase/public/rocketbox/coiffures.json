@@ -1,0 +1,30 @@
+{
+ "tete": "A (foot-18.glb)",
+ "yeux": 1.686,
+ "pieces": {
+  "A__mi_long": {
+   "triangles": 2907,
+   "yeux": 0,
+   "bas": -0.1184,
+   "haut": 0.1303
+  },
+  "A__boucles": {
+   "triangles": 2910,
+   "yeux": 0,
+   "bas": -0.0579,
+   "haut": 0.1505
+  },
+  "A__iroquois": {
+   "triangles": 2909,
+   "yeux": 0,
+   "bas": -0.1099,
+   "haut": 0.1498
+  },
+  "A__chignon": {
+   "triangles": 2910,
+   "yeux": 0,
+   "bas": -0.0595,
+   "haut": 0.1254
+  }
+ }
+}
