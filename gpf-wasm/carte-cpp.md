@@ -565,7 +565,7 @@ Le drapeau de coup de pied arrêté est levé et baissé **dans le même appel d
 | coup franc | 50 % de passes hautes vers la bouche du but (y ±10), sinon une passe courte 10 m devant |
 | corner | 70 % de passes hautes dans la surface, sinon une passe courte vers l'entrée |
 | touche | une passe courte au joueur le plus proche |
-| gardien ballon en main | une passe haute au joueur le plus proche d'un point tiré au sort chez l'adversaire, s'il est à plus de 10 m de tout adversaire ou après 4 s de possession ; sinon il attend |
+| gardien ballon en main | une passe haute au joueur le plus proche d'un point tiré au sort sur sa propre ligne de but (`pitchHalfW × GetDynamicSide()`, corrigé le 3 octobre d'après `docs/corps.md` § 8), s'il est à plus de 10 m de tout adversaire ou après 4 s de possession ; sinon il attend |
 
 **Notre crochet `_GfOnBall` n'est pas atteint** pendant un coup de pied arrêté. La branche 137-141 attrape d'abord le tireur, `(IsInSetPiece() && GetPieceTaker() == player) || GetBallRetainer() == player`, puis rend la main en 286 ou 301. La branche B (340-344) exige `!IsInSetPiece()`. `_GfOnBall` n'est pas atteint non plus pour le gardien (354-379), ni pour un joueur qui tient le ballon en main.
 

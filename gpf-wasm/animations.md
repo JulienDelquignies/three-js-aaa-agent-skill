@@ -102,15 +102,15 @@ Trois réponses possibles :
 | Gardien | 12 | 7 | 1 | 4 | la sortie aux poings, la parade du pied, la relance roulée, le dégagement de volée (son gardien ne fait que lancer) ; pas de garde de gardien |
 | Défense ou duel | 10 | 3 | 2 | 5 | la charge à l'épaule, la protection du ballon par le bras, le duel de corps, la garde du défenseur, le contre d'un tir |
 | Chute ou relevé | 6 | 4 | 1 | 1 | la main tendue au coéquipier tombé |
-| Coup de pied arrêté | 8 | 0 | 1 | 7 | **tout** : la touche à la main (le corps la joue au pied), le ballon tenu, la course d'élan, la touche longue, le mur et son saut, le signal du tireur de corner |
+| Coup de pied arrêté | 8 | 1 | 2 | 5 | la course d'élan, la touche longue avec course, le mur et son saut, le signal du tireur de corner. La touche, elle, se lance bien à deux mains : le preneur reçoit le ballon en main (`teamAIcontroller.cpp:1163`), et seuls ses gestes « ballon en main » restent possibles |
 | Célébration ou émotion | 9 | 0 | 2 | 7 | le poing, l'oreille, le calme, la glissade, l'accolade, les applaudissements, la protestation. Ses 3 célébrations (joie, joie du buteur, abattement) ne sont jamais jouées (§ 1) |
 | Arbitre ou officiel | 10 | 2 | 0 | 8 | le coup de sifflet, le bras qui désigne, l'avantage, les 4 drapeaux des assistants, les ramasseurs. Seul le carton existe |
 | Vie hors du jeu | 5 | 1 | 0 | 4 | les mains sur les hanches, le sautillement, la poignée de main, le salut |
-| **Total** | **142** | **61 (43 %)** | **24 (17 %)** | **57 (40 %)** | |
+| **Total** | **142** | **62 (44 %)** | **25 (18 %)** | **55 (39 %)** | |
 
 Les manques sont groupés :
 - **le dribble et les feintes**, notre point fort au duel ;
-- **les coups de pied arrêtés** ;
+- **les gestes autour des coups de pied arrêtés** : l'élan, le mur, le signal (la touche, elle, se lance à la main) ;
 - **la vie autour du jeu** : célébrations, émotions, arbitre, poignées de main ;
 - **les duels de corps** ;
 - quelques **tirs** et **gestes de gardien**.
@@ -178,7 +178,7 @@ Cela suffit pour les gestes à **une seule touche de balle ou sans touche** :
 |---|---|---|---|
 | **Plusieurs touches de balle dans un même geste.** Une animation n'a qu'une touche (une seule ligne `extension`). Il faut soit enchaîner des animations d'une touche, la sortie de l'une étant l'entrée de la suivante, soit apprendre au corps plusieurs touches par animation | roulette, croqueta, série de passements puis sortie, grand pont, double contact | `humanoid.cpp` (la touche), `footballanimationextension` | moyen à gros |
 | **La trajectoire propre au geste.** Le corps calcule la frappe sans regarder le geste : hauteur fixe à 2,9°, son propre effet, un plancher de vitesse qui interdit le lob. Il faut lire dans l'animation sa hauteur, son effet et sa puissance | enroulé, pointu, piqué, extérieur du pied | `humanoid_utils.cpp`, `humanoid.cpp` (le point 1 de la carte, élargi) | petit à moyen |
-| **Les mains sur les coups de pied arrêtés.** Le preneur de touche doit prendre le ballon en main. L'état « ballon en main » du gardien (`right_elbow`) existe, à réutiliser. S'y ajoutent l'élan du tireur, le mur, le signal du corner | les 7 gestes de coup de pied arrêté | `elizacontroller.cpp` (la branche du tireur), `PrepareSetPiece` (le point 4 de la carte) | moyen |
+| **Les gestes autour des coups de pied arrêtés.** La touche se lance déjà à la main : le corps donne le ballon en main au preneur (`SelectRetainAnim`, `teamAIcontroller.cpp:1163`). Manquent l'élan du tireur, la touche longue avec course, le mur et son saut, le signal du corner | les 5 gestes manquants | `elizacontroller.cpp` (la branche du tireur), `PrepareSetPiece` (le point 4 de la carte) | moyen |
 | **Le pied après les mains.** Le gardien lâche le ballon et le frappe de volée : aujourd'hui, ballon en main, il ne fait que lancer | dégagement de volée | la touche (`humanoid.cpp`), la relance du gardien | moyen |
 | **Les gestes que le jeu demande au bon moment.** Rien de neuf dans la sélection, seulement l'appel au bon moment, sur le modèle du carton (`refereecontroller.cpp`) | coup de sifflet, bras qui désigne, avantage, drapeaux des assistants, protestation, poignée de main, salut | `refereecontroller.cpp`, le contrôleur des joueurs | petit par geste |
 | **Les célébrations.** Il faut rallonger l'après-but simulé, aujourd'hui 1 s, pour que la célébration ait lieu. Notre horloge compte déjà la vraie minute | les 3 célébrations du corps, puis les nôtres | `referee.cpp` (l'après-but), `_AddCelebration` (le choix selon le joueur) | petit |

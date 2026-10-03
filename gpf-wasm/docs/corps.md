@@ -2,14 +2,12 @@
 
 Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lecture du code seule : rien n'a été compilé ni exécuté.
 
-- **Chemins.** Un nom court (`match.cpp`) est sous `~/DelkIT/skill-l2/gpf-wasm/upstream/src/` (l'arbre corrigé par `patch.py`, carte au § 0). `api/…`, `patch.py`, `build.sh`, `contrat.mjs`, `corps.mjs`, `bancs/…` sont sous `~/DelkIT/skill-l2/gpf-wasm/`.
-- **Lignes.** Celles de l'arbre corrigé au 3 octobre. Tout nouveau correctif les décale.
+- **Chemins.** Un nom court (`match.cpp`) est sous `~/DelkIT/skill-l2/gpf-wasm/upstream/src/`, l'arbre corrigé par `patch.py` (carte au § 0). `api/…`, `patch.py`, `build.sh`, `contrat.mjs`, `corps.mjs`, `bancs/…` sont sous `~/DelkIT/skill-l2/gpf-wasm/`.
+- **Lignes.** Celles de l'arbre corrigé au 3 octobre ; tout nouveau correctif les décale.
 - **Statut.** « mesuré » renvoie au document qui l'a mesuré. « calculé » : fait à la main depuis les constantes du code. « non vérifié » : lu, à confirmer par une sonde.
 - **À lire à côté, sans doublon ici :** `README.md` (l'historique des mesures), `carte-cpp.md` (quatre correctifs C++ prévus, le piège des en-têtes), `animations.md` (quelles animations sont jouées, et pourquoi), `animations-releve.md` (le relevé fichier par fichier), `inventaire-moteur.md` (les gestes de notre moteur three.js).
 
-## Sommaire
-
-0. Lexique et carte des fichiers · 1. En bref · 2. Le pas de simulation · 3. Les joueurs · 4. Le contrôleur (`ElizaController`) · 5. Les animations · 6. Les touches et le ballon · 7. L'arbitre et le jeu arrêté · 8. Les gardiens · 9. Les attributs · 10. Notre couche · 11. Ce que le corps ne sait pas faire
+**Sommaire.** 0. Lexique et carte des fichiers · 1. En bref · 2. Le pas de simulation · 3. Les joueurs · 4. Le contrôleur (`ElizaController`) · 5. Les animations · 6. Les touches et le ballon · 7. L'arbitre et le jeu arrêté · 8. Les gardiens · 9. Les attributs · 10. Notre couche · 11. Ce que le corps ne sait pas faire
 
 ## 0. Lexique et carte des fichiers
 
@@ -20,11 +18,10 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 | pas | un appel de simulation : 10 ms de jeu |
 | intention | l'ordre que le cerveau pose pour un joueur (aller, presser, passer, tirer, conduire) ; elle est **tenue** : elle vaut jusqu'à la suivante |
 | porteur | le joueur qui a, ou va avoir, le ballon |
-| désigné | le joueur que le corps envoie au ballon : un pour le match, un par équipe (§ 2.5) |
+| désigné | le joueur que le corps envoie au ballon : un pour le match, un par équipe (§ 2.4) |
 | image mentale | un instantané des joueurs et du ballon, pris toutes les 100 ms ; chacun décide sur une image un peu ancienne |
 | commande | ce que le contrôleur demande au corps : un geste, une course, un regard, une touche (`PlayerCommand`) |
 | animation, geste | un fichier `.anim` de capture de mouvement, joué tel quel ou corrigé |
-| touche | l'instant où un geste frappe le ballon |
 | re-file | un instant où le corps peut couper l'animation en cours pour une nouvelle commande |
 | triche | le glissement du corps vers le ballon qui rend une touche exacte |
 | ballon en main | le gardien qui tient le ballon, ou le tireur de touche (« retainer » dans le code) |
@@ -32,17 +29,7 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 | id stable | le numéro d'un joueur dans le corps ; c'est lui que l'API attend |
 | garde au bit près | sans intention posée, le match doit rester identique, bit pour bit, à celui de Google |
 
-| Noms courts | Dossier sous `upstream/src/` |
-|---|---|
-| `game_env.cpp`, `gametask.cpp`, `gamedefines.hpp`, `defines.hpp`, `utils.hpp`, `utils.cpp`, `main.hpp` | racine |
-| `match.cpp`, `team.cpp`, `teamAIcontroller.cpp`, `referee.cpp`, `ball.cpp`, `officials.cpp` | `onthepitch/` |
-| `player.cpp`, `playerbase.cpp`, `playerofficial.cpp` | `onthepitch/player/` |
-| `humanoid.cpp`, `humanoidbase.cpp`, `humanoid_utils.cpp`, `animcollection.cpp` | `onthepitch/player/humanoid/` |
-| `elizacontroller.cpp`, `playercontroller.cpp`, `icontroller.cpp`, `refereecontroller.cpp` | `onthepitch/player/controller/` |
-| `goalie_default.cpp`, `default_def.cpp`, `default_mid.cpp`, `default_off.cpp` | `onthepitch/player/controller/strategies/offtheball/` |
-| `AIfunctions.cpp`, `mentalimage.cpp` | `onthepitch/AIsupport/` |
-| `animation.cpp` ; `footballanimationextension.cpp` | `utils/` ; `utils/animationextensions/` |
-| `playerdata.cpp`, `teamdata.cpp` ; `bluntmath.cpp` | `data/` ; `base/math/` |
+**Carte.** À la racine : `game_env.cpp`, `gametask.cpp`, `gamedefines.hpp`, `defines.hpp`, `utils.hpp`, `utils.cpp`, `main.hpp`. Sous `onthepitch/` : `match.cpp`, `team.cpp`, `teamAIcontroller.cpp`, `referee.cpp`, `ball.cpp`, `officials.cpp` ; sous `onthepitch/player/` : `player.cpp`, `playerbase.cpp`, `playerofficial.cpp`, puis `humanoid/` (`humanoid.cpp`, `humanoidbase.cpp`, `humanoid_utils.cpp`, `animcollection.cpp`) et `controller/` (`elizacontroller.cpp`, `playercontroller.cpp`, `icontroller.cpp`, `refereecontroller.cpp` ; `strategies/offtheball/goalie_default.cpp`, `default_def/mid/off.cpp`). Sous `onthepitch/AIsupport/` : `AIfunctions.cpp`, `mentalimage.cpp`. Sous `utils/` : `animation.cpp`, `animationextensions/footballanimationextension.cpp`. Sous `data/` : `playerdata.cpp`, `teamdata.cpp`. Sous `base/math/` : `bluntmath.cpp`.
 
 ## 1. En bref
 
@@ -57,15 +44,11 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 
 ## 2. Le pas de simulation
 
-### 2.1 De `gf_step` au monde
+### 2.1 L'ordre d'un pas
 
-- `gf_step(n)` appelle n fois `GameEnv::step` (`game_env.cpp:304-349`).
-- Nous démarrons avec `gf_init(1, …)` : un appel = un pas = 10 ms (`api/gf_api.cpp:63`). Google en enchaîne 10 par appel.
-- Chaque pas, `GameTask::ProcessPhase` (`gametask.cpp:55-63`) lance `Match::Process`. Si le monde a bougé, il calcule ensuite la pose : les couches procédurales, puis l'animation appliquée au squelette.
+`gf_step(n)` appelle n fois `GameEnv::step` (`game_env.cpp:304-349`). Nous démarrons avec `gf_init(1, …)` : un appel = un pas = 10 ms (`api/gf_api.cpp:63`) ; Google en enchaîne 10 par appel. Chaque pas, `GameTask::ProcessPhase` (`gametask.cpp:55-63`) lance `Match::Process` (`match.cpp:848-1023`), puis, si le monde a bougé, calcule la pose (couches procédurales, animation appliquée au squelette).
 
-### 2.2 L'ordre d'un pas (`Match::Process`, `match.cpp:848-1023`)
-
-| # | Étape | Lignes | Ce qui se passe |
+| # | Étape | Lignes de `match.cpp` | Ce qui se passe |
 |---|---|---|---|
 | 1 | ballon contre les corps | 856, 1599-1727 | en jeu seulement, au plus une fois par 150 ms |
 | 2 | arbitre | 860 → `referee.cpp:94-276` | sorties, fautes, hors-jeu, mi-temps, chronologie des arrêts |
@@ -80,39 +63,33 @@ Référence pour qui doit modifier le corps. Rédigée le 3 octobre 2026 par lec
 | 11 | horloge | 928 → 1844-1856 | +10 ms |
 | 12 | but | 931-983 | ballon passé sous la barre, entre les poteaux ; buteur, contre-son-camp |
 
-Un joueur touche le ballon pendant l'étape 6. `Ball::Touch` recalcule aussitôt sa trajectoire (`ball.cpp:90-103`) : les joueurs traités ensuite voient le nouveau ballon.
+Un joueur touche le ballon pendant l'étape 6 ; `Ball::Touch` recalcule aussitôt sa trajectoire (`ball.cpp:90-103`), et les joueurs traités ensuite voient le nouveau ballon.
 
-### 2.3 Le miroir
+### 2.2 Le miroir
 
-- Chaque équipe est traitée dans un monde où elle défend le but x = −55 et attaque vers +x.
-- L'équipe 0 voit le monde tel quel ; l'équipe 1 le voit retourné, x et y niés (`match.cpp:887-891`).
+- Chaque équipe est traitée dans un monde où elle défend le but x = −55 et attaque vers +x. L'équipe 0 voit le monde tel quel ; l'équipe 1 le voit retourné, x et y niés (`match.cpp:887-891`).
 - Au repos, l'équipe 1 est rangée retournée ; `gf_frame` et `gf_pose` la remettent à l'endroit (`api/gf_api.cpp:114, 144-148`).
-- L'arbitre voit le monde tel quel pour une graine paire, tout retourné pour une graine impaire (`match.cpp:853`). Non vérifié par une sonde (`carte-cpp.md` § 0).
-- Une graine impaire inverse aussi l'ordre de traitement des équipes (`reverse_team_processing`, `api/gf_api.cpp:80`).
+- L'arbitre voit le monde tel quel pour une graine paire, tout retourné pour une graine impaire (`match.cpp:853`). Non vérifié par une sonde (`carte-cpp.md` § 0). Une graine impaire inverse aussi l'ordre de traitement des équipes (`api/gf_api.cpp:80`).
 - Les intentions sont données dans le monde ; `api/intents.cpp:89-91` les retourne pour l'équipe 1.
 
-### 2.4 L'image mentale : le délai de perception
+### 2.3 L'image mentale : le délai de perception
 
 - Toutes les 100 ms, le corps photographie les joueurs (position, direction, mouvement, classe de vitesse, rôle) et 3 s de trajectoire du ballon (`mentalimage.cpp:23-48`). Il en garde trois : maintenant, −100 ms, −200 ms.
 - Un joueur décide sur l'image vieille de son temps de réaction : `80 − 40 × réaction` ms (`icontroller.cpp:30-33`), plus `100 × (1 − difficulté)` (`playercontroller.cpp:61-66`).
-- Ce temps est arrondi à la centaine (`match.cpp:450-456`). En pratique (calculé) : réaction > 0,75, l'image la plus récente ; sinon, celle d'avant, 100 ms plus vieille. La fatigue baisse la réaction : un joueur fatigué peut changer d'image.
+- Ce temps est arrondi à la centaine (`match.cpp:450-456`). En pratique (calculé) : réaction > 0,75, l'image la plus récente ; sinon celle d'avant, 100 ms plus vieille. La fatigue baisse la réaction : un joueur fatigué peut changer d'image.
 - Qui vient de toucher le ballon (touche voulue) voit le présent (`playercontroller.cpp:39`). Le corps aussi, pour choisir son geste, quand son équipe a touché en dernier (`humanoid.cpp:96-98`).
 - L'image est prolongée par le mouvement, puis rapprochée du réel : 2,5 m et 5 m/s d'écart au plus (`mentalimage.cpp:96-108`). Le ballon imaginé reste à 2,5 m au plus du réel (`mentalimage.cpp:133-151`).
 
-### 2.5 Le joueur désigné
+### 2.4 Le joueur désigné
 
-- **Temps jusqu'au ballon** : calculé à chaque pas pour chaque joueur, sur 3 s de trajectoire (ballon sous 1,5 m), à sa vitesse de pointe (`player.cpp:169-289`).
-- **Meilleure équipe** : celle du plus court temps (`match.cpp:1161-1179`).
-- **Désigné de l'équipe** : son joueur le plus rapide au ballon. Il ne change que pour un joueur nettement plus rapide (≈ 20 %, avoir le ballon compte double) (`team.cpp:476-511`).
+- **Temps jusqu'au ballon** : calculé à chaque pas pour chaque joueur, sur 3 s de trajectoire (ballon sous 1,5 m), à sa vitesse de pointe (`player.cpp:169-289`). La **meilleure équipe** est celle du plus court temps (`match.cpp:1161-1179`).
+- **Désigné de l'équipe** : son joueur le plus rapide au ballon. Il ne change que pour un joueur nettement plus rapide (≈ 20 % ; avoir le ballon compte double) (`team.cpp:476-511`).
 - **Désigné du match** : un seul sur 22. Le joueur ballon en main s'il y en a un ; sinon le désigné de la meilleure équipe, s'il arrive en moins de 85 % du temps du désigné actuel (`match.cpp:905-923`).
-- Le désigné du match reçoit la branche du porteur (§ 4.2), les re-files les plus fréquentes (§ 4.1) et un bonus dans les contacts (`match.cpp:1290-1291`).
-- `gf_frame` : colonnes 16 (match) et 17 (équipe).
+- Le désigné du match reçoit la branche du porteur (§ 4.2), les re-files les plus fréquentes (§ 4.1) et un bonus dans les contacts (`match.cpp:1290-1291`). `gf_frame` : colonnes 16 (match) et 17 (équipe).
 
-### 2.6 Les tirages au sort
+### 2.5 Les tirages au sort
 
-- Un seul générateur pseudo-aléatoire (Mersenne Twister) sert tous les tirages : `boostrandom` (`bluntmath.cpp:72-82`, `main.hpp:266-275`).
-- Il est semé avec la graine au lancement du match (`gametask.cpp:37`), puis **ressemé avec la même graine à chaque arrêt de jeu**, au placement (`referee.cpp:240`).
-- Pas d'horloge système, libm compilée dans le module : même match dans Node et Chromium (mesuré, `README.md`).
+- Un seul générateur pseudo-aléatoire (Mersenne Twister) sert tous les tirages : `boostrandom` (`bluntmath.cpp:72-82`, `main.hpp:266-275`). Il est semé avec la graine au lancement du match (`gametask.cpp:37`), puis **ressemé avec la même graine à chaque arrêt de jeu**, au placement (`referee.cpp:240`). Pas d'horloge système, libm compilée dans le module : même match dans Node et Chromium (mesuré, `README.md`).
 - Règle pour tout correctif : sur le chemin par défaut, n'ajouter ni retirer aucun tirage (`carte-cpp.md` § 0). `ResetPosition` tire au sort (`humanoidbase.cpp:853-854`).
 
 ## 3. Les joueurs
@@ -131,20 +108,16 @@ Un joueur touche le ballon pendant l'étape 6. `Ball::Touch` recalcule aussitôt
 
 ### 3.2 Identité et rôle
 
-- L'id stable est le rang de création (`playerbase.cpp:33`), remis à zéro à chaque match (`match.cpp:61`).
-- L'équipe traitée en premier reçoit 0 à 10 : l'équipe 1 pour une graine impaire (`match.cpp:52, 128`). Les arbitres ont 22 à 24. Il faut toujours lire la colonne 10 de `gf_frame`.
-- 11 joueurs par équipe, sans banc (`teamdata.cpp:288`).
-- Le rôle vient du scénario `11_vs_11_stochastic` (`api/gf_api.cpp:38-50`).
+- L'id stable est le rang de création (`playerbase.cpp:33`), remis à zéro à chaque match (`match.cpp:61`). L'équipe traitée en premier reçoit 0 à 10 : l'équipe 1 pour une graine impaire (`match.cpp:52, 128`). Les arbitres ont 22 à 24. Lire toujours la colonne 10 de `gf_frame`.
+- 11 joueurs par équipe, sans banc (`teamdata.cpp:288`). Le rôle vient du scénario `11_vs_11_stochastic` (`api/gf_api.cpp:38-50`).
 - La position tactique de base et le profil d'attributs viennent, eux, d'une formation 4-3-3 codée en dur, par rang (`teamdata.cpp:78-89, 184-185, 277-287`, `AIfunctions.cpp:47-52`).
 - Les deux ne concordent pas : le rang 2 est avant-centre dans le scénario, défenseur central dans la formation, avec un profil de défenseur (§ 9). Effet en jeu non vérifié ; notre cerveau place lui-même ses joueurs.
 
 ### 3.3 L'état spatial (`humanoidbase.cpp:1321-1431`)
 
-- **Position** (m) au sol, z = 0 ; la hauteur d'un saut n'existe que dans la pose.
-- **Mouvement** (m/s) : la trajectoire de l'animation, corrigée par la physique de course, sans la triche.
+- **Position** (m) au sol, z = 0 ; la hauteur d'un saut n'existe que dans la pose. **Mouvement** (m/s) : la trajectoire de l'animation, corrigée par la physique de course, sans la triche.
 - **Direction** : celle du mouvement ; à l'arrêt, celle du corps.
-- **Direction du corps**, relative au mouvement, ramenée à 0°, ±45° ou ±135° (`humanoidbase.cpp:39-53`). Au sprint, ±22° au plus ; en course, ±89° (`humanoidbase.cpp:1393-1417`).
-- **Pied** d'appui, qui sert à trier les animations.
+- **Direction du corps**, relative au mouvement, ramenée à 0°, ±45° ou ±135° (`humanoidbase.cpp:39-53, 1393-1428`). Au sprint, elle reste droit devant ; en course, à 45° au plus ; dos tourné (±135°) seulement au trot (calculé).
 
 | Classe de vitesse | Vitesse | Valeur type | Nom du code |
 |---|---|---|---|
@@ -153,9 +126,7 @@ Un joueur touche le ballon pendant l'étape 6. `Ball::Touch` recalcule aussitôt
 | course | 4,2 à 6 m/s | 5 | walk |
 | sprint | ≥ 6 m/s | 8 (animations à 7) | sprint |
 
-Seuils : `gamedefines.hpp:29-38`, `animcollection.hpp:43-80`.
-
-- Vitesse de pointe : `8 × (0,9 + 0,1 × vitesse)`, soit 7,2 à 8 m/s (`playerbase.cpp:128-136`).
+- Seuils : `gamedefines.hpp:29-38`, `animcollection.hpp:43-80`. Vitesse de pointe : `8 × (0,9 + 0,1 × vitesse)`, soit 7,2 à 8 m/s (`playerbase.cpp:128-136`).
 - **La course** (`humanoidbase.cpp:1672-2235`). L'animation donne la trajectoire ; une physique simple la tire vers la course voulue, sous trois plafonds (calculé) :
   - l'accélération : 11 m/s² à l'arrêt, nulle à la vitesse de pointe, × (0,7 + 0,3 × accélération) (2107-2152) ;
   - le virage : ≈ 270°/s au sprint sans ballon, 180°/s ballon au pied, × (0,7 + 0,3 × agilité) ; au-delà, le joueur freine (2031-2065) ;
@@ -164,27 +135,19 @@ Seuils : `gamedefines.hpp:29-38`, `animcollection.hpp:43-80`.
 
 ### 3.4 La possession
 
-- **Posséder** : ballon à moins d'1 m d'un point juste devant le joueur, sous 0,5 m de haut, à moins de 6 m/s d'écart de vitesse (`AIfunctions.cpp:843-864`).
-- Après la touche d'une passe ou d'un tir, plus de possession jusqu'à la fin du geste (`player.cpp:261-270`).
+- **Posséder** : ballon à moins d'1 m d'un point juste devant le joueur, sous 0,5 m de haut, à moins de 6 m/s d'écart de vitesse (`AIfunctions.cpp:843-864`). Après la touche d'une passe ou d'un tir, plus de possession jusqu'à la fin du geste (`player.cpp:261-270`).
 - **Ballon en main** : le ballon est collé à la main (`humanoid.cpp:624-650`), la possession forcée (`player.cpp:275-288`).
 - **Possession d'équipe** : `(temps adverse + 1,5 s) / (temps de l'équipe + 1,5 s)`, plus une version lissée qui bouge de 0,005 par pas au plus (`team.cpp:364-386`). Leur IA s'en sert partout.
 - `gf_frame`, en-tête 9-10 : l'équipe qui a le ballon, et le **rang** du joueur dans son équipe, pas son id stable (`match.cpp:799-804`).
 
-### 3.5 La fatigue
+### 3.5 La fatigue, les cartons
 
-- La fraîcheur vaut 1 au départ, 0,01 au plus bas (`playerbase.cpp:37`, `player.cpp:330`).
-- À chaque pas en jeu, elle perd `distance × 0,00003 × (2 − endurance) / facteur` (`player.cpp:329`).
+- La fraîcheur vaut 1 au départ, 0,01 au plus bas (`playerbase.cpp:37`, `player.cpp:330`). À chaque pas en jeu, elle perd `distance × 0,00003 × (2 − endurance) / facteur` (`player.cpp:329`).
 - Le facteur vaut `match_duration × 0,2 + 0,05` (`match.cpp:56-57`) : 0,0554 au réglage de Google (0,027), d'où une fatigue 18 fois trop rapide ; 1 avec notre `CHRONO_REEL` de 4,75.
-- Effet : un attribut lu vaut `base × (0,3 + 0,7 × difficulté) × (0,7 + 0,3 × fraîcheur)` (`player.cpp:452-457`). Endurance et vitesse de pointe sont lues brutes.
-- Fatiguée, leur IA chasse moins loin et flâne plus (`elizacontroller.cpp:429, 559-560`).
+- Effet : un attribut lu vaut `base × (0,3 + 0,7 × difficulté) × (0,7 + 0,3 × fraîcheur)` (`player.cpp:452-457`) ; endurance et vitesse de pointe sont lues brutes. Fatiguée, leur IA chasse moins loin et flâne plus (`elizacontroller.cpp:429, 559-560`).
 - Mesuré (`README.md`) : à 0,027, épuisé vers la 12ᵉ minute, attributs à 70 % ; à 4,75, environ 60 % de fraîcheur après 10,5 km.
-- **La mi-temps rend toute la fraîcheur** : `SetMatchPhase` appelle `RelaxFatigue(1)` (`match.cpp:489-493`, `referee.cpp:119`).
-- `gf_frame` n'exporte pas la fraîcheur.
-
-### 3.6 Cartons et expulsions
-
-- Jaune : +1 ; rouge : +3. Au-delà de 1, l'expulsion tombe 6 s après le carton, sauf pour le dernier joueur d'une équipe (`player.hpp:107-111`, `player.cpp:333-337`).
-- L'expulsé reste dans `gf_frame`, « actif » à 0. Un gardien expulsé passe son rôle à un joueur de champ (`player.cpp:436-443`).
+- **La mi-temps rend toute la fraîcheur** : `SetMatchPhase` appelle `RelaxFatigue(1)` (`match.cpp:489-493`, `referee.cpp:119`). `gf_frame` n'exporte pas la fraîcheur.
+- **Cartons** : jaune +1, rouge +3. Au-delà de 1, l'expulsion tombe 6 s après le carton, sauf pour le dernier joueur d'une équipe (`player.hpp:107-111`, `player.cpp:333-337`). L'expulsé reste dans `gf_frame`, « actif » à 0 ; un gardien expulsé passe son rôle à un joueur de champ (`player.cpp:436-443`).
 
 ## 4. Le contrôleur (`ElizaController`)
 
@@ -194,17 +157,14 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 
 | Joueur | Créneau de re-file |
 |---|---|
-| désigné du match, à moins de 3 m du ballon | toutes les 20 ms |
-| désigné du match, plus loin | 30 ms |
+| désigné du match, à moins de 3 m du ballon ; plus loin | toutes les 20 ms ; 30 ms |
 | désigné de son équipe | 40 ms |
 | à moins de 5 m du ballon ; de 10 m | 50 ms ; 80 ms |
 | les autres | jamais : fin d'animation seulement |
 
-- La re-file ne part que d'une course (ballon à moins de 16 m, ou au pied) ou d'un contrôle/amorti avant sa touche ; jamais d'un état au sol (`humanoid.cpp:182-207`).
-- `SelectAnim` refuse ensuite beaucoup de re-files : trop semblable, trop tard dans le geste, même sortie (`humanoid.cpp:1160-1220, 1575-1602`).
-- Entre deux, le contrôleur ne fait que fixer l'âge de son image mentale (`playercontroller.cpp:36-41`).
+- La re-file ne part que d'une course (ballon à moins de 16 m, ou au pied) ou d'un contrôle/amorti avant sa touche ; jamais d'un état au sol (`humanoid.cpp:182-207`). `SelectAnim` refuse ensuite beaucoup de re-files : trop semblable, trop tard dans le geste, même sortie (`humanoid.cpp:1160-1220, 1575-1602`). Entre deux interruptions, le contrôleur ne fait que fixer l'âge de son image mentale (`playercontroller.cpp:36-41`) : un ordre posé entre-temps attend la prochaine.
 
-### 4.2 `RequestCommand` : les branches dans l'ordre (`elizacontroller.cpp:40-534`)
+### 4.2 `RequestCommand` : les branches et la file (`elizacontroller.cpp:40-534`)
 
 | # | Condition | Branche | Effet | Lignes |
 |---|---|---|---|---|
@@ -217,16 +177,13 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | 7 | en jeu, gardien | gardien | placement, parade, jeu au pied (§ 8) | 354-379 |
 | puis | en jeu, hors CPA | réflexes | contrôle, amorti, intervention, tacle glissé | 401-416 |
 | puis | en jeu, hors CPA | mouvement | chasse (**C**), aimant, course | 419-521 |
-| sinon | CPA, gardien en interception | course imposée | immobile ou cible du gardien | 522-533 |
-
-### 4.3 La file de commandes
+| sinon | CPA, gardien en interception | course imposée | immobile, ou la cible du gardien | 522-533 |
 
 - La file est refaite à chaque appel. Pour un porteur : [passe ou tir, parfois la triple passe de panique] [contrôle] [amorti] [intervention] [tacle glissé] [course].
-- Le corps prend la première commande pour laquelle une animation convient (`humanoid.cpp:233-247`).
-- Une passe sans animation possible laisse la place au contrôle ; elle est redemandée à l'interruption suivante, tant que l'intention tient (`carte-cpp.md` § 3).
+- Le corps prend la première commande pour laquelle une animation convient (`humanoid.cpp:233-247`). Une passe sans animation possible laisse la place au contrôle ; elle est redemandée à l'interruption suivante, tant que l'intention tient (`carte-cpp.md` § 3).
 - Une passe ou un tir dans la file rend les contrôles et amortis qui suivent plus durs à jouer (rayon × 0,3, `humanoid.cpp:2017-2022`).
 
-### 4.4 Les champs d'une commande (`PlayerCommand`, `gamedefines.hpp:163-238`)
+### 4.3 Les champs d'une commande (`PlayerCommand`, `gamedefines.hpp:163-238`)
 
 | Champ | Sens |
 |---|---|
@@ -240,14 +197,14 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | `useSpecialVar1/2`, `specialVar1/2` | demander une animation précise (§ 5.5) |
 | `modifier` | bit 1 `KnockOn` : pousser le ballon plus loin ; les autres bits sont libres (`carte-cpp.md` § 0) |
 
-### 4.5 Leur IA, sans intention
+### 4.4 Leur IA, sans intention
 
 - **Placement** (`default_def/mid/off.cpp`) : la position de formation adaptée par l'équipe (`teamAIcontroller.cpp:321-476`), un champ de forces de soutien quand l'équipe a le ballon (`elizacontroller.cpp:591-806`), une composante défensive côté but (`playercontroller.cpp:84-160`), le piège du hors-jeu, la flânerie (`elizacontroller.cpp:551-589`).
 - **Porteur** (`GetOnTheBallCommands`, `elizacontroller.cpp:822-1045`) : il note chaque partenaire (gain tactique, chances de passe), panique s'il est défenseur près de son but, tire si `chances + U(0 ; 0,5) > 0,5` près du but adverse, conduit par champ de forces.
 - **Chasse** (`elizacontroller.cpp:446-512`) : quand l'équipe n'a pas le ballon, l'un des deux joueurs les plus proches du porteur adverse, à moins de 10 à 20 m, va à sa garde côté but, aimanté.
 - **Aimant** (`_MovementCommand`, `playercontroller.cpp:531-738`) : mélange la course voulue et une course automatique au ballon. Le désigné du match y va pleinement ; qui a touché le ballon depuis moins de 2 s, en partie.
 
-### 4.6 Nos crochets (`api/intents.cpp`)
+### 4.5 Nos crochets (`api/intents.cpp`)
 
 | Crochet | Appelé à | Lit | Fait |
 |---|---|---|---|
@@ -256,36 +213,33 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | `_GfPressMode` (C) | `elizacontroller.cpp:444, 446` | PRESSER, ALLER | 2 chasse forcée ; 1 jamais de chasse ; 0 la chasse du corps (171-178) |
 | `_GfPress` (C) | `elizacontroller.cpp:445` | — | vers le désigné adverse anticipé de 0,3 s, au sprint, aimant et hâte (183-192) |
 
-### 4.7 Ce que change chaque intention
+### 4.6 Ce que change chaque intention
 
 | Intention (`kind`) | Champs | Joueur sans ballon | Porteur (B) |
 |---|---|---|---|
 | IA (0) | — | leur IA | leur IA |
 | ALLER (1) | x, y, vitesse | va au point (A), ne chasse jamais (C = 1) | garde le ballon et le conduit vers (x, y), à 3,5 m/s au plus |
-| PRESSER (2), drapeau 0 | x, y | fond sur le porteur adverse, aimanté (C = 2) ; (x, y) ne sert que sans porteur | comme ALLER |
+| PRESSER (2), drapeau 0 | x, y | fond sur le désigné adverse, aimanté (C = 2) ; (x, y) n'est pas suivi | comme ALLER |
 | PRESSER (2), drapeau 1 | x, y | va au point, puis la chasse du corps s'il est parmi les deux plus proches (C = 0) | comme ALLER |
-| PASSER (3) | cible (id stable), drapeau 0 courte, 1 longue, 2 haute | leur IA (A et C ne lisent pas PASSER) | `_AddPass`, destinataire imposé ; cible absente ou soi-même : leur IA |
+| PASSER (3) | cible (id stable), drapeau 0 courte, 1 longue, 2 haute | leur IA (A et C ne lisent pas PASSER) | `_AddPass`, destinataire imposé ; cible hors de son équipe ou soi-même : leur IA |
 | TIRER (4) | x, y (point visé), puissance | leur IA | tir vers (x, y), puissance bornée à 0,3-1 |
 | CONDUIRE (5) | x, y, vitesse | leur IA | conduite vers (x, y), 0 à 8 m/s |
 
-- B n'est atteint que pour le désigné du match, à moins d'1 s du ballon (`elizacontroller.cpp:346`).
-- Ni le gardien, ni le tireur d'un CPA, ni le joueur ballon en main n'y passent (139-304, 354-379). L'engagement fait exception : il se joue en jeu courant (§ 7.4).
+- B n'est atteint que pour le désigné du match, à moins d'1 s du ballon (`elizacontroller.cpp:346`). Ni le gardien, ni le tireur d'un CPA, ni le joueur ballon en main n'y passent (139-304, 354-379) ; l'engagement fait exception, il se joue en jeu courant (§ 7.4).
 - Ballon mort ou CPA : aucune lecture ; les intentions restent posées et reprennent au coup de sifflet.
 - Pendant PASSER ou TIRER, la course demandée est l'arrêt : le contrôle freine le porteur en attendant le geste (`carte-cpp.md` § 3).
-- Les réflexes restent dans la file : nos intentions n'empêchent ni les contrôles ni les tacles du corps (401-416).
-- L'aimant reste actif pour le désigné du match et pour qui vient de toucher le ballon (`playercontroller.cpp:587-664`).
+- Les réflexes restent dans la file : nos intentions n'empêchent ni les contrôles ni les tacles du corps (401-416). L'aimant reste actif pour le désigné du match et pour qui vient de toucher le ballon (`playercontroller.cpp:587-664`).
 - Mesuré (`README.md`, « Obéissance ») : placement à 0,3 m de la cible ; 64 % des passes reçues par le destinataire imposé.
 
 ## 5. Les animations
 
 ### 5.1 Le format `.anim` (`animation.cpp:1001-1151`)
 
-- Un fichier texte, en trois parties.
-- **14 lignes d'images clés**, numérotées à 100 images par seconde, clés espacées :
+- Un fichier texte, en trois parties. D'abord **14 lignes d'images clés**, numérotées à 100 images par seconde, clés espacées :
   - `player,image,x,y,z,…` : la racine, position en mètres ;
   - 13 articulations `nom,image,qx,qy,qz,qw,…`, en quaternions locaux (une rotation codée sur 4 nombres) : `body, middle, neck, left_shoulder, left_elbow, right_shoulder, right_elbow, left_thigh, left_knee, left_ankle, right_thigh, right_knee, right_ankle`.
   - Entre deux clés, la position est interpolée en ligne droite, la rotation sur la sphère (`animation.cpp:200-314`).
-- **La ligne de touche**, dans 195 fichiers sur 293 : `extension,football,image,x,y,z`, l'image du contact et la position du ballon dans le repère du joueur (`footballanimationextension.cpp:157-174`). Le lecteur accepte plusieurs contacts ; chaque fichier n'en a qu'un (compté). Les « 15 lignes » d'`animations.md` sont ces 14 lignes plus celle-ci.
+- **La ligne de touche**, dans 195 fichiers sur 293 : `extension,football,image,x,y,z`, l'image du contact et la position du ballon dans le repère du joueur (`footballanimationextension.cpp:157-174`). Le lecteur accepte plusieurs contacts ; chaque fichier n'en a qu'un (compté). Les « 15 lignes » d'`animations.md` sont les 14 lignes plus celle-ci.
 - **Des balises** :
 
 | Balise | Sens |
@@ -300,27 +254,23 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | `incoming/outgoing_retain_state` | ballon en main (`right_elbow`) |
 | `triptype`, `bumpdirection`, `steps` | la chute ; le nombre de pas, d'où le pied d'appui à la sortie |
 
-- Calculés au chargement (`_PrepareAnim`, `animcollection.cpp:1043-1078`) : la difficulté du geste, l'image de touche, la partie du corps au contact (`touch_bodypart`), le quadrant (la sortie quantifiée : arrêt, ou 3 vitesses × 10 angles, `animcollection.cpp:42-95`).
-- `AddExtraTouches` devait ajouter des contacts autour du principal ; il sort avant (`animcollection.cpp:921`).
-- Une animation qui part de l'arrêt est tournée pour partir face à l'avant (`animation.cpp:316-365`).
+- Calculés au chargement (`_PrepareAnim`, `animcollection.cpp:1043-1078`) : la difficulté du geste, l'image de touche, la partie du corps au contact (`touch_bodypart`), le quadrant (la sortie quantifiée : arrêt, ou 3 vitesses × 10 angles, 42-95). `AddExtraTouches` devait ajouter des contacts autour du principal ; il sort avant (921). Une animation qui part de l'arrêt est tournée pour partir face à l'avant (`animation.cpp:316-365`).
 - Les 283 fichiers hors modèles, par type (compté) : course 65, contrôle 45, amorti 40, passe courte 37, parade 28, chute 19, tir 17, passe haute 15, intervention 7, tacle glissé 6, spécial 4 (3 célébrations, le carton).
-- Il n'existe ni type passe longue, ni tête, ni prise : la passe longue joue les passes courtes (`humanoid.cpp:1241`) ; une commande « tête » ou « prise » ne trouve rien.
-- Aucun fichier n'a de balise `priority` ; les courses générées ont la priorité 1. À égalité du reste, les fichiers passent devant.
+- Il n'existe ni type passe longue, ni tête, ni prise : la passe longue joue les passes courtes (`humanoid.cpp:1241`) ; une commande « tête » ou « prise » ne trouve rien. Aucun fichier n'a de balise `priority` ; les courses générées ont la priorité 1, donc les fichiers passent devant à égalité du reste.
 
 ### 5.2 Le chargement (`animcollection.cpp:370-497`)
 
-- Une seule fois, au premier match ; la collection survit à `gf_reset` (`match.cpp:77-103`). Les numéros d'animation sont donc stables.
-- **Les courses générées** : les 10 modèles de `templates/` sont croisés deux à deux, dans 9 directions, filtrés par des règles (au plus une classe d'accélération, pas de virage serré au sprint…), sur 25 images (`animcollection.cpp:151-368`). Il en sort 443 (mesuré, `animations.md`).
-- Chaque course générée entre en miroir puis telle quelle. Puis chaque autre fichier, trié par chemin, tel quel puis en miroir ; les noms contenant « luxury » sont exclus, il n'y en a aucun (419-492).
+- Une seule fois, au premier match ; la collection survit à `gf_reset` (`match.cpp:77-103`), et les numéros d'animation restent stables.
+- **Les courses générées** : les 10 modèles de `templates/` sont croisés deux à deux, dans 9 directions, filtrés par des règles (au plus une classe d'accélération, pas de virage serré au sprint…), sur 25 images (151-368). Il en sort 443 (mesuré, `animations.md`).
+- Chaque course générée entre en miroir puis telle quelle ; puis chaque autre fichier, trié par chemin, tel quel puis en miroir. Les noms contenant « luxury » sont exclus ; il n'y en a aucun (419-492).
 - **Le miroir** échange gauche et droite, nie x des positions, nie y et z des quaternions, ajoute « _mirror » au nom (`animation.cpp:1153-1216`).
 - Total : 2 × 443 + 2 × 283 = 1 452 animations (mesuré, `animations.md`). `gf_anim_nom(id)` rend le chemin.
 
 ### 5.3 Choisir une animation (`Humanoid::SelectAnim`, `humanoid.cpp:1110-1640`)
 
-1. **Optimisations** (1117-1156). Pour un geste qui touche le ballon : refus si le ballon imaginé sera à plus de 10 m dans 200 ms, s'il s'éloigne, ou si l'image s'écarte du réel de plus de 2 m à 1 s (un adversaire vient de le dévier).
-2. **Contrôles de re-file** (1160-1220).
-3. **La requête** (1229-1344) : le type ; la direction de départ du ballon, relative à la direction de course (passes, tirs) ; la classe de vitesse et l'orientation du corps à l'entrée ; le côté du regard ; la direction d'arrivée du ballon ; les états, la main, les `specialvar`.
-4. **Le tri grossier** (`CrudeSelection`, `animcollection.cpp:503-848`), étage 0 du relevé :
+1. **Optimisations** (1117-1156). Pour un geste qui touche le ballon : refus si le ballon imaginé sera à plus de 10 m dans 200 ms, s'il s'éloigne, ou si l'image s'écarte du réel de plus de 2 m à 1 s (un adversaire vient de le dévier). Puis les contrôles de re-file (1160-1220).
+2. **La requête** (1229-1344) : le type ; la direction de départ du ballon, relative à la direction de course (passes, tirs) ; la classe de vitesse et l'orientation du corps à l'entrée ; le côté du regard ; la direction d'arrivée du ballon ; les états, la main, les `specialvar`.
+3. **Le tri grossier** (`CrudeSelection`, `animcollection.cpp:503-848`), étage 0 du relevé :
 
 | Filtre | Lignes | Règle |
 |---|---|---|
@@ -334,37 +284,29 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | direction de départ du ballon | 783-799 | ±`maxdeviation` × π (0,25π par défaut) |
 | états, main, `specialvar`, type de chute | 803-816 | égalité |
 
-5. **Rien ?** Une course prend l'animation d'attente ; tout autre geste échoue (1349-1356).
-6. **Les meilleures directions** (1360-1465), étage 1 du relevé : `_KeepBestDirectionAnims` garde la sortie (le quadrant) la plus proche de la course voulue (`humanoidbase.cpp:984-1054`) ; `_KeepBestBodyDirectionAnims` garde les regards à 0,06π du meilleur (1057-1111). Un amorti à plus de 0,375π de la course voulue est refusé (1419-1450).
-7. **Les tris** (1469-1508) : des tris stables, dont le dernier fait la clé principale. Du plus important au moins important :
-   parade qui capte d'abord › animation « de base » (hors course) › direction de chute › vitesse d'entrée la plus proche › orientation d'entrée la plus proche (sauf contrôle) › même pied › niveau d'attente (0 en jeu, 1 en CPA ou ballon à plus de 16 m, 2 ballon mort) › priorité.
-8. **Le choix** (1529-1571) : course, chute, spécial, la première ; geste de touche, la première qui atteint le ballon (§ 5.4).
-9. **Même sortie** : une re-file vers le même quadrant est annulée (1575-1602).
-10. **Jouer** (1606-1637) : étage 2 du relevé ; étage 3 pour les arbitres (`humanoidbase.cpp:1271`), qui ont une version simple, sans touche ni re-file (`humanoidbase.cpp:610-754, 1113-1297`).
+4. **Rien ?** Une course prend l'animation d'attente ; tout autre geste échoue (1349-1356).
+5. **Les meilleures directions** (1360-1465), étage 1 du relevé : `_KeepBestDirectionAnims` garde la sortie (le quadrant) la plus proche de la course voulue (`humanoidbase.cpp:984-1054`) ; `_KeepBestBodyDirectionAnims` garde les regards à 0,06π du meilleur (1057-1111). Un amorti à plus de 0,375π de la course voulue est refusé (1419-1450).
+6. **Les tris** (1469-1508) : des tris stables, dont le dernier fait la clé principale. Du plus important au moins important : parade qui capte d'abord › animation « de base » (hors course) › direction de chute › vitesse d'entrée la plus proche › orientation d'entrée la plus proche (sauf contrôle) › même pied › niveau d'attente (0 en jeu, 1 en CPA ou ballon à plus de 16 m, 2 ballon mort) › priorité.
+7. **Le choix** (1529-1571) : course, chute, spécial, la première ; geste de touche, la première qui atteint le ballon (§ 5.4). Une re-file vers le même quadrant est annulée (1575-1602).
+8. **Jouer** (1606-1637) : étage 2 du relevé ; étage 3 pour les arbitres (`humanoidbase.cpp:1271`), qui ont une version simple, sans touche ni re-file (`humanoidbase.cpp:610-754, 1113-1297`).
 
 ### 5.4 Atteindre le ballon : la triche (`GetBestCheatableAnimID`, `humanoid.cpp:1799-2156`)
 
-- Pour chaque candidate, dans l'ordre du tri, le corps simule sa course. Puis il compare la position du ballon dans l'animation, à l'image de touche, au ballon imaginé à cet instant.
+- Pour chaque candidate, dans l'ordre du tri, le corps simule sa course, puis compare la position du ballon dans l'animation, à l'image de touche, au ballon imaginé à cet instant.
 - **En hauteur** : moins de 0,22 m d'écart, avec des tolérances (ballon bas et animation de base : −0,15 m ; au-dessus de 1,8 m puis 2,6 m : pénalisé) (1939-1953).
-- **Au sol** : un rayon de base de 0,3 m, qui grandit avec le délai avant la touche (1967-1977). `GetBodyBallDistanceAdvantage` (1678-1797) l'élargit selon l'aisance du geste, l'aplatit en ellipse en vitesse, le centre un peu en arrière, puis le divise par deux.
-- Multiplicateurs (1979-2042) : passe et tir ×1,3 et +0,15 m ; intervention ×1,4 et +0,2 m ; parade ×1,8 et +0,4 m ; tacle glissé ×0,2 ; contrôle ou amorti derrière une passe ou un tir dans la file ×0,3 ; juste après sa propre touche (600 ms), réduit.
-- La première qui passe gagne : pas de score global (`carte-cpp.md` § 3).
+- **Au sol** : un rayon de base de 0,3 m, qui grandit avec le délai avant la touche (1967-1977). `GetBodyBallDistanceAdvantage` (1678-1797) l'élargit selon l'aisance du geste, l'aplatit en ellipse en vitesse, le recule un peu, puis le divise par deux.
+- Multiplicateurs (1979-2042) : passe et tir ×1,3 et +0,15 m ; intervention ×1,4 et +0,2 m ; parade ×1,8 et +0,4 m ; tacle glissé ×0,2 ; contrôle ou amorti derrière une passe ou un tir ×0,3 ; juste après sa propre touche (600 ms), réduit. La première qui passe gagne : pas de score global (`carte-cpp.md` § 3).
 - Le corps glisse alors vers le ballon avant la touche, en n'affichant qu'une partie du glissement (2066-2148). Le désigné glisse aussi en course pour arriver au ballon (2158-2234).
 - Le corps touche parfois le ballon sans geste de touche : quand le ballon file sous le nez du désigné (à moins de 0,6 m, en s'éloignant) et que personne ne l'a touché depuis un moment, un amorti part pendant sa course (`humanoid.cpp:313-356`).
 - Après un tacle glissé ou une chute (`lay_back`, `lay_front`), le geste suivant doit se relever ; le joueur compte comme arrêté (`humanoid.cpp:1339`, `humanoidbase.cpp:1433-1444`).
 
-### 5.5 Demander une animation précise : `specialVar1/2`
+### 5.5 Un geste sur demande, la pose, le relevé
 
 - Une animation qui porte `specialvar1` ou `specialvar2` n'est candidate que si la commande demande la même valeur (`animcollection.cpp:807-808`). Les autres commandes demandent 0 : le corps ne la joue jamais de lui-même.
-- Usages : les célébrations (`specialvar1` 1 joie, 2 abattement ; `specialvar2` 2 pour le buteur, `elizacontroller.cpp:1221-1229`) ; le carton de l'arbitre (3, `refereecontroller.cpp:103-112`).
-- C'est la porte pour nos gestes ; `animations.md` § 3 dit comment la brancher sans toucher aux en-têtes.
-
-### 5.6 La pose rendue et le relevé
-
-- `gf_pose` lit les nœuds après l'animation et ses couches procédurales (`humanoid.cpp:787-1056`) : jambes accordées à la vraie vitesse, buste et tête tournés vers le ballon, un bras levé contre un adversaire à moins de 1,4 m, un « maillot tiré » s'il est devant.
-- Ces bras sont décoratifs : ils ne changent rien au jeu.
+- Usages : les célébrations (`specialvar1` 1 joie, 2 abattement ; `specialvar2` 2 pour le buteur, `elizacontroller.cpp:1221-1229`) ; le carton de l'arbitre (3, `refereecontroller.cpp:103-112`). C'est la porte pour nos gestes ; `animations.md` § 3 dit comment la brancher sans toucher aux en-têtes.
+- `gf_pose` lit les nœuds après l'animation et ses couches procédurales (`humanoid.cpp:787-1056`) : jambes accordées à la vraie vitesse, buste et tête tournés vers le ballon, un bras levé contre un adversaire à moins de 1,4 m, un « maillot tiré » s'il est devant. Ces bras sont décoratifs : ils ne changent rien au jeu.
 - Pendant les secondes gelées d'un arrêt (§ 7.4), la pose ne change pas.
-- Le relevé (`patch.py`, étape 10) compte chaque choix à quatre étages. Résultats et causes : `animations.md` (240 fichiers sur 284 joués avec notre cerveau) et `animations-releve.md`.
+- Le relevé (`patch.py`, étape 10) compte chaque choix aux quatre étages. Résultats et causes : `animations.md` (240 fichiers sur 284 joués avec notre cerveau) et `animations-releve.md`.
 
 ## 6. Les touches et le ballon
 
@@ -379,39 +321,34 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
 | contrôle, conduite | `GetBallControlVector` (§ 6.4) | 411-428 | idem |
 | passe ; tir | § 6.2 ; § 6.3 | 430-515 ; 517-547 | idem |
 | intervention (tacle debout) | la moitié de l'amorti, + 4 m/s dans le prolongement joueur-ballon, + 0,5 à 1,5 m/s vers le haut | 549-566 | accidentelle |
-| parade | prise ou renvoi (§ 8.3) | 568-607 | accidentelle |
+| parade | prise ou renvoi (§ 8.2) | 568-607 | accidentelle |
 | tacle glissé | 6 m/s dans la direction du geste, + 6 m/s vers le haut, − 28 % de la vitesse du ballon | 609-620 | accidentelle |
 
-Les types de touche (`gamedefines.hpp:113-119`) : 0 voulue au pied (pied ou bas de jambe, `humanoid_utils.cpp:32-39`), 1 voulue sans le pied (tête, poitrine, main), 2 accidentelle. Ils décident des mains du gardien (§ 8.5), du contre-son-camp (`match.cpp:959`) et de la colonne `a` du journal.
+Les types de touche (`gamedefines.hpp:113-119`) : 0 voulue au pied (pied ou bas de jambe, `humanoid_utils.cpp:32-39`), 1 voulue sans le pied (tête, poitrine, main), 2 accidentelle. Ils décident des mains du gardien (§ 8.4), du contre-son-camp (`match.cpp:959`) et de la colonne `a` du journal.
 
 ### 6.2 La passe
 
 1. **Au contact, le corps révise la passe** : il relance `AI_GetPass` et peut changer de destinataire à 0,15π près, en partie jusqu'à 0,3π (449-473). Le journal donne le destinataire final (`b`) et l'imposé (`d`).
 2. **La cible** (`AIfunctions.cpp:1019-1171`) : le destinataire, plus son mouvement pendant la durée estimée de la passe (0,7 s au plus) ; pour la longue, 20 % de la distance en plus vers l'avant (1158-1166).
-3. **La force** (`AI_GetAutoPass`, `AIfunctions.cpp:1001-1017`) : pente 0,11 au sol, `0,45 − 0,15 × d/60` en haute ; puissance `p = (d/60)^1,4 × 1,8` (haute : × 1,15).
-4. **La vitesse** : `36 × (p + 0,3)` m/s (480). Plancher 10,8 m/s ; une courte de 24 m part à 28,8 m/s (calculé, `carte-cpp.md` § 2).
-5. **La touche possible** (`GetBestPossibleTouch`, 2236-2306) :
+3. **La force** (`AI_GetAutoPass`, `AIfunctions.cpp:1001-1017`) : pente 0,11 au sol, `0,45 − 0,15 × d/60` en haute ; puissance `p = (d/60)^1,4 × 1,8` (haute : × 1,15). **La vitesse** : `36 × (p + 0,3)` m/s (480) ; plancher 10,8 m/s ; une courte de 24 m part à 28,8 m/s (calculé, `carte-cpp.md` § 2).
+4. **La touche possible** (`GetBestPossibleTouch`, 2236-2306) :
    - plafond 30 m/s (haute : 42) × `(0,3 + 0,7 × touch_maxpowerfactor)`, jusqu'à −25 % si le joueur est bousculé, plus la moitié de la vitesse du ballon qui arrive ; l'excès part en hauteur, 0,25 m/s par m/s de trop ;
    - l'erreur : difficulté du geste × `(1 − 0,5 × passe)`, qui tire le ballon vers la direction propre au geste ;
-   - ballon loin du corps, haut, rapide ou juste joué par l'adversaire : plus de hauteur, moins de force (`GetDifficultyFactors`, `humanoid_utils.cpp:154-218`) ;
-   - enfin `difficulté × 5 × U(0,2 ; 1)` m/s vers le haut (2303).
-6. Une légère courbe selon l'angle du corps, et de l'effet (482-508).
+   - ballon loin du corps, haut, rapide ou juste joué par l'adversaire : plus de hauteur, moins de force (`GetDifficultyFactors`, `humanoid_utils.cpp:154-218`) ; enfin `difficulté × 5 × U(0,2 ; 1)` m/s vers le haut (2303).
+5. Une légère courbe selon l'angle du corps, et de l'effet (482-508).
 
 ### 6.3 Le tir (`GetShotVector`, `humanoid_utils.cpp:377-530`)
 
 - La direction est celle de la commande ; la visée recalculée au contact (`humanoid.cpp:521-535`) n'est jamais transmise (`carte-cpp.md` § 1).
 - **La force** : `45 × (0,7 + 0,3 × √puissance)`, soit 31,5 à 45 m/s, × un facteur d'aisance (angle, vitesse du tireur, bousculade), plafonnée à `(32 + 13 × frappe) × (0,2 + 0,8 × touch_maxpowerfactor)`, puis × `(1 + 0,2 × écart de vitesse pied-ballon / 10)` (426-441).
-- **Le tir idéal** monte à 2,9° (pente 0,05), toujours (470).
-- **Le pire cas** (475-493) : direction en retard sur la course, bruit de ±0,5 × difficulté, jusqu'à 35° de hauteur, force −50 %.
+- **Le tir idéal** monte à 2,9° (pente 0,05), toujours (470). **Le pire cas** (475-493) : direction en retard sur la course, bruit de ±0,5 × difficulté, jusqu'à 35° de hauteur, force −50 %.
 - **Le mélange** : le pire cas pèse `w = U^(0,7 × tir)`, en moyenne `1 / (1 + 0,7 × tir)` (497-502 ; calculé, `carte-cpp.md` § 1).
 - **L'effet** : rétro ou lifté au hasard, plus une courbe latérale selon l'angle du corps (505-525).
 
 ### 6.4 Le contrôle et la conduite (`GetBallControlVector`, `humanoid_utils.cpp:220-350`)
 
-- Le corps place le ballon là où le joueur sera après ce geste, plus 0,25 à 0,85 s de course selon la vitesse, devant le pied (0,34 m + 0,08 s de course, 104-118).
-- Le dribble le place un peu plus près (312) ; le contrôle le garde plus près en sprint (327-329).
-- Un adversaire à moins de 1,5 m le fait partir plus loin ; le calme et l'équilibre réduisent l'effet (272).
-- Élévation : `0,1 + 1,5 × (p/10)^1,6` m/s (323).
+- Le corps place le ballon là où le joueur sera après ce geste, plus 0,25 à 0,85 s de course selon la vitesse, devant le pied (0,34 m + 0,08 s de course, 104-118). Élévation : `0,1 + 1,5 × (p/10)^1,6` m/s (323).
+- Le dribble le place un peu plus près (312) ; le contrôle le garde plus près en sprint (327-329). Un adversaire à moins de 1,5 m le fait partir plus loin ; le calme et l'équilibre réduisent l'effet (272).
 - Mesuré (`README.md`) : décalage latéral du ballon en conduite, 0,11 m.
 
 ### 6.5 La physique du ballon (`ball.cpp`)
@@ -427,34 +364,31 @@ Les types de touche (`gamedefines.hpp:113-119`) : 0 voulue au pied (pied ou bas 
 | roulement | la rotation se couple au sol | 429-502 |
 | effet Magnus | force la plus grande vers 37 m/s (calculé) | 506-522 |
 
-- La trajectoire est prédite sur 3 s, à 10 ms près ; recalculée à chaque touche, décalée d'un cran sinon (135-176).
-- Tous lisent cette prédiction (`Predict(ms)`, `ball.hpp:50-56`). À chaque pas, le ballon prend sa position à +10 ms (572-583).
+- La trajectoire est prédite sur 3 s, à 10 ms près ; recalculée à chaque touche, décalée d'un cran sinon (135-176). Tous lisent cette prédiction (`Predict(ms)`, `ball.hpp:50-56`) ; à chaque pas, le ballon prend sa position à +10 ms (572-583).
 - Au sol, le freinage `0,055 × v² + 1,6` tue les ballons rapides (calculé, tableau de `carte-cpp.md` § 2).
 
 ### 6.6 Les collisions et les chutes
 
 - **Ballon contre un corps** (`match.cpp:1599-1727`) : seulement si l'adversaire a touché le ballon depuis moins de 200 ms, et pas ce joueur ; au plus une fois par 150 ms. Le ballon rebondit sur la boîte d'une partie du corps (vitesse × 0,7 au plus, effet au hasard). Touche accidentelle.
-- **Joueur contre joueur** (`match.cpp:1233-1411`) : contact sous 0,72 m. Qui pousse qui : l'orientation (de dos, on perd), la vitesse, un tacle en cours (+0,1 + 0,4 × tacle), le désigné du match (+0,4), la proximité du ballon, l'équilibre. Le défenseur se colle au flanc du porteur. Sous 1,87 m, les mouvements se partagent un peu.
+- **Joueur contre joueur** (`match.cpp:1233-1411`) : contact sous 0,72 m. Qui pousse qui : l'orientation (de dos, on perd), la vitesse, un tacle en cours (+0,1 + 0,4 × tacle), le désigné du match (+0,4), la proximité du ballon, l'équilibre. Le défenseur se colle au flanc du porteur ; sous 1,87 m, les mouvements se partagent un peu.
 - **La sensibilité à la chute** (`match.cpp:1415-1492`) additionne : de dos, vitesse, avoir le ballon, `3 × (1 − équilibre)`, bousculade récente, `6 × pénétration`, ballon proche ; le tout sur 14. Au-dessus de 0,48 : trébucher (type 1) ; de 0,58 : tomber (type 2).
-- **Les tacles** (`match.cpp:1497-1596`) : tacle glissé ou debout entre ses images 5 et 28, à moins de 2 m. Si une boîte du tacleur touche un pied ou un bas de jambe de l'autre (images 10 à fin − 6) : chute de type 3 (glissé) ou 1 (debout).
-- Mesuré (`animations.md` § 1) : 694 trébuchements légers par match avec notre cerveau, 317 avec leur IA.
+- **Les tacles** (`match.cpp:1497-1596`) : tacle glissé ou debout entre ses images 5 et 28, à moins de 2 m. Si une boîte du tacleur touche un pied ou un bas de jambe de l'autre (images 10 à fin − 6) : chute de type 3 (glissé) ou 1 (debout). Mesuré (`animations.md` § 1) : 694 trébuchements légers par match avec notre cerveau, 317 avec leur IA.
 
 | Chute | Animations | Origine |
 |---|---|---|
 | 1 trébucher | 9 | contact léger ; tacle debout |
-| 2 tomber | 7 (dont `trip_t3/sprint/000.anim`, balisé 2) | contact fort |
+| 2 tomber | 8 (dont `trip_t3/sprint/000.anim`, balisé 2) | contact fort |
 | 3 fauché | 2 | tacle glissé |
 
-- Pour un type 2 ou 3, le corps essaie aussi l'autre, puis le 1 (`humanoidbase.cpp:1446-1461`).
-- Pas de chute ballon en main, au sol, pendant une chute déjà en cours (sauf de 1 vers 2 ou 3) ni pendant un tacle glissé (`humanoidbase.cpp:912-931`).
+- Pour un type 2 ou 3, le corps essaie aussi l'autre, puis le 1 (`humanoidbase.cpp:1446-1461`). Pas de chute ballon en main, au sol, pendant une chute en cours (sauf de 1 vers 2 ou 3) ni pendant un tacle glissé (`humanoidbase.cpp:912-931`).
 
 ## 7. L'arbitre et le jeu arrêté
 
 ### 7.1 Les fautes du corps (`referee.cpp:385-452, 482-585`)
 
 Le corps ne siffle que deux contacts :
-- **un tacleur fait tomber (type 2) un adversaire** dont l'équipe a le ballon (possession lissée > 1,1), à moins de 2 m du ballon : faute avec avantage (390-407) ;
-- **un tacle glissé fauche (type 3)** alors que le tacleur n'a pas touché le ballon depuis 600 ms, ballon à moins de 8 m. Gravité = retard sur le ballon + distance au ballon + par derrière : au-dessus de 1, faute ; 1,4, jaune ; 2, rouge (409-451).
+- **un joueur en train de tacler fait tomber (type 2) un adversaire** dont l'équipe a le ballon (possession lissée > 1,1), à moins de 2 m du ballon : faute avec avantage (390-407) ;
+- **un tacle glissé fauche (type 3)** alors que le tacleur n'a pas touché le ballon depuis 600 ms, ballon à moins de 8 m. Gravité = retard sur le ballon + distance au ballon + par derrière : au-dessus de 1, faute ; de 1,4, jaune ; de 2, rouge (409-451).
 
 Le contact d'un tacle debout donne un type 1 : jamais de faute.
 
@@ -465,17 +399,14 @@ Le contact d'un tacle debout donne un type 1 : jamais de faute.
 
 ### 7.2 Nos fautes : `gf_faute` et `gf_carton`
 
-- `gf_faute(fautif, victime, gravité, x, y)` (`api/gf_api.cpp:216-222`) pose une faute sans avantage, au lieu donné dans le monde (`referee.cpp:457-466`). `CheckFoul` la siffle au pas suivant, comme une faute du corps.
-- Gravité bornée à 1-3 : faute, jaune, rouge.
+- `gf_faute(fautif, victime, gravité, x, y)` (`api/gf_api.cpp:216-222`) pose une faute sans avantage, au lieu donné dans le monde (`referee.cpp:457-466`) ; `CheckFoul` la siffle au pas suivant, comme une faute du corps. Gravité bornée à 1-3 : faute, jaune, rouge.
 - Elle rend 1 si les joueurs existent, sont adverses, et si le ballon est en jeu hors CPA. L'arbitre peut encore la refuser sans bruit si un arrêt est déjà armé (`referee.cpp:458`).
 - `gf_carton(joueur, couleur)` montre le carton sans arrêter le jeu (l'avantage a été joué) : expulsion 6 s plus tard au second jaune ; journal avec `b = c = −1` ; aucun contrôle « en jeu » (`api/gf_api.cpp:225-232`).
 
 ### 7.3 Le hors-jeu (`referee.cpp:315-383`, `AIfunctions.cpp:193-236`)
 
 - À chaque touche, l'arbitre note les partenaires du toucheur au-delà de la ligne : l'avant-dernier adversaire (gardien compris), ou le ballon s'il est plus loin ; jamais dans leur propre moitié.
-- Le porteur touche le ballon à chaque pas de conduite : la liste se refait sans cesse ; à la passe, elle fige la photo.
-- À la touche suivante, si le toucheur est dans la liste : hors-jeu. Coup franc à sa position pour l'autre équipe, `GF_EV_OFFSIDE`.
-- Seul toucher le ballon compte ; gêner un adversaire, non.
+- Le porteur touche le ballon à chaque pas de conduite : la liste se refait sans cesse ; à la passe, elle fige la photo. À la touche suivante, si le toucheur est dans la liste : hors-jeu, coup franc à sa position pour l'autre équipe, `GF_EV_OFFSIDE`. Seul toucher le ballon compte ; gêner un adversaire, non.
 - Pas de liste à la remise d'une touche ni d'un corner ; il y en a une sur six-mètres. Le corps peut donc siffler un hors-jeu sur six-mètres, que la règle interdit (non vérifié en match).
 - Mesuré (`README.md`) : 0,4 hors-jeu par match, contre environ 4 en vrai.
 
@@ -503,7 +434,7 @@ Le contact d'un tacle debout donne un type 1 : jamais de faute.
 
 ### 7.5 Le placement (`TeamAIController::PrepareSetPiece`, `teamAIcontroller.cpp:739-1176`)
 
-- Tous les joueurs sont téléportés par `ResetPosition` (`humanoidbase.cpp:815-895`). Le gardien va sur sa ligne (750-767).
+Tous les joueurs sont téléportés par `ResetPosition` (`humanoidbase.cpp:815-895`). Le gardien va sur sa ligne (750-767).
 
 | CPA | Placement | Lignes |
 |---|---|---|
@@ -526,12 +457,12 @@ Le contact d'un tacle debout donne un type 1 : jamais de faute.
 | coup franc | 50 % passe haute vers la ligne de but adverse (y ±10 m) ; sinon passe courte 10 m devant |
 | corner | 70 % passe haute à 0,6-7 m du but (y ±10 m) ; sinon passe courte vers un point à 11 m de la ligne, côté corner |
 | touche | passe courte au plus proche |
-| gardien ballon en main | § 8.4 |
+| gardien ballon en main | § 8.3 |
 
 - Les passes passent par `AI_GetPass`, destinataire imposé : le partenaire le plus proche du point tiré (262-266).
 - **La touche est lancée.** Le tireur tient le ballon (`SelectRetainAnim`, `teamAIcontroller.cpp:1163-1166`) ; seules les animations ballon en main restent candidates (`humanoid.cpp:1340`, `animcollection.cpp:805-806`) : les lancers, à ±90° du regard.
 - Le geste joué : `pass/idle/special/000_throw`, contact à 1,83 m de haut, 281 fois en 8 matchs avec notre cerveau (`animations-releve.md`). La trajectoire, elle, est calculée comme une passe courte (§ 6.2).
-- À recouper : `animations.md` (§ 2, ligne « Coup de pied arrêté ») dit que le corps joue la touche au pied. Le code et le relevé disent un lancer ; ce document n'a pas regardé la page.
+- Le code et le relevé disent un lancer à deux mains. `animations.md` disait « au pied » : corrigé le 3 octobre.
 
 ### 7.7 Les horloges
 
@@ -541,15 +472,13 @@ Le contact d'un tacle debout donne un type 1 : jamais de faute.
 | `matchTime_ms`, le chrono du corps | +10 ms ÷ facteur, ballon en jeu seulement | la mi-temps de Google ; l'urgence de fin de match de leur tactique (`teamAIcontroller.cpp:1235`) | personne chez nous |
 | `step` | +1 par appel ballon en jeu ; −1 après `gf_reset` | l'environnement Python de Google | `gf_frame[11]` |
 
-- Le facteur est celui de la fatigue (§ 3.5) : à 0,027, chrono et fatigue filent 18 fois trop vite.
-- `match_duration` est lu une fois, au `gf_init` (`game_env.cpp:108`, `match.cpp:56-57`). Pour le changer, il faut un nouveau module.
-- **Nos suppléments** (`patch.py`, étape 8) : à chaque arrêt, l'horloge continue saute de `gf_arret_ms(mode)`. Sept accroches : but, corner, six-mètres, touche, hors-jeu, faute, penalty ; pas la mi-temps.
-- Le saut a lieu au coup de sifflet, ballon mort : seul `actualTime_ms` bouge (`match.cpp:1844-1850`).
+- Le facteur est celui de la fatigue (§ 3.5) : à 0,027, chrono et fatigue filent 18 fois trop vite. `match_duration` est lu une fois, au `gf_init` (`game_env.cpp:108`, `match.cpp:56-57`) ; pour le changer, il faut un nouveau module.
+- **Nos suppléments** (`patch.py`, étape 8) : à chaque arrêt, l'horloge continue saute de `gf_arret_ms(mode)`. Sept accroches : but, corner, six-mètres, touche, hors-jeu, faute, penalty ; pas la mi-temps. Le saut a lieu au coup de sifflet, ballon mort : seul `actualTime_ms` bouge (`match.cpp:1844-1850`).
 - Les valeurs (`contrat.mjs:39-45`) : la vraie durée moins le temps simulé. Touche 10 s, six-mètres 20 s, coup franc 25 s, corner 28 s, but 60 s, penalty 60 s ; simulé 4 s, 1 s après un but.
 
 ### 7.8 La mi-temps, la fin, l'après-but
 
-- La mi-temps de Google tombe quand le chrono dépasse `1800 × second_half` (`referee.cpp:101`). `second_half` vaut 999 999 999 par défaut (`main.hpp:201`) : jamais chez nous.
+- La mi-temps de Google tombe quand le chrono dépasse `1800 × second_half` (`referee.cpp:101`) ; `second_half` vaut 999 999 999 par défaut (`main.hpp:201`) : jamais chez nous.
 - `gf_mi_temps()` met `second_half` à 0 (`api/gf_api.cpp:211`). Au pas suivant en jeu, l'arbitre arrête le jeu et donne l'engagement à l'équipe qui n'avait pas engagé (`referee.cpp:101-120`). Seconde période, fraîcheur rendue, pas de changement de côté.
 - **La fin** : aucune. `game_duration` n'est lu que par l'environnement Python ; le corps joue sans fin, nos bancs et la page cessent d'appeler `gf_step`.
 - **L'après-but** dure 1 s : placement 0,5 s après le but, coup d'envoi 0,5 s plus tard (`referee.cpp:152-157`). La célébration ne part que 2 à 4 s après l'arrêt (`elizacontroller.cpp:1216-1219`) : jamais (`animations.md` § 1). Avec notre horloge, le saut de 59 s dépasse déjà la fenêtre (calculé).
@@ -557,57 +486,45 @@ Le contact d'un tacle debout donne un type 1 : jamais de faute.
 
 ## 8. Les gardiens
 
-### 8.1 Le placement (`goalie_default.cpp:25-235`)
+### 8.1 Le placement (`goalie_default.cpp:25-300`)
 
-- Ballon dans l'autre moitié : 10 m devant son but.
-- Ballon dans sa moitié, tir non cadré : sur la bissectrice de l'angle ballon-poteaux, à 0,7 m de sa ligne au moins, plus haut quand son équipe a le ballon. Il sort si un adversaire file seul vers le but.
-- Tir cadré : il se met sur la ligne du ballon ; ballon à plus de 2,5 m de haut à son niveau, il recule sur sa ligne.
+- Ballon dans l'autre moitié : 10 m devant son but. Ballon dans sa moitié, tir non cadré : sur la bissectrice de l'angle ballon-poteaux, à 0,7 m de sa ligne au moins, plus haut quand son équipe a le ballon ; il sort si un adversaire file seul vers le but.
+- Tir cadré : il se met sur la ligne du ballon ; ballon à plus de 2,5 m de haut à son niveau, il recule sur sa ligne (190-229).
+- **« Cadré » ?** La ligne du ballon sur 0,8 s coupe la ligne de but à moins de `3,7 × panique` m de l'axe (237-300), avec `panique = 1,02 + (1 − (0,6 × placement défensif + 0,4 × vision)) × 0,5` : 3,77 m pour des attributs à 1, 5,6 m à 0 (calculé). Un gardien faible réagit aussi à des tirs qui partent à côté.
 
-### 8.2 « Ce tir est-il cadré ? » (`goalie_default.cpp:237-300`)
+### 8.2 Les parades (`playercontroller.cpp:299-323`, `humanoid.cpp:568-607`)
 
-- La ligne du ballon sur 0,8 s doit couper la ligne de but à moins de `3,7 × panique` m de l'axe.
-- `panique = 1,02 + (1 − (0,6 × placement défensif + 0,4 × vision)) × 0,5` : 3,77 m avec des attributs à 1, 5,6 m à 0 (calculé). Un gardien faible réagit aussi à des tirs qui partent à côté.
-
-### 8.3 Les parades (`playercontroller.cpp:299-323`, `humanoid.cpp:568-607`)
-
-- La parade n'est demandée que si le ballon sera à moins de 20 m dans 400 ms, que personne ne le tient, qu'il sera dans la surface dans 160 ms, et que ce n'est pas une passe en retrait (§ 8.5).
-- 28 parades, dont 15 qui captent le ballon.
+- La parade n'est demandée que si le ballon sera à moins de 20 m dans 400 ms, que personne ne le tient, qu'il sera dans la surface dans 160 ms, et que ce n'est pas une passe en retrait (§ 8.4). Le corps a 28 parades, dont 15 qui captent le ballon.
 - **Prise** si le geste capte, que personne ne tient le ballon, et que `(1 − écart de vitesse / 40) × (1 − difficulté de réaction) ≥ 0,3`. La difficulté de réaction mesure la fraîcheur de la frappe adverse, sur `1200 − 400 × réaction` ms (581).
 - Sinon **renvoi** vers le camp adverse, avec son élan : 0,3 × la vitesse du ballon + 2,5 × la sienne, +1,2 m/s vers le haut.
 
-### 8.4 Ballon en main
+### 8.3 Ballon en main
 
 - Le ballon colle à la main droite, gauche en miroir (`humanoid.cpp:624-650`). Le gardien est ramené dans sa surface (`humanoid.cpp:733-767`).
 - Il ne fait que lancer : 3 lancers hauts. Aucun geste du pied depuis les mains, pas de dégagement de volée (`animations.md` § 2).
 - **La relance** (`elizacontroller.cpp:233-260`) : passe haute au partenaire le plus proche d'un point tiré au hasard sur sa propre ligne de but, dès que ce partenaire n'a pas d'adversaire à 10 m, ou après 4 s.
-- Lecture : `pitchHalfW × GetDynamicSide()` désigne son propre but ; `carte-cpp.md` § 4 écrit « chez l'adversaire ». Non vérifié par une sonde.
+- Lecture : `pitchHalfW × GetDynamicSide()` désigne son propre but (`carte-cpp.md` § 4 corrigé le 3 octobre). Non vérifié par une sonde.
 
-### 8.5 La passe en retrait
+### 8.4 La passe en retrait, et notre couche
 
-- Pas de mains si le dernier toucheur est un partenaire et que la dernière touche au pied est de son équipe (`playercontroller.cpp:306-307`).
-- Aucune sanction : pas de coup franc indirect. Le gardien n'a que les gestes génériques au pied ; souvent il reste planté devant une passe chaude (`carte-cpp.md` § 2).
-- Mesuré (`README.md`) : 9 buts sur 15 étaient des contre-son-camp sur passe en retrait ; le cerveau a fermé la ligne vers les gardiens.
-
-### 8.6 Le gardien et notre couche
-
-- A et B l'excluent (`elizacontroller.cpp:312, 344`) : il n'est pas piloté. Le cerveau lui pose IA (`inventaire-moteur.md` § 2).
+- Pas de mains si le dernier toucheur est un partenaire et que la dernière touche au pied est de son équipe (`playercontroller.cpp:306-307`). Aucune sanction : pas de coup franc indirect.
+- Le gardien n'a alors que les gestes génériques au pied ; souvent il reste planté devant une passe chaude (`carte-cpp.md` § 2). Mesuré (`README.md`) : 9 buts sur 15 étaient des contre-son-camp sur passe en retrait ; le cerveau a fermé la ligne vers les gardiens.
+- A et B excluent le gardien (`elizacontroller.cpp:312, 344`) : il n'est pas piloté, et le cerveau lui pose IA (`inventaire-moteur.md` § 2).
 - Ballon au pied, leur IA joue pour lui : passe de panique tant qu'un adversaire approche (`possessionAmount < 3`), sinon passe ou conduite (`elizacontroller.cpp:374-378, 968-972`).
 
 ## 9. Les attributs
 
 ### 9.1 Le mécanisme
 
-- 22 attributs, de 0 à 1 (`utils.hpp:38-62`).
-- Le corps garde une valeur de base et la lit par `Player::GetStat` : `base × (0,3 + 0,7 × difficulté) × (0,7 + 0,3 × fraîcheur)` (`player.cpp:452-457`). Endurance et vitesse sont lues brutes.
+- 22 attributs, de 0 à 1 (`utils.hpp:38-62`). Le corps garde une valeur de base et la lit par `Player::GetStat` : `base × (0,3 + 0,7 × difficulté) × (0,7 + 0,3 × fraîcheur)` (`player.cpp:452-457`). Endurance et vitesse sont lues brutes.
 - Nos matchs ont une difficulté de 1 des deux côtés (`corps.mjs:19`) : seule la fatigue joue.
 - **Défauts** : 11 profils fixes (`playerdata.cpp:67-487`), dans l'ordre des rangs (`teamdata.cpp:277-287`). Valeur = `profil × 2 × base × (0,5 + 0,5 × âge) × 1,2`, bornée à 0,01-1 (`utils.cpp:124-140`).
-- Les deux équipes sont identiques : mêmes profils, seuls les noms changent.
-- Les profils suivent le rang, pas le rôle (§ 3.2) : l'avant-centre du scénario (rang 2) a des tacles à 1,0, un défenseur central (rang 5) une frappe à 1,0 (calculé).
+- Les deux équipes sont identiques : mêmes profils, seuls les noms changent. Les profils suivent le rang, pas le rôle (§ 3.2) : l'avant-centre du scénario (rang 2) a des tacles à 1,0, un défenseur central (rang 5) une frappe à 1,0 (calculé).
 - `gf_set_stat` écrit la base, arrondie au millionième (`playerdata.hpp:37-38`), et met à jour la vitesse (`playerdata.cpp:542-545`). `gf_reset` recrée les joueurs : il faut tout reposer.
 
 ### 9.2 Les 22, un par un
 
-Défauts : calculés depuis les profils, non mesurés ; minimum-maximum sur les 11 rangs, G = gardien.
+Défauts calculés depuis les profils, non mesurés : minimum-maximum sur les 11 rangs, G = gardien.
 
 | # | Attribut | Ce qu'il change | Où | Défaut |
 |---|---|---|---|---|
@@ -634,9 +551,8 @@ Défauts : calculés depuis les profils, non mesurés ; minimum-maximum sur les 
 | 20 | placement offensif | **rien** | — | 0,22-1,00 |
 | 21 | vision | gardien : idem, poids 0,4 | `goalie_default.cpp:247` | 0,61-0,87 (G 0,80) |
 
-- Trois attributs ne servent à rien : tête, résilience, placement offensif.
-- Sous nos intentions, trois lectures tombent : la passe courte et le tir de leur IA (B les remplace), l'activité (A remplace la course).
-- Mesuré (`README.md`) : un effectif par défaut d'« élite synthétique », gardien à 1,00 en réaction, quatre tireurs à 1,00.
+- Trois attributs ne servent à rien : tête, résilience, placement offensif. Sous nos intentions, trois lectures tombent : la passe courte et le tir de leur IA (B les remplace), l'activité (A remplace la course).
+- Mesuré (`README.md`) : un effectif par défaut d'« élite synthétique », gardien à 1,00 en réaction, quatre tireurs à 1,00 ; le tableau le retrouve.
 
 ## 10. Notre couche
 
@@ -645,14 +561,12 @@ Défauts : calculés depuis les profils, non mesurés ; minimum-maximum sur les 
 | Fichier | Rôle |
 |---|---|
 | `fetch.sh` | télécharge gfootball 2.10.2 (PyPI), copie `src/`, `data/` et la licence dans `upstream/`, applique `patch.py` |
-| `patch.py` | 10 correctifs idempotents (relancer ne change rien) |
-| `api/gf_api.cpp` | l'API exportée |
-| `api/intents.hpp`, `api/intents.cpp` | intentions, journal, horloge, relevé ; les méthodes `_Gf*` d'`ElizaController` |
+| `patch.py` | 10 correctifs idempotents (le relancer ne change rien) |
+| `api/gf_api.cpp` ; `api/intents.hpp`, `api/intents.cpp` | l'API exportée ; intentions, journal, horloge, relevé, et les méthodes `_Gf*` d'`ElizaController` |
 | `api/SDL2/SDL2_rotozoom.h` | remplace SDL2_gfx (seul `zoomSurface` est appelé) |
 | `data.sh`, `data-files.txt` | les données : toutes les animations, les fichiers ouverts sans rendu (relevés par strace), les .bmp réduits à 2×2, une police ; 6 Mo |
 | `build.sh` | compile les objets en parallèle, puis lie : `out/gpf.mjs`, `gpf.wasm`, `gpf.data` |
-| `contrat.mjs` | constantes (`INTENTION`, `PASSE`, `EV`, `GESTE`, `ARRETS_REELS`, `CHRONO_REEL`) et lectures, sans dépendance |
-| `corps.mjs` | `chargerLeCorps()` : `lancer`, `avancer`, `miTemps`, `etat`, `intention`, `fautes`, `journal` |
+| `contrat.mjs` ; `corps.mjs` | constantes (`INTENTION`, `PASSE`, `EV`, `GESTE`, `ARRETS_REELS`, `CHRONO_REEL`) et lectures, sans dépendance ; `chargerLeCorps()` : `lancer`, `avancer`, `miTemps`, `etat`, `intention`, `fautes`, `journal` |
 | `determinisme.mjs`, `bench-node.mjs` | l'empreinte ; la vitesse |
 | `empaqueter.sh`, `paquet.mjs` ; `bancs/` | le cerveau en un module ; obéissance, matchs, autopsies, relevés, séries |
 
@@ -673,8 +587,7 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 | 9 | `referee.hpp`, `referee.cpp` | `Referee::GfFaute` | la Loi 12 du cerveau |
 | 10 | `humanoid.cpp`, `humanoidbase.cpp` | `gf_anim_compte` aux 4 étages | le relevé des animations |
 
-- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 10 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine.
-- Les ajouts aux en-têtes (6, 7, 9) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
+- Les étapes 1 à 5 ne changent rien au jeu (`README.md`). Les étapes 6 à 10 ne changent rien sans intention ni appel : chaque lecture rend la main au code d'origine. Leurs ajouts aux en-têtes (6, 7, 9) sont des méthodes non virtuelles : la disposition en mémoire des objets ne bouge pas.
 
 ### 10.3 Les fonctions (`api/gf_api.cpp`, toutes dans `extern "C"`)
 
@@ -683,15 +596,13 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 | `gf_init(pasParAppel, matchDuration)` | démarre le moteur, données sous `/data` ; une fois par module, rend 0 ensuite (56-68) |
 | `gf_reset(graine, diffG, diffD, durée)` | un 11 contre 11 neuf, IA des deux côtés ; graine impaire : ordre de traitement inversé ; suppléments remis à 0 ; `durée` ignorée par le C++ (71-86) |
 | `gf_step(n)` | n pas (89) |
-| `gf_frame()`, `gf_pose()` | l'état (§ 10.4), les poses (§ 10.5) (95-155) |
-| `gf_frame_head()`, `gf_frame_per()`, `gf_pose_per()` | 16, 19, 55 (234-236) |
+| `gf_frame()`, `gf_pose()` ; `gf_frame_head()`, `gf_frame_per()`, `gf_pose_per()` | l'état (§ 10.4), les poses (§ 10.5) (95-155) ; 16, 19, 55 (234-236) |
 | `gf_intents(on)` | active ou coupe le mode intentions ; vide intentions et journal ; à appeler après `gf_reset` (160) |
 | `gf_set_intent(id, kind, x, y, vitesse, cible, puissance, drapeaux)` | l'intention tenue d'un joueur ; monde, m, m/s (165-169) |
 | `gf_events()`, `gf_events_n()` | le journal depuis la dernière lecture ; `gf_events` d'abord (173-174) |
 | `gf_set_stat(id, n, v)`, `gf_get_stat(id, n)` | la base d'un attribut (190-200) |
 | `gf_set_arrets(engagement, sixMetres, coupFranc, corner, touche, penalty)` | les suppléments d'horloge, en ms (204-207) |
-| `gf_mi_temps()` | la mi-temps au prochain pas en jeu (211) |
-| `gf_faute(fautif, victime, gravité, x, y)`, `gf_carton(joueur, couleur)` | § 7.2 (216-232) |
+| `gf_mi_temps()` ; `gf_faute(…)`, `gf_carton(…)` | la mi-temps au prochain pas en jeu (211) ; § 7.2 (216-232) |
 | `gf_anims_n()`, `gf_anim_nom(id)`, `gf_anim_releve(étage)`, `gf_anim_raz()` | le relevé : nombre, chemin, compteurs, remise à zéro (241-251) |
 
 `build.sh:26` exporte aussi `malloc` et `free`.
@@ -700,8 +611,7 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 
 | En-tête | Contenu |
 |---|---|
-| 0 | horloge continue, ms |
-| 1 ; 2 | ballon en jeu ; CPA en cours |
+| 0 ; 1 ; 2 | horloge continue, ms ; ballon en jeu ; CPA en cours |
 | 3 | mode (`e_GameMode`, `defines.hpp:227-235`) : 0 normal, 1 engagement, 2 six-mètres, 3 coup franc, 4 corner, 5 touche, 6 penalty ; 0 tant que le CPA n'a pas commencé |
 | 4 ; 5 | score gauche ; droite |
 | 6-8 | ballon x, y, z (m, monde) |
@@ -709,23 +619,18 @@ Chaque étape remplace un texte exact : elle échoue si le motif manque, et pass
 | 11 ; 12 | pas de l'environnement (§ 7.7) ; nombre de joueurs |
 | 13-15 | vitesse du ballon x, y, z (m/s) |
 
-| Par joueur | Contenu |
+| Par joueur (équipe 0 puis 1, dans l'ordre de l'équipe) | Contenu |
 |---|---|
 | 0 ; 1 | équipe ; rôle (`e_PlayerRole`, `defines.hpp:214-225` : 0 G, 1 DC, 2 DG, 3 DD, 4 MDC, 5 MC, 6 MG, 7 MD, 8 MOC, 9 AC) |
 | 2-4 | position x, y, z (m, monde) |
 | 5-6 ; 7-8 | direction (de course, à l'arrêt celle du corps) ; direction du corps |
 | 9 ; 10 ; 11 | vitesse (m/s) ; id stable ; actif |
-| 12-13 | vitesse x, y (m/s) |
-| 14 | geste en cours (`e_FunctionType`, § 4.4) |
+| 12-13 ; 14 | vitesse x, y (m/s) ; geste en cours (`e_FunctionType`, § 4.3) |
 | 15 ; 16 ; 17 ; 18 | possède le ballon ; désigné du match ; désigné de l'équipe ; ballon en main |
-
-Les joueurs viennent équipe 0 puis équipe 1, dans l'ordre de l'équipe.
 
 ### 10.5 La pose `gf_pose` (22 × 55 nombres, `api/gf_api.cpp:132-155`)
 
-- Par joueur : la racine x, y, z (le nœud `player`, en mètres, z porté par l'animation), puis 13 quaternions locaux (x, y, z, w) dans l'ordre des fichiers `.anim` (29-30).
-- Équipe 1 : racine niée en x et y, corps tourné de 180° autour de z (144-148).
-- `gpf-anim.jointsFromSample` porte cette pose sur nos humains (`README.md`).
+- Par joueur : la racine x, y, z (le nœud `player`, en mètres, z porté par l'animation), puis 13 quaternions locaux (x, y, z, w) dans l'ordre des fichiers `.anim` (29-30). Équipe 1 : racine niée en x et y, corps tourné de 180° autour de z (144-148). `gpf-anim.jointsFromSample` porte cette pose sur nos humains (`README.md`).
 
 ### 10.6 Le journal (`gf_events`, 8 nombres par événement)
 
@@ -740,8 +645,7 @@ Les joueurs viennent équipe 0 puis équipe 1, dans l'ordre de l'équipe.
 | 5 CPA | `referee.cpp:301`, au placement ; équipe qui reprend, tireur ou −1 | `e_GameMode` | — | — | — |
 | 6 PASSE | `humanoid.cpp:510-513`, au contact ; le passeur | geste (4, 5, 6) | destinataire final | vitesse de la touche (m/s) | destinataire imposé, ou −1 |
 
-- Le journal n'est rempli que si le mode intentions est actif (`intents.cpp:51`).
-- Un tir n'a pas d'événement propre : c'est une TOUCHE de geste 8.
+Le journal n'est rempli que si le mode intentions est actif (`intents.cpp:51`). Un tir n'a pas d'événement propre : c'est une TOUCHE de geste 8.
 
 ### 10.7 Construire
 
@@ -752,10 +656,8 @@ source ~/emsdk/emsdk_env.sh
 node determinisme.mjs
 ```
 
-- Drapeaux (`build.sh:9-11`) : C++17, `-O3`, exceptions WebAssembly natives (forme « legacy ») ; `EH=js` reconstruit l'émulation JavaScript dans `out-js/`.
-- Sources (13-14) : tout le moteur sauf le rendu OpenGL et le client réseau, plus `api/*.cpp`.
-- Édition de liens (23-29) : module ES `GpfModule` pour le web, un Worker ou Node ; mémoire extensible, 128 Mo au départ, pile de 4 Mo ; données préchargées sous `/data`.
-- Mesuré (`README.md`) : `gpf.wasm` 2,45 Mo, `gpf.data` 5 Mo, `gpf.mjs` 0,13 Mo ; construction complète ≈ 2 min sur 6 cœurs.
+- Drapeaux (`build.sh:9-11`) : C++17, `-O3`, exceptions WebAssembly natives (forme « legacy ») ; `EH=js` reconstruit l'émulation JavaScript dans `out-js/`. Sources (13-14) : tout le moteur sauf le rendu OpenGL et le client réseau, plus `api/*.cpp`.
+- Édition de liens (23-29) : module ES `GpfModule` pour le web, un Worker ou Node ; mémoire extensible, 128 Mo au départ, pile de 4 Mo ; données préchargées sous `/data`. Mesuré (`README.md`) : `gpf.wasm` 2,45 Mo, `gpf.data` 5 Mo, `gpf.mjs` 0,13 Mo ; construction complète ≈ 2 min sur 6 cœurs.
 
 ### 10.8 Les gardes
 
@@ -768,13 +670,13 @@ node determinisme.mjs
 
 ### 10.9 Les pièges
 
-1. **`build.sh` ne suit pas les en-têtes** (16 compare seulement le `.cpp` à son `.o`). Changer une structure d'un en-tête (`PlayerCommand`, `TouchInfo` de `gamedefines.hpp`, une classe) laisse des objets périmés : corruption de mémoire silencieuse. Cela vaut aussi pour `api/intents.hpp`, inclus par six fichiers du moteur et nos deux `.cpp`. Après un tel changement : `rm -rf build/obj`, puis tout reconstruire. Ajouter une méthode non virtuelle est sans risque.
+1. **`build.sh` ne suit pas les en-têtes** : sa ligne 16 compare seulement le `.cpp` à son `.o`. Changer une structure d'un en-tête (`PlayerCommand`, `TouchInfo` de `gamedefines.hpp`, une classe) laisse des objets périmés : corruption de mémoire silencieuse. Cela vaut aussi pour `api/intents.hpp`, inclus par six fichiers du moteur et nos deux `.cpp`. Après un tel changement : `rm -rf build/obj`, puis tout reconstruire. Ajouter une méthode non virtuelle est sans risque.
 2. **`extern "C"`** : une fonction de l'API doit être dans `extern "C"` (sinon son nom C++ est décoré), marquée `EMSCRIPTEN_KEEPALIVE`, et listée dans `EXPORTED_FUNCTIONS` (`build.sh:26`). Sinon `M._gf_x` n'existe pas.
 3. **`match_duration`** : 0,027, le réglage de Google, accélère chrono et fatigue 18 fois ; 4,75 colle au temps réel. Il est fixé au premier `gf_init`, et `corps.mjs:18` n'appelle `gf_init` qu'au premier `lancer()`. `determinisme.mjs` et `bench-node.mjs` (par défaut) tournent à 0,027.
 4. **Les vues mémoire** : Emscripten n'expose une vue que si elle figure dans `EXPORTED_RUNTIME_METHODS` (`build.sh:27` : `HEAPF32`, `HEAP32`, `HEAPU8`). Les noms d'animation se lisent dans `HEAPU8`, les compteurs dans `HEAP32`. La mémoire peut grandir : recréer la vue après chaque appel, comme `contrat.mjs`.
 5. **Le journal** : appeler `gf_events()` avant `gf_events_n()` ; le pointeur vaut jusqu'à l'appel suivant ; rien n'est noté si le mode intentions est coupé.
 6. **Les id stables** dépendent de la parité de la graine (§ 3.2).
-7. **`gf_reset` recrée les joueurs** : les attributs sont à reposer. Les intentions, elles, survivent jusqu'au prochain `gf_intents` : sans lui, celles du match précédent s'appliquent aux nouveaux joueurs de même id.
+7. **`gf_reset` recrée les joueurs** : les attributs sont à reposer. Les intentions, elles, survivent jusqu'au prochain `gf_intents` ; sans lui, celles du match précédent s'appliquent aux nouveaux joueurs de même id.
 8. **L'en-tête de `gf_frame`** : la colonne 10 est un rang dans l'équipe ; la colonne 11 ne compte que les pas en jeu.
 9. **Les secondes gelées** : `gf_step` avance l'horloge, mais ni le monde ni la pose ne bougent.
 
@@ -786,14 +688,12 @@ node determinisme.mjs
 - **Laisser le cerveau décider d'un CPA** : le tireur tire au sort, le placement est imposé, la légalité n'est pas vérifiée → `carte-cpp.md` § 4.
 - **Plusieurs touches dans un geste** : une touche par animation ; ni roulette, ni croqueta, ni série de passements → `animations.md` § 3.
 - **Jouer un geste précis sur demande** : le mécanisme `specialVar` existe, il n'est pas branché → `animations.md` § 3.
-- **Le répertoire qui manque** : dribbles et feintes, gestes de CPA (touche longue, élan, mur qui saute), vie autour du jeu (célébrations, gestes de l'arbitre, drapeaux) → `animations.md` § 2.
-- **Célébrer** : jamais joué, l'après-but dure 1 s (§ 7.8).
+- **Le répertoire qui manque** : dribbles et feintes, gestes de CPA (touche longue, élan, mur qui saute), vie autour du jeu (célébrations, gestes de l'arbitre, drapeaux) → `animations.md` § 2. Ses trois célébrations ne sont jamais jouées : l'après-but dure 1 s (§ 7.8).
 - **Le gardien complet** : ni poings, ni parade du pied, ni relance roulée, ni dégagement de volée ; il ne fait que lancer.
 - **Décider une tête** : il n'y a pas de geste « tête », seulement la tête comme partie du corps au contact.
 - **Le contact voulu** : ni charge, ni maillot tiré, ni duel de corps ; les bras de la pose sont décoratifs → `animations.md` § 3.
 - **Les fautes ordinaires** : seulement les tacles ; ni tacle debout fautif, ni main, ni coup franc indirect, ni sanction de la passe en retrait.
 - **Le hors-jeu juste** : jugé seulement à la touche du ballon, et aussi sur six-mètres.
-- **Un vrai match** : ni changement de côté, ni fin, ni remplacement, ni blessure ou boiterie ; la mi-temps efface la fatigue.
-- **L'avantage du domicile** : les deux équipes sont identiques.
-- **Courir à reculons** : il marche à reculons (`animations.md` § 2).
+- **Un vrai match** : ni changement de côté, ni fin, ni remplacement, ni blessure ou boiterie ; la mi-temps efface la fatigue ; pas d'avantage du domicile, les deux équipes sont identiques.
+- **Courir à reculons** : il marche à reculons, au trot (§ 3.3, `animations.md` § 2).
 - **Un regard choisi** : ALLER ne tourne le joueur vers le ballon qu'à l'arrivée ; aucune intention ne fixe le regard.
