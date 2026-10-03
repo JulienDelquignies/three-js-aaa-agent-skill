@@ -10,7 +10,7 @@ import { DUEL_CAST, TENUE_GARDIEN, tenueGardien } from './duel-joueurs.js';
 import { construireStade, STADES, HEURES } from './gpf-stade.js';
 import { Magneto, IMG, interpoler } from './gpf-magneto.js';
 import { Habillage, PLANS, VITESSES } from './gpf-habillage.js';
-import { TENUES, chargerCarte, peindreTenue, creerAtlasFlocage, couleurFloquee, materiauTenue, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
+import { TENUES, EQUIPEMENT, chargerCarte, formeDuCorps, morphChaussetteBasse, peindreTenue, masquesDe, textureForme, peauDe, alphabetSDF, couleurTenue, materiauTenue, poserJoueur, equipementDe, textureDe, numerosDe, gardienPour, conflit } from './gpf-maillots.js';
 import { makeTheme } from '../engine/club-theme.js';
 
 // GpfMatch — LES LOTS L0, L2 ET L5 DU CADRAGE : le moteur de match de Gameplay Football (Google Research Football, licence Unlicense),
@@ -49,7 +49,9 @@ const EQUIPES = [
   { nom: 'Ardoise FC', court: 'ARD', primary: 0xf2f4f7, secondary: 0x15161a },
   { nom: 'Azur SC', court: 'AZU', primary: 0x8fcbef, secondary: 0xf4f8fb },
 ];
-const CLE_TENUES = 'gpf-tenues';
+const CLE_TENUES = 'gpf-tenues', CLE_EQUIPEMENT = 'gpf-equipement';
+// ce qu'une règle d'équipe impose à ses onze (les réglages ; ?manches=longues, ?chaussettes=hautes, ?maillot=rentre pour les 22)
+const REGLES = ['manches', 'chaussettes', 'maillot'];
 const q = new URLSearchParams(location.search);
 const CAPTURE = q.has('capture');
 // ce qui se dit dans l'adresse et se change dans les réglages
@@ -67,6 +69,9 @@ export class GpfMatch {
     this.vitesse = Number(q.get('vitesse')) || 1; this.pause = false;
     const cam = q.get('cam') === 'pres' ? 'rapprochee' : q.get('cam');
     this.plan = PLANS[cam] ? cam : 'auto';
+    // LE PORTRAIT (l'équipement d'un joueur, de près) : ?portrait=5 (le joueur 0-21), ?angle=180 fige la caméra (0 : de face, 180 : de dos)
+    if (q.has('portrait')) { this.portrait = Math.max(0, Math.min(21, Number(q.get('portrait')) || 0)); this.plan = 'portrait'; }
+    this.angleFixe = q.has('angle') ? (Number(q.get('angle')) * Math.PI) / 180 : null;
     // un TÉLÉPHONE (le petit côté de l'écran sous 600 px) : la fin d'après-midi par défaut — un soleil, sans les huit projecteurs de la nuit
     // (mesuré dans le Rondo, lot 74 : les nappes en forward coûtaient ~40 ms par image de fragment au téléphone) ; ?heure=nuit les rend
     const petit = typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 600;
@@ -207,47 +212,110 @@ export class GpfMatch {
     for (let e = 0; e < 2; e++) { EQUIPES[e].primary = this.tenues[e].c1; EQUIPES[e].secondary = this.tenues[e].c2; }
     this.clubs = [0, 1].map((e) => makeTheme({ seed: e === 0 ? 3 : 11, name: EQUIPES[e].nom, primary: this.tenues[e].c1, secondary: this.tenues[e].c2 }));
   }
-  /** Habiller les 22 : la carte du maillot, les numéros (la numérotation classique par rôle), un matériau par joueur (la tenue de son équipe
-   *  + son flocage : le nom et le numéro). */
+  /** Habiller les 22 : la carte du maillot, l'alphabet du flocage, les numéros (la numérotation classique par rôle), l'équipement de chacun,
+   *  un matériau par joueur sur UN graphe de couleur commun (un seul programme pour les 22 : gpf-maillots.js). */
   async _habiller(e0) {
-    this.carte = await chargerCarte(new URL('./rocketbox/', location.href).href);
+    const t0 = performance.now();
+    const [carte, alphabet] = await Promise.all([chargerCarte(new URL('./rocketbox/', location.href).href), alphabetSDF()]);
+    this.carte = carte; this.alphabet = alphabet;
     for (const pl of this.players) pl.model.traverse((o) => {
       if (!o.isMesh || pl.corps) return;
       const m = [].concat(o.material).find((x) => x?.name === 'body'); if (m) pl.corps = { mesh: o, origine: m };
     });
-    this._images = [0, 1].map((rig) => this.players.find((p) => p.rig === rig && p.corps)?.corps.origine.map?.image ?? null);
+    // LES DEUX CORPS (rig 0 : le n° 18, aussi les gardiens ; rig 1 : le n° 10) : leur texture, leur forme tirée du maillage, leur peau
+    const corps = [0, 1].map((rig) => this.players.find((p) => p.rig === rig && p.corps)?.corps ?? null);
+    this._images = corps.map((c) => c?.origine.map?.image ?? null);
+    this._formesCPU = corps.map((c) => (c ? formeDuCorps(c.mesh.geometry, c.origine.normalMap?.image ?? null) : null));
+    this._formes = this._formesCPU.map((f) => (f ? textureForme(f) : null));
+    this._peaux = this._images.map((im, rig) => (im && this._formesCPU[rig] ? peauDe(im, carte, this._formesCPU[rig]) : new THREE.Color(0.8, 0.6, 0.48)));
+    // la chaussette basse en volume : une cible de morphing par corps (la géométrie est partagée par les clones), réglée par joueur
+    this.bordChaussette = corps.map((c) => (c ? morphChaussetteBasse(c.mesh.geometry, carte).fBord : null));
+    for (const pl of this.players) pl.corps?.mesh.updateMorphTargets();
     for (let e = 0; e < 2; e++) { const n = numerosDe(this.roles.slice(e * 11, e * 11 + 11)); for (let i = 0; i < 11; i++) this.players[e * 11 + i].numero = n[i]; }
+    this._equipementInitial();
     this._tex = {};
-    // le flocage des 22 dans un atlas commun, et UN graphe de couleur pour tous (un seul programme : gpf-maillots.js)
-    this.atlas = creerAtlasFlocage({ cellule: this.leger ? 256 : 384 });
-    this.couleurTenue = couleurFloquee(this.atlas.tex);
+    this.graphe = couleurTenue({ masques: masquesDe(carte), alphabet, desc: carte.desc });
+    for (const pl of this.players) if (pl.corps) pl.corps.mesh.material = pl.mat = materiauTenue(pl.corps.origine, this.graphe);
     this._peindreTout();
-    for (const [k, pl] of this.players.entries()) {
-      if (pl.corps) pl.corps.mesh.material = materiauTenue(pl.corps.origine, this._texPour(pl).tex, this.atlas.decalage(k), this.couleurTenue);
-    }
+    this.habillageMs = performance.now() - t0;   // (le coût de l'habillage au chargement, lu par les essais)
   }
   /** Le catalogue des tenues (pour les essais : window.__gpf.catalogue). */
   get catalogue() { return TENUES; }
   /** La texture de tenue d'un joueur : son corps (rig) et sa tenue (son équipe, ou son gardien). */
   _texPour(pl) { return this._tex[pl.gk ? `0:g${pl.team}` : `${pl.rig}:e${pl.team}`]; }
-  /** Peindre les quatre tenues (les deux équipes, les deux gardiens — à la couleur la plus éloignée de toutes) et les 22 flocages. Les canevas
-   *  et les textures sont réutilisés : un changement de maillot ne crée rien. */
+  /** Peindre les quatre tenues (les deux équipes, les deux gardiens — à la couleur la plus éloignée de toutes), puis poser les 22. Les
+   *  canevas et les textures sont réutilisés : un changement de maillot ne crée rien. */
   _peindreTout() {
     const taille = this.leger ? 1024 : 2048, [T0, T1] = this.tenues;
     const G0 = gardienPour(T0, T1), G1 = gardienPour(T1, T0, G0.c1);
     this.gardiens = [G0, G1];
     const jeu = { e0: [0, T0, 0], e1: [1, T1, 1], g0: [0, G0, 0], g1: [0, G1, 1] };
     for (const [quoi, [rig, kit, e]] of Object.entries(jeu)) {
-      const img = this._images[rig]; if (!img) continue;
+      const img = this._images[rig]; if (!img || !this._formesCPU[rig]) continue;
       const ent = (this._tex[`${rig}:${quoi}`] ??= { canevas: document.createElement('canvas') });
-      peindreTenue(img, this.carte, kit, { taille, canevas: ent.canevas, club: this.clubs[e] });
+      peindreTenue(img, this.carte, this._formesCPU[rig], kit, { taille, canevas: ent.canevas, club: this.clubs[e] });
       if (!ent.tex) ent.tex = textureDe(ent.canevas); else ent.tex.needsUpdate = true;
     }
-    for (const [k, pl] of this.players.entries()) {
-      const kit = pl.gk ? this.gardiens[pl.team] : this.tenues[pl.team];
-      const nom = (this.noms?.[this.idDe[k]] ?? '').replace(/^[^.]*\.\s*/, '');
-      this.atlas.dessiner(k, { nom, numero: pl.numero ?? k + 1 }, kit);
-    }
+    for (let k = 0; k < this.players.length; k++) this._poser(k);
+  }
+  /** Poser un joueur sur son matériau : sa tenue, sa peau, ses chaussures, son équipement, son nom et son numéro — des valeurs, rien ne se
+   *  recompile. */
+  _poser(k) {
+    const pl = this.players[k]; if (!pl?.mat) return;
+    const kit = pl.gk ? this.gardiens[pl.team] : this.tenues[pl.team], Q = this.equipementJoueur(k), mi = pl.corps.mesh.morphTargetInfluences;
+    if (mi) mi[0] = Q.chaussettes === 'basses' ? 1 : 0;
+    poserJoueur(pl.mat, {
+      tenueTex: this._texPour(pl)?.tex ?? null, forme: this._formes[pl.rig], T0: kit, peau: this._peaux[pl.rig], bottesClaires: pl.rig === 0,   // le n° 18 a des chaussures claires
+      equip: Q, nom: this.nomFloque(k), numero: pl.numero ?? k + 1, alphabet: this.alphabet,
+    });
+  }
+  /** Le nom floqué d'un joueur : son patronyme (« M. Diallo » → « Diallo »). */
+  nomFloque(k) { return (this.noms?.[this.idDe[k]] ?? '').replace(/^[^.]*\.\s*/, ''); }
+
+  // ———————————————————————————— l'équipement des joueurs ————————————————————————————
+  /** L'ÉQUIPEMENT (gpf-maillots.js equipementDe) : chacun le sien, tiré par la graine ; par-dessus, les règles de l'adresse (?manches=,
+   *  ?chaussettes=, ?maillot= : les 22), celles des réglages (une équipe), puis les choix faits joueur par joueur. Le capitaine (le brassard) :
+   *  le défenseur central, sinon le premier joueur de champ. Gardé par le navigateur (sauf l'adresse). */
+  _equipementInitial() {
+    let sauve = null; try { sauve = JSON.parse(localStorage.getItem(CLE_EQUIPEMENT)); } catch { /* stockage indisponible */ }
+    this.equipDefaut = this.players.map((pl, k) => equipementDe(this.graine, k, { gardien: pl.gk }));
+    this.reglesAdresse = {}; for (const c of REGLES) { const v = q.get(c); if (v && EQUIPEMENT[c][v]) this.reglesAdresse[c] = v; }
+    this.reglesEquipe = [0, 1].map((e) => { const R = {}; for (const c of REGLES) { const v = sauve?.equipes?.[e]?.[c]; if (EQUIPEMENT[c][v]) R[c] = v; } return R; });
+    this.choixJoueurs = sauve?.joueurs && typeof sauve.joueurs === 'object' ? sauve.joueurs : {};
+    this.capitaines = [0, 1].map((e) => { const c = sauve?.capitaines?.[e]; return c === null || (Number.isInteger(c) && c >= e * 11 && c < e * 11 + 11) ? c : this._capitaineParDefaut(e); });
+  }
+  _capitaineParDefaut(e) {
+    const J = [...Array(11).keys()].map((i) => e * 11 + i);
+    return J.find((k) => this.roles[k] === 1) ?? J.find((k) => !this.players[k].gk) ?? J[0];
+  }
+  /** L'équipement d'un joueur : le sien, les règles (l'adresse, puis son équipe), ses choix, le brassard. */
+  equipementJoueur(k) {
+    const e = this.players[k].team;
+    return { ...this.equipDefaut[k], ...this.reglesAdresse, ...this.reglesEquipe[e], ...(this.choixJoueurs[k] ?? {}), brassard: this.capitaines[e] === k };
+  }
+  /** Imposer à une équipe une manche, une chaussette, une façon de porter le maillot (vide : au choix de chacun) ; les choix individuels de ce
+   *  champ s'effacent. */
+  regleEquipe(e, champ, v) {
+    if (v && EQUIPEMENT[champ]?.[v]) this.reglesEquipe[e][champ] = v; else delete this.reglesEquipe[e][champ];
+    for (let i = 0; i < 11; i++) { const C = this.choixJoueurs[e * 11 + i]; if (C) delete C[champ]; }
+    this._apresEquipement(e);
+  }
+  /** Changer un détail de l'équipement d'un joueur (le brassard passe d'un joueur à l'autre de son équipe). */
+  regleJoueur(k, champ, v) {
+    const e = this.players[k].team;
+    if (champ === 'brassard') this.capitaines[e] = v ? k : this.capitaines[e] === k ? null : this.capitaines[e];
+    else (this.choixJoueurs[k] ??= {})[champ] = v;
+    this._apresEquipement(e);
+  }
+  /** Revenir à l'équipement tiré au sort (une équipe). */
+  tirerEquipement(e) {
+    this.reglesEquipe[e] = {}; for (let i = 0; i < 11; i++) delete this.choixJoueurs[e * 11 + i];
+    this.capitaines[e] = this._capitaineParDefaut(e);
+    this._apresEquipement(e);
+  }
+  _apresEquipement(e) {
+    try { localStorage.setItem(CLE_EQUIPEMENT, JSON.stringify({ equipes: this.reglesEquipe, joueurs: this.choixJoueurs, capitaines: this.capitaines })); } catch { /* stockage indisponible */ }
+    for (let i = 0; i < 11; i++) this._poser(e * 11 + i);
   }
   /** Changer le maillot d'une équipe (les réglages) : la tenue, ses gardiens, les flocages, les couleurs de l'habillage ; le stade (sièges,
    *  public) suit 1,5 s après le dernier changement. Gardé par le navigateur. */
@@ -741,11 +809,13 @@ export class GpfMatch {
    *    tactique — la plongée haute de Football Manager, le bloc des 22 : lire les lignes ;
    *    joueur   — derrière le porteur, dans le sens de son attaque (jamais sur le lacet du corps : il tremblerait à chaque appui) ;
    *    but      — derrière la cage du côté du ballon (ou du but marqué, au ralenti), 6 m derrière la ligne et 6 m de haut ;
-   *    bas      — le ralenti au ras de la pelouse, de l'autre côté du terrain, à 14 m du ballon. */
+   *    bas      — le ralenti au ras de la pelouse, de l'autre côté du terrain, à 14 m du ballon ;
+   *    portrait — le joueur choisi (les réglages de l'équipement), à 4,4 m : la caméra tourne lentement autour de lui ; un angle figé (?angle=)
+   *               se compte depuis son avant (0 : de face, 180 : de dos — le flocage), l'avant pris entre ses deux hanches. */
   _planLibre(plan, dt, coupe) {
     const b = this.ball.position, V = this.vue ?? {};
     const pe = V.pe === 0 || V.pe === 1 ? V.pe : null, porteur = pe != null ? this.players[pe * 11 + V.pj]?.model : null;
-    let P, L, h, tau = 0.5;
+    let P, L, h, tau = 0.5, fovV = null;
     if (plan === 'tactique') {
       const x = THREE.MathUtils.clamp(b.x, -26, 26);
       P = [x, 50, 40]; L = [x, 0, -3]; h = 78; tau = 0.9;
@@ -753,6 +823,18 @@ export class GpfMatch {
       // le porteur déclaré, tant que le ballon est à lui (à moins de 4 m) ; une passe en vol : le ballon
       const o = porteur && Math.hypot(porteur.position.x - b.x, porteur.position.z - b.z) < 4 ? porteur.position : b, sg = pe === 1 ? -1 : 1;
       P = [o.x - sg * 9, 4.4, o.z + 3.5]; L = [o.x + sg * 7, 1.2, o.z]; h = 72; tau = 0.35;
+    } else if (plan === 'portrait') {
+      const pl = this.players[this.portrait ?? this.capitaines?.[0] ?? 0], o = pl?.model.position ?? b;
+      let th;
+      if (this.angleFixe != null) {
+        const g = pl?.bones.get('LeftUpLeg'), d = pl?.bones.get('RightUpLeg');
+        let fx = 0, fz = 1;
+        if (g && d) { g.getWorldPosition(this._v); const gx = this._v.x, gz = this._v.z; d.getWorldPosition(this._v); fx = -(gz - this._v.z); fz = gx - this._v.x; }   // avant = latéral × haut
+        th = Math.atan2(fx, fz) + this.angleFixe;
+      } else th = this._orbite = (this._orbite ?? 0.6) + dt * 0.35;
+      const r = this.portraitDist ?? 4.4;   // (les essais s'approchent : window.__gpf.portraitDist)
+      // le joueur en pied (2,1 m de haut cadrés, quel que soit l'écran : un téléphone en hauteur le voit aussi grand)
+      P = [o.x + Math.sin(th) * r, 1.25, o.z + Math.cos(th) * r]; L = [o.x, 0.95, o.z]; tau = 0.15; fovV = 2 * THREE.MathUtils.radToDeg(Math.atan(1.05 / r));
     } else if (plan === 'but') {
       const gs = V.equipe != null ? (V.equipe === 0 ? 1 : -1) : b.x >= 0 ? 1 : -1;
       // 6 m derrière la ligne, 6 m de haut : entre le fond du filet (2 m) et les panneaux (3,5 m) — à 11 m, en portrait, les panneaux bouchaient le bas de l'image
@@ -764,7 +846,7 @@ export class GpfMatch {
     const k = coupe || !this._libre ? 1 : 1 - Math.exp(-dt / tau);
     if (!this._libre || coupe) this._libre = { P: [...P], L: [...L] };
     for (let i = 0; i < 3; i++) { this._libre.P[i] += (P[i] - this._libre.P[i]) * k; this._libre.L[i] += (L[i] - this._libre.L[i]) * k; }
-    this._fov(this._fovH(h, 25, 62));
+    this._fov(fovV ?? this._fovH(h, 25, 62));
     const p = this._libre.P, l = this._libre.L;
     this.camRef.position.set(p[0], p[1], p[2]); this.camRef.lookAt(l[0], l[1], l[2]);
     if (this.controls) this.controls.target.set(l[0], l[1], l[2]);

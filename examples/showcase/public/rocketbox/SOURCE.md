@@ -19,8 +19,17 @@ en bleu ciel, ombrage conservé) ; puis Blender 4.2 LTS et le convertisseur de t
 
 ## Les cartes du maillot (lot L5, /match11)
 
-`maillot-zones.png` (2048², une zone par texel : 1 maillot, 2 liseré, 3 short, 4 liseré du short, 5 chaussette, 0 on garde) et
-`maillot-forme.png` (1024² : la position du texel sur le corps au repos, et le relief des plis) — produits par
-`tools/maillot-carte.py` sur les deux footballeurs (leurs dépliages diffèrent à l'ourlet du maillot ; le n° 18 fait foi). La page
-(`src/scenes/gpf-maillots.js`) repeint les tenues aux couleurs et aux motifs choisis, et pose le flocage (nom, numéros) par le shader.
-À refaire si un corps change : `python3 tools/maillot-carte.py` (vues de contrôle avec un troisième argument).
+Produites par `tools/maillot-carte.py` sur les deux footballeurs (leurs dépliages diffèrent à l'ourlet du maillot ; le n° 18 fait foi) :
+
+- `maillot-zones.png` (2048², une zone par texel) : 0 on garde (le fond), 1 maillot, 2 liseré, 3 short, 4 liseré du short, 5 chaussette,
+  6 peau du bras, 7 main, 8 peau de la jambe, 9 chaussure ;
+- `maillot-forme.png` (1024²) : la position du texel sur le corps au repos (RVB dans la boîte du JSON), et le relief des plis (A) ;
+- `maillot-carte.json` : la boîte, les articulations au repos (épaule, coude, poignet, hanche, genou, cheville : le même squelette pour
+  les deux corps), les zones d'impression (le dos tête-bêche, centré sur la colonne vertébrale ; la poitrine ; le short) et leur taille
+  réelle en mètres (`mesures`), l'écusson, le sponsor.
+
+La page (`src/scenes/gpf-maillots.js`) repeint la tenue de chaque équipe (zones 1-5 : motifs du maillot, du short, des chaussettes,
+écusson, sponsor) ; le shader du joueur, commun aux 22, pose son équipement sur les zones 6-9 et la forme (manches longues ou
+sous-maillot, maillot rentré, chaussettes hautes ou basses, antidérapantes, strap, cuissard, chaussures, bandage, gants, brassard) et
+son flocage (un alphabet en champ de distance, à taille réelle). À refaire si un corps change : `python3 tools/maillot-carte.py`
+(vues de contrôle avec un troisième argument).

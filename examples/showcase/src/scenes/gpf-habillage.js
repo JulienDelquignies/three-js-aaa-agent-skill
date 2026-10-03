@@ -1,4 +1,4 @@
-import { TENUES, MOTIFS, conflit } from './gpf-maillots.js';
+import { TENUES, MOTIFS, MOTIFS_SHORT, MOTIFS_CHAUSSETTES, CHAUSSURES, EQUIPEMENT, TEINTES, conflit } from './gpf-maillots.js';
 
 // gpf-habillage.js — L'HABILLAGE TÉLÉ DE /match11 (lot L5 « L'image » ; EX-04 la régie, EX-38/42 les statistiques en direct). Du DOM
 // par-dessus le canevas, rien dans la scène :
@@ -88,6 +88,7 @@ const CSS = `
 .gh-reglages label { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
 .gh-reglages select { background: #141b2c; color: var(--texte); border: 1px solid var(--trait); border-radius: 6px; padding: 4px 6px; font: inherit; }
 .gh-reglages p { color: var(--doux); font-size: 14px; line-height: 1.4; }
+.gh-reglages code { overflow-wrap: anywhere; }   /* (une longue valeur d'adresse débordait du panneau) */
 .gh-reglages input[type=color] { width: 34px; height: 26px; border: 1px solid var(--trait); border-radius: 5px; background: none; padding: 0; }
 .gh-reglages kbd { background: rgba(255,255,255,.1); border-radius: 4px; padding: 0 5px; font-family: inherit; }
 .gh-radar { position: fixed; right: 14px; bottom: 78px; z-index: 30; border-radius: 8px; background: rgba(9,13,24,.72); border: 1px solid var(--trait); padding: 5px; }
@@ -116,7 +117,7 @@ const couleurNote = (n) => (n == null ? '#4b5563' : n >= 8 ? '#3ddc84' : n >= 7 
 export const VITESSES = [0.5, 1, 2, 4, 8];
 /** L'ordre des postes sur la feuille : ceux du corps (feuille.mjs ROLES) et ceux du cerveau (formation.js : D(D), DM(C), AM(G), ST(C)…). */
 const ORDRE_POSTES = [/^DD$|^D\(D\)|^WB\(D\)/, /^DC$|^D\(C\)/, /^DG$|^D\(G\)|^WB\(G\)/, /^MDC$|^DM/, /^MD$|^M\(D\)/, /^MC$|^M\(C\)/, /^MG$|^M\(G\)/, /^MOC$|^AM\(C\)/, /^AM\(D\)/, /^AM\(G\)/, /^BU$|^ST/];
-export const PLANS = { auto: 'Auto (réalisateur)', tele: 'Télé', rapprochee: 'Rapprochée', tactique: 'Tactique', joueur: 'Joueur', but: 'Derrière le but' };
+export const PLANS = { auto: 'Auto (réalisateur)', tele: 'Télé', rapprochee: 'Rapprochée', tactique: 'Tactique', joueur: 'Joueur', but: 'Derrière le but', portrait: 'Portrait (le joueur choisi)' };
 
 export class Habillage {
   /**
@@ -338,7 +339,8 @@ export class Habillage {
     this.pan.querySelector('.gh-onglets').innerHTML = '';
     const opt = (o, v) => Object.entries(o).map(([k, x]) => `<option value="${k}" ${String(k) === String(v) ? 'selected' : ''}>${esc(x.nom ?? x)}</option>`).join('');
     const coche = (cle, val, lib) => `<label>${lib}<input type="checkbox" data-r="${cle}" ${val ? 'checked' : ''}></label>`;
-    this.pan.querySelector('.gh-corps').innerHTML = `<div class="gh-reglages">
+    const corps = this.pan.querySelector('.gh-corps'), defile = corps.scrollTop;   // un réglage changé ne ramène pas en haut du panneau
+    corps.innerHTML = `<div class="gh-reglages">
       <label>Stade<select data-r="stade">${opt(this.stades, m.reglages.stade)}</select></label>
       <label>Heure<select data-r="heure">${opt(this.heures, m.reglages.heure)}</select></label>
       ${coche('foule', m.reglages.foule, 'Le public')}
@@ -351,26 +353,59 @@ export class Habillage {
       ${this._reglagesMaillots()}
       <p>Le stade et l’heure se changent en plein match : la partie continue. La vitesse ne change pas le match (le pas du corps est fixe) ; les ralentis et le différé le mettent en attente.</p>
       <p><kbd>Espace</kbd> pause · <kbd>1</kbd>-<kbd>5</kbd> vitesses · <kbd>N</kbd> prochain temps fort · <kbd>B</kbd> 10 s en arrière · <kbd>R</kbd> revoir le dernier but · <kbd>Échap</kbd> retour au direct · <kbd>C</kbd> caméra · <kbd>S</kbd> stats · <kbd>H</kbd> masquer l’habillage · <kbd>D</kbd> infos techniques · <kbd>M</kbd> radar · <kbd>G</kbd> prochain geste · <kbd>F</kbd> prochain face-à-face</p>
-      <p>Dans l’adresse : <code>?seed=7</code> un autre match · <code>?stade=bol|arche|nervures|1-5</code> · <code>?heure=jour|soir|nuit</code> · <code>?cam=auto|tele|rapprochee|tactique|joueur|but</code> · <code>?vitesse=2</code> · <code>?technicien=0:9</code> un technicien (Olmo) au poste 9 de l’équipe de gauche · <code>?artiste=1:7</code> une anomalie (Taarabt) · <code>?gestes=0</code> · <code>?face=0</code> · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> · <code>?public=0</code> · <code>?ralentis=0</code> · <code>?tenue0=rouge-blanc-raye</code> <code>?tenue1=bleu-ciel</code> les maillots (les identifiants : ${Object.keys(TENUES).join(', ')}) · <code>?maillots=0</code> les tenues d’origine</p>
+      <p>Dans l’adresse : <code>?seed=7</code> un autre match · <code>?stade=bol|arche|nervures|1-5</code> · <code>?heure=jour|soir|nuit</code> · <code>?cam=auto|tele|rapprochee|tactique|joueur|but|portrait</code> · <code>?vitesse=2</code> · <code>?technicien=0:9</code> un technicien (Olmo) au poste 9 de l’équipe de gauche · <code>?artiste=1:7</code> une anomalie (Taarabt) · <code>?gestes=0</code> · <code>?face=0</code> · <code>?ia</code> leur IA des deux côtés · <code>?contre=ia</code> · <code>?public=0</code> · <code>?ralentis=0</code> · <code>?tenue0=rouge-blanc-raye</code> <code>?tenue1=bleu-ciel</code> les maillots (les identifiants : ${Object.keys(TENUES).join(', ')}) · <code>?manches=longues|courtes|sous-maillot</code> <code>?chaussettes=hautes|moyennes|basses</code> <code>?maillot=rentre|dehors</code> pour les 22 · <code>?portrait=5&amp;angle=180</code> le joueur 5 de près, de dos · <code>?maillots=0</code> les tenues d’origine</p>
     </div>`;
+    corps.scrollTop = defile;
   }
 
-  /** LES MAILLOTS (EX-27) : pour chaque équipe, une tenue toute faite, ou son motif et ses couleurs (maillot, second, short) ; l'alerte quand
-   *  les deux se confondent. Un changement repeint la tenue en direct (les numéros et les noms suivent). */
+  /** LES MAILLOTS (EX-27) : pour chaque équipe, une tenue toute faite, ou ses motifs (maillot, short, chaussettes) et ses couleurs ; l'alerte
+   *  quand les deux se confondent. Un changement repeint la tenue en direct (les numéros et les noms suivent). */
   _reglagesMaillots() {
     const m = this.m; if (!m.maillots) return '';
-    const hex = (c) => css(c);
+    const hex = (c) => css(c), choix = (o, v) => Object.entries(o).map(([k, x]) => `<option value="${k}" ${v === k ? 'selected' : ''}>${esc(x)}</option>`).join('');
     const bloc = (t) => {
       const T = m.tenues[t];
       const options = `<option value="">— sur mesure —</option>` + Object.entries(TENUES).map(([id, X]) => `<option value="${id}" ${T.id === id ? 'selected' : ''}>${esc(X.nom)}</option>`).join('');
       return `<div class="gh-sous"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${hex(this.E[t].primary)};margin-right:6px"></i>${esc(this.E[t].nom)}</div>
         <label>Tenue<select data-t="${t}" data-c="id">${options}</select></label>
-        <label>Motif<select data-t="${t}" data-c="motif">${Object.entries(MOTIFS).map(([k, v]) => `<option value="${k}" ${T.motif === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-        <label>Couleurs (maillot, second, short)<span style="display:flex;gap:6px"><input type="color" data-t="${t}" data-c="c1" value="${hex(T.c1)}"><input type="color" data-t="${t}" data-c="c2" value="${hex(T.c2)}"><input type="color" data-t="${t}" data-c="short" value="${hex(T.short)}"></span></label>`;
+        <label>Motif du maillot<select data-t="${t}" data-c="motif">${choix(MOTIFS, T.motif)}</select></label>
+        <label>Motif du short<select data-t="${t}" data-c="motifShort">${choix(MOTIFS_SHORT, T.motifShort ?? 'uni')}</select></label>
+        <label>Motif des chaussettes<select data-t="${t}" data-c="motifChaussettes">${choix(MOTIFS_CHAUSSETTES, T.motifChaussettes ?? 'bande')}</select></label>
+        <label>Couleurs (maillot, second, short, chaussettes)<span style="display:flex;gap:6px"><input type="color" data-t="${t}" data-c="c1" value="${hex(T.c1)}"><input type="color" data-t="${t}" data-c="c2" value="${hex(T.c2)}"><input type="color" data-t="${t}" data-c="short" value="${hex(T.short)}"><input type="color" data-t="${t}" data-c="chaussettes" value="${hex(T.chaussettes)}"></span></label>`;
     };
     const alerte = conflit(m.tenues[0], m.tenues[1]) ? '<p style="color:#ff8a80">⚠ Les deux maillots se confondent : changez l’un des deux.</p>'
       : m.exterieur ? '<p>Les maillots se confondaient : l’équipe de droite joue avec son maillot extérieur.</p>' : '';
-    return `<div class="gh-sous">Les maillots</div>${bloc(0)}${bloc(1)}${alerte}<p>Les gardiens prennent la couleur la plus éloignée des deux équipes. Les numéros et les noms sont floqués au dos, sur la poitrine et le short.</p>`;
+    return `<div class="gh-sous">Les maillots</div>${bloc(0)}${bloc(1)}${alerte}<p>Les gardiens prennent la couleur la plus éloignée des deux équipes. Les numéros et les noms sont floqués au dos, sur la poitrine et le short, à leur taille réelle.</p>${this._reglagesEquipement()}`;
+  }
+
+  /** L'ÉQUIPEMENT DES JOUEURS : chacun le sien (tiré au sort par la graine) ; une règle d'équipe s'impose à ses onze (manches, chaussettes,
+   *  maillot), un choix de joueur à lui seul — le joueur choisi se regarde de près (le plan « portrait »). */
+  _reglagesEquipement() {
+    const m = this.m; if (!m.equipementJoueur) return '';
+    const choix = (o, v, vide) => (vide ? `<option value="">${vide}</option>` : '') + Object.entries(o).map(([k, x]) => `<option value="${k}" ${v === k ? 'selected' : ''}>${esc(x.nom ?? x)}</option>`).join('');
+    const regles = (t) => `<div class="gh-sous" style="font-size:12px;opacity:.85">${esc(this.E[t].nom)} — pour les onze</div>
+      ${['manches', 'chaussettes', 'maillot'].map((c) => `<label>${{ manches: 'Manches', chaussettes: 'Chaussettes', maillot: 'Maillot' }[c]}<select data-q="${t}" data-c="${c}">${choix(EQUIPEMENT[c], m.reglesEquipe[t][c] ?? m.reglesAdresse?.[c] ?? '', 'au choix de chacun')}</select></label>`).join('')}
+      <label>L’équipement tiré au sort<button data-a="tirer" data-e="${t}" style="width:auto">Retirer au sort</button></label>`;
+    const k = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1, Q = m.equipementJoueur(k), pl = m.players[k];
+    const joueurs = m.players.map((p, i) => `<option value="${i}" ${i === k ? 'selected' : ''}>${esc(this.E[p.team].court)} · ${p.numero ?? i + 1} ${esc(m.nomFloque(i) || '?')}${p.gk ? ' (gardien)' : ''}</option>`).join('');
+    const sel = (c, lib, o) => `<label>${lib}<select data-j="${c}">${choix(o, Q[c])}</select></label>`;
+    const coche = (c, lib) => `<label>${lib}<input type="checkbox" data-j="${c}" ${Q[c] ? 'checked' : ''}></label>`;
+    return `<div class="gh-sous">L’équipement des joueurs</div>${regles(0)}${regles(1)}
+      <div class="gh-sous" style="font-size:12px;opacity:.85">Un joueur</div>
+      <label>Joueur<select data-joueur>${joueurs}</select></label>
+      <label>Le regarder de près<button data-a="portrait" style="width:auto">Portrait 🎥</button></label>
+      ${sel('manches', 'Manches', EQUIPEMENT.manches)}${Q.manches === 'sous-maillot' ? sel('couleurSous', 'Couleur du sous-maillot', TEINTES) : ''}
+      ${sel('maillot', 'Maillot', EQUIPEMENT.maillot)}
+      ${sel('chaussettes', 'Chaussettes', EQUIPEMENT.chaussettes)}
+      ${coche('antiderapantes', 'Antidérapantes visibles (chaussette coupée)')}${Q.antiderapantes ? sel('couleurAntider', 'Couleur des antidérapantes', TEINTES) : ''}
+      ${coche('strapChaussettes', 'Strap sur les chaussettes')}
+      ${coche('cuissard', 'Cuissard visible')}${Q.cuissard ? sel('couleurCuissard', 'Couleur du cuissard', TEINTES) : ''}
+      ${sel('chaussures', 'Chaussures', CHAUSSURES)}
+      ${sel('bandage', 'Bandage de la main', EQUIPEMENT.bandage)}
+      ${sel('poignets', 'Strap des poignets', EQUIPEMENT.poignets)}
+      ${coche('gants', 'Gants')}${Q.gants ? sel('couleurGants', 'Couleur des gants', TEINTES) : ''}
+      ${coche('brassard', 'Capitaine (le brassard)')}
+      <p>${esc(m.nomFloque(k) || 'Ce joueur')} porte le n° ${pl?.numero ?? k + 1}. Les règles d’équipe passent avant le tirage au sort, les choix d’un joueur avant les règles.</p>`;
   }
 
   // ———————————————————————————— les commandes ————————————————————————————
@@ -388,20 +423,30 @@ export class Habillage {
       case 'passer': return m.passerLecture();
       case 'stats': return this.ouvrir('stats');
       case 'reglages': return this.ouvrir('reglages');
+      case 'portrait': m.portrait = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1; m.reglePlan('portrait'); if (innerWidth < 640) this.fermer(); return;
+      case 'tirer': m.tirerEquipement(Number(t.dataset.e)); return this._rendreReglages();
       case 'fermer': return this.fermer();
     }
   }
   _change(e) {
     const t = e.target, m = this.m;
     if (t.dataset.a === 'plan') { m.reglePlan(t.value); t.blur(); return; }
+    // l'équipement : une règle d'équipe, un joueur choisi, un détail de son équipement
+    if (t.dataset.q != null) { m.regleEquipe(Number(t.dataset.q), t.dataset.c, t.value || null); return this._rendreReglages(); }
+    if (t.dataset.joueur != null) { this.joueur = Number(t.value); if (m.plan === 'portrait') m.portrait = this.joueur; return this._rendreReglages(); }
+    if (t.dataset.j != null) {
+      const k = this.joueur ?? m.portrait ?? m.capitaines?.[0] ?? 1;
+      m.regleJoueur(k, t.dataset.j, t.type === 'checkbox' ? t.checked : t.value);
+      return this._rendreReglages();
+    }
     if (t.dataset.t != null) {
       const e = Number(t.dataset.t), c = t.dataset.c, T = { ...m.tenues[e] };
       if (c === 'id') { if (!TENUES[t.value]) return; Object.assign(T, TENUES[t.value], { id: t.value }); }
-      else if (c === 'motif') { T.motif = t.value; T.id = null; }
+      else if (c === 'motif' || c === 'motifShort' || c === 'motifChaussettes') { T[c] = t.value; T.id = null; }
       else {
         T[c] = parseInt(t.value.slice(1), 16); T.id = null;
         // le liseré, les chaussettes, le numéro suivent les deux couleurs choisies (la règle des tenues toutes faites)
-        if (c === 'c1') { T.chaussettes = T.c1; }
+        if (c === 'c1') { T.chaussettes = T.c1; T.shortB = T.c1; }
         if (c === 'c2') { T.lisere = T.c2; T.bande = T.c2; }
         const clair = (x) => ((x >> 16) & 255) * 0.299 + ((x >> 8) & 255) * 0.587 + (x & 255) * 0.114 > 150;
         T.num = clair(T.c1) ? 0x141414 : 0xf6f6f6; T.numBord = T.c1;

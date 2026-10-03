@@ -21,7 +21,7 @@ const releve = (lib) => pg.evaluate((lib) => {
   const g = window.__gpf, r = g.renderer, a = g.affiche ?? {};
   return { lib, t: Math.round((a.t ?? 0) / 1000), score: a.score, per: a.per, lecture: a.lecture ?? null, plan: g.vue?.plan ?? g.plan, pas: g.pas,
     programmes: r.info?.memory?.programs ?? null, pipelines: r._pipelines?.caches?.size ?? null, api: g.api, stade: g.stade?.nom, places: g.stade?.capacite,
-    public: g.stade?.public?.count ?? 0, clips: g.clips.length };
+    public: g.stade?.public?.count ?? 0, clips: g.clips.length, habillage: g.habillageMs != null ? Math.round(g.habillageMs) : null };
 }, lib);
 let n = 0;
 const photo = async (lib) => { const r = await releve(lib); await pg.screenshot({ path: `${DOSSIER}/${String(n++).padStart(2, '0')}-${lib}.png`, timeout: 240000 }).catch((e) => console.log('capture', String(e).slice(0, 120))); console.log(JSON.stringify(r)); return r; };
@@ -88,6 +88,21 @@ if (veut('dos')) {
       c.fov = 32; c.updateProjectionMatrix(); c.position.set(m.position.x + sg * 2.6, 1.45, m.position.z + 0.4); o.target.set(m.position.x, 1.15, m.position.z); o.update();
     }, k);
     await photo(`dos-${k}`);
+  }
+}
+if (veut('equipement')) {
+  // L'ÉQUIPEMENT DE PRÈS (le plan portrait, la caméra figée par rapport au joueur, le match en pause) : trois joueurs habillés de presque toutes
+  // les options — de face, de dos (le flocage), de côté
+  const J = [
+    [5, { manches: 'longues', chaussettes: 'hautes', maillot: 'rentre', chaussures: 'orange', bandage: 'droite', poignets: 'aucun', brassard: true, cuissard: false, antiderapantes: false, strapChaussettes: false, gants: false }],
+    [6, { manches: 'sous-maillot', couleurSous: 'blanc', chaussettes: 'basses', maillot: 'dehors', chaussures: 'rose', bandage: 'aucun', poignets: 'deux', cuissard: true, couleurCuissard: 'noir', gants: false }],
+    [16, { manches: 'courtes', chaussettes: 'moyennes', antiderapantes: true, couleurAntider: 'blanc', strapChaussettes: true, maillot: 'rentre', chaussures: 'jaune', bandage: 'deux', poignets: 'droit', gants: false, cuissard: false }],
+  ];
+  await pg.evaluate((J) => { const g = window.__gpf; for (const [k, Q] of J) for (const [c, v] of Object.entries(Q)) g.regleJoueur(k, c, v); if (!g.pause) g.basculerPause(); }, J);
+  const vues = (process.env.VUES ?? '5:0,5:180,6:0,6:90,16:0,16:180').split(',').map((v) => v.split(':').map(Number));
+  for (const [k, angle] of vues) {
+    await pg.evaluate(([k, a, r]) => { const g = window.__gpf; g.portrait = k; g.angleFixe = (a * Math.PI) / 180; g.portraitDist = r; g.reglePlan('portrait'); for (let i = 0; i < 6; i++) g.update(0.05); }, [k, angle, Number(process.env.DISTANCE) || 4.4]);
+    await photo(`equipement-${k}-${angle}`);
   }
 }
 if (veut('reglages')) {

@@ -1,0 +1,120 @@
+{
+ "boite": [
+  [
+   -0.699999988079071,
+   -0.05000000074505806,
+   -0.20000000298023224
+  ],
+  [
+   0.699999988079071,
+   1.600000023841858,
+   0.25
+  ]
+ ],
+ "zones": {
+  "1": "maillot",
+  "2": "liseré du maillot",
+  "3": "short",
+  "4": "liseré du short",
+  "5": "chaussette",
+  "6": "peau du bras",
+  "7": "main",
+  "8": "peau de la jambe",
+  "9": "chaussure"
+ },
+ "articulations": {
+  "epaule": [
+   0.2104,
+   1.4281,
+   -0.0254
+  ],
+  "coude": [
+   0.4161,
+   1.2299,
+   -0.0192
+  ],
+  "poignet": [
+   0.5876,
+   1.0456,
+   0.0809
+  ],
+  "hanche": [
+   0.0884,
+   0.8952,
+   -0.0
+  ],
+  "genou": [
+   0.1095,
+   0.497,
+   0.0163
+  ],
+  "cheville": [
+   0.117,
+   0.1016,
+   -0.0145
+  ],
+  "bassin": [
+   0.0,
+   0.8952,
+   -0.0
+  ],
+  "cou": [
+   -0.0,
+   1.5208,
+   -0.0122
+  ]
+ },
+ "impression": {
+  "dos": [
+   821,
+   390,
+   1221,
+   805
+  ],
+  "poitrine": [
+   958,
+   1100,
+   1022,
+   1172
+  ],
+  "short": [
+   262,
+   262,
+   392,
+   386
+  ]
+ },
+ "mesures": {
+  "dos": {
+   "largeur": 0.3126,
+   "hauteur": 0.3365,
+   "centre": 0.4965
+  },
+  "poitrine": {
+   "largeur": 0.0647,
+   "hauteur": 0.0729,
+   "centre": 0.5
+  },
+  "short": {
+   "largeur": 0.1442,
+   "hauteur": 0.1311,
+   "centre": 0.5
+  }
+ },
+ "corps": [
+  "foot-18.glb",
+  "foot-10-ciel.glb"
+ ],
+ "ecusson": {
+  "x": 1065,
+  "y": 1146,
+  "d": 86
+ },
+ "sponsor": {
+  "x": 995,
+  "y": 1252,
+  "w": 236,
+  "h": 92
+ },
+ "note": "x > 0 : le côté GAUCHE du joueur (il regarde +z). Atlas 2048 px, v vers le bas. Le dos est imprimé tête-bêche."
+}
