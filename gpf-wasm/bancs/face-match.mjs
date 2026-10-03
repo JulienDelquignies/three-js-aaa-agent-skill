@@ -36,7 +36,10 @@ while (corps.etat().t < FIN) {
 }
 const S = cerveau.stats().face, k = 90 / MIN, fin = corps.etat();
 console.log(`FACE-À-FACE — ${MIN} min, graine ${GRAINE} (${((performance.now() - t0) / 1000).toFixed(0)} s) · score ${fin.score.join('-')}`);
-console.log(`  entrées ${S.entrees} (par 90 min ${(S.entrees * k).toFixed(1)}) · refus à l'envie ${S.refus} · durée moyenne ${(S.duree / Math.max(1, S.entrees)).toFixed(2)} s (réel 3,3-5) · ${(100 * enFace / Math.max(1, ticks)).toFixed(1)} % du jeu`);
+console.log(`  entrées ${S.entrees} (par 90 min ${(S.entrees * k).toFixed(1)}) · refus : hors nature ${S.horsNature ?? 0}, à l'envie ${S.refus} · durée moyenne ${(S.duree / Math.max(1, S.entrees)).toFixed(2)} s (réel 3,3-5) · ${(100 * enFace / Math.max(1, ticks)).toFixed(1)} % du jeu`);
+// QUI entre : le poste, le flair, la nature de dribbleur du cerveau (le face-à-face est réservé aux anomalies)
+const quiEntre = Object.entries(S.entrants ?? {}).map(([id, n]) => { const P = cerveau.profil(+id); return `${P ? `${P.equipe}/${P.poste}${P.archetype ? ` (${P.archetype})` : ''} flair ${P.flair.toFixed(2)} nature ${P.nature.toFixed(1)}` : id} : ${n}`; });
+console.log(`  qui : ${quiEntre.join(' · ') || 'personne'}`);
 console.log(`  feintes ${S.feintes} (${(S.feintes / Math.max(1, S.entrees)).toFixed(1)} par face-à-face ; réel 2-4) · morsures ${S.morsures} · fentes ${S.fentes} (lues ${S.lues})`);
 console.log(`  gestes demandés ${S.demandes}, joués ${S.joues} (${(100 * S.joues / Math.max(1, S.demandes)).toFixed(0)} %) : ${Object.entries(S.parGeste).map(([n, g]) => `${n} ${g.joues}/${g.demandes}`).join(' · ')}`);
 const tous = Object.values(parIssue).reduce((a, P) => ({ n: a.n + P.n, garde: a.garde + P.garde, battu: a.battu + P.battu }), { n: 0, garde: 0, battu: 0 });

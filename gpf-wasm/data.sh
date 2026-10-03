@@ -9,6 +9,8 @@ mkdir -p $D/media && cp -r upstream/data/media/animations $D/media/
 # NOTRE RÉPERTOIRE : les gestes de notre moteur convertis au format du corps (outils/vers-gpf.mjs), marqués specialvar1 — le
 # corps charge tout fichier .anim de ce dossier, et ne les joue que sur demande (intention GESTE)
 mkdir -p $D/media/animations/gestes && cp gestes/*.anim $D/media/animations/gestes/ 2>/dev/null || true
+# …ET LES GESTES EN COURSE (outils/foulee-gpf.mjs : la foulée du duel et ses temps, cuits pour le corps — gestes-course.mjs les demande)
+mkdir -p $D/media/animations/gestes/course && cp gestes/course/*.anim $D/media/animations/gestes/course/ 2>/dev/null || true
 python3 - <<'PY'
 import os, shutil, struct
 D = 'build/data'; U = 'upstream/data'

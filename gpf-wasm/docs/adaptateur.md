@@ -1,6 +1,6 @@
 # L'adaptateur : notre cerveau aux commandes du corps
 
-*`cerveau.mjs` (562 lignes) et `face.mjs` (le face-à-face), avec `contrat.mjs` et `corps.mjs`. État du 3 octobre 2026, branche `feat/l2-cerveau-corps`.*
+*`cerveau.mjs`, `face.mjs` (le face-à-face des anomalies) et `gestes-course.mjs` (les gestes en course), avec `contrat.mjs` et `corps.mjs`. État du 3 octobre 2026, branche `feat/l2-cerveau-corps`.*
 
 ## Sommaire
 
@@ -34,7 +34,9 @@
 | `contrat.mjs` | le contrat du corps, sans dépendance : les constantes (`INTENTION`, `PASSE`, `EV`, `GESTE`), `lireEtat`, `lireJournal`, `poserIntention`, `poserFautes`, `poserLesArrets`, `ARRETS_REELS`, `CHRONO_REEL` |
 | `corps.mjs` | la couche JavaScript du module : `chargerLeCorps()` puis `lancer`, `avancer`, `etat`, `journal`, `intention`, `fautes`, `miTemps` |
 | `face.mjs` | le face-à-face « Taarabt » (§ 7.10) : `creerFace({ tirage, attributs, equipes, K, trace })` rend `{ observer, tick, actif, derniere, stats() }` ; `FACE` (sa configuration), `GESTES` (le répertoire) |
-| `gestes/*.anim`, `outils/vers-gpf.mjs` | les 16 gestes du face-à-face, convertis du duel pour le corps (n° 101-116) ; le convertisseur, prouvé à l'aller-retour (0,0000°, 0,00 mm) |
+| `gestes/*.anim`, `outils/vers-gpf.mjs` | les 18 gestes du face-à-face, convertis du duel pour le corps (n° 101-118) ; le convertisseur, prouvé à l'aller-retour (0,0000°, 0,00 mm) |
+| `gestes-course.mjs` | les gestes en course (§ 7.11) : `creerGestesCourse({ equipes, trace })` rend `{ proposer, observer, tick, actif, derniere, stats() }` ; `COURSE` (le répertoire du corps), `animationPour` |
+| `gestes/course/*.anim`, `outils/foulee-gpf.mjs` | les 27 gestes en course (9 gestes × 3 allures, n° 200-282) ; le studio qui les cuit depuis la foulée du duel (`docs/gestes-en-course.md`) |
 | `paquet.mjs`, `empaqueter.sh` | le cerveau empaqueté pour la page (`out/cerveau.mjs`, esbuild, ≈ 550 Ko) ; `bancs/paquet.mjs` vérifie qu'il joue le même match que les sources |
 | `bancs/` | les mesures (§ 11) |
 
@@ -205,11 +207,13 @@ Ils reçoivent l'intention IA : le gardien du corps décide seul (placement, arr
 
 | Phase | Le porteur | Le défenseur |
 |---|---|---|
-| Entrée | Le cerveau a choisi CONDUIRE ; il conduit (pas de passe ni de tir en cours) et a touché le ballon le dernier. Un défenseur est devant, à 1-2,6 m freinage compris, face à lui, hors de la zone de tir. Personne d'autre ne peut arriver à 2,5 m avant 2 s. Au tirage de l'envie (0,7 + 0,3 × flair). | — |
+| Entrée | Le cerveau a choisi CONDUIRE ; il conduit (pas de passe ni de tir en cours) et a touché le ballon le dernier. Un défenseur est devant, à 1-2,6 m freinage compris, face à lui, hors de la zone de tir. Personne d'autre ne peut arriver à 2,5 m avant 2 s. **Le porteur est une anomalie** : flair ≥ 0,9 et nature de dribbleur ≥ 3 (ci-dessous). Au tirage de l'envie : de 0,4 à 0,85 selon la nature, × la zone (0 à moins de 25 m de son but, 0,3 dans son tiers, 0,7 au milieu, 1 dans le tiers adverse). | — |
 | Tenue | l'arrêt de semelle (GESTE 101), puis la tenue : la semelle posée sur le ballon, sans le toucher (GESTE 117 ou 118, du côté où il est). Le ballon a quitté la semelle : l'arrêt de semelle le reprend (deux fois au plus). | la garde (ALLER au drapeau 1 : ni contrôle, ni intervention, ni tacle glissé de lui-même), à 1,1-1,8 m du ballon sur la ligne ballon → son but |
 | Feintes | Une feinte au tirage : le passement (parfois une série de 2 à 4), la feinte de corps semelle dessus, ou le roulé de semelle (GESTE 102-109). Demandée un tick avant la fin du geste en cours. | Au contact de la feinte vraiment jouée (`GF_EV_GESTE`), il mord avec p = (0,15 + 0,12 × feintes vues) × vente × gesteF × (2 − anticipF). Mordu, il glisse de 0,6 m du côté vendu, sans réflexes. |
 | Fente | Il la lit avec p = 0,5 × anticipF × (2 − tempo du tacleur), au temps de réaction du duel : le tiré de semelle, la roulette ou le râteau (GESTE 110-114). | À bout de patience (1,6-3,2 s), ou mordu (35 %) : la charge (0,2 s). Puis la jambe part sur sa ligne, vers le ballon d'alors anticipé de 0,3 s ; le corps glisse jusqu'à 0,7 m, au sprint. Ses réflexes ne s'ouvrent qu'à l'instant de la jambe du duel (0,28 s après la charge), si le ballon est resté dans son couloir (0,35 m) et à sa portée (0,7 m). Manquée : déséquilibré 0,45 s, ou au sol 1,2 s (au tirage : 0,3, × 1,5 mordu). |
 | Sortie | Le mordu décalé, la fente passée, ou au bout de 5 s : la croqueta, le râteau (seulement du côté où il ratisse) ou la roulette vers le côté ouvert (GESTE 112-115). Ce sont des gestes **en série** : plusieurs touches, le corps qui tourne et part (`corps.md` § 5.7). Puis CONDUIRE lancé à 7 m/s pendant 0,8 s. Déjà lancé, la conduite tout de suite. | Ses réflexes lui reviennent, sauf mordu, déséquilibré ou au sol. |
+
+**Réservé aux anomalies (3 octobre).** Le retour : « je ne veux pas qu'un central commence à vouloir faire un 1v1 ; Taarabt, Ben Arfa, Kevin-Prince Boateng, Saint-Maximin, ce sont des anomalies ». L'envie d'hier (0,7 + 0,3 × flair) faisait entrer n'importe quel porteur, et sans effectif noté le flair était tiré au hasard, poste ignoré : un défenseur central à 0,97 de flair. Désormais, l'entrée demande le flair hors norme (≥ 0,9, une note ≥ 88) ET la nature de dribbleur du cerveau (`nature.js`, `specialisteF` : le flair et l'attribut composite du dribbleur, bornée de 0,1 à 6) ≥ 3. Le technicien (Olmo, flair 80) n'y entre pas : il dribble en course (§ 7.11). Mesuré (20 min, graine 7) : 3 fenêtres géométriques en 20 min, toutes refusées « hors nature » avec les effectifs générés ; avec un artiste posé sur l'ailier gauche, une, refusée au tirage. Les mesures ci-dessous datent d'avant cette porte : le face-à-face ouvert à tous.
 
 **La fin** se lit au journal, pas à la possession que déclare le corps (elle clignote). Le face-à-face finit :
 - sur une passe ou un tir du porteur ;
@@ -248,6 +252,15 @@ Un ballon disputé rend la main au cerveau tout de suite. L'issue, elle, se lit 
 
 **Ce qui reste : l'équilibre du duel.** La fente touche le ballon dans 15 face-à-face sur 20, et le défenseur n'est battu que 2 fois. Les sorties lues partent, mais la jambe les rattrape encore : le ratissage, la roulette quittent le couloir de la fente plus lentement que dans le duel. Avec une configuration de mesure (toutes les fentes lues, sorties forcées : `CERVEAU_OPTIONS='{"faceK":{"lecture":2,"sorties":{"rateau":0.5,"roulette":0.5}}}'`), 29 face-à-face : la croqueta part 5 fois sur 5, la roulette 4 sur 10, et la fente touche le ballon 22 fois.
 
+### 7.11 Les gestes en course (`gestes-course.mjs`, option `gestes`)
+
+Le détail, la référence (Dani Olmo) et le studio : `docs/gestes-en-course.md`. En bref :
+- **Le cerveau décide** (`gesteDuCerveau`, à chaque tick du porteur, avant l'arbitrage) : ses « niches du 1c1 » dans l'ordre de son pas — la croqueta contre le défenseur qui se jette, le petit et le grand pont, la roulette contre le poursuivant, le râteau contre la charge, le passement contre le jockey posté, la feinte de corps (portée du duel), le crochet contre la course fermée. Son monde est prêté : on lit le geste qu'il lance (`c.act`), puis on l'efface.
+- **Qui les tente** : dribM (le rôle, le lieu, la cadence, la nature, la lucidité) × le flair × la technique — les centraux presque jamais, les ailiers et le 10 souvent, les anomalies le plus.
+- **Le corps les joue** : l'animation du répertoire en course de l'espèce, à la variante de l'allure du porteur (2,5 m/s sous 3, 3,5 sous 4,2, 5 au-delà ; le passement, la croqueta et le râteau plantés sous 1,8 m/s) ; l'intention GESTE tenue jusqu'à sa première touche (0,7 s au plus pour partir), puis la conduite de sortie. Le côté, le corps le prend (le fichier ou son miroir, au plus près de la sortie demandée).
+- **Pas encore dans le corps** (comptés, le porteur conduit) : le râteau et la roulette lancés ; tout geste au sprint (≥ 6 m/s).
+- **Mesuré** (4 × 30 min) : 72-81 % des gestes demandés partent, le ballon gardé 1,5 s après dans 60 % des cas ; les centraux font 0 ou 1 geste par demi-heure, les ailiers et le 10 3 à 6 par minute de ballon. Le détail : `docs/gestes-en-course.md` § 5.
+
 ## 8. Les réglages recalés sur le corps
 
 Le cerveau a été réglé, lot après lot, dans son propre monde. Ces réglages sont recalés sur le corps, chacun mesuré :
@@ -262,6 +275,9 @@ Le cerveau a été réglé, lot après lot, dans son propre monde. Ces réglages
 | `LATENCE` | 0,4 s | le temps du corps entre l'ordre de passer et la frappe (médiane ; p25 0,3, p75 0,5) |
 | `AVANCE_UNE_TOUCHE` | 0,5 s | la latence et un tick |
 | `DUREE_TACLE` | 0,7 s | la durée du tacle debout du cerveau |
+| `passements.plancher`, `decalage.plancher` | 0 (0,35 et 0,3 dans son monde) | les planchers d'appétit du passement et du crochet faisaient dribbler tout porteur, central compris : les centraux à 4,1 gestes par minute de ballon, les ailiers à 10,6 (30 min, graine 7) |
+| `dribble.volume` | × 0,4 (`volumeGestes`) | le volume des gestes calé sur le réel par poste : 186-219 décidés par 90 min avant, 72-108 après |
+| `nature.specialiste.k` | 2,2 (1,6 dans son monde, `penteNature`) | la pente de la nature : le central à 0,28 de la fréquence médiane au lieu de 0,43, l'ailier à 2,5 au lieu de 2,2 ; les centraux à 0-1,2 geste par minute de ballon, les ailiers et le 10 à 4,3-6,5 |
 
 ## 9. Les options
 
@@ -289,6 +305,13 @@ Chaque réglage de l'adaptateur se débraye, pour la mesure A/B : `creerCerveau(
 | `face` | oui | le face-à-face « Taarabt » (§ 7.10) |
 | `faceK` | aucun | la configuration du face-à-face, à l'essai (par clé de premier niveau) |
 | `faceTrace` | aucun | `(t, quoi, détail)` : la chronique du face-à-face, pour les bancs |
+| `gestes` | oui | les gestes en course (§ 7.11) : `true` le corps les joue ; `'mesure'` comptés sans rien changer au match ; `false` muets |
+| `gestesTrace` | aucun | `(t, quoi, détail)` : la chronique des gestes en course |
+| `volumeGestes` | 0,4 | × le volume des gestes du cerveau (`dribble.volume`) ; `null` : le sien |
+| `penteNature` | 2,2 | la pente de la nature du spécialiste (`nature.specialiste.k`) ; `null` : la sienne (1,6) |
+| `effectifs` | (générés) | `false` : aucun effectif (tous notés 50, le flair au hasard) — aussi le paramètre `effectifs` de `creerCerveau` : les deux effectifs notés de la carrière |
+| `niveau` | 60 | la note moyenne des effectifs générés |
+| `archetypes` | aucun | `[{ equipe, poste, type }]` : un profil (`ARCHETYPES` : `artiste`, `technicien`) posé sur un joueur généré |
 
 ## 10. Le contrat avec le corps
 
@@ -353,7 +376,7 @@ Le cockpit la sert sur /match11.
 ## 12. Ce que l'adaptateur ne fait pas encore
 
 - **Il n'appelle pas le pas du cerveau** (`matchStep`, `rondoStep`). 114 des 155 gestes du cerveau y sont décidés, et le corps ne les reçoit donc pas (`inventaire-moteur.md`, §7) :
-  - les dribbles et les feintes, sauf ceux du face-à-face (§ 7.10) ;
+  - les dribbles et les feintes autres que ceux des niches du porteur (§ 7.11) et du face-à-face (§ 7.10) — la feinte de passe, la feinte de frappe, l'arrêt de semelle au calme ;
   - le choix du contrôle ;
   - le jeu aérien, hors tête au but ;
   - les décisions des gardiens ;
@@ -366,13 +389,15 @@ Le cockpit la sert sur /match11.
   - Des appels l'abaissent : le coureur lancé, l'homme libre dans l'espace, le défenseur qui se jette, le presseur qui arrive.
   - L'adaptateur, lui, suit l'arbitrage tel quel : « passe » donne une passe dès la tenue passée, sans barre ; « conduite » donne une conduite (`porteurDecide`, § 7.4). C'est un écart de structure, relevé par la documentation du moteur (`moteur.md`, § 4.5 et § 9).
 - **Ses joueurs voient tout.** La perception de chacun (`croyanceStep`, le bruit d'observation du moteur) n'est jamais calculée : marqueurs et passeurs du cerveau lisent la vérité (`moteur.md`, §9).
-- **Il ne transmet ni le regard voulu, ni le nom du geste**, hors face-à-face : le corps choisit son animation seul. Les 16 gestes du face-à-face passent par l'intention GESTE (§ 7.10).
+- **Il ne transmet ni le regard voulu, ni le nom du geste**, hors face-à-face et gestes en course : le corps choisit son animation seul. Les 18 gestes du face-à-face et les 27 gestes en course passent par l'intention GESTE (§ 7.10, § 7.11).
+- **Les gestes en course ne sont pas tous dans le corps** (§ 7.11, `docs/gestes-en-course.md`) : le râteau et la roulette lancés, et tout geste au sprint, sont décidés et comptés, pas joués. Un geste demandé sur quatre ne part pas dans les 0,7 s (le porteur pris dans un autre geste, ou le ballon hors de portée). Le défenseur ne mord pas encore à nos feintes en course.
 - **Le face-à-face n'est pas encore tout à fait celui du duel.**
   - La fente gagne trop : elle touche le ballon dans 3 face-à-face sur 4, le défenseur n'est battu qu'une fois sur 10 (§ 7.10).
   - Le jab ne se voit pas : le corps n'a pas de pas plus court qu'un mètre.
   - Un geste demandé sur vingt ne part pas encore.
+  - Réservé aux anomalies, il est rare : une fenêtre par demi-heure, au tirage.
   - Les face-à-face durent 2,9 s, pour 3,3 à 5 au réel : la fente vient tôt.
-- **Il ne transmet pas les attributs des joueurs**, ni au cerveau ni au corps : `attributs.md`.
+- **Il ne transmet pas les attributs au corps**, et ceux du cerveau sont générés par poste tant que la carrière ne lui passe pas ses effectifs (`attributs.md`, lot L3).
 - **Il ne reçoit pas d'ordres en cours de match** : ni remplacement, ni correctif tactique (les Ordres v1 du cadrage).
 - **Il ferme la ligne vers les gardiens.** Le gardien du corps ne sait pas jouer une passe en retrait au pied : 4 buts contre son camp sur 32 passes au gardien, mesuré avant le veto.
 - **Le réglage des résultats est suspendu** tant que le moteur n'est pas définitif (décision du 2 octobre au soir). Ce sont les buts (3,9 par match pour 2,75), les buts amenés par une passe, l'avantage du domicile.

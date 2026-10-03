@@ -27,7 +27,7 @@ mkdirSync(DOSSIER, { recursive: true });
 
 // l'empreinte du code : tout ce qui change un match
 const empreinte = createHash('sha1');
-for (const f of ['cerveau.mjs', 'face.mjs', 'contrat.mjs', 'corps.mjs', 'out/gpf.wasm', 'bancs/match-cerveau.mjs']) empreinte.update(readFileSync(join(RACINE, f)));
+for (const f of ['cerveau.mjs', 'face.mjs', 'gestes-course.mjs', 'contrat.mjs', 'corps.mjs', 'out/gpf.wasm', 'out/gpf.data', 'bancs/match-cerveau.mjs']) empreinte.update(readFileSync(join(RACINE, f)));
 const CODE = empreinte.digest('hex').slice(0, 10);
 
 const travaux = [];

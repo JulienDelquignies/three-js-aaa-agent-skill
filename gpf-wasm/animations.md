@@ -193,7 +193,9 @@ Cela suffit pour les gestes à **une seule touche de balle ou sans touche** :
 
 ### Fabriquer l'animation à partir de nos gestes
 
-**L'outil existe depuis le 3 octobre** : `outils/vers-gpf.mjs`, prouvé exact à l'aller-retour (0,0000°, 0,00 mm). Il a produit les 16 gestes du face-à-face (`gestes/*.anim`, n° 101 à 116, cheville à 24-25 cm du ballon au contact). En match, 89 % des gestes demandés partent (4 graines × 20 min) ; le râteau et la roulette ratent le plus, et la cause est à mesurer.
+**L'outil existe depuis le 3 octobre** : `outils/vers-gpf.mjs`, prouvé exact à l'aller-retour (0,0000°, 0,00 mm). Il a produit les 18 gestes du face-à-face (`gestes/*.anim`, n° 101 à 118, cheville à 24-25 cm du ballon au contact). En match, 95 % des gestes demandés partent depuis les tenues (89 % avant).
+
+**Les gestes EN COURSE** (3 octobre, suite) ont leur propre outil : `outils/foulee-gpf.mjs`, le studio qui rejoue hors ligne le contrôleur du duel sur sa foulée générée (les temps du geste posés sur les vols des pieds, l'appui ancré, l'inclinaison) et cuit 27 animations (`gestes/course/`, 9 gestes × 3 allures, n° 200-282 : crochet court, crochet, crochet chaloupé, crochet de l'extérieur, croqueta, feinte de corps, passement, grand pont, petit pont). Leurs conventions (le pied courant, la classe d'entrée, l'image de la première touche) : `docs/corps.md` § 5.8 ; leur vie en match : `docs/gestes-en-course.md`. Pour en ajouter un : `docs/gestes-en-course.md` § 7.
 
 Nos gestes vivent sur notre squelette de 22 os. Le portage du lot L0 (`gpf-anim.js`) traduit une animation du corps vers nos humains. L'outil inverse :
 - échantillonne notre geste à 100 Hz ;

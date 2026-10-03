@@ -27,29 +27,92 @@ import { uneTouche } from '../skills/threejs-aaa/assets/starter/src/engine/premi
 import { accrocheStep } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
 import { tac, axe } from '../skills/threejs-aaa/assets/starter/src/engine/tactics.js';
 import { pressionDe } from '../skills/threejs-aaa/assets/starter/src/engine/reception.js';
-import { pressPredicate } from '../skills/threejs-aaa/assets/starter/src/engine/skills-sim.js';
+import { pressPredicate, maybeCrochet, maybeDoubleContact, maybePassement, maybeRateau, maybeRoulette, maybePetitPont, maybeGrandPontSk, dribM } from '../skills/threejs-aaa/assets/starter/src/engine/skills-sim.js';
+import { situation } from '../skills/threejs-aaa/assets/starter/src/engine/technique.js';
 import { tackleWindow } from '../skills/threejs-aaa/assets/starter/src/engine/duel.js';
 import { balPrenable } from '../skills/threejs-aaa/assets/starter/src/engine/dribble.js';
 import { ecartCorps, talonPermis } from '../skills/threejs-aaa/assets/starter/src/engine/passe-faisable.js';
 import { butDansCorps } from '../skills/threejs-aaa/assets/starter/src/engine/reprise-physique.js';
 import { INTENTION, PASSE, EV, GESTE } from './contrat.mjs';
 import { creerFace, FACE } from './face.mjs';
+import { creerGestesCourse } from './gestes-course.mjs';
+import { genererEffectif } from '../skills/threejs-aaa/assets/starter/src/engine/effectif.js';
+import { specialisteF } from '../skills/threejs-aaa/assets/starter/src/engine/nature.js';
+import { posteNom } from '../skills/threejs-aaa/assets/starter/src/engine/formation.js';
 
 const GPF = { hx: 55, hy: 36 };
+/** LA FEINTE DE CORPS EN COURSE — la fenêtre du duel (skills-sim.js de la branche feat/1v1-maquette, maybeFeinteCorps) : le cerveau du
+ *  11 contre 11 n'a pas ce geste (sa « feinte » est une feinte de PASSE). Le défenseur de face (relèvement ≤ 55°) à 1,1-3 m, le porteur
+ *  lancé (≥ 1,4 m/s), le ballon au pied (≤ 0,7 m) : un pied se pose large du côté du défenseur, le buste vend, l'autre pousse le ballon de
+ *  l'extérieur du côté OPPOSÉ, à 40° (Brault et al. 2010) — si la sortie est libre. QUI la tente : dribM (sans le plancher du duel, qui
+ *  la donnait aux centraux) × (0,2 + 0,45 × flair) × gesteF². Recharge 6 s ; un refus re-tire dans 1,5 s. Le geste lu par
+ *  gesteDuCerveau comme ceux du cerveau (c.act). */
+function maybeFeinteCorps(st, c, cfg) {
+  if (c.keeper || c.speed < 1.4 || (c._skillCd?.feinteCorps ?? -1) > st.t) return false;
+  if (Math.hypot(st.ball.p[0] - c.p[0], st.ball.p[2] - c.p[2]) > 0.7) return false;
+  let foe = null, fd = Infinity;
+  for (const q of st.players) { if (q.team === c.team || q.down > 0) continue; const d = Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]); if (d < fd) { fd = d; foe = q; } }
+  if (!foe || fd < 1.1 || fd > 3.0) return false;
+  const sit = situation(c.p, c.yaw, foe.p, [0, 0], 0.11); if (sit.bearing > 55) return false;
+  const away = sit.side === 'left' ? -1 : 1, exitYaw = c.yaw + away * 0.7;
+  const ex = c.p[0] + Math.cos(exitYaw) * 1.6, ez = c.p[2] + Math.sin(exitYaw) * 1.6;
+  if (Math.abs(ex) > st.pitch.hx - 0.6 || Math.abs(ez) > st.pitch.hz - 0.6) return false;
+  if (st.players.some((q) => q.team !== c.team && q.down <= 0 && Math.hypot(q.p[0] - ex, q.p[2] - ez) < 1.0)) { (st.deny ??= {})['feinte-corps-sans-issue'] = (st.deny['feinte-corps-sans-issue'] ?? 0) + 1; return false; }
+  if (tirageCerveau(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * (0.2 + 0.45 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) { (c._skillCd ??= {}).feinteCorps = st.t + 1.5; return false; }
+  (c._skillCd ??= {}).feinteCorps = st.t + 6; c._dribAt = st.t;
+  c.act = { id: 'feinteCorps', t: 0, payload: { kind: 'skill', skill: 'feinteCorps', exitYaw, foeId: foe.id } };
+  return true;
+}
+/** Les niches du porteur, dans l'ordre du pas du cerveau (rondo-sim, « du plus spécifique au plus général ») — gesteDuCerveau ; la feinte
+ *  de corps (le duel) entre le passement (le jockey posté) et le crochet (la course fermée). */
+const NICHES = [['doubleContact', maybeDoubleContact], ['petitPont', maybePetitPont], ['grandPont', maybeGrandPontSk], ['roulette', maybeRoulette],
+  ['rateau', maybeRateau], ['passement', maybePassement], ['feinteCorps', maybeFeinteCorps], ['crochet', maybeCrochet]];
+
+/** LES ANOMALIES ET LES TECHNICIENS (retour du 3 octobre : « Taarabt, Ben Arfa, Kevin-Prince Boateng, Saint-Maximin, c'est des
+ *  anomalies… si un joueur a les attributs, on doit le voir faire des choses différentes des autres ») — des profils de notes à poser
+ *  sur un joueur d'un effectif généré, pour les voir (la page, les bancs : `options.archetypes`). L'effectif de la carrière, lui,
+ *  amène ses vrais joueurs. Les notes listées remplacent celles du joueur ; les autres restent celles de son poste.
+ *    · artiste : le flair hors norme et le dribble qui va avec (Taarabt, Ben Arfa) — le seul à entrer dans le face-à-face planté ;
+ *    · technicien : la technique, le contrôle, l'agilité, la décision (Olmo, Iniesta) — les gestes en course, pas le spectacle. */
+export const ARCHETYPES = {
+  artiste: { flair: 96, dribbling: 92, technique: 90, agility: 88, control: 88, acceleration: 84, composure: 78, teamwork: 48, workRate: 45, decisions: 58 },
+  technicien: { technique: 91, dribbling: 88, control: 91, agility: 88, vision: 86, passing: 84, flair: 80, composure: 86, decisions: 84, acceleration: 80 },
+};
 
 /**
  * Un cerveau pour un match : `tactiques` = les deux tactiques de la skill (noms de presets ou objets), `graine` = celle du
  * match. `decider(etat)` rend les intentions des joueurs que le cerveau pilote (tous sauf les gardiens).
+ * `effectifs` : les deux effectifs notés, au contrat de makeMatch (`squads` : 11 fiches { ratings, postes, name } par équipe, dans
+ * l'ordre des postes, le gardien en dernier) ; absent, un effectif GÉNÉRÉ par poste (effectif.js) ; `null` : aucun (le monde d'avant
+ * le 3 octobre, tous notés 50 et le flair tiré au hasard).
  */
-export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {} } = {}) {
+export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], options = {}, effectifs = undefined } = {}) {
   /** Les réglages de l'adaptateur, chacun débrayable pour la mesure A/B : `flux` (les tirages nommés du cerveau),
    *  `uneTouche` (la première intention posée avant le contact), `talon` (la passe hors du corps : 'tourne' — se tourner
    *  d'abord —, 'autre' — une autre passe —, null — telle quelle), `pTalon` (la part des talonnades permises jouées),
    *  `seuilCorps` (l'écart au regard, en degrés, au-delà duquel la passe est hors du corps ; null : celui du cerveau, 100°),
    *  `reprise` (la reprise au but en première intention), `face` (le face-à-face « Taarabt », face.mjs ; `faceK` : sa
-   *  configuration à l'essai, `faceTrace(t, quoi, détail)` : sa chronique, pour les bancs). */
-  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, face: true, ...options };
-  const st = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
+   *  configuration à l'essai, `faceTrace(t, quoi, détail)` : sa chronique, pour les bancs), `niveau` (la note moyenne des
+   *  effectifs générés), `archetypes` ([{ equipe, poste, type }] : un profil d'ARCHETYPES posé sur un joueur généré), `effectifs`
+   *  (false : aucun effectif, comme `effectifs: null` — pour l'A/B des bancs), `gestes` (les gestes en course que le cerveau
+   *  décide, gestes-course.mjs : true, le corps les joue ; 'mesure', ils sont comptés sans rien changer au match ; false, ils se
+   *  taisent ; `gestesTrace(t, quoi, détail)` : leur chronique, pour les bancs), `volumeGestes` et `penteNature` (le volume des gestes et
+   *  la pente de la nature du spécialiste, calés sur le réel par poste ; null : ceux du cerveau), `gestesAttente` (s : la vie d'une
+   *  demande de geste avant qu'elle tombe, 0,7). */
+  const OPT = { accroche: 1.7, flux: true, uneTouche: true, fautes: true, presseGarde: true, tacle: true, mord: true, jockeyCap: null, presse: null, rayonCharge: 3, finition: true, rayonSurface: 2.2, ombre: true, talon: 'tourne', pTalon: 0.02, seuilCorps: null, reprise: true, face: true, gestes: true, volumeGestes: 0.4, penteNature: 2.2, niveau: 60, archetypes: null, ...options };
+  // LES EFFECTIFS NOTÉS (docs/attributs.md). Sans eux, le cerveau jouait 22 joueurs notés 50 partout, et seul le flair de la persona
+  // variait — tiré au hasard, sans regard au poste : un défenseur central à 0,97 de flair entrait dans le face-à-face planté (retour du
+  // 3 octobre). L'effectif généré (effectif.js, le générateur du moteur) note chacun par son POSTE : le central marque et joue de la
+  // tête, l'ailier va vite et dribble, le 10 voit et touche ; le flair y est une note (makeMatch la change en persona.flair). Graine
+  // fixe : la même équipe à chaque match de la même graine.
+  const st0 = makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}) });
+  const squads = effectifs === null || effectifs === false || OPT.effectifs === false ? null
+    : effectifs ?? [0, 1].map((t) => genererEffectif({ formation: st0.tactics[t].formation, roles: st0.tactics[t].roles ?? {}, niveau: OPT.niveau, graine: graine * 2 + t + 1 }));
+  if (squads && OPT.archetypes) for (const a of OPT.archetypes) {
+    const f = squads[a.equipe]?.[a.poste], P = ARCHETYPES[a.type];
+    if (f && P) squads[a.equipe][a.poste] = { ...f, ratings: { ...f.ratings, ...P }, archetype: a.type };
+  }
+  const st = squads ? makeMatch({ full: true, seed: graine, ...(tactiques ? { tactics: tactiques } : {}), squads }) : st0;
   // la configuration du CERVEAU : son chrono, son arbitre et ses remplacements se taisent — le temps, les Lois et les
   // changements appartiennent au corps (Gameplay Football) ; un chrono vivant ferait changer de camp le cerveau seul.
   const cfg = matchCfg({ chrono: null, loi3: null });
@@ -58,6 +121,24 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   // 75 % des réceptions, et leur propre IA y joue en une touche avec 67-86 % de réussite (3 graines × 15 min). Le seuil
   // devient celui du corps : 15 m/s (au-delà, trop peu de cas pour juger).
   cfg.uneTouche = { ...cfg.uneTouche, vmax: 15 };
+  // LES PLANCHERS D'APPÉTIT DU DRIBBLE, LEVÉS (retour du 3 octobre : « on ne demande pas à un central de déclencher un 1v1 »). Le
+  // cerveau donne au passement et au crochet une envie minimale, quel que soit le joueur (passements.plancher 0,35, decalage.plancher
+  // 0,3 : dans son monde, leurs fenêtres étaient rares — 0 crochet en 10 min mesuré avant). Dans celui du corps, elles s'ouvrent souvent,
+  // et le plancher faisait dribbler tout le monde : mesuré (30 min, graine 7, effectifs notés), les centraux à 4,1 gestes par minute de
+  // ballon, les ailiers et le 10 à 10,6 — deux fois et demie seulement. Sans plancher, l'envie suit dribM : la nature du dribbleur (×0,1 à
+  // ×6), son lieu, son rôle. Ces deux clés ne servent qu'aux gestes (skills-sim.js, maybePassement et maybeCrochet).
+  cfg.passements = { ...cfg.passements, plancher: 0 };
+  cfg.decalage = { ...cfg.decalage, plancher: 0 };
+  // LE VOLUME DES GESTES ET SA PENTE, CALÉS SUR LE RÉEL PAR POSTE (retour du 3 octobre). Planchers levés, mesuré sur 3 × 30 min (graines 7
+  // et 11, effectifs notés) : 186-219 gestes décidés par 90 min, les centraux à 0,5-3,6 par minute de ballon (≈ 7 par match chacun,
+  // surtout des râteaux), les ailiers et le 10 à 7,8-10,5 (≈ 22). La référence (les dribbles tentés par 90 min, données publiques des
+  // grands championnats) : un central 0,3-0,6, un latéral 1-1,5, un milieu 1-2, un ailier ou un 10 4-5, l'élite du dribble 7-10 — nos
+  // gestes comptent aussi ceux qui ne dépassent personne (le râteau qui se retourne, le passement qui fixe) : on vise environ le double.
+  // Deux leviers du cerveau, qui ne servent qu'aux gestes (skills-sim.js, dribM) : son VOLUME (dribble.volume, × `volumeGestes`) et la
+  // PENTE de la nature du spécialiste (nature.specialiste.k, 1,6 → `penteNature` : le central à 0,28 de la fréquence médiane au lieu de
+  // 0,43, l'ailier à 2,5 au lieu de 2,2 — l'espérance reste 1 sur le flair uniforme).
+  if (OPT.volumeGestes != null) cfg.dribble = { ...cfg.dribble, volume: (cfg.dribble?.volume ?? 1) * OPT.volumeGestes };
+  if (OPT.penteNature != null && cfg.nature?.specialiste) cfg.nature = { ...cfg.nature, specialiste: { ...cfg.nature.specialiste, k: OPT.penteNature } };
   // (à l'essai) le plafond du jockey — 2,9 m/s dans le monde du cerveau ; les porteurs du corps conduisent à 3,3-3,8 m/s
   if (OPT.jockeyCap) cfg.jockey = { ...cfg.jockey, cap: OPT.jockeyCap };
   // L'ACCROCHAGE CALÉ SUR LE CORPS : le cerveau règle sa probabilité par épisode (le défenseur battu dans le dos d'un porteur
@@ -97,7 +178,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   /** La première intention décidée et pas encore jouée : { id (cerveau), i (l'intention : la passe ou la reprise au but), jusqua }. */
   let uneToucheTenue = null;
   /** Les décisions de première intention (pour les bancs) : tentées, jouées, et les refus du cerveau par motif (st.deny). */
-  const stats = { utDecisions: 0, utJouees: 0, fautes: 0, tacles: 0, seTourne: 0, autreChoix: 0, talons: 0, angles: [0, 0, 0, 0], reprises: { tete: 0, volee: 0, sol: 0 }, reprisesJouees: 0 };
+  const stats = { utDecisions: 0, utJouees: 0, fautes: 0, tacles: 0, seTourne: 0, autreChoix: 0, talons: 0, angles: [0, 0, 0, 0], reprises: { tete: 0, volee: 0, sol: 0 }, reprisesJouees: 0, gestes: { decides: {}, parJoueur: {}, liste: [] } };
   /** LES ENGAGEMENTS EN COURS : le défenseur qui a décidé de tacler (id cerveau → fin du geste, s). */
   const engagements = new Map();
   /** La durée du geste de tacle debout du cerveau (animkit-data.js, tacleDebout : 0,7 s, contact à 0,28 s). */
@@ -120,13 +201,21 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
   const AVANCE_UNE_TOUCHE = LATENCE + 0.1;
   /** Un tirage seedé et sans état (la graine, le porteur, l'instant) — le cerveau ne consomme pas son propre hasard. */
   const tirage = (a, b) => { let h = (graine * 2654435761 ^ a * 40503 ^ Math.round(b * 1000) * 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  /** LA NATURE DE DRIBBLEUR d'un joueur du cerveau (nature.js, specialisteF) : sa fréquence de tentative de geste, rapportée au joueur
+   *  médian — exp(k · (le flair centré + l'attribut composite du dribbleur)), bornée [0,1 ; 6]. Le cerveau la lit à chaque geste (dribM) ;
+   *  l'adaptateur la lit pour le face-à-face (réservé aux anomalies) et pour les bancs. */
+  const KN = cfg.nature?.specialiste ?? { k: 1.6, min: 0.1, max: 6 };
+  const natureDe = (q) => (q ? specialisteF(q, KN) : 1);
   /** LE FACE-À-FACE « TAARABT » (face.mjs) : le porteur et son défenseur pris en main dans un vrai un-contre-un — les gestes de notre
    *  répertoire (intention GESTE), la garde, la morsure, la fente, la sortie. Les attributs viennent du cerveau. */
   const face = OPT.face ? creerFace({ tirage, equipes, attributs: (id) => {
     const q = cerveauDe?.get(id);
-    return { flair: q?.persona?.flair ?? 0.5, gesteF: q?.skill?.gesteF ?? 1, anticipF: q?.skill?.anticipF ?? 1, aggrF: q?.skill?.aggrF ?? 1,
+    return { flair: q?.persona?.flair ?? 0.5, nature: natureDe(q), gesteF: q?.skill?.gesteF ?? 1, anticipF: q?.skill?.anticipF ?? 1, aggrF: q?.skill?.aggrF ?? 1,
       tacleTempoF: q?.skill?.tacleTempoF ?? 1, reaction: q?.skill?.reaction ?? q?.persona?.reaction ?? 0.18 };
   }, ...(OPT.faceK ? { K: { ...FACE, ...OPT.faceK } } : {}), trace: OPT.faceTrace ?? null }) : null;
+  /** LES GESTES EN COURSE (gestes-course.mjs) : le cerveau décide (gesteDuCerveau), le corps joue l'animation du répertoire en course. */
+  const course = OPT.gestes === true ? creerGestesCourse({ equipes, trace: OPT.gestesTrace ?? null, attente: OPT.gestesAttente ?? 0.7 }) : null;
+  let etatCourant = null;   // l'état du corps du tick (pour proposer un geste au module : la vitesse du porteur au corps)
 
   /** L'APPARIEMENT, une fois, au coup d'envoi : les gardiens ensemble, puis chaque joueur de champ au poste du cerveau le
    *  plus proche (les deux moteurs posent un 4-3-3 dans leur moitié). */
@@ -227,6 +316,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     /** Le journal du corps (`corps.journal()`), à chaque lecture : touches, passes, arrêts de jeu. */
     observer(evenements) {
       face?.observer(evenements, EV);
+      course?.observer(evenements, EV);
       for (const ev of evenements) {
         if (ev.type === EV.TOUCHE) {
           dernierToucheur = ev.equipe;
@@ -247,7 +337,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
      */
     decider(etat) {
       if (!cerveauDe) apparier(etat);
-      preter(etat);
+      preter(etat); etatCourant = etat;
       // LA LOI 12 DU CERVEAU S'ADJUGE DANS SON ADMINISTRATION (assignMatchJobs → adjugeFaute) : l'avantage d'abord, puis le
       // sifflet. On lit sa décision autour de l'appel — et le sifflet part au corps (gf_faute : coup franc ou penalty,
       // carton), ou le carton seul quand l'avantage a été joué (gf_carton)
@@ -331,6 +421,7 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         }
       }
       face?.tick(etat, out, EV);
+      course?.tick(etat, out);
       return out;
     },
     /** Le face-à-face en cours (porteur, défenseur, depuis, feintes), pour la page. */
@@ -338,7 +429,20 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
     /** Le dernier face-à-face fini { issue, t (s), feintes, porteur, defenseur }, pour la page. */
     get faceDerniere() { return face?.derniere ?? null; },
     /** Les compteurs de la première intention et les refus nommés du cerveau (st.deny), pour les bancs. */
-    stats() { return { ...stats, refus: { ...(st.deny ?? {}) }, face: face?.stats() ?? null }; },
+    stats() { return { ...stats, refus: { ...(st.deny ?? {}) }, face: face?.stats() ?? null, course: course?.stats() ?? null }; },
+    /** Le geste en course en cours (porteur, nom, depuis, parti), et le dernier fini { nom, issue, t, porteur }, pour la page. */
+    get geste() { return course?.actif ?? null; },
+    get gesteDernier() { return course?.derniere ?? null; },
+    /** Les effectifs joués (les fiches données ou générées ; null sans effectif). */
+    effectifs: squads,
+    /** Le profil d'un joueur du corps (id stable) : son poste dans la formation du cerveau, son nom, son archétype, ses notes, son flair
+     *  (0,15-1) et sa nature de dribbleur (specialisteF) — pour la page et les bancs. null avant l'appariement (le premier tick). */
+    profil(idCorps) {
+      const q = cerveauDe?.get(idCorps); if (!q) return null;
+      const fiche = squads?.[q.team]?.[q.post] ?? null;
+      return { equipe: q.team, poste: q.keeper ? 'GK' : posteNom(st.tactics[q.team].formation, q.post), nom: q.name ?? null, archetype: fiche?.archetype ?? null,
+        notes: q.ratings ?? null, flair: q.persona?.flair ?? null, nature: natureDe(q) };
+    },
   };
 
   /**
@@ -440,6 +544,41 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
    *  · L'INTENTION DE PASSE adoptée vit `intentTtl` (0,9 s) — le destinataire ne change pas à chaque tick.
    * En attendant : la conduite.
    */
+  /**
+   * LES GESTES EN COURSE — LE CERVEAU DÉCIDE (retour du 3 octobre : « voir un Dani Olmo dans la 3D… des mouvements qui suivent les
+   * joueurs, peu importe le contexte, peu importe la zone ; on ne demande pas à un central de déclencher un 1v1 »). Ses fenêtres, dans
+   * l'ordre de son pas (rondo-sim, « les niches du 1c1, du plus spécifique au plus général ») :
+   *   · le défenseur qui SE JETTE de face → la croqueta (doubleContact) ;
+   *   · le glisseur en pas chassés, l'espace libre derrière lui → le petit pont ; lancé, le défenseur qui s'engage → le grand pont ;
+   *   · le poursuivant qui arrive de côté → la roulette ;
+   *   · la charge de face, la sortie arrière libre → le râteau ;
+   *   · le jockey posté devant → le passement (ses tours, sa sortie : contre-pied, fixer, temporiser) ;
+   *   · la course fermée devant → le crochet (court, standard, chaloupé).
+   * Et QUI les tente : dribM (le rôle, le lieu — jamais devant son but, peu dans son tiers —, la cadence, la nature du spécialiste, la
+   * lucidité du grand dribbleur), le flair, la technique au carré ou au cube (skills-sim.js). Son monde est prêté : on lit le geste
+   * qu'il lance (c.act), puis on l'efface — c'est le corps qui le jouera (gestes-course.mjs). Ses mémoires restent : les recharges
+   * (c._skillCd), la cadence du dribble (c._dribAt), les refus nommés (st.deny).
+   */
+  function gesteDuCerveau(c) {
+    const n0 = st.events.length, g0 = st.gestures?.length ?? 0, act0 = c.act, intent0 = c.intent;
+    let r = null;
+    for (const [nom, f] of NICHES) {
+      if (!f(st, c, cfg)) continue;
+      const a = c.act, P = a?.payload ?? {};
+      // LA SORTIE DEMANDÉE AU CORPS : la direction FINALE de la course du porteur (le corps choisit l'animation ou son miroir sur elle) —
+      // celle du geste, sauf les ponts : le grand pont finit vers le ballon poussé (B, derrière le défenseur, du côté du ballon), le petit
+      // pont de l'autre côté de son contournement (exitYaw, le côté du contournement, contre l'élan du glisseur)
+      const sortie = nom === 'grandPont' && P.B ? Math.atan2(P.B[1] - c.p[2], P.B[0] - c.p[0])
+        : nom === 'petitPont' && P.exitYaw != null ? c.yaw - Math.sign(Math.atan2(Math.sin(P.exitYaw - c.yaw), Math.cos(P.exitYaw - c.yaw))) * 0.38
+        : P.exitYaw ?? c.yaw;
+      r = { nom, espece: P.espece ?? a?.id ?? nom, pied: P.pick?.foot ?? null, lacet: +c.yaw.toFixed(3), sortie: +sortie.toFixed(3),
+        tours: P.tours ?? null, maniere: P.sortie ?? null, spin: P.spin ?? null, foe: P.foeId != null ? corpsDe.get(P.foeId) ?? null : null, v: +c.speed.toFixed(2) };
+      break;
+    }
+    c.act = act0; c.intent = intent0; st.events.length = n0; if (st.gestures) st.gestures.length = g0;
+    return r;
+  }
+
   function porteurDecide(c) {
     if (!poss || poss.id !== c.id) {
       const [lo, hi] = cfg.tenueCalme?.calm ?? cfg.holdCalmFull ?? [1, 2];
@@ -449,6 +588,20 @@ export function creerCerveau({ graine = 7, tactiques = null, equipes = [0, 1], o
         holdMin: (cfg.holdMin ?? 0.4) * axeTempo, arb: null, intention: null };
     }
     const tenue = st.t - poss.debut;
+    // LES GESTES EN COURSE : le cerveau tente ses niches à chaque tick, AVANT l'arbitrage — comme dans son pas (rondo-sim : « les niches
+    // du 1c1 sont des décisions »). Pas pendant une passe ou un tir adoptés, ni pendant le face-à-face (sa loi tient le porteur).
+    if (OPT.gestes && !(poss.intention && st.t < poss.intention.jusqua) && !(poss.tir && st.t < poss.tir.jusqua) && face?.actif?.porteur !== corpsDe.get(c.id) && !course?.actif) {
+      const g = gesteDuCerveau(c);
+      if (g) {
+        const G = stats.gestes, id = corpsDe.get(c.id);
+        G.decides[g.nom] = (G.decides[g.nom] ?? 0) + 1;
+        const J = G.parJoueur[id] ??= {}; J[g.espece] = (J[g.espece] ?? 0) + 1;
+        G.liste.push({ t: +st.t.toFixed(1), id, ...g });
+        // …ET LE CORPS LE JOUE : la sortie du cerveau (son lacet, repère du cerveau : x le long, z = −y) au repère du corps
+        const jc = etatCourant?.joueurs.find((j) => j.id === id);
+        if (course && jc) course.proposer(st.t, jc, g, [Math.cos(g.sortie), -Math.sin(g.sortie)]);
+      }
+    }
     // l'adversaire le plus proche du ballon À LA FRAPPE : chacun projeté de la latence du corps, à sa vitesse
     const bx = st.ball.p[0] + (c.v?.[0] ?? 0) * LATENCE, bz = st.ball.p[2] + (c.v?.[1] ?? 0) * LATENCE;
     const adv = Math.min(...st.players.filter(q => q.team !== c.team).map(q => Math.hypot(q.p[0] + (q.v?.[0] ?? 0) * LATENCE - bx, q.p[2] + (q.v?.[1] ?? 0) * LATENCE - bz)));

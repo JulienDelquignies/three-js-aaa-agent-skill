@@ -343,6 +343,17 @@ Le corps ne demande une file de commandes qu'à une interruption (`humanoid.cpp:
   - les gestes plantés (101-105, 110, 111) : la touche, puis le ballon rangé (sous la semelle, au bout du roulé, du tiré) ;
   - les **tenues** (117, 118) : la semelle posée sur le ballon, sans touche (un déplacement) — jouées entre deux gestes du face-à-face. Le contrôle du corps au repos, lui, replaçait le ballon à sa distance à lui (0,36-0,40 m devant, centré), et nos touches précoces le manquaient : 95 % des gestes demandés joués au lieu de 89 %.
 
+### 5.8 Un geste en course (`gestes/course/`, `outils/foulee-gpf.mjs`)
+
+Nos gestes en course (les crochets, la croqueta, la feinte de corps, le passement, les ponts, joués par un porteur lancé : `docs/gestes-en-course.md`) ont dû se plier aux conventions du corps — chacune lue dans son code, puis mesurée :
+- **Le pied courant.** À l'image 0 de ses animations, le pied gauche est posé, le droit en vol (mesuré sur `ballcontrol/walk/000`, `045`, `090_strongfoot`, `movement/walk/045`, `ballcontrol/sprint/000`). C'est le « pied courant » d'un fichier (`Animation::currentFoot`, toujours droit ; gauche pour son miroir, `animation.cpp:1156`). Le joueur garde le pied de sortie de son animation (`GetOutgoingFoot` : le pied courant changé si `steps` est impair, `animation.cpp:956-975`) et le tri préfère, à direction égale, une animation dont le pied courant est le sien (`CompareFootSimilarity`, `humanoidbase.cpp:1494-1502`). Nos gestes partent donc le pied droit en vol, et `<steps>` compte leurs poses.
+- **La classe de vitesse d'entrée**, lue sur les deux premières clés de la racine (`Animation::GetIncomingVelocity`, `animation.cpp:733-752`) : arrêt sous 1,8 m/s, conduite 1,8-4,2, marche 4,2-6, sprint au-delà. Pour un contrôle, la conduite du joueur est cherchée en classe marche (`humanoid.cpp:1254`) et au sens strict (`animcollection.cpp:565`) — le corps n'a d'ailleurs aucun contrôle d'entrée conduite (ses fichiers partent de l'arrêt, de la marche ou du sprint). Nos variantes à 2,5 et 3,5 m/s reculent leur première clé de quelques millimètres pour lire 4,3 m/s ; au sprint, aucune variante : le corps n'aurait pas de candidate.
+- **Le côté** : le fichier et son miroir, gardés au quadrant de sortie le plus proche de la course voulue (`_KeepBestDirectionAnims`) — la direction de l'intention GESTE.
+- **La première touche** est celle du corps, sa triche comprise ; sa portée croît avec l'image de la touche ((f/24)^0,7). Mesuré (`bancs/course-essai.mjs`, demandes à des porteurs lancés) : une touche à l'image 11 ne partait que 3 à 6 fois sur 15, vers l'image 20-23, 10 à 15 fois. Le départ dépend aussi du geste en cours du porteur : après un contrôle ou un amorti, 66-95 % ; pendant une passe ou une intervention, jamais.
+- **L'orientation du corps à l'entrée** n'est pas stricte pour un contrôle (±0,5π, `humanoid.cpp:1286-1300`) : nos gestes partent face à la course, comme le porteur.
+- **Le relevé** (`gf_anim_releve`) dit où le corps perd un geste : candidate (le tri grossier), gardée (la direction), jouée. Le passement à 3,5 m/s y passait 204 fois en 10 min, joué 57 fois ; en match, demandé à des porteurs qui ralentissent devant un défenseur posté (1,8-3 m/s), sa touche tombait trop loin devant : d'où la variante à 2,5 m/s.
+- **Ajoutées au paquet** (`data.sh` : `gestes/course/`), ces animations ne changent rien sans leur `specialvar1` : le corps seul joue le même match au bit près (`l2-intents-off`, h = 1616609301).
+
 ## 6. Les touches et le ballon
 
 ### 6.1 Le contact (`humanoid.cpp:359-622`)

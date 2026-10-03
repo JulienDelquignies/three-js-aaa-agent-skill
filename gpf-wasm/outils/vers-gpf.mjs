@@ -54,7 +54,7 @@ function sampleTrack(keys, f, field, lerpFn) {
   for (let k = 1; k < keys.length; k++) if (f <= keys[k].f) { const a = keys[k - 1], b = keys[k]; return lerpFn(a[field], b[field], (f - a.f) / (b.f - a.f)); }
   return keys.at(-1)[field];
 }
-function parseGpfAnim(text) {
+export function parseGpfAnim(text) {
   const lines = String(text).split(/\r?\n/).filter((l) => l.trim().length);
   const tracks = {}; const player = []; let touch = null; let frames = 0; let i = 0;
   for (; i < lines.length; i++) {
@@ -67,7 +67,7 @@ function parseGpfAnim(text) {
   for (const t of [player, ...Object.values(tracks)]) for (const k of t) frames = Math.max(frames, k.f + 1);
   return { player, tracks, frames, touch };
 }
-function sampleGpf(A, f) {
+export function sampleGpf(A, f) {
   const q = {}; for (const n of GPF_NODES) q[n] = sampleTrack(A.tracks[n], f, 'q', slerp) ?? [0, 0, 0, 1];
   return { q, p: sampleTrack(A.player, f, 'p', lerp3) ?? [0, 0, 0] };
 }

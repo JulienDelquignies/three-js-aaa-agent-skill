@@ -9,8 +9,11 @@
 //
 // LA LOI (face.js, inchangée dans ses seuils, la configuration du duel) :
 //   ENTRÉE   le porteur de champ, ballon au pied devant lui, un défenseur de champ DEVANT (côté but, cône 50°) à 1-2,6 m freinage compris,
-//            face à lui (≤ 70°), hors de la zone de tir (≥ 6,5 m du but) — au tirage de l'envie (0,7 + 0,3 × flair). En 11 contre 11, deux
-//            portes de plus : un VRAI un-contre-un (aucun autre adversaire à moins de 4 m du porteur) et le choix du cerveau, CONDUIRE.
+//            face à lui (≤ 70°), hors de la zone de tir (≥ 6,5 m du but). En 11 contre 11, des portes de plus : un VRAI un-contre-un
+//            (aucun autre adversaire ne peut arriver à 2,5 m du porteur avant 2 s), le choix du cerveau, CONDUIRE — et QUI (retour du 3
+//            octobre : « je ne veux pas qu'un central commence à vouloir faire un 1v1 ») : le face-à-face planté est l'affaire des
+//            ANOMALIES, le flair hors norme (≥ 0,9, une note ≥ 88) ET une nature de dribbleur (nature.js, specialisteF) ≥ 3 ; au tirage
+//            de l'envie, 0,4 à 0,85 selon la nature, × la zone (jamais à moins de 25 m de son but, 0,3 dans son tiers, 0,7 au milieu).
 //   TENUE    l'arrêt de semelle, puis planté, la semelle sur le ballon ; toutes les 0,1-0,35 s après un geste, une FEINTE au tirage : le
 //            passement (0,3 × le flair ; parfois une série de 2 à 4), la feinte de corps semelle dessus (0,25), sinon le roulé de semelle.
 //   MORSURE  au contact de la feinte, le défenseur mord avec p = (0,15 + 0,12 × feintes vues) × vente × gesteF × (2 − anticipF), au plus
@@ -38,9 +41,11 @@ import { INTENTION, GESTE } from './contrat.mjs';
 /** La configuration du face-à-face — celle du duel (duel-1v1.js), seuils inchangés. Le 11 contre 11 y ajoute : `double`, le rayon où un
  *  second adversaire met fin au face-à-face ; `isole` (s), le temps qu'il faut au plus proche des autres pour y arriver, à vAide m/s au
  *  moins (il viendra : le corps envoie deux presseurs) ; `echappe`, le ballon à plus de 1,3 m du porteur planté (3 m dans sa sortie
- *  lancée) : il lui a échappé. */
+ *  lancée) : il lui a échappé. Et QUI y entre (entree.artiste : le flair et la nature minimaux ; envie : la probabilité à la nature
+ *  minimale, et ce qu'elle gagne jusqu'à natureMax ; zone : son facteur selon le tiers, nul à moins de devantBut m de son but). */
 export const FACE = {
-  entree: { foe: [1.0, 2.6], frein: 0.25, cone: 50, face: 70, but: 6.5, vMax: 4.5, ballon: 0.5, vBallon: 5.5, envie: [0.7, 0.3], cd: 2.5, isole: 2.0, vAide: 3 },
+  entree: { foe: [1.0, 2.6], frein: 0.25, cone: 50, face: 70, but: 6.5, vMax: 4.5, ballon: 0.5, vBallon: 5.5, cd: 2.5, isole: 2.0, vAide: 3,
+    artiste: { flair: 0.9, nature: 3 }, envie: [0.4, 0.45], natureMax: 6, zone: { devantBut: 25, propre: 0.3, milieu: 0.7, adverse: 1 } },
   double: 2.5, echappe: 1.3, echappeSortie: 3.0,
   pause: [0.1, 0.35], jab: { cadence: [0.45, 0.85], pas: 0.35, duree: 0.3 },
   morsure: { base: 0.15, cumul: 0.12, duree: 0.6, decale: 0.6, elan: 1.8 }, garde: 1.4, patience: [1.6, 3.2],
@@ -87,7 +92,7 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
   let dernierToucheur = null;   // le dernier joueur à avoir touché le ballon
   let derniere = null;          // le dernier face-à-face fini : { issue, t, feintes, porteur, defenseur }
   let attente = null;           // un ballon disputé à la fin : l'issue se lit à la touche suivante (≤ ATTENTE s)
-  const stats = { entrees: 0, refus: 0, issues: {}, feintes: 0, morsures: 0, fentes: 0, lues: 0, demandes: 0, joues: 0, duree: 0, parGeste: {} };
+  const stats = { entrees: 0, refus: 0, horsNature: 0, entrants: {}, issues: {}, feintes: 0, morsures: 0, fentes: 0, lues: 0, demandes: 0, joues: 0, duree: 0, parGeste: {} };
   let compteur = 0;
   const rnd = (id, t) => tirage(id * 131 + (++compteur % 97), t);
 
@@ -262,12 +267,18 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
         const ox = c.x - o.x, oy = c.y - o.y, d = hyp(ox, oy) || 1, vers = (o.v[0] * ox + o.v[1] * oy) / d;
         return (d - K.double) / Math.max(E.vAide, vers) < E.isole;
       })) return;
+      // QUI : une ANOMALIE (le flair hors norme, la nature de dribbleur du cerveau) — les autres conduisent, et leurs gestes se jouent en
+      // course (gestes-course.mjs) ; OÙ : sa zone, comme le dribble du cerveau (skills-sim.js, dribM : jamais devant son but)
       const A = attributs(c.id);
-      if (rnd(c.id, t) > E.envie[0] + E.envie[1] * A.flair) { recharge.set(c.id, t + E.cd); stats.refus++; return; }
+      if (A.flair < E.artiste.flair || A.nature < E.artiste.nature) { recharge.set(c.id, t + E.cd); stats.horsNature++; return; }
+      const sens = c.equipe === 0 ? 1 : -1, avance = c.x * sens, Z = E.zone;
+      const zone = hyp(butDefendu(c.equipe) - c.x, c.y) < Z.devantBut ? 0 : avance < -55 / 3 ? Z.propre : avance > 55 / 3 ? Z.adverse : Z.milieu;
+      const envie = (E.envie[0] + E.envie[1] * Math.max(0, Math.min(1, (A.nature - E.artiste.nature) / (E.natureMax - E.artiste.nature)))) * zone;
+      if (rnd(c.id, t) > envie) { recharge.set(c.id, t + E.cd); stats.refus++; return; }
       const Aq = attributs(D.q.id);
       F = { c: c.id, q: D.q.id, t0: t, u, feintes: 0, mords: 0, mordu: null, vente: null, fente: null, sortie: null, geste: null, demande: null, reprises: 0,
         prochain: t + GESTES.arretSemelle.libre, jab: t + tir(K.jab.cadence, rnd(D.q.id, t)), patience: t + tir(K.patience, rnd(D.q.id, t)) * (2 - Aq.aggrF), _ballon: b };
-      stats.entrees++; equipeDe.set(c.id, c.equipe); equipeDe.set(D.q.id, D.q.equipe);
+      stats.entrees++; stats.entrants[c.id] = (stats.entrants[c.id] ?? 0) + 1; equipeDe.set(c.id, c.equipe); equipeDe.set(D.q.id, D.q.equipe);
       trace?.(t, 'entrée', { c: c.id, q: D.q.id, d: +D.d.toFixed(2), v: +c.vitesse.toFixed(1) });
       demander(t, 'arretSemelle', [D.q.x, D.q.y], 0);
     }
@@ -479,6 +490,6 @@ export function creerFace({ tirage, attributs, equipes = [0, 1], K = FACE, trace
     tick(etat, out, EV) { outRef = out; etatRef = etat; return tick(etat, out, EV); },
     get actif() { return F ? { porteur: F.c, defenseur: F.q, depuis: F.t0, feintes: F.feintes } : null; },
     get derniere() { return derniere; },
-    stats() { return { ...stats, issues: { ...stats.issues }, parGeste: structuredClone(stats.parGeste) }; },
+    stats() { return { ...stats, issues: { ...stats.issues }, entrants: { ...stats.entrants }, parGeste: structuredClone(stats.parGeste) }; },
   };
 }

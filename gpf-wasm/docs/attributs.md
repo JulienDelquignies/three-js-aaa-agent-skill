@@ -1,12 +1,21 @@
 # Les attributs des joueurs : qui les lit, et ce qu'il faut transmettre
 
-*État du 2 octobre 2026.*
+*État du 3 octobre 2026.*
 
 ## En bref
 
 - **Aujourd'hui, ni le corps ni le cerveau ne voient les joueurs de la carrière.**
 - **Le corps** joue avec les 11 profils fixes de la version Google, donnés par rang dans l'équipe et non par poste : leur avant-centre a 1,0 en tacle (`corps.md`, § 9). Les deux équipes sont identiques : leurs deux gardiens ont exactement les mêmes chiffres.
-- **Le cerveau** joue avec ses attributs par défaut : l'adaptateur ne lui passe pas d'effectif. Seule sa persona varie d'un joueur à l'autre (flair, calme, vivacité), tirée de la graine.
+- **Le cerveau**, depuis le 3 octobre, reçoit des **effectifs générés par poste** (ci-dessous, § 0) ; auparavant, ses 22 joueurs étaient notés 50 partout, et seule leur persona variait (le flair, le calme, la vivacité), tirée de la graine sans regard au poste.
+
+## 0. Les effectifs générés (3 octobre)
+
+- **Pourquoi.** Le retour du 3 octobre : « je ne veux pas qu'un central commence à vouloir faire un 1v1… si un joueur a les attributs, on doit le voir faire des choses différentes des autres ». Sans effectif, le flair était tiré au hasard (0,15-1) : avec la graine 7, le défenseur central droit avait 0,97, et il entrait dans le face-à-face planté.
+- **Quoi.** `creerCerveau` passe à `makeMatch` deux effectifs **générés** par le générateur du moteur (`effectif.js`, `genererEffectif`) : le niveau de l'équipe (60), la qualité du joueur (± 6), le **profil de son poste** (le central marque et joue de la tête, −15 de flair et −12 de dribble ; l'ailier et le 10 +15 de flair et +12-15 de dribble ; le 9 finit), un bruit par note (± 7). Graine fixe : la même équipe à chaque match. Le flair y est une note, changée par `makeMatch` en `persona.flair` (0,15 + 0,85 × note / 100).
+- **Ce que le cerveau en fait.** Les ~48 facteurs d'`attributes.js` lisent enfin des notes (la passe, la finition, le tacle, le placement…), et la **nature de dribbleur** (`nature.js`, `specialisteF`) sépare les joueurs : les centraux à 0,3-0,7 de la fréquence de geste médiane, les ailiers et le 10 à 1-2,5, une anomalie naturelle (un ailier à 97 de flair) à 5 (`gestes-en-course.md`, § 2).
+- **Les archétypes** (`options.archetypes`) posent un profil sur un joueur généré, pour les voir : l'**artiste** (Taarabt, Ben Arfa : flair 96, dribble 92…) et le **technicien** (Olmo, Iniesta : technique 91, contrôle 91, agilité 88, décision 84, flair 80).
+- **La carrière** (lot L3) remplace le généré : le paramètre `effectifs` de `creerCerveau` prend ses deux effectifs au contrat de `makeMatch` (`squads`). `effectifs: null` (ou l'option `effectifs: false`) rend le monde d'avant, pour l'A/B.
+- **Le corps**, lui, garde ses profils fixes : la transmission (`gf_set_stat`, § 4.2) reste à faire, et à caler par la mesure.
 - **Il faut donc les transmettre aux deux.**
   - Le cerveau décide : tenter un dribble, voir une passe, garder son sang-froid.
   - Le corps exécute : courir vite, accélérer, toucher juste, frapper fort.
@@ -101,7 +110,7 @@ Le corps lit 19 de ses 22 attributs (`utils.hpp`, `PlayerStat`). Ses valeurs par
 4. **Apparier les joueurs.** Aujourd'hui, l'adaptateur apparie les joueurs du corps et ceux du cerveau par la position, au coup d'envoi. Avec un effectif, il faut l'appariement de la carrière : qui joue où. Le corps place ses joueurs selon le 4-3-3 de la version Google. Lui donner la formation de la carrière demande une porte de plus dans l'API, non écrite.
 5. **Vérifier qu'aucun réglage n'est mort.** C'est le critère du §6 : chaque attribut doit changer une mesure, un attribut à la fois, sur une série de matchs (`bancs/serie.mjs`).
 
-## 5. Et pour voir un Taarabt ?
+## 5. Et pour voir un Taarabt ? (2 octobre ; fait le 3 : `adaptateur.md` § 7.10, `gestes-en-course.md`)
 
 Les attributs n'y suffisent pas.
 - **Dans le cerveau**, `flair` et `technique` décident de tenter le geste.
