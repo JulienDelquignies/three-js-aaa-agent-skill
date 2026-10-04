@@ -1,6 +1,6 @@
 # Reprendre le travail, sur une autre machine
 
-*État du 3 octobre 2026, fin de journée. À lire en premier par la session qui reprend le lot L2 (« notre cerveau pilote leurs corps »).*
+*État du 4 octobre 2026, la nuit. À lire en premier par la session qui reprend le lot L2 (« notre cerveau pilote leurs corps »).*
 
 ## 1. Où on en est
 
@@ -17,7 +17,9 @@
   - le magnétoscope : les ralentis des buts sous deux angles, le différé ; le corps attend pendant la lecture (le match ne change pas).
   - **les maillots** (3 octobre au soir, `gpf-maillots.js`, `tools/maillot-carte.py`, page cd064a2) : motifs et couleurs au choix, noms et numéros floqués, écusson et sponsor, gardiens, conflits de couleurs ;
   - **les tenues complètes** (la suite, même soir — « plusieurs motifs de maillots, shorts, chaussettes, chaussures ; manches courtes ou longues suivant les joueurs ; bandage à la Benzema ; maillot dans le short ou hors du short ; chaussettes basses à la Hamšík, moyennes ou hautes ; le nom et le numéro doivent être légers ») : l'équipement de chaque joueur dans un shader commun, le flocage par un alphabet SDF à taille réelle, la forme des corps tirée de leur maillage, le plan « portrait » ; `adaptateur.md` § 11 ;
-  - **la morphologie, les gants du gardien, l'apparence** (même nuit) : la taille entre au corps (`gf_set_hauteur`, étape 15), la carrure par une cible de morphing ; le visage de la carrière (foot, `visage.ts`) porté et dessiné sur deux têtes (`gpf-apparence.js`).
+  - **la morphologie, les gants du gardien, l'apparence** (même nuit) : la taille entre au corps (`gf_set_hauteur`, étape 15), la carrure par une cible de morphing ; le visage de la carrière (foot, `visage.ts`) porté et dessiné sur deux têtes (`gpf-apparence.js`) ;
+  - **les coupes en volume et les traits du visage** (même nuit, page da67c3d et f67c68a) : le mi-long, le chignon, les boucles et l'iroquois modélisés dans Blender sur la tête A (`tools/coiffures-rocketbox.py`, `public/rocketbox/coiffures.glb`), accrochés à l'os de la tête ; la largeur, la mâchoire (sa hauteur : le menton descend) et l'écart des yeux de la carrière en cibles de morphing ; `adaptateur.md` § 11.
+- **Le lot L3 a commencé** (3 octobre au soir, « ajouter ces données au contrat du match côté foot ») : dépôt foot, branche `feat/l3-donnees-du-match` (PR #44, empilée sur la #43), copie `~/DelkIT/FootballEcosystemLifeSim-l3`. Le contrat du match porte, par camp, l'identité (la tenue portée ce match, l'écusson, le sponsor) et les fiches de l'effectif (taille et poids du jour, pied fort, origine, âge, visage, nom floqué, numéro, capitaine) — `src/core/competition/imageDuMatch.ts`, `verifierLeSetup`, rempli pour un moteur (`pourUnMoteur`). La suite : /match11 lit ce setup (`?setup=`) et dessine les vrais joueurs ; le cerveau et le corps reçoivent les attributs. Le cadrage § 15.
   L'essai dans Chromium sans écran : `examples/showcase/tools/essai-l5.mjs` (étapes : jeu, tempsfort, recul, plans, but, stats, maillots, dos — avec `&orbit` —, equipement — `VUES=5:0,5:180 DISTANCE=3.2` —, reglages, heures, stades). L'état et ce qui reste : le cadrage § 14 (l'apparence par joueur, le réalisateur complet, les résumés, les programmes de shader sous 60).
 - **Ce qui reste du jeu** (les options proposées le 3 octobre, avant L5, dans l'ordre) :
   1. le râteau et la roulette **en course** (les demi-tours d'Olmo sous pression : décidés 2 à 7 fois par demi-heure, joués seulement à l'arrêt) — des clips du duel (`rouletteCourse`, `rateau`) à fondre dans la foulée ;
@@ -33,13 +35,14 @@ Les chemins sont ceux de l'ancienne machine (`/home/delkit/DelkIT`). **Garder le
 | Copie | Dépôt | Branche (dernier commit) | Rôle | À nous ? |
 |---|---|---|---|---|
 | `~/DelkIT/skill-l2` | `JulienDelquignies/three-js-aaa-agent-skill` | `feat/l2-cerveau-corps` (le cerveau 4b3eea2, la doc après) | `gpf-wasm/` : le corps (C++ patché, WebAssembly), l'adaptateur (`cerveau.mjs`, `face.mjs`, `gestes-course.mjs`), les outils, les bancs, la doc | **oui** |
-| `~/DelkIT/skill-l2page` | même dépôt | `feat/l2-regardable` (3e07df0 : les tenues complètes) | la page /match11 (`examples/showcase/gpf-match.html`, `src/scenes/GpfMatch.js`) | **oui** |
+| `~/DelkIT/skill-l2page` | même dépôt | `feat/l2-regardable` (f67c68a : les coupes en volume, les traits du visage) | la page /match11 (`examples/showcase/gpf-match.html`, `src/scenes/GpfMatch.js`) | **oui** |
 | `~/DelkIT/skill-1v1` | même dépôt | `feat/1v1-maquette` (4687c01) | le duel 1 contre 1 — **en lecture seule** : le studio et le convertisseur y lisent les modules de mouvement (`STARTER`) | non (lecture) |
 | `~/DelkIT/skill-gpf` | même dépôt | `feat/gpf-anims` | le portage de trois gestes GPF dans le duel (antérieur) | à ne pas toucher sans raison |
 | `~/DelkIT/three-js-aaa-agent-skill` | même dépôt | `pause/basket-2026-09-04` | la copie principale, d'une autre session | **non** |
-| `~/DelkIT/cockpit` | `JulienDelquignies/cockpit` | `main` (8bfa2a0) | le cockpit (Next.js) ; /match11 sert `public/duel-1v1/gpf-match.html`, `assets/`, `gpf/` ; déploiement `./scripts/deploy.sh` | **oui** |
-| (à recréer) | `JulienDelquignies/foot` | `docs/cadrage-moteur-match` (68766131) | le cadrage, PR #42 — sur l'ancienne machine, une copie de travail temporaire dans `/tmp` | **oui** |
+| `~/DelkIT/cockpit` | `JulienDelquignies/cockpit` | `main` (5e6d1f5) | le cockpit (Next.js) ; /match11 sert `public/duel-1v1/gpf-match.html`, `assets/`, `gpf/` ; déploiement `./scripts/deploy.sh` | **oui** |
+| (à recréer) | `JulienDelquignies/foot` | `docs/cadrage-moteur-match` (17af6e8f) | le cadrage, PR #42 — sur l'ancienne machine, une copie de travail temporaire dans `/tmp` | **oui** |
 | `~/DelkIT/FootballEcosystemLifeSim-l1` | foot | `feat/l1-contrats-arbitre` | le lot L1, PR #43 (empilée sur la #41) | oui (fait) |
+| `~/DelkIT/FootballEcosystemLifeSim-l3` | foot | `feat/l3-donnees-du-match` (6361a458) | le début du lot L3, PR #44 (empilée sur la #43) ; `node_modules` lié à celui de la copie principale | **oui** |
 | `~/DelkIT/FootballEcosystemLifeSim` | foot | `3d/personnages` | la copie principale du dépôt foot, **d'une autre session** | **non** |
 | `~/DelkIT/FootballEcosystemLifeSim-garage` | foot | `3d/garage-piste-b` | la piste B, **d'une autre session** | **non** |
 
@@ -47,6 +50,7 @@ Recréer la copie du cadrage : `git -C ~/DelkIT/FootballEcosystemLifeSim-l1 work
 
 ## 3. Installer la machine
 
+- **Blender 4.2 LTS** (4.2.23, archive officielle dépliée dans `~/opt/blender-4.2.23-linux-x64/`) pour les coupes en volume (`tools/coiffures-rocketbox.py`, sans écran : `-b --factory-startup`) ; son démarrage lit beaucoup le disque — ne pas le lancer pendant un `find /`.
 - **Node 22** (22.22.1 sur l'ancienne), **python3**, **ffmpeg**, **git**, **gh** (`gh auth login`), **rtk** (0.38.0, `~/.cargo/bin/rtk` : les instructions globales de Claude Code et le crochet `~/.claude/hooks/rtk-rewrite.sh` réécrivent les commandes vers lui — l'installer, ou retirer le crochet de `~/.claude/settings.json`).
 - **Emscripten** : `git clone https://github.com/emscripten-core/emsdk ~/emsdk && cd ~/emsdk && ./emsdk install latest && ./emsdk activate latest` (le corps a été compilé avec Emscripten 6.0.10, « latest » du 2 octobre). Voir § 5 sur le déterminisme.
 - **Playwright** (les captures, la garde de la page) : dans `~/DelkIT/skill-l2page/examples/showcase`, `npm ci` puis `npx playwright install chromium`.
